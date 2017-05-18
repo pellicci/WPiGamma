@@ -1,23 +1,19 @@
 from DataFormats.FWLite import Events, Handle
-from ROOT import TH1D, TCanvas, TLorentzVector
+from ROOT import TH1F, TCanvas, TLorentzVector, TFile
 import sys
 import math
+#import CommonTools.CandAlgos
+#import PhysicsTools.HepMCCandAlgos
+#import FWCore.ParameterSet.Config as cms
 from array import array
 
-inputfiles = ['/afs/cern.ch/user/r/rselvati/wpigamma/CMSSW_8_0_24/test/WPiGamma_pythia8_MINIAOD_1.root']
+inputfiles = ['/afs/cern.ch/user/r/rselvati/wpigamma/CMSSW_8_0_24/src/StandardModel/WPiGamma/test/WPiGamma_pythia8_MINIAOD_1.root']
 
 events = Events(inputfiles)
 
 nevents = 1
 maxEvents = 250
-wpi = 0
-wgamma = 0
-wpos = 0
-wneg = 0
-welec = 0
-wmu = 0
-wnue = 0
-wnumu = 0
+PV = 0
 pTpi = 0
 pTgamma = 0
 pTe = 0
@@ -27,22 +23,52 @@ dphi = 0
 etapi = 0
 phipi = 0
 deltaRMax = 10000
-pTpiMax = 1000
-pTmuMax = 1000
-difference1 = 0
-difference2 = 0
-difference3 = 0
-deltaRcomp = 0
-identity = 0
-pTcomp = 0
+deltapTMax = 10000
+pTmuMin = -1000
 pion = 0
 pion1 = 0
-PV = 0
-PV_list = []
 cont = 0
 cont2 = 0
-muoni = 0
+mu_selection = 0
+mu_selection_event = 0
 checker = None
+checker1 = None
+checker2 = None
+cheker3 = None
+checker4 = None
+checker5 = None
+checker6 = None
+mu_ID = 0
+gen_ID = 0
+gen_mother = 0
+eTphMin = -1000
+pTpiMin = -1000
+ph_cont = 0
+ph_cont1 = 0
+ph_cont2 = 0
+candidate_ph = TLorentzVector()
+candidate_pi = TLorentzVector()
+candidate_eta = 0
+candidate_phi = 0
+photon_eta = 0
+photon_phi = 0
+pxpi = 0
+pypi = 0
+pzpi = 0
+pxph = 0
+pyph = 0
+pzph = 0
+pTph = 0
+pi_from_w = 0
+photon_from_w = 0
+pi_and_photon_from_w = 0
+counter = 0
+counter1 = 0
+track_iso = 0
+ecal_iso = 0
+hcal_iso = 0
+calo_iso = 0
+iso_sum = 0
 
 genParticles_h = Handle ("vector<reco::GenParticle>")
 genParticles_l = ('prunedGenParticles')
@@ -53,11 +79,19 @@ PFCandidates_l = ("packedPFCandidates")
 slimmedMuons_h = Handle ("vector<pat::Muon>")
 slimmedMuons_l = ("slimmedMuons")
 
-histo1 = TH1D("pTpi","pT of pi", 100,0,200)
-histo2 = TH1D("pTgamma","pT of gamma", 100,0,200)
-histo3 = TH1D("pTe","pT of e", 70,0,200)
-histo4 = TH1D("pTmu","pT of mu", 70,0,200)
-histo5 = TH1D("deltaR pi-gamma", "deltaR",100,0,15)
+slimmedPhotons_h = Handle ("vector<pat::Photon>")
+slimmedPhotons_l = ("slimmedPhotons")
+
+
+
+inv_mass_1 = TH1F("Invariant mass1", "W mass1", 200,0,120)
+inv_mass_2 = TH1F("Invariant mass2", "W mass2", 200,0,120)
+track_iso_hist = TH1F("Track iso", "Track isolation", 200,0,60)
+ecal_iso_hist = TH1F("Ecal iso", "Ecal isolation", 200,0,40)
+hcal_iso_hist = TH1F("Hcal iso", "Hcal isolation", 200,0,25)
+calo_iso_hist = TH1F("Calo iso", "Calo isolation", 200,0,140)
+iso_sum_hist = TH1F("Sum iso", "Sum isolation", 150,0,3)
+
 
 for event in events:
 
@@ -72,169 +106,245 @@ for event in events:
     event.getByLabel (slimmedMuons_l,slimmedMuons_h)
 
     slimmedMuons = slimmedMuons_h.product()
+
+    event.getByLabel (slimmedPhotons_l,slimmedPhotons_h)
+    
+    slimmedPhotons = slimmedPhotons_h.product()
     
 
     print "Event n: ", nevents, "/", maxEvents
 
-    for gpart in genParticles:
-         if gpart.pdgId()==24 and gpart.numberOfDaughters()==2 : #W+
-             wpos += 1
-             
-             #print "W+) Daughter n1: ", gpart.daughter(0).pdgId(), "and daughter n2: ", gpart.daughter(1).pdgId()
-             if gpart.daughter(0).pdgId()==211 or gpart.daughter(1).pdgId()==211 :
-                 wpi+=1
-                 if gpart.daughter(0).pdgId()==211 : 
-                     pTpi = gpart.daughter(0).pt()
-                     #print "pTpi generated: ", pTpi
-                     etapi = gpart.daughter(0).eta()
-                     phipi = gpart.daughter(0).phi()
-                 if gpart.daughter(1).pdgId()==211 :
-                     pTpi = gpart.daughter(1).pt()
-                     #print "pTpi generated: ", pTpi
-                     etapi = gpart.daughter(1).eta()
-                     phipi = gpart.daughter(1).phi()
-
-
-                 for cand in PFCandidates:
-                     difference1 = cand.phi()-phipi
-                     difference2 = cand.eta()-etapi
-                     deltaRcomp = math.sqrt(difference1*difference1 + difference2*difference2) #deltaR between gen pi and compared reco particle
-                     if deltaRcomp < deltaRMax :
-                         deltaRMax = deltaRcomp
-                         identity = cand.pdgId() #identity of the particle with closest eta to the generated pi
-                         pTcomp = cand.pt() #pT of this particle, to be compared with the sample pi's pT
-                 if identity == 211:
-                     pion += 1 #number of particles which are pi closest to the gen pi
-                 #print "closest phi particle ID: ", identity, "and its pT: ", pTcomp
-                 deltaRMax = 10000
-
-                 
-                 #for cand in PFCandidates:
-                 #    difference3 = math.fabs(cand.pt()-pTpi)
-                 #    if difference3 < pTpiMax :
-                 #        pTpiMax = difference3
-                 #        identity = cand.pdgId() #identity of the particle with closest eta to the generated pi
-                 #        pTcomp = cand.pt() #pT of this particle, to be compared with the sample pi's pT
-                 #if identity == 211:
-                 #    pion1 += 1 #number of particles which are pi closest to the gen pi
-                 #print "closest phi particle ID/////: ", identity, "and its pT/////: ", pTcomp
-                 #pTpiMax = 1000
-
-             
-             histo1.Fill(pTpi) #filling histo1 with pT of pi
-
-             if gpart.daughter(0).pdgId()==22 or gpart.daughter(1).pdgId()==22 :
-                 wgamma += 1
-             if gpart.daughter(0).pdgId()==22 :
-                 pTgamma = gpart.daughter(0).pt()
-             if gpart.daughter(1).pdgId()==22 :
-                 pTgamma = gpart.daughter(1).pt()
-             histo2.Fill(pTgamma) #filling histo2 with pT of gamma
-             if gpart.daughter(0).pdgId()==211 and gpart.daughter(1).pdgId()==22 :
-                 deta = gpart.daughter(0).eta()-gpart.daughter(1).eta()
-                 dphi = gpart.daughter(0).phi()-gpart.daughter(1).phi()
-                 deltaR = math.sqrt(deta*deta + dphi*dphi)
-             if gpart.daughter(0).pdgId()==22 and gpart.daughter(1).pdgId()==211 :
-                 deta = gpart.daughter(1).eta()-gpart.daughter(0).eta()
-                 dphi = gpart.daughter(1).phi()-gpart.daughter(0).phi()
-                 deltaR = math.sqrt(deta*deta + dphi*dphi)
-             histo5.Fill(deltaR)
-                 
-
-
-         if gpart.pdgId()==-24 and gpart.numberOfDaughters()==2 : #W-
-             wneg += 1
-           
-             #print "W-) Daughter n1: ", gpart.daughter(0).pdgId(), "and daughter n2: ", gpart.daughter(1).pdgId()
-             if gpart.daughter(0).pdgId()==11 or gpart.daughter(1).pdgId()==11 :
-                 welec += 1
-             if gpart.daughter(0).pdgId()==11 : #filling histo3 with pT of e-
-                 pTe = gpart.daughter(0).pt()
-             if gpart.daughter(1).pdgId()==11 :
-                 pTe = gpart.daughter(1).pt()
-             histo3.Fill(pTe)
-             if gpart.daughter(0).pdgId()==-12 or gpart.daughter(1).pdgId()==-12 :
-                 wnue += 1
-             if gpart.daughter(0).pdgId()==13 or gpart.daughter(1).pdgId()==13 :
-                 wmu += 1
-             if gpart.daughter(0).pdgId()==13 : #filling histo4 with pT of mu-
-                 pTmu = gpart.daughter(0).pt()
-             if gpart.daughter(1).pdgId()==13 :
-                 pTmu = gpart.daughter(1).pt()
-             histo4.Fill(pTmu)
-             if gpart.daughter(0).pdgId()==-14 or gpart.daughter(1).pdgId()==-14 :
-                 wnumu += 1
-                 
-    pTmuMax = 1000
+    pTmuMin = -1000
     checker = False
     for mu in slimmedMuons:
-        if mu.pt()>24 and mu.pt() < pTmuMax:
-            pTmuMax = mu.pt()
-            #print "is global muon: ", mu.isGlobalMuon()
-            #print mu.originalObjectRef().pvAssociationQuality()
-            quality_list = [1,2,3,5,6,7]
-            print "pT :", mu.pt(), "Eta: ", mu.eta(), "phi:", mu.phi()
-            print "dxy: ", mu.innerTrack().dxy(), "dz: ", mu.innerTrack().dz()
-            # mu.originalObjectRef().pvAssociationQuality() in quality_list and
-            if mu.isMediumMuon()==True and (mu.pfIsolationR04().sumChargedHadronPt + max(0., mu.pfIsolationR04().sumNeutralHadronEt + mu.pfIsolationR04().sumPhotonEt - 0.5*mu.pfIsolationR04().sumPUPt)/mu.pt()) < 0.15 and mu.dB() < 0.2 :
-                PV = mu.originalObjectRef().vertexRef()
-                checker = True
-                
+        if mu.pt()>24 and mu.pt() > pTmuMin and mu.isMediumMuon()==True:
+            pTmuMin = mu.pt()
+            #print "pT :", mu.pt(), "Eta: ", mu.eta(), "phi:", mu.phi()
+            #print "dxy: ", mu.innerTrack().dxy(), "dz: ", mu.innerTrack().dz()
+
+            #if mu.isMediumMuon()==True:# and (mu.pfIsolationR04().sumChargedHadronPt + max(0., mu.pfIsolationR04().sumNeutralHadronEt + mu.pfIsolationR04().sumPhotonEt - 0.5*mu.pfIsolationR04().sumPUPt)/mu.pt()) < 0.15:
+
+                #PV = mu.originalObjectRef().vertexRef()
+            mu_ID = mu.pdgId()
+            mu_selection += 1 #checking how many mu over total pass the selection
+            if checker == False: #checking how many events contain mu passing the if selection
+                mu_selection_event += 1
+            checker = True
+    
+    #matchMap = cms.EDProducer("MCTruthDeltaRMatcher", src = cms.InputTag("PFCandidates"), matched = cms.InputTag("genParticles"), distMin = cms.double(0.3))
+    #print PFCandidates.data_[matchMap.map_.first].pt()
     cont1 = 0
+    pTpiMax = -1000
+    checker1 = False
+    checker3 = False #together with checker4, used to calculate how many times both reconstructed pi and gamma come from generated particles whose mother is a W
+    checker5 = False
+    checker6 = False
+    counter = 0
     for cand in PFCandidates:
-        if cand.vertexRef()==PV and cand.pt()>=20 and checker==True and cand.trackHighPurity()==True:
+        if cand.pdgId()*mu_ID == 211*13 and checker == True and cand.pt()>=20 and cand.trackHighPurity()==True and cand.pt()>pTpiMax and cand.fromPV()==3:
+            pTpiMax = cand.pt()
+            candidate_pi = cand.p4()
+            #print "candidate vertex: ",cand.vertexRef()
+            #print "pions we like: ", cont1
+            #print "pdgId: ", cand.pdgId(), "muId: ", mu_ID, "pTpi: ", cand.pt(), "pxpi: ", cand.px(), "pypi: ", cand.py(), "pzpi: ", cand.pz(), "pienergy: ", cand.energy()
+
+            pxpi = cand.px()
+            pypi = cand.py()
+            pzpi = cand.pz()
+            pTpi = cand.pt()
+            candidate_eta = cand.eta()
+            candidate_phi = cand.phi()
+            
+            deltapTMax = 10000
+            deltaRMax = 0.3
+            gen_mother = 0
+            gen_px = 0
+            gen_py = 0
+            gen_pz = 0
+            gen_pt = 0
+
+            #gen_ID = cand.pdgId()#so if it doesn't enter the following loop-and-if, it doesn't display "reconstructed particle is different..." either 
+            for gen in genParticles: #matching candidate for W reconstruction with MC truth
+                deltaR = math.sqrt((candidate_eta-gen.eta())*(candidate_eta-gen.eta())+(candidate_phi-gen.phi())*(candidate_phi-gen.phi()))
+                deltapT = math.fabs(cand.pt()-gen.pt())
+
+                if deltaR <= deltaRMax and deltapT < deltapTMax:
+                    deltapTMax = deltapT
+                    gen_ID = gen.pdgId()
+                    gen_mother = gen.mother().pdgId()
+                    gen_px = gen.px()
+                    gen_py = gen.py()
+                    gen_pz = gen.pz()
+                    gen_pt = gen.pt()
+
+            if not gen_ID == 211 or gen_ID == -211:
+                print "|||corresponding generated particle is not a pion, but: ", gen_ID
+                if counter == 0:
+                    checker6 = True #avoiding to count the case in which only a single reco-pion, not matching with a gen-pion, passes the selection
+
+            if gen_ID == 211 or gen_ID == -211:
+                print "\\\identity of generated PION's mother: ", gen_mother
+                print "reco px: ", pxpi, "reco py: ", pypi, "reco pz: ", pzpi, "reco pT: ", pTpi
+                print "gen px: ", gen_px, "gen py: ", gen_py, "gen pz: ", gen_pz, "gen pT: ", gen_pt
+                if gen_mother == 24 or gen_mother == -24:
+                    pi_from_w += 1
+                    checker3 = True
+                    gen_mother = 0
+                    gen_ID = 0
+                    counter += 1
+                    if cont1 >= 1:
+                        pi_from_w += 1
+                        checker5 = True #activates in case the first reco particle to fulfill the conditions is not a pion from a W, while the second is
+
+            if counter >= 1 and cont1 >= 1:
+                pi_from_w = pi_from_w-1 #without this, a case in which the first particle to pass the selection is a pion but the second and final is not, is counted as a good reconstruction 
+                checker3 = False
+            if checker5 == True:
+                checker3 = True
+                
             cont1 += 1
-            print "pions we like: ", cont1
+            checker1 = True
+
     if not cont1==0:
         cont2 += 1
 
     cont += cont1
 
-    #for cand in PFCandidates:
-    #    if cand.pdgId()==13 and cand.pt() < pTmuMax:
-    #        pTmuMax = cand.pt()
-    #        PV = cand.vertexRef()
-    #        PV_list.append(PV)
-    #pTmuMax = 1000
-    #for element in PV_list:
-    #    for cand in PFCandidates:
-    #        if cand.vertexRef()==element and cand.pdgId()==211:
-    #            cont += 1
-    #print "cont: ", cont
-    #cont = 0
+    ph_cont1 = 0
+    eTphMin = -1000
+    checker2 = False
+    checker4 = False #together with checker3, used to calculate how many times both reconstructed pi and gamma come from generated particles whose mother is a W
+    for photon in slimmedPhotons:
+        if photon.et()>20 and photon.et()>eTphMin and checker1 == True:# and  photon.caloIso()+photon.trackIso()<5:
+            eTphMin = photon.et()
+            print "px: ", photon.px(), "py: ", photon.py(), "pz: ", photon.pz(), "energy: ", photon.energy()
+            candidate_ph = photon.p4(0)
+            checker2 = True
+            ph_cont1 +=1
+            
+            pxph = photon.px()
+            pyph = photon.py()
+            pzph = photon.pz()
+            pTph = photon.pt()
+            photon_eta = photon.eta()
+            photon_phi = photon.phi()
+            track_iso = photon.trackIso()
+            ecal_iso = photon.ecalIso()
+            hcal_iso = photon.hcalIso()
+            calo_iso = photon.caloIso()
+            iso_sum = (track_iso+calo_iso)/photon.et()
+
+            track_iso_hist.Fill(track_iso)
+            ecal_iso_hist.Fill(ecal_iso)
+            hcal_iso_hist.Fill(hcal_iso)
+            calo_iso_hist.Fill(calo_iso)
+            iso_sum_hist.Fill(iso_sum)
+            
+            
+            gen_px = 0
+            gen_py = 0
+            gen_pz = 0
+            gen_pt = 0
+            deltapTMax = 10000
+            deltaRMax = 0.3
+
+            #gen_ID = cand.pdgId()#so if it doesn't enter the following loop-and-if, it doesn't display "reconstructed particle is different..." either 
+            for gen in genParticles:
+                deltaR = math.sqrt((photon_eta-gen.eta())*(photon_eta-gen.eta())+(photon_phi-gen.phi())*(photon_phi-gen.phi()))
+                deltapT = math.fabs(photon.pt()-gen.pt())
+
+                if deltaR <= deltaRMax and deltapT < deltapTMax :
+                    deltapTMax = deltapT
+                    gen_ID = gen.pdgId()
+                    gen_mother = gen.mother().pdgId()
+                    gen_px = gen.px()
+                    gen_py = gen.py()
+                    gen_pz = gen.pz()
+                    gen_pt = gen.pt()
+                
+            if not gen_ID == 22:
+                print "|||corresponding generated particle is not a photon, but: ", gen_ID
+                print "______reco px: ", pxph, "reco py: ", pyph, "reco pz: ", pzph, "reco pT: ", pTph
+                print "gen px: ", gen_px, "gen py: ", gen_py, "gen pz: ", gen_pz, "gen pT: ", gen_pt
+            
+            if gen_ID == 22:
+                print "\\\identity of generated photon's mother: ", gen_mother
+                print "______reco px: ", pxph, "reco py: ", pyph, "reco pz: ", pzph, "reco pT: ", pTph
+                print "gen px: ", gen_px, "gen py: ", gen_py, "gen pz: ", gen_pz, "gen pT: ", gen_pt
+                if gen_mother == 24 or gen_mother == -24:
+                    photon_from_w += 1
+                    checker4 = True
+
+    if checker1 == True and checker2 == False and checker6 == False:
+        counter1 += 1
+
+    if not ph_cont1 == 0:
+        ph_cont2 += 1 #incrementing the number of events with at least one photon
+
+    ph_cont += ph_cont1
+
+    
+    if checker1 == True and checker2 == True:
+        print "INV MASS: ", (candidate_ph + candidate_pi).M(), "costheta: ", (pxpi*pxph+pypi*pyph+pzpi*pzph)/(math.sqrt(pxpi**2+pypi**2+pzpi**2)*math.sqrt(pxph**2+pyph**2+pzph**2))
+        if checker3 == False or checker4 == False:
+            inv_mass_1.SetLineColor(3)
+            inv_mass_1.Fill((candidate_ph + candidate_pi).M())
+        if checker3 == True and checker4 == True:
+            pi_and_photon_from_w += 1
+            inv_mass_2.SetLineColor(2)
+            inv_mass_2.Fill((candidate_ph + candidate_pi).M())
+
+
+    print " "
 
     if nevents>=maxEvents :
         break
 
     nevents += 1
 
-print "pion number: ", pion, "pion number using pT matching: ", pion1
-print "ntot charged particles: ", cont, "n of events with at least one pi: ", cont2, "n of pi per event: ", float(cont)/128
-#if not welec==wnue :
-#    print "Number of electrons =! from number of anti-nue"
-#if not wmu==wnumu :
-#    print "Number of muons =! from number of anti-numu"
+print "n of mu passing selection: ", mu_selection, "|| n of events with mu passing selection: ", mu_selection_event
+print "n of pi: ", cont, "|| n of events with at least one pi: ", cont2#, "|| n of pi per event: ", float(cont)/128
+print "n of photons: ", ph_cont, "|| n of events with at least one photon: ", ph_cont2
+print "number of matching reconstructed-generated pi, originating from W: ", pi_from_w-counter1
+print "number of matching reconstructed-generated photon, originating from W: ", photon_from_w
+print "both pi and photon come frome W: ", pi_and_photon_from_w
 
-#print "Number of W+ dacaying into 2 particles: ", wpos, "and number of W- decaying into 2 particles: ", wneg
-#print "Number of pi+ from  W+: ", wpi, " and number of gamma from W+: ", wgamma
-#print "Number of e- and anti-nu couples from W-: ", welec, "and number of mu and anti-numu from W-: ", wmu
+newfile = TFile("mass_and_isolation.root","recreate")
+canvas1 = TCanvas()
+inv_mass_2.Draw("hist")
+inv_mass_1.Draw("SAME,hist")
+canvas1.Print("Wmass.png")
+canvas1.Write()
+
+canvas2 = TCanvas()
+track_iso_hist.Draw("hist")
+canvas2.Print("TrackIso.png")
+track_iso_hist.Write()
+
+canvas3 = TCanvas()
+ecal_iso_hist.Draw("hist")
+canvas3.Print("EcalIso.png")
+ecal_iso_hist.Write()
+
+canvas4 = TCanvas()
+hcal_iso_hist.Draw("hist")
+canvas4.Print("HcalIso.png")
+hcal_iso_hist.Write()
+
+canvas5 = TCanvas()
+calo_iso_hist.Draw("hist")
+canvas5.Print("CaloIso.png")
+calo_iso_hist.Write()
+
+canvas6 = TCanvas()
+iso_sum_hist.Draw("hist")
+canvas6.Print("IsoSum.png")
+iso_sum_hist.Write()
+
+
+
+
     
-
-#canvas1 = TCanvas()
-#histo1.Draw("hist")
-#canvas1.Print ("pTpi.png")
-#canvas2 = TCanvas()
-#histo2.Draw("hist")
-#canvas2.Print("pTgamma.png")
-#canvas3 = TCanvas()
-#histo3.Draw("hist")
-#canvas3.Print("pTe.png")
-#canvas4 = TCanvas()
-#histo4.Draw("hist")
-#canvas4.Print("pTmu.png")
-#canvas5 = TCanvas()
-#histo5.Draw("hist")
-#canvas5.Print("deltaRpigamma.png")
 
 
 
