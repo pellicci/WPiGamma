@@ -56,23 +56,19 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   tok_beamspot_       = consumes<reco::BeamSpot>(edm::InputTag(bsCollection_));
   pileupSummaryToken_ = consumes<std::vector<PileupSummaryInfo> >(edm::InputTag(PileupSrc_));
 
-  nevents = 1;
-
-  pion = 0;
-  pion1 = 0;
-  cont = 0;
-  cont1 = 0;
-  cont2 = 0;
-  counter = 0;
-  counter1 = 0;
+  cand_total = 0;
+  cand_passing_selection = 0;
+  events_least_one_pi = 0; //number of events with at least one reconstructed pi candidate
+  single_pi_counter = 0;
+  pi_from_w_correction = 0;
   mu_selection = 0;
   mu_selection_event = 0;
   mu_ID = 0;
   el_ID = 0;
   gen_ID = 0;
-  ph_cont = 0;
-  ph_cont1 = 0;
-  ph_cont2 = 0;
+  ph_total = 0;
+  ph_passing_selection = 0;
+  events_least_one_ph = 0;
   gen_mother = 0;
   pi_from_w = 0;
   photon_from_w = 0;
@@ -117,13 +113,15 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   deltapT = 0.;
 
   //useful bools
-  checker = false;
-  checker1 = false;
-  checker2 = false;
-  checker3 = false;
-  checker4 = false;
-  checker5 = false;
-  checker6 = false;
+  tag_lepton_found = false;
+  cand_pion_found = false;
+  cand_photon_found = false;
+  is_pi_a_pi = false;
+  is_photon_a_photon = false;
+
+  //bools used for a correct implementation of counters 
+  is_last_pi_a_pi = false; //used if only the last pi to pass the selection is actually a pi in generation too
+  is_bad_single_pi = false; //used to avoid to count the case in which only a single reco-pion, not matching with a gen-pion, passes the selection
 
   //tree variables
   lepton_pT_tree = 0.;
@@ -168,26 +166,33 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   edm::Handle<std::vector<pat::Electron > > slimmedElectrons;
   iEvent.getByLabel(slimmedElectrons_, slimmedElectrons);
 
+<<<<<<< HEAD
+  
+  pTmuMin = -1000;
+  tag_lepton_found = false;
+=======
   //std::cout<< "Event n: " << nevents << "/" << maxEvents << std::endl;
   
   pTmuMin = -1000.;
   checker = false;
+>>>>>>> 8fd4d7d7eec1bebc49964549b341f61e8cac8642
   lepton_pT_tree = 0.;
   lepton_eta_tree = 0.;
   lepton_phi_tree = 0.;
+  mu_ID = 0;
+  el_ID = 0;
 
   for (auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
         if (mu->pt()>24. && mu->pt() > pTmuMin && mu->isMediumMuon() ){
           pTmuMin = mu->pt();
 	  //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
-	  //print "dxy: ", mu.innerTrack().dxy(), "dz: ", mu.innerTrack().dz()
 
 	  mu_ID = mu->pdgId();
-	  checker = true;
 	  is_muon = true;
 	  mu_selection += 1; //checking how many mu over total pass the selection
-	  if (checker == false){ //checking how many events contain mu passing the if selection
+	  if (tag_lepton_found == false){ //checking how many events contain mu passing the if selection
 	    mu_selection_event += 1;}
+	  tag_lepton_found = true;
 
 	lepton_pT_tree = mu->pt();
 	lepton_eta_tree = mu->eta();
@@ -200,14 +205,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
         if (el->pt()>24 && el->pt() > pTmuMin){
           pTmuMin = el->pt();
 	  //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
-	  //print "dxy: ", mu.innerTrack().dxy(), "dz: ", mu.innerTrack().dz()
 
 	  el_ID = el->pdgId();
-	  checker = true;
 	  is_muon = false;
 	  //mu_selection += 1; //checking how many mu over total pass the selection
 	  //if (checker == false){ //checking how many events contain mu passing the if selection
 	  //mu_selection_event += 1;}
+	  tag_lepton_found = true;
 
 	lepton_pT_tree = el->pt();
 	lepton_eta_tree = el->eta();
@@ -216,6 +220,15 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	}
   }
   
+<<<<<<< HEAD
+  cand_passing_selection = 0;
+  pTpiMax = -1000;
+  cand_pion_found = false;
+  is_pi_a_pi = false; //together with is_photon_a_photon, used to calculate how many times both reconstructed pi and gamma come from generated particles whose mother is a W
+  is_last_pi_a_pi = false;
+  is_bad_single_pi = false;
+  single_pi_counter = 0;
+=======
   cont1 = 0;
   pTpiMax = -1000.;
   checker1 = false;
@@ -223,11 +236,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   checker5 = false;
   checker6 = false;
   counter = 0;
+>>>>>>> 8fd4d7d7eec1bebc49964549b341f61e8cac8642
   for (auto cand = PFCandidates->begin(); cand != PFCandidates->end(); ++cand){
-    if ((cand->pdgId()*mu_ID > 0 || cand->pdgId()*el_ID > 0) && checker == true && cand->pt()>=20 && cand->trackHighPurity()==true && cand->pt()>pTpiMax && cand->fromPV()==3){
-      //std::cout << "I'm in, bitches" << std::endl;
+    if ((cand->pdgId()*mu_ID > 0 || cand->pdgId()*el_ID > 0) && tag_lepton_found == true && cand->pt()>=20 && cand->trackHighPurity()==true && cand->pt()>pTpiMax && cand->fromPV()==3){
+
       pTpiMax = cand->pt();
       candidate_pi = cand->p4();
+      cand_pion_found = true;
 
       pxpi = cand->px();
       pypi = cand->py();
@@ -263,8 +278,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
       if (gen_ID != 211 && gen_ID != -211){
 	//std::cout << "|||corresponding generated particle is not a pion, but: " << gen_ID << std::endl;
-	if (counter == 0){
-	  checker6 = true;}} //avoiding to count the case in which only a single reco-pion, not matching with a gen-pion, passes the selection
+	if (single_pi_counter == 0){
+	  is_bad_single_pi = true;}} //avoiding to count the case in which only a single reco-pion, not matching with a gen-pion, passes the selection
 
       if (gen_ID == 211 || gen_ID == -211){
 	//std::cout << "\\identity of generated PION's mother: " << gen_mother << std::endl;
@@ -272,41 +287,42 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	//std::cout << "gen px: " << gen_px << "gen py: " << gen_py << "gen pz: " << gen_pz << "gen pT: " << gen_pt << std::endl;
 	if (gen_mother == 24 || gen_mother == -24){
 	  pi_from_w += 1;
-	  checker3 = true;
+	  is_pi_a_pi = true;
 	  gen_mother = 0;
 	  gen_ID = 0;
-	  counter += 1;
-	  if (cont1 >= 1){
+	  single_pi_counter += 1;
+	  if (cand_passing_selection >= 1){
 	    pi_from_w += 1;
-	    checker5 = true;} //activates in case the first reco particle to fulfill the conditions is not a pion from a W, while the second is
+	    is_last_pi_a_pi = true;} //activates in case the first reco particle to fulfill the conditions is not a pion from a W, while the second is
 	}}
       
-      if (counter >= 1 && cont1 >= 1){
+      if (counter >= 1 && cand_passing_selection >= 1){
 	pi_from_w = pi_from_w-1; //without this, a case in which the first particle to pass the selection is a pion but the second and final is not, is counted as a good reconstruction 
-	checker3 = false;}
-      if (checker5 == true){
-	checker3 = true;}
+	is_pi_a_pi = false;}
+      if (is_last_pi_a_pi == true){
+	is_pi_a_pi = true;}
                 
-      cont1 += 1;
-      checker1 = true;
+      cand_passing_selection += 1;
+ 
     }}
 
-	      if (cont1 != 0){
-		cont2 += 1;}
+  if (cand_passing_selection != 0){
+		events_least_one_pi += 1;}
 
-	      cont += cont1;
+  cand_total += cand_passing_selection;
 
-	      ph_cont1 = 0;
-	      eTphMin = -1000;
-	      checker2 = false;
-	      checker4 = false; //together with checker3, used to calculate how many times both reconstructed pi and gamma come from generated particles whose mother is a W
+
+  ph_passing_selection = 0;
+  eTphMin = -1000;
+  cand_photon_found = false;
+  is_photon_a_photon = false; //together with is_pi_a_pi, used to calculate how many times both reconstructed pi and gamma come from generated particles whose mother is a W
     for (auto photon = slimmedPhotons->begin(); photon != slimmedPhotons->end(); ++photon){
-      if (photon->et()>20 && photon->et()>eTphMin && checker1 == true){
+      if (photon->et()>20 && photon->et()>eTphMin && cand_pion_found == true){
       eTphMin = photon->et();
       std::cout << "px: " << photon->px() << "py: " << photon->py() << "pz: " << photon->pz() << "energy: " << photon->energy() << std::endl;
       candidate_ph = photon->p4();
-      checker2 = true;
-      ph_cont1 +=1;
+      cand_photon_found = true;
+      ph_passing_selection +=1;
             
       pxph = photon->px();
       pyph = photon->py();
@@ -363,29 +379,29 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	std::cout << "gen px: " << gen_px << "gen py: " << gen_py << "gen pz: " << gen_pz << "gen pT: " << gen_pt << std::endl;
 	if (gen_mother == 24 || gen_mother == -24){
 	  photon_from_w += 1;
-	  checker4 = true;}
+	is_photon_a_photon = true;}
       }}}
 
-      if (checker1 == true && checker2 == false && checker6 == false){
-        counter1 += 1;}
+      if (cand_pion_found == true && cand_photon_found == false && is_bad_single_pi == false){
+        pi_from_w_correction += 1;}
 
-      if (ph_cont1 != 0){
-        ph_cont2 += 1;} //incrementing the number of events with at least one photon
+      if (ph_passing_selection != 0){
+        events_least_one_ph += 1;} //incrementing the number of events with at least one photon
 
-      ph_cont += ph_cont1;
+      ph_total += ph_passing_selection;
 
     
-      if (checker1 == true && checker2 == true){
+      if (cand_pion_found == true && cand_photon_found == true){
 	std::cout << "INV MASS: " << (candidate_ph + candidate_pi).M() << "costheta: " << (pxpi*pxph+pypi*pyph+pzpi*pzph)/(TMath::Sqrt(pxpi*pxpi+pypi*pypi+pzpi*pzpi)*TMath::Sqrt(pxph*pxph+pyph*pyph+pzph*pzph));
-        if (checker3 == false || checker4 == false){
+        if (is_pi_a_pi == false || is_photon_a_photon == false){
 	  inv_mass_1->SetLineColor(3);
 	  inv_mass_1->Fill((candidate_ph + candidate_pi).M());}
-        if (checker3 == true && checker4 == true){
+        if (is_pi_a_pi == true && is_photon_a_photon == true){
 	  pi_and_photon_from_w += 1;
 	  inv_mass_2->SetLineColor(2);
 	  inv_mass_2->Fill((candidate_ph + candidate_pi).M());}
       }
-      std::cout << "n fotoni: " << ph_cont2 << std::endl;
+      std::cout << "n fotoni: " << events_least_one_ph << std::endl;
       mytree->Fill();
 }
 

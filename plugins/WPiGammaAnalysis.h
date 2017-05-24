@@ -42,24 +42,26 @@ private:
   LorentzVector candidate_pi;
   LorentzVector candidate_ph;
 
+<<<<<<< HEAD
+  ULong64_t events;
+=======
   unsigned int nevents;
+>>>>>>> 8fd4d7d7eec1bebc49964549b341f61e8cac8642
   unsigned int maxEvents;
 
-  Int_t pion;
-  Int_t pion1;
-  Int_t cont;
-  Int_t cont1;
-  Int_t cont2;
-  Int_t counter;
-  Int_t counter1;
+  Int_t cand_total;
+  Int_t cand_passing_selection;
+  Int_t events_least_one_pi;
+  Int_t single_pi_counter;
+  Int_t pi_from_w_correction;
   Int_t mu_selection;
   Int_t mu_selection_event;
   Int_t mu_ID;
   Int_t el_ID;
   Int_t gen_ID;
-  Int_t ph_cont;
-  Int_t ph_cont1;
-  Int_t ph_cont2;
+  Int_t ph_total;
+  Int_t ph_passing_selection;
+  Int_t events_least_one_ph;
   Int_t gen_mother;
   Int_t pi_from_w;
   Int_t photon_from_w;
@@ -102,13 +104,13 @@ private:
   float deltaR;
   float deltapT;
 
-  bool checker;
-  bool checker1;
-  bool checker2;
-  bool checker3;
-  bool checker4;
-  bool checker5;
-  bool checker6;
+  bool tag_lepton_found;
+  bool cand_pion_found;
+  bool cand_photon_found;
+  bool is_pi_a_pi;
+  bool is_photon_a_photon;
+  bool is_last_pi_a_pi;
+  bool is_bad_single_pi;
 
   //TTree and TTree variables
   TTree *mytree;

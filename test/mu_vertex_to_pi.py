@@ -116,6 +116,7 @@ for event in events:
 
     pTmuMin = -1000
     checker = False
+    mu_ID = 0
     for mu in slimmedMuons:
         if mu.pt()>24 and mu.pt() > pTmuMin and mu.isMediumMuon()==True:
             pTmuMin = mu.pt()
