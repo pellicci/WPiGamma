@@ -17,33 +17,15 @@ private:
   const edm::InputTag slimmedMuons_; 
   const edm::InputTag prunedGenParticles_;
   const edm::InputTag slimmedPhotons_;
-  bool runningOnData_;
-  const edm::InputTag pvCollection_;  
-  const edm::InputTag bsCollection_;  
-  const edm::InputTag PileupSrc_;
-  edm::Service<TFileService> fs;
-  //edm::Handle<std::vector<pat::PackedCandidate>  > PFCandidates;
-  //edm::Handle<std::vector<pat::Muon>  > slimmedMuons;
-  //edm::Handle<std::vector<reco::GenParticle>  > genParticles;
-  //edm::Handle<std::vector<pat::Photon>  > slimmedPhotons;
-  /*std::string bdiscr_;
-  double minPt_high_;
-  double minPt_low_;
-  double minCSV_;
+  const edm::InputTag slimmedElectrons_;
   bool runningOnData_;
   const edm::InputTag pvCollection_;  
   const edm::InputTag bsCollection_;  
   const edm::InputTag PileupSrc_;
 
-  edm::LumiReWeighting Lumiweights_; 
   edm::Service<TFileService> fs;
 
-  void create_Histos_and_Trees();
-  void fill_global_Tree(edm::Handle<std::vector<pat::PackedCandidate> >& packedPFCandidates, edm::Handle<std::vector<pat::Muon> >& slimmedMuons, edm::Handle<std::vector<reco::GenParticle> >& prunedGenParticles, edm::Handle<std::vector<pat::Photon> >& slimmedPhotons);
-
-  int get_best_combination(LorentzVector& m1, LorentzVector& m2, LorentzVector& m3, LorentzVector& m4);
-  bool check_combinations(LorentzVector& m1, LorentzVector& m2, LorentzVector& m3, LorentzVector& m4, float mcut);
-  TKinFitter get_fitted_candidate(pat::Jet& Jet1, pat::Jet& Jet2, pat::Jet& Jet3, pat::Jet& Jet4, int best_combination);*/
+  void create_trees();
 
   // ----------member data ---------------------------
   //TFile *WPiGammaAnalysis_output;
@@ -57,17 +39,8 @@ private:
   TH1F* calo_iso_hist;
   TH1F* iso_sum_hist;
 
-  //TTree
-  //TTree *mytree;
-
   LorentzVector candidate_pi;
   LorentzVector candidate_ph;
-
-  /* vectors to store MC information for background analysis
-  std::vector<float> Genb_pt;
-  std::vector<float> Genb_phi;
-  std::vector<float> Genb_eta;
-  std::vector<float> Genb_mass;*/
 
   ULong64_t events;
   unsigned int nevents;
@@ -83,6 +56,7 @@ private:
   Int_t mu_selection;
   Int_t mu_selection_event;
   Int_t mu_ID;
+  Int_t el_ID;
   Int_t gen_ID;
   Int_t ph_cont;
   Int_t ph_cont1;
@@ -138,12 +112,19 @@ private:
   bool checker5;
   bool checker6;
 
+  //TTree and TTree variables
+  TTree *mytree;
+  float lepton_pT_tree;
+  float lepton_eta_tree;
+  float lepton_phi_tree;
+  bool is_muon;
 
   //Tokens
   edm::EDGetTokenT<std::vector<pat::PackedCandidate> > packedPFCandidatestoken_; 
   edm::EDGetTokenT<std::vector<pat::Muon> > slimmedMuonstoken_; 
   edm::EDGetTokenT<std::vector<reco::GenParticle> > prunedGenParticlestoken_; 
   edm::EDGetTokenT<std::vector<pat::Photon> > slimmedPhotonstoken_;
+  edm::EDGetTokenT<std::vector<pat::Electron> > slimmedElectronstoken_;
   edm::EDGetTokenT<reco::VertexCollection> tok_Vertex_; 
   edm::EDGetTokenT<reco::BeamSpot>         tok_beamspot_;
   edm::EDGetTokenT<std::vector<PileupSummaryInfo>> pileupSummaryToken_;
