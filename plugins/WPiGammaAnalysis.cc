@@ -168,17 +168,16 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   edm::Handle<std::vector<pat::Electron > > slimmedElectrons;
   iEvent.getByLabel(slimmedElectrons_, slimmedElectrons);
 
-
   //std::cout<< "Event n: " << nevents << "/" << maxEvents << std::endl;
   
-  pTmuMin = -1000;
+  pTmuMin = -1000.;
   checker = false;
   lepton_pT_tree = 0.;
   lepton_eta_tree = 0.;
   lepton_phi_tree = 0.;
 
   for (auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
-        if (mu->pt()>24 && mu->pt() > pTmuMin && mu->isMediumMuon()==true){
+        if (mu->pt()>24. && mu->pt() > pTmuMin && mu->isMediumMuon() ){
           pTmuMin = mu->pt();
 	  //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
 	  //print "dxy: ", mu.innerTrack().dxy(), "dz: ", mu.innerTrack().dz()
@@ -218,7 +217,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
   
   cont1 = 0;
-  pTpiMax = -1000;
+  pTpiMax = -1000.;
   checker1 = false;
   checker3 = false; //together with checker4, used to calculate how many times both reconstructed pi and gamma come from generated particles whose mother is a W
   checker5 = false;
