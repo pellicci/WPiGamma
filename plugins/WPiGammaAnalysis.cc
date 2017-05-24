@@ -166,9 +166,16 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   edm::Handle<std::vector<pat::Electron > > slimmedElectrons;
   iEvent.getByLabel(slimmedElectrons_, slimmedElectrons);
 
+<<<<<<< HEAD
   
   pTmuMin = -1000;
   tag_lepton_found = false;
+=======
+  //std::cout<< "Event n: " << nevents << "/" << maxEvents << std::endl;
+  
+  pTmuMin = -1000.;
+  checker = false;
+>>>>>>> 8fd4d7d7eec1bebc49964549b341f61e8cac8642
   lepton_pT_tree = 0.;
   lepton_eta_tree = 0.;
   lepton_phi_tree = 0.;
@@ -176,7 +183,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   el_ID = 0;
 
   for (auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
-        if (mu->pt()>24 && mu->pt() > pTmuMin && mu->isMediumMuon()==true){
+        if (mu->pt()>24. && mu->pt() > pTmuMin && mu->isMediumMuon() ){
           pTmuMin = mu->pt();
 	  //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
 
@@ -213,6 +220,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	}
   }
   
+<<<<<<< HEAD
   cand_passing_selection = 0;
   pTpiMax = -1000;
   cand_pion_found = false;
@@ -220,6 +228,15 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   is_last_pi_a_pi = false;
   is_bad_single_pi = false;
   single_pi_counter = 0;
+=======
+  cont1 = 0;
+  pTpiMax = -1000.;
+  checker1 = false;
+  checker3 = false; //together with checker4, used to calculate how many times both reconstructed pi and gamma come from generated particles whose mother is a W
+  checker5 = false;
+  checker6 = false;
+  counter = 0;
+>>>>>>> 8fd4d7d7eec1bebc49964549b341f61e8cac8642
   for (auto cand = PFCandidates->begin(); cand != PFCandidates->end(); ++cand){
     if ((cand->pdgId()*mu_ID > 0 || cand->pdgId()*el_ID > 0) && tag_lepton_found == true && cand->pt()>=20 && cand->trackHighPurity()==true && cand->pt()>pTpiMax && cand->fromPV()==3){
 

@@ -1,12 +1,11 @@
+
+
 //---------- class declaration----------
 
 class WPiGammaAnalysis : public edm::EDAnalyzer {
 public:
   explicit WPiGammaAnalysis(const edm::ParameterSet&);
   ~WPiGammaAnalysis();
-
-  // static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-
 
 private:
   //virtual void beginJob() override;
@@ -18,10 +17,11 @@ private:
   const edm::InputTag prunedGenParticles_;
   const edm::InputTag slimmedPhotons_;
   const edm::InputTag slimmedElectrons_;
-  bool runningOnData_;
   const edm::InputTag pvCollection_;  
   const edm::InputTag bsCollection_;  
   const edm::InputTag PileupSrc_;
+
+  bool runningOnData_;
 
   edm::Service<TFileService> fs;
 
@@ -42,7 +42,11 @@ private:
   LorentzVector candidate_pi;
   LorentzVector candidate_ph;
 
+<<<<<<< HEAD
   ULong64_t events;
+=======
+  unsigned int nevents;
+>>>>>>> 8fd4d7d7eec1bebc49964549b341f61e8cac8642
   unsigned int maxEvents;
 
   Int_t cand_total;
@@ -62,7 +66,6 @@ private:
   Int_t pi_from_w;
   Int_t photon_from_w;
   Int_t pi_and_photon_from_w;
-
 
   float pTpi;
   float pTpiMax;

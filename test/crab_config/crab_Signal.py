@@ -7,7 +7,7 @@ config.General.requestName = 'WPiGamma_Pythia8_MINIAODSIM_signal'
 config.General.workArea = 'crab_projects'
 
 config.section_('JobType')
-config.JobType.psetName = 'run_WPiGammaAnalysis.py'
+config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
 config.JobType.pluginName = 'Analysis'
 
 config.section_('Data')

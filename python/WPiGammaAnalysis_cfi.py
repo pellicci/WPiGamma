@@ -7,8 +7,7 @@ WPiGammaAnalysis = cms.EDAnalyzer('WPiGammaAnalysis',
                                slimmedPhotons = cms.InputTag("slimmedPhotons"),
                                slimmedElectrons = cms.InputTag("slimmedElectrons"),
                                runningOnData = cms.bool(False),
-
                                pvCollection = cms.InputTag("offlineSlimmedPrimaryVertices"), #New Stuff 
                                bsCollection = cms.InputTag("offlineBeamSpot"),
-                               PileupSrc = cms.InputTag("slimmedAddPileupInfo") # ,
+                               PileupSrc = cms.InputTag("slimmedAddPileupInfo")
 )

@@ -7,7 +7,7 @@ config.General.requestName = 'WPiGamma_Pythia8_GENSIM_80XV1'
 config.General.workArea = 'crab_projects'
 
 config.section_('JobType')
-config.JobType.psetName = 'WPiGamma_13TeV_pythia8_GENSIM_cfg.py'
+config.JobType.psetName = 'cmssw_config/WPiGamma_13TeV_pythia8_GENSIM_cfg.py'
 config.JobType.pluginName = 'PrivateMC'
 config.JobType.outputFiles = ['WPiGamma_pythia8_GENSIM.root']
 
