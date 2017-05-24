@@ -177,7 +177,7 @@ for event in events:
                     gen_pz = gen.pz()
                     gen_pt = gen.pt()
 
-            if not gen_ID == 211 or gen_ID == -211:
+            if not gen_ID == 211 and not gen_ID == -211:
                 print "|||corresponding generated particle is not a pion, but: ", gen_ID
                 if counter == 0:
                     checker6 = True #avoiding to count the case in which only a single reco-pion, not matching with a gen-pion, passes the selection
@@ -309,37 +309,37 @@ print "number of matching reconstructed-generated pi, originating from W: ", pi_
 print "number of matching reconstructed-generated photon, originating from W: ", photon_from_w
 print "both pi and photon come frome W: ", pi_and_photon_from_w
 
-newfile = TFile("mass_and_isolation.root","recreate")
-canvas1 = TCanvas()
-inv_mass_2.Draw("hist")
-inv_mass_1.Draw("SAME,hist")
-canvas1.Print("Wmass.png")
-canvas1.Write()
+#newfile = TFile("mass_and_isolation.root","recreate")
+#canvas1 = TCanvas()
+#inv_mass_2.Draw("hist")
+#inv_mass_1.Draw("SAME,hist")
+#canvas1.Print("Wmass.png")
+#canvas1.Write()
 
-canvas2 = TCanvas()
-track_iso_hist.Draw("hist")
-canvas2.Print("TrackIso.png")
-track_iso_hist.Write()
+#canvas2 = TCanvas()
+#track_iso_hist.Draw("hist")
+#canvas2.Print("TrackIso.png")
+#track_iso_hist.Write()
 
-canvas3 = TCanvas()
-ecal_iso_hist.Draw("hist")
-canvas3.Print("EcalIso.png")
-ecal_iso_hist.Write()
+#canvas3 = TCanvas()
+#ecal_iso_hist.Draw("hist")
+#canvas3.Print("EcalIso.png")
+#ecal_iso_hist.Write()
 
-canvas4 = TCanvas()
-hcal_iso_hist.Draw("hist")
-canvas4.Print("HcalIso.png")
-hcal_iso_hist.Write()
+#canvas4 = TCanvas()
+#hcal_iso_hist.Draw("hist")
+#canvas4.Print("HcalIso.png")
+#hcal_iso_hist.Write()
 
-canvas5 = TCanvas()
-calo_iso_hist.Draw("hist")
-canvas5.Print("CaloIso.png")
-calo_iso_hist.Write()
+#canvas5 = TCanvas()
+#calo_iso_hist.Draw("hist")
+#canvas5.Print("CaloIso.png")
+#calo_iso_hist.Write()
 
-canvas6 = TCanvas()
-iso_sum_hist.Draw("hist")
-canvas6.Print("IsoSum.png")
-iso_sum_hist.Write()
+#canvas6 = TCanvas()
+#iso_sum_hist.Draw("hist")
+#canvas6.Print("IsoSum.png")
+#iso_sum_hist.Write()
 
 
 
