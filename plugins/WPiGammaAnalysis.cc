@@ -16,6 +16,7 @@
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -40,6 +41,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   slimmedMuons_(iConfig.getParameter<edm::InputTag>("slimmedMuons")), 
   prunedGenParticles_(iConfig.getParameter<edm::InputTag>("prunedGenParticles")),
   slimmedPhotons_(iConfig.getParameter<edm::InputTag>("slimmedPhotons")),
+  slimmedElectrons_(iConfig.getParameter<edm::InputTag>("slimmedElectrons")),
   runningOnData_(iConfig.getParameter<bool>("runningOnData")),
   pvCollection_(iConfig.getParameter<edm::InputTag>("pvCollection")),   
   bsCollection_(iConfig.getParameter<edm::InputTag>("bsCollection")),  
@@ -49,6 +51,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   slimmedMuonstoken_  = consumes<std::vector<pat::Muon> >(slimmedMuons_);
   prunedGenParticlestoken_  = consumes<std::vector<reco::GenParticle> >(prunedGenParticles_);
   slimmedPhotonstoken_  = consumes<std::vector<pat::Photon> >(slimmedPhotons_);
+  slimmedElectronstoken_ = consumes<std::vector<pat::Electron> >(slimmedElectrons_);
   tok_Vertex_         = consumes<reco::VertexCollection>(pvCollection_);  
   tok_beamspot_       = consumes<reco::BeamSpot>(edm::InputTag(bsCollection_));
   pileupSummaryToken_ = consumes<std::vector<PileupSummaryInfo> >(edm::InputTag(PileupSrc_));
@@ -65,6 +68,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   mu_selection = 0;
   mu_selection_event = 0;
   mu_ID = 0;
+  el_ID = 0;
   gen_ID = 0;
   ph_cont = 0;
   ph_cont1 = 0;
@@ -112,6 +116,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   deltaR = 0.;
   deltapT = 0.;
 
+  //useful bools
   checker = false;
   checker1 = false;
   checker2 = false;
@@ -119,6 +124,12 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   checker4 = false;
   checker5 = false;
   checker6 = false;
+
+  //tree variables
+  lepton_pT_tree = 0.;
+  lepton_eta_tree = 0.;
+  lepton_phi_tree = 0.;
+  is_muon = false;
 
   //WPiGammaAnalysis_output = fs->make<TFile>("WPiGammaAnalysis_output.root","recreate");
   inv_mass_1 = fs->make<TH1F>("Mw - no match with MC Truth", "Mw no match", 200,0,120);
@@ -129,8 +140,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   calo_iso_hist = fs->make<TH1F>("Calo iso", "Calo isolation", 200,0,140);
   iso_sum_hist = fs->make<TH1F>("Sum iso", "Sum isolation", 150,0,3);
 
-  //mytree = fs->make<TTree>("mytree", "Tree containing gen&reco");
-  //mytree->Branch(
+  create_trees();
 
   /*Create the histograms and let TFileService handle them
     create_Histos_and_Trees();*/
@@ -155,25 +165,56 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   edm::Handle<std::vector<pat::Photon>  > slimmedPhotons;
   iEvent.getByLabel(slimmedPhotons_, slimmedPhotons);
 
-  /*for event in events:
+  edm::Handle<std::vector<pat::Electron > > slimmedElectrons;
+  iEvent.getByLabel(slimmedElectrons_, slimmedElectrons);
 
-    std::cout<< "Event n: " << nevents << "/" << maxEvents << std::endl;*/
 
+  //std::cout<< "Event n: " << nevents << "/" << maxEvents << std::endl;
+  
   pTmuMin = -1000;
   checker = false;
+  lepton_pT_tree = 0.;
+  lepton_eta_tree = 0.;
+  lepton_phi_tree = 0.;
+
   for (auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
         if (mu->pt()>24 && mu->pt() > pTmuMin && mu->isMediumMuon()==true){
           pTmuMin = mu->pt();
-      /*print "pT :", mu.pt(), "Eta: ", mu.eta(), "phi:", mu.phi()
-	print "dxy: ", mu.innerTrack().dxy(), "dz: ", mu.innerTrack().dz()*/
+	  //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
+	  //print "dxy: ", mu.innerTrack().dxy(), "dz: ", mu.innerTrack().dz()
 
 	  mu_ID = mu->pdgId();
+	  checker = true;
+	  is_muon = true;
 	  mu_selection += 1; //checking how many mu over total pass the selection
 	  if (checker == false){ //checking how many events contain mu passing the if selection
-	    mu_selection_event += 1;
-	    checker = true;
-	  }
-        }
+	    mu_selection_event += 1;}
+
+	lepton_pT_tree = mu->pt();
+	lepton_eta_tree = mu->eta();
+	lepton_phi_tree = mu->phi();
+	//std::cout << "pT del leptone" << lepton_pT_tree << std::endl;
+	}
+  }
+
+  for (auto el = slimmedElectrons->begin(); el != slimmedElectrons->end(); ++el){
+        if (el->pt()>24 && el->pt() > pTmuMin){
+          pTmuMin = el->pt();
+	  //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
+	  //print "dxy: ", mu.innerTrack().dxy(), "dz: ", mu.innerTrack().dz()
+
+	  el_ID = el->pdgId();
+	  checker = true;
+	  is_muon = false;
+	  //mu_selection += 1; //checking how many mu over total pass the selection
+	  //if (checker == false){ //checking how many events contain mu passing the if selection
+	  //mu_selection_event += 1;}
+
+	lepton_pT_tree = el->pt();
+	lepton_eta_tree = el->eta();
+	lepton_phi_tree = el->phi();
+	//std::cout << "pT del leptone" << lepton_pT_tree << std::endl;
+	}
   }
   
   cont1 = 0;
@@ -184,12 +225,10 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   checker6 = false;
   counter = 0;
   for (auto cand = PFCandidates->begin(); cand != PFCandidates->end(); ++cand){
-    if (cand->pdgId()*mu_ID == 211*13 && checker == true && cand->pt()>=20 && cand->trackHighPurity()==true && cand->pt()>pTpiMax && cand->fromPV()==3){
+    if ((cand->pdgId()*mu_ID > 0 || cand->pdgId()*el_ID > 0) && checker == true && cand->pt()>=20 && cand->trackHighPurity()==true && cand->pt()>pTpiMax && cand->fromPV()==3){
+      //std::cout << "I'm in, bitches" << std::endl;
       pTpiMax = cand->pt();
       candidate_pi = cand->p4();
-    //print "candidate vertex: ",cand.vertexRef()
-    //print "pions we like: ", cont1
-    //print "pdgId: ", cand.pdgId(), "muId: ", mu_ID, "pTpi: ", cand.pt(), "pxpi: ", cand.px(), "pypi: ", cand.py(), "pzpi: ", cand.pz(), "pienergy: ", cand.energy()
 
       pxpi = cand->px();
       pypi = cand->py();
@@ -207,7 +246,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       gen_pt = 0;
 
     //gen_ID = cand.pdgId()#so if it doesn't enter the following loop-and-if, it doesn't display "reconstructed particle is different..." either 
-      if(!runningOnData_){
+    if(!runningOnData_){
     for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){//matching candidate for W reconstruction with MC truth
       deltaR = TMath::Sqrt((candidate_eta-gen->eta())*(candidate_eta-gen->eta())+(candidate_phi-gen->phi())*(candidate_phi-gen->phi()));
       deltapT = TMath::Abs(cand->pt()-gen->pt());
@@ -220,10 +259,10 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  gen_py = gen->py();
 	  gen_pz = gen->pz();
 	  gen_pt = gen->pt();
-	}
+      }
     }}
 
-      if (gen_ID != 211 || gen_ID != -211){
+      if (gen_ID != 211 && gen_ID != -211){
 	//std::cout << "|||corresponding generated particle is not a pion, but: " << gen_ID << std::endl;
 	if (counter == 0){
 	  checker6 = true;}} //avoiding to count the case in which only a single reco-pion, not matching with a gen-pion, passes the selection
@@ -265,7 +304,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     for (auto photon = slimmedPhotons->begin(); photon != slimmedPhotons->end(); ++photon){
       if (photon->et()>20 && photon->et()>eTphMin && checker1 == true){
       eTphMin = photon->et();
-      //std::cout << "px: " << photon->px() << "py: " << photon->py() << "pz: " << photon->pz() << "energy: " << photon->energy() << std::endl;
+      std::cout << "px: " << photon->px() << "py: " << photon->py() << "pz: " << photon->pz() << "energy: " << photon->energy() << std::endl;
       candidate_ph = photon->p4();
       checker2 = true;
       ph_cont1 +=1;
@@ -314,15 +353,15 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       }}
                 
       if (gen_ID != 22){
-	//std::cout << "|||corresponding generated particle is not a photon, but: " << gen_ID << std::endl;
-	//std::cout <<  "______reco px: " << pxph << "reco py: " << pyph << "reco pz: " << pzph << "reco pT: "<< pTph << std::endl;
-	//std::cout << "gen px: " << gen_px << "gen py: " << gen_py << "gen pz: " << gen_pz << "gen pT: " << gen_pt << std::endl;
+	std::cout << "|||corresponding generated particle is not a photon, but: " << gen_ID << std::endl;
+	std::cout <<  "______reco px: " << pxph << "reco py: " << pyph << "reco pz: " << pzph << "reco pT: "<< pTph << std::endl;
+	std::cout << "gen px: " << gen_px << "gen py: " << gen_py << "gen pz: " << gen_pz << "gen pT: " << gen_pt << std::endl;
       }
             
       if (gen_ID == 22){
-	//std::cout << "\\identity of generated photon's mother: " << gen_mother << std::endl;
-	//std::cout << "______reco px: " << pxph << "reco py: " << pyph << "reco pz: " << pzph << "reco pT: " << pTph << std::endl;
-	//std::cout << "gen px: " << gen_px << "gen py: " << gen_py << "gen pz: " << gen_pz << "gen pT: " << gen_pt << std::endl;
+	std::cout << "\\identity of generated photon's mother: " << gen_mother << std::endl;
+	std::cout << "______reco px: " << pxph << "reco py: " << pyph << "reco pz: " << pzph << "reco pT: " << pTph << std::endl;
+	std::cout << "gen px: " << gen_px << "gen py: " << gen_py << "gen pz: " << gen_pz << "gen pT: " << gen_pt << std::endl;
 	if (gen_mother == 24 || gen_mother == -24){
 	  photon_from_w += 1;
 	  checker4 = true;}
@@ -338,7 +377,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     
       if (checker1 == true && checker2 == true){
-	//std::cout << "INV MASS: " << (candidate_ph + candidate_pi).M() << "costheta: " << (pxpi*pxph+pypi*pyph+pzpi*pzph)/(TMath::Sqrt(pxpi*pxpi+pypi*pypi+pzpi*pzpi)*TMath::Sqrt(pxph*pxph+pyph*pyph+pzph*pzph));
+	std::cout << "INV MASS: " << (candidate_ph + candidate_pi).M() << "costheta: " << (pxpi*pxph+pypi*pyph+pzpi*pzph)/(TMath::Sqrt(pxpi*pxpi+pypi*pypi+pzpi*pzpi)*TMath::Sqrt(pxph*pxph+pyph*pyph+pzph*pzph));
         if (checker3 == false || checker4 == false){
 	  inv_mass_1->SetLineColor(3);
 	  inv_mass_1->Fill((candidate_ph + candidate_pi).M());}
@@ -347,64 +386,17 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  inv_mass_2->SetLineColor(2);
 	  inv_mass_2->Fill((candidate_ph + candidate_pi).M());}
       }
+      std::cout << "n fotoni: " << ph_cont2 << std::endl;
+      mytree->Fill();
 }
 
-      //std::cout << " " << std::endl;
-
-      //if nevents>=maxEvents :
-      //break
-
-      //nevents += 1
-      /*
-      std::cout << "n of mu passing selection: " << mu_selection << "|| n of events with mu passing selection: " << mu_selection_event << std::endl;
-      std::cout << "n of pi: " << cont << "|| n of events with at least one pi: " << cont2 << std::endl;//, "|| n of pi per event: ", float(cont)/128
-      std::cout << "n of photons: " << ph_cont << "|| n of events with at least one photon: " << ph_cont2 << std::endl;
-      std::cout << "number of matching reconstructed-generated pi, originating from W: " << pi_from_w-counter1 << std::endl;
-      std::cout << "number of matching reconstructed-generated photon, originating from W: " << photon_from_w << std::endl;
-      std::cout << "both pi and photon come frome W: " << pi_and_photon_from_w << std::endl;
-
-
-  //canvas1 = TCanvas()
-  inv_mass_2->Draw("hist");
-  inv_mass_1->Draw("SAME,hist");
-  //canvas1.Print("Wmass.png")
-  canvas1->Write();
-
-  //canvas2 = TCanvas()
-  track_iso_hist->Draw("hist");
-  //canvas2.Print("TrackIso.png")
-  track_iso_hist->Write();
-
-  //canvas3 = TCanvas()
-  ecal_iso_hist->Draw("hist");
-  //canvas3.Print("EcalIso.png")
-  ecal_iso_hist->Write();
-
-  //canvas4 = TCanvas()
-  hcal_iso_hist->Draw("hist");
-  //canvas4.Print("HcalIso.png")
-  hcal_iso_hist->Write();
-
-  //canvas5 = TCanvas()
-  calo_iso_hist->Draw("hist");
-  //canvas5.Print("CaloIso.png")
-  calo_iso_hist->Write();
-
-  //canvas6 = TCanvas()
-  iso_sum_hist->Draw("hist");
-  //canvas6.Print("IsoSum.png")
-  iso_sum_hist->Write();
-  }*/
-
-/*
-// ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
-void WPiGammaAnalysis::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  //The following says we do not know what parameters are allowed so do no validation
-  // Please change this to state exactly what you do use, even if it is no parameters
-  edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
-  }*/
+void WPiGammaAnalysis::create_trees(){
+  mytree = fs->make<TTree>("mytree", "Tree containing gen&reco");
+  mytree->Branch("tag_lepton_pT",&lepton_pT_tree);
+  mytree->Branch("tag_lepton_eta",&lepton_eta_tree);
+  mytree->Branch("tag_lepton_phi",&lepton_phi_tree);
+  mytree->Branch("is_muon",&is_muon);
+}
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(WPiGammaAnalysis);
