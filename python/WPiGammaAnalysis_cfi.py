@@ -5,6 +5,7 @@ WPiGammaAnalysis = cms.EDAnalyzer('WPiGammaAnalysis',
                                slimmedMuons = cms.InputTag("slimmedMuons"),
                                prunedGenParticles = cms.InputTag("prunedGenParticles"),
                                slimmedPhotons = cms.InputTag("slimmedPhotons"),
+                               slimmedElectrons = cms.InputTag("slimmedElectrons"),
                                runningOnData = cms.bool(False),
 
                                pvCollection = cms.InputTag("offlineSlimmedPrimaryVertices"), #New Stuff 
