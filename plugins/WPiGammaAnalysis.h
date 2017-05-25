@@ -8,7 +8,7 @@ public:
 private:
   //virtual void beginJob() override;
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
-  virtual void multiplicity(const edm::Event&, const edm::EventSetup&);
+  //virtual void multiplicity(const edm::Event&, const edm::EventSetup&);
   //virtual void endJob() override;
 
   const edm::InputTag packedPFCandidates_;
@@ -108,13 +108,17 @@ private:
   bool is_last_pi_a_pi;
   bool is_bad_single_pi;
   bool in_electron_selection;
+  bool is_muon;
+  bool is_signal_mu;
 
   //TTree and TTree variables
   TTree *mytree;
   float lepton_pT_tree;
   float lepton_eta_tree;
   float lepton_phi_tree;
-  bool is_muon;
+  float mu_per_event_tree;
+  float el_per_event_tree;
+  bool is_signal_mu_tree;
 
   //Tokens
   edm::EDGetTokenT<std::vector<pat::PackedCandidate> > packedPFCandidatestoken_; 

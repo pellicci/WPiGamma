@@ -174,17 +174,30 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   iEvent.getByLabel(slimmedElectrons_, slimmedElectrons);
 
 
-  //nevent += 1;
+  nevent += 1;
   pTmuMin = -1000;
   tag_lepton_found = false;
   in_electron_selection = false;
+  is_muon = false;
+  is_signal_mu = false;
   lepton_pT_tree = 0.;
   lepton_eta_tree = 0.;
   lepton_phi_tree = 0.;
+  mu_per_event_tree = 0;
+  el_per_event_tree = 0;
+  is_signal_mu_tree = false;
   mu_ID = 0;
   el_ID = 0;
   mu_per_event = 0;
   el_per_event = 0;
+  float mu_eta = 0.;
+  float mu_phi = 0.;
+  float mu_pT = 0.;
+  //float el_eta = 0.;
+  //float el_phi = 0.;
+  //float el_pT = 0.;
+  deltaRMax = 0.3;
+  deltapTMax = 10000;
 
   for (auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
         if (mu->pt()>24. && mu->pt() > pTmuMin && mu->isMediumMuon() ){
@@ -195,36 +208,81 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	  is_muon = true;
 	  mu_selection += 1; //checking how many mu over total pass the selection
 	  mu_per_event += 1;
-	  if (tag_lepton_found == false){ //checking how many events contain mu passing the if selection
+	  mu_eta = mu->eta();
+	  mu_phi = mu->phi();
+	  mu_pT = mu->pt();
+	  if (tag_lepton_found == false){//checking how many events contain at least one mu passing the selection
 	    mu_selection_event += 1;}
 	  tag_lepton_found = true;
 
 	lepton_pT_tree = mu->pt();
 	lepton_eta_tree = mu->eta();
 	lepton_phi_tree = mu->phi();
-	//std::cout << "pT del leptone" << lepton_pT_tree << std::endl;
+
 	}
   }
 
-  for (auto el = slimmedElectrons->begin(); el != slimmedElectrons->end(); ++el){
-        if (el->pt()>24 && el->pt() > pTmuMin){
-          pTmuMin = el->pt();
-	  //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
+ if (tag_lepton_found == true){
+    if(!runningOnData_){
+      for(auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
+	deltaR = TMath::Sqrt((mu_eta-gen->eta())*(mu_eta-gen->eta())+(mu_phi-gen->phi())*(mu_phi-gen->phi()));
+	deltapT = TMath::Abs(mu_pT-gen->pt());
 
+      if (deltaR <= deltaRMax && deltapT < deltapTMax){
+	  deltapTMax = deltapT;
+	  gen_ID = gen->pdgId();
+	  gen_mother = gen->mother()->pdgId();
+      }
+      }
+	  if((gen_ID == 13 || gen_ID == -13) && (gen_mother == 24 || gen_mother == -24)){
+	    is_signal_mu = true;
+	  
+	  }
+    }
+  }
+
+  for (auto el = slimmedElectrons->begin(); el != slimmedElectrons->end(); ++el){
+        if (el->pt()>24){
 	  el_ID = el->pdgId();
 	  is_muon = false;
+	  in_electron_selection = true;
 	  //mu_selection += 1; //checking how many mu over total pass the selection
 	  //if (checker == false){ //checking how many events contain mu passing the if selection
 	  //mu_selection_event += 1;}
-	  tag_lepton_found = true;
+	  //tag_lepton_found = true;
 	  el_per_event +=1;
-
+	  //tag_el_hist->Fill(el);
 	lepton_pT_tree = el->pt();
 	lepton_eta_tree = el->eta();
 	lepton_phi_tree = el->phi();
 	//std::cout << "pT del leptone" << lepton_pT_tree << std::endl;
 	}
   }
+
+  mu_per_event_tree = mu_per_event;
+  el_per_event_tree = el_per_event;
+  if(is_signal_mu==true){is_signal_mu_tree = true;}
+
+  if(is_signal_mu==true){
+    std::cout << "When mu is signal mu, number of mu in the event: " << mu_per_event << " , number of el in the event: " << el_per_event << std::endl;
+  }
+  if(is_signal_mu==false && in_electron_selection==true){
+    std::cout << "When el is signal el, number of mu in the event: " << mu_per_event << " , number of el in the event: " << el_per_event << std::endl;
+  }
+
+  /*if(is_signal_mu==true){
+    tag_mu_hist->SetMarkerStyle(7);
+    tag_mu_hist->Fill(nevent,mu_per_event_tree);
+    tag_mu_hist->SetMarkerStyle(26);
+    tag_mu_hist->Fill(nevent,el_per_event);}
+  else tag_mu_hist->Fill(nevent,0);
+
+  if(is_signal_mu==false){
+    tag_el_hist->SetMarkerStyle(24);
+    tag_el_hist->Fill(nevent,mu_per_event);
+    tag_el_hist->SetMarkerStyle(26);
+    tag_el_hist->Fill(nevent,el_per_event);}
+    else tag_el_hist->Fill(nevent,0.);*/
 
   cand_passing_selection = 0;
   pTpiMax = -1000;
@@ -402,7 +460,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 }
 
 //--------Method called for each event, in order to find mu and electron multiplicity-----------
-void WPiGammaAnalysis::multiplicity(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+/*void WPiGammaAnalysis::multiplicity(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   edm::Handle<std::vector<pat::Muon>  > slimmedMuons;
   iEvent.getByLabel(slimmedMuons_, slimmedMuons);
@@ -445,8 +503,6 @@ void WPiGammaAnalysis::multiplicity(const edm::Event& iEvent, const edm::EventSe
 	  is_muon = true;
 	  mu_selection += 1; //checking how many mu over total pass the selection
 	  mu_per_event += 1;
-	  if (tag_lepton_found == false){ //checking how many events contain mu passing the if selection
-	    mu_selection_event += 1;}
 	  tag_lepton_found = true;
 	}
   }
@@ -515,16 +571,16 @@ void WPiGammaAnalysis::multiplicity(const edm::Event& iEvent, const edm::EventSe
     tag_el_hist->Fill(nevent,el_per_event);}
   else tag_el_hist->Fill(nevent,0.);
 
-}
+  }*/
 
 void WPiGammaAnalysis::create_trees(){
   mytree = fs->make<TTree>("mytree", "Tree containing gen&reco");
   mytree->Branch("tag_lepton_pT",&lepton_pT_tree);
   mytree->Branch("tag_lepton_eta",&lepton_eta_tree);
   mytree->Branch("tag_lepton_phi",&lepton_phi_tree);
-  mytree->Branch("is_muon",&is_muon);
-  mytree->Branch("mu_per_event",&mu_per_event);
-  mytree->Branch("el_per_event",&el_per_event);
+  mytree->Branch("is_signal_mu",&is_signal_mu_tree);
+  mytree->Branch("mu_per_event",&mu_per_event_tree);
+  mytree->Branch("el_per_event",&el_per_event_tree);
 }
 
 //define this as a plug-in
