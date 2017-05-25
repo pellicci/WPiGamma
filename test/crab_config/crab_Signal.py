@@ -3,8 +3,8 @@ config = config()
 
 config.section_('General')
 config.General.transferOutputs = True
-config.General.requestName = 'WPiGamma_Pythia8_MINIAODSIM_signal'
-config.General.workArea = 'crab_projects'
+config.General.requestName = 'WPiGammaAnalysis_Signal'
+config.General.workArea = 'crab_projects/samples'
 
 config.section_('JobType')
 config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
