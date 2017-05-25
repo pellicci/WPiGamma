@@ -7,7 +7,7 @@ public:
 
 private:
   //virtual void beginJob() override;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+  virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void multiplicity(const edm::Event&, const edm::EventSetup&);
   //virtual void endJob() override;
 
