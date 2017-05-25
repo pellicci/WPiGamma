@@ -1,5 +1,3 @@
-
-
 //---------- class declaration----------
 
 class WPiGammaAnalysis : public edm::EDAnalyzer {
@@ -10,6 +8,7 @@ public:
 private:
   //virtual void beginJob() override;
   virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+  virtual void multiplicity(const edm::Event&, const edm::EventSetup&);
   //virtual void endJob() override;
 
   const edm::InputTag packedPFCandidates_;
@@ -17,11 +16,10 @@ private:
   const edm::InputTag prunedGenParticles_;
   const edm::InputTag slimmedPhotons_;
   const edm::InputTag slimmedElectrons_;
+  bool runningOnData_;
   const edm::InputTag pvCollection_;  
   const edm::InputTag bsCollection_;  
   const edm::InputTag PileupSrc_;
-
-  bool runningOnData_;
 
   edm::Service<TFileService> fs;
 
@@ -38,17 +36,13 @@ private:
   TH1F* hcal_iso_hist;
   TH1F* calo_iso_hist;
   TH1F* iso_sum_hist;
+  TH2F* tag_mu_hist;
+  TH2F* tag_el_hist;
 
   LorentzVector candidate_pi;
   LorentzVector candidate_ph;
 
-<<<<<<< HEAD
-  ULong64_t events;
-=======
-  unsigned int nevents;
->>>>>>> 8fd4d7d7eec1bebc49964549b341f61e8cac8642
-  unsigned int maxEvents;
-
+  Int_t nevent;
   Int_t cand_total;
   Int_t cand_passing_selection;
   Int_t events_least_one_pi;
@@ -66,6 +60,8 @@ private:
   Int_t pi_from_w;
   Int_t photon_from_w;
   Int_t pi_and_photon_from_w;
+  Int_t mu_per_event;
+  Int_t el_per_event;
 
   float pTpi;
   float pTpiMax;
@@ -111,6 +107,7 @@ private:
   bool is_photon_a_photon;
   bool is_last_pi_a_pi;
   bool is_bad_single_pi;
+  bool in_electron_selection;
 
   //TTree and TTree variables
   TTree *mytree;
