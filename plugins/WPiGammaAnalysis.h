@@ -32,12 +32,6 @@ private:
   TH1F* inv_mass_1;
   TH1F* inv_mass_2;
 
-  TH1F* track_iso_hist;
-  TH1F* ecal_iso_hist;
-  TH1F* hcal_iso_hist;
-  TH1F* calo_iso_hist;
-  TH1F* iso_sum_hist;
-
   //Counters
   int nMuons;
   int nElectrons;
@@ -85,9 +79,18 @@ private:
   edm::EDGetTokenT<std::vector<pat::Muon> > slimmedMuonstoken_; 
   edm::EDGetTokenT<std::vector<reco::GenParticle> > prunedGenParticlestoken_; 
   edm::EDGetTokenT<std::vector<pat::Photon> > slimmedPhotonstoken_;
-  edm::EDGetTokenT<std::vector<pat::Electron> > slimmedElectronstoken_;
   edm::EDGetTokenT<std::vector<pat::Jet> > slimmedJetstoken_;
   edm::EDGetTokenT<std::vector<reco::Vertex> > tok_Vertex_; 
   edm::EDGetTokenT<reco::BeamSpot> tok_beamspot_;
   edm::EDGetTokenT<std::vector<PileupSummaryInfo> > pileupSummaryToken_;
+
+  //Ele ID decisions objects
+  edm::EDGetToken electronsMiniAODToken_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > eleMediumIdMapToken_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > eleTightIdMapToken_;
+
+  // MVA values and categories (optional)
+  edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_;
+  edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_;
+
 };

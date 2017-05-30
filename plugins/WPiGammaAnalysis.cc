@@ -4,16 +4,17 @@
 #include <TFile.h>
 #include <TLorentzVector.h>
 #include <TTree.h>
- 
+#include "Math/VectorUtil.h"
+
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
-#include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/Candidate/interface/Candidate.h"
   
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -26,7 +27,14 @@
 #include "DataFormats/VertexReco/interface/Vertex.h" 
 #include "DataFormats/BeamSpot/interface/BeamSpot.h" 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
- 
+
+// electron ID stuff
+#include "DataFormats/Common/interface/ValueMap.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/EgammaCandidates/interface/ConversionFwd.h"
+#include "DataFormats/EgammaCandidates/interface/Conversion.h"
+#include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
+
 typedef math::XYZTLorentzVector LorentzVector;
  
 #include "WPiGammaAnalysis.h"
@@ -42,13 +50,17 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   runningOnData_(iConfig.getParameter<bool>("runningOnData")),
   pvCollection_(iConfig.getParameter<edm::InputTag>("pvCollection")),   
   bsCollection_(iConfig.getParameter<edm::InputTag>("bsCollection")),  
-  PileupSrc_(iConfig.getParameter<edm::InputTag>("PileupSrc"))
+  PileupSrc_(iConfig.getParameter<edm::InputTag>("PileupSrc")),
+  eleMediumIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleMediumIdMap"))),
+  eleTightIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleTightIdMap"))),
+  mvaValuesMapToken_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap"))),
+  mvaCategoriesMapToken_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap")))
 {
   packedPFCandidatestoken_  = consumes<std::vector<pat::PackedCandidate> >(packedPFCandidates_); 
   slimmedMuonstoken_        = consumes<std::vector<pat::Muon> >(slimmedMuons_);
   prunedGenParticlestoken_  = consumes<std::vector<reco::GenParticle> >(prunedGenParticles_);
   slimmedPhotonstoken_      = consumes<std::vector<pat::Photon> >(slimmedPhotons_);
-  slimmedElectronstoken_    = consumes<std::vector<pat::Electron> >(slimmedElectrons_);
+  electronsMiniAODToken_    = mayConsume<edm::View<reco::GsfElectron> > (slimmedElectrons_);
   slimmedJetstoken_         = consumes<std::vector<pat::Jet> >(slimmedJets_);
   tok_Vertex_               = consumes<std::vector<reco::Vertex> > (pvCollection_);  
   tok_beamspot_             = consumes<reco::BeamSpot> (edm::InputTag(bsCollection_));
@@ -64,11 +76,6 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
 
   inv_mass_1 = fs->make<TH1F>("Mw - no match with MC Truth", "Mw no match", 200,0,120);
   inv_mass_2 = fs->make<TH1F>("Mw - match with MC Truth", "Mw match", 200,0,120);
-  track_iso_hist = fs->make<TH1F>("Track iso", "Track isolation", 200,0,60);
-  ecal_iso_hist = fs->make<TH1F>("Ecal iso", "Ecal isolation", 200,0,40);
-  hcal_iso_hist = fs->make<TH1F>("Hcal iso", "Hcal isolation", 200,0,25);
-  calo_iso_hist = fs->make<TH1F>("Calo iso", "Calo isolation", 200,0,140);
-  iso_sum_hist = fs->make<TH1F>("Sum iso", "Sum isolation", 150,0,3);
 
   create_trees();
 }
@@ -92,14 +99,27 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   edm::Handle<std::vector<pat::Photon>  > slimmedPhotons;
   iEvent.getByLabel(slimmedPhotons_, slimmedPhotons);
 
-  edm::Handle<std::vector<pat::Electron > > slimmedElectrons;
-  iEvent.getByLabel(slimmedElectrons_, slimmedElectrons);
+  edm::Handle<edm::View<reco::GsfElectron> > slimmedElectrons;
+  iEvent.getByToken(electronsMiniAODToken_,slimmedElectrons);
 
   edm::Handle<std::vector<pat::Jet > > slimmedJets;
   iEvent.getByLabel(slimmedJets_, slimmedJets);
 
   edm::Handle<std::vector<reco::Vertex > > slimmedPV;
   iEvent.getByLabel(pvCollection_, slimmedPV);
+
+  //Get the electron ID data from the event stream.
+  // Note: this implies that the VID ID modules have been run upstream.
+  edm::Handle<edm::ValueMap<bool> > medium_id_decisions;
+  edm::Handle<edm::ValueMap<bool> > tight_id_decisions; 
+  iEvent.getByToken(eleMediumIdMapToken_,medium_id_decisions);
+  iEvent.getByToken(eleTightIdMapToken_,tight_id_decisions);
+
+  // Get MVA values and categories (optional)
+  edm::Handle<edm::ValueMap<float> > mvaValues;
+  edm::Handle<edm::ValueMap<int> > mvaCategories;
+  iEvent.getByToken(mvaValuesMapToken_,mvaValues);
+  iEvent.getByToken(mvaCategoriesMapToken_,mvaCategories);
 
   _Nevents_processed++;
 
@@ -175,8 +195,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
 
   //Loop over electrons
-  for(auto el = slimmedElectrons->begin(); el != slimmedElectrons->end(); ++el){
-    if(el->pt() < 26. || el->pt() < pTeleMax || el->trackIso() > 3. || el->caloIso() > 5.) continue;
+  for (size_t i = 0; i < slimmedElectrons->size(); ++i){
+    const auto el = slimmedElectrons->ptrAt(i);
+    if(el->pt() < 26. || el->pt() < pTeleMax) continue;
+
+    bool isPassMedium = (*medium_id_decisions)[el];
+    bool isPassTight = (*tight_id_decisions)[el];
+
+    std::cout << isPassMedium << " " << isPassTight << std::endl;
 
     el_ID       = el->pdgId();
     is_ele      = true;
@@ -289,18 +315,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     cand_photon_found = true;
     nPhotons++;
-
-    float track_iso = photon->trackIso();
-    float ecal_iso = photon->ecalIso();
-    float hcal_iso = photon->hcalIso();
-    float calo_iso = photon->caloIso();
-    float iso_sum = (track_iso+calo_iso)/photon->et();
-
-    track_iso_hist->Fill(track_iso);
-    ecal_iso_hist->Fill(ecal_iso);
-    hcal_iso_hist->Fill(hcal_iso);
-    calo_iso_hist->Fill(calo_iso);
-    iso_sum_hist->Fill(iso_sum);
 
     float deltapTMax = 10000.;
     const float deltaRMax = 0.3;
