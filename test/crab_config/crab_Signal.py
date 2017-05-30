@@ -7,7 +7,7 @@ config.General.requestName = 'WPiGammaAnalysis_Signal'
 config.General.workArea = 'crab_projects/samples'
 
 config.section_('JobType')
-config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
+config.JobType.psetName = '../cmssw_config/run_WPiGammaAnalysis.py'
 config.JobType.pluginName = 'Analysis'
 
 config.section_('Data')

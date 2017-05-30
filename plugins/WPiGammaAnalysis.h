@@ -8,7 +8,6 @@ public:
 private:
   //virtual void beginJob() override;
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
-  //virtual void multiplicity(const edm::Event&, const edm::EventSetup&);
   //virtual void endJob() override;
 
   const edm::InputTag packedPFCandidates_;
@@ -36,8 +35,6 @@ private:
   TH1F* hcal_iso_hist;
   TH1F* calo_iso_hist;
   TH1F* iso_sum_hist;
-  TH2F* tag_mu_hist;
-  TH2F* tag_el_hist;
 
   LorentzVector candidate_pi;
   LorentzVector candidate_ph;
@@ -87,7 +84,7 @@ private:
   float pxph;
   float pyph;
   float pzph;
-  float pTph;
+  float eTph;
   float track_iso; 
   float ecal_iso; 
   float hcal_iso;
@@ -97,6 +94,7 @@ private:
   float gen_py;
   float gen_pz;
   float gen_pt;
+  float gen_et;
   float deltaR;
   float deltapT;
 
@@ -110,15 +108,26 @@ private:
   bool in_electron_selection;
   bool is_muon;
   bool is_signal_mu;
+  bool is_signal;
 
   //TTree and TTree variables
   TTree *mytree;
   float lepton_pT_tree;
   float lepton_eta_tree;
   float lepton_phi_tree;
+  float pi_pT_tree;
+  float pi_eta_tree;
+  float pi_phi_tree;
+  float photon_eT_tree;
+  float photon_eta_tree;
+  float photon_phi_tree;
   float mu_per_event_tree;
   float el_per_event_tree;
   bool is_signal_mu_tree;
+  bool is_signal_tree;
+  bool electron_over_right_mu_tree;
+  bool W_mass_reconstructed_tree;
+  bool is_muon_tree;
 
   //Tokens
   edm::EDGetTokenT<std::vector<pat::PackedCandidate> > packedPFCandidatestoken_; 
@@ -126,7 +135,7 @@ private:
   edm::EDGetTokenT<std::vector<reco::GenParticle> > prunedGenParticlestoken_; 
   edm::EDGetTokenT<std::vector<pat::Photon> > slimmedPhotonstoken_;
   edm::EDGetTokenT<std::vector<pat::Electron> > slimmedElectronstoken_;
-  edm::EDGetTokenT<reco::VertexCollection> tok_Vertex_; 
-  edm::EDGetTokenT<reco::BeamSpot>         tok_beamspot_;
-  edm::EDGetTokenT<std::vector<PileupSummaryInfo>> pileupSummaryToken_;
+  edm::EDGetTokenT<std::vector<reco::Vertex> > tok_Vertex_; 
+  edm::EDGetTokenT<reco::BeamSpot> tok_beamspot_;
+  edm::EDGetTokenT<std::vector<PileupSummaryInfo> > pileupSummaryToken_;
 };
