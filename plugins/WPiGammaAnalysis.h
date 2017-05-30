@@ -1,3 +1,4 @@
+
 //---------- class declaration----------
 
 class WPiGammaAnalysis : public edm::EDAnalyzer {
@@ -15,6 +16,7 @@ private:
   const edm::InputTag prunedGenParticles_;
   const edm::InputTag slimmedPhotons_;
   const edm::InputTag slimmedElectrons_;
+  const edm::InputTag slimmedJets_;
   bool runningOnData_;
   const edm::InputTag pvCollection_;  
   const edm::InputTag bsCollection_;  
@@ -26,7 +28,6 @@ private:
 
   // ----------member data ---------------------------
   //TFile *WPiGammaAnalysis_output;
-  TCanvas* canvas1;
   TH1F* inv_mass_1;
   TH1F* inv_mass_2;
 
@@ -36,9 +37,6 @@ private:
   TH1F* calo_iso_hist;
   TH1F* iso_sum_hist;
 
-  LorentzVector candidate_pi;
-  LorentzVector candidate_ph;
-
   Int_t nevent;
   Int_t cand_total;
   Int_t cand_passing_selection;
@@ -47,87 +45,37 @@ private:
   Int_t pi_from_w_correction;
   Int_t mu_selection;
   Int_t mu_selection_event;
-  Int_t mu_ID;
-  Int_t el_ID;
-  Int_t gen_ID;
   Int_t ph_total;
   Int_t ph_passing_selection;
   Int_t events_least_one_ph;
-  Int_t gen_mother;
   Int_t pi_from_w;
   Int_t photon_from_w;
   Int_t pi_and_photon_from_w;
   Int_t mu_per_event;
   Int_t el_per_event;
 
-  float pTpi;
-  float pTpiMax;
-  float pTgamma;
-  float pTe; 
-  float pTmu; 
-  float deta;
-  float dphi;
-  float etapi;
-  float phipi;
-  float deltaRMax;
-  float deltapTMax;
-  float pTmuMin;
-  float eTphMin;
-  float pTpiMin;
-  float candidate_eta;
-  float candidate_phi;
-  float photon_eta;
-  float photon_phi;
-  float pxpi;
-  float pypi;
-  float pzpi;
-  float pxph;
-  float pyph;
-  float pzph;
-  float eTph;
-  float track_iso; 
-  float ecal_iso; 
-  float hcal_iso;
-  float calo_iso; 
-  float iso_sum;
-  float gen_px;
-  float gen_py;
-  float gen_pz;
-  float gen_pt;
-  float gen_et;
-  float deltaR;
-  float deltapT;
-
-  bool tag_lepton_found;
-  bool cand_pion_found;
-  bool cand_photon_found;
-  bool is_pi_a_pi;
-  bool is_photon_a_photon;
-  bool is_last_pi_a_pi;
-  bool is_bad_single_pi;
-  bool in_electron_selection;
-  bool is_muon;
-  bool is_signal_mu;
-  bool is_signal;
-
   //TTree and TTree variables
   TTree *mytree;
+  float mu_per_event_tree;
+  float el_per_event_tree;
+
   float lepton_pT_tree;
   float lepton_eta_tree;
   float lepton_phi_tree;
+
   float pi_pT_tree;
   float pi_eta_tree;
   float pi_phi_tree;
+
   float photon_eT_tree;
   float photon_eta_tree;
   float photon_phi_tree;
-  float mu_per_event_tree;
-  float el_per_event_tree;
+
   bool is_signal_mu_tree;
   bool is_signal_tree;
+  bool is_muon_tree;
   bool electron_over_right_mu_tree;
   bool W_mass_reconstructed_tree;
-  bool is_muon_tree;
 
   //Tokens
   edm::EDGetTokenT<std::vector<pat::PackedCandidate> > packedPFCandidatestoken_; 
@@ -135,6 +83,7 @@ private:
   edm::EDGetTokenT<std::vector<reco::GenParticle> > prunedGenParticlestoken_; 
   edm::EDGetTokenT<std::vector<pat::Photon> > slimmedPhotonstoken_;
   edm::EDGetTokenT<std::vector<pat::Electron> > slimmedElectronstoken_;
+  edm::EDGetTokenT<std::vector<pat::Jet> > slimmedJetstoken_;
   edm::EDGetTokenT<std::vector<reco::Vertex> > tok_Vertex_; 
   edm::EDGetTokenT<reco::BeamSpot> tok_beamspot_;
   edm::EDGetTokenT<std::vector<PileupSummaryInfo> > pileupSummaryToken_;
