@@ -70,12 +70,13 @@ private:
   float photon_eT_tree;
   float photon_eta_tree;
   float photon_phi_tree;
+  
+  int n_bjets;
 
   bool is_signal_mu_tree;
   bool is_signal_tree;
   bool is_muon_tree;
   bool electron_over_right_mu_tree;
-  bool W_mass_reconstructed_tree;
 
   //Tokens
   edm::EDGetTokenT<std::vector<pat::PackedCandidate> > packedPFCandidatestoken_; 

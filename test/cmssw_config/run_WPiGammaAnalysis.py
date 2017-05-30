@@ -44,7 +44,7 @@ process.WPiGammaAnalysis.runningOnData = options.runningOnData
 #Add the trigger request
 import HLTrigger.HLTfilters.triggerResultsFilter_cfi as hlt
 process.trigger_filter = hlt.triggerResultsFilter.clone()
-process.trigger_filter.triggerConditions = cms.vstring('HLT_IsoMu24_v*', 'HLT_Ele25_eta2p1_WPTight_Gsf_v* AND NOT HLT_IsoMu24_v*' )   #paths for 2016 samples
+process.trigger_filter.triggerConditions = cms.vstring('HLT_IsoMu24_v*', 'HLT_Ele25_eta2p1_WPTight_Gsf_v*' )   #paths for 2016 samples
 process.trigger_filter.hltResults = cms.InputTag("TriggerResults", "", "HLT")
 process.trigger_filter.l1tResults = cms.InputTag("")
 process.trigger_filter.throw = cms.bool( False )
