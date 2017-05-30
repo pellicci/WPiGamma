@@ -175,7 +175,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
 
   nevent += 1;
-  pTmuMin = -1000;
+  pTmuMin = -1000.;
   tag_lepton_found = false;
   in_electron_selection = false;
   is_muon = false;
