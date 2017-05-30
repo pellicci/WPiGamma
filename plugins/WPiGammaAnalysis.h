@@ -37,27 +37,15 @@ private:
   TH1F* calo_iso_hist;
   TH1F* iso_sum_hist;
 
-  Int_t nevent;
-  Int_t cand_total;
-  Int_t cand_passing_selection;
-  Int_t events_least_one_pi;
-  Int_t single_pi_counter;
-  Int_t pi_from_w_correction;
-  Int_t mu_selection;
-  Int_t mu_selection_event;
-  Int_t ph_total;
-  Int_t ph_passing_selection;
-  Int_t events_least_one_ph;
-  Int_t pi_from_w;
-  Int_t photon_from_w;
-  Int_t pi_and_photon_from_w;
-  Int_t mu_per_event;
-  Int_t el_per_event;
+  //Counters
+  int nMuons;
+  int nElectrons;
+  int nPions;
+  int nPhotons;
+  int nBjets;
 
   //TTree and TTree variables
   TTree *mytree;
-  float mu_per_event_tree;
-  float el_per_event_tree;
 
   float lepton_pT_tree;
   float lepton_eta_tree;
@@ -71,12 +59,13 @@ private:
   float photon_eta_tree;
   float photon_phi_tree;
   
-  int n_bjets;
-
-  bool is_signal_mu_tree;
-  bool is_signal_tree;
   bool is_muon_tree;
-  bool electron_over_right_mu_tree;
+
+  //MC truth
+  bool is_pi_a_pi;
+  bool is_pi_matched;
+  bool is_photon_a_photon;
+  bool is_photon_matched;
 
   //Tokens
   edm::EDGetTokenT<std::vector<pat::PackedCandidate> > packedPFCandidatestoken_; 
