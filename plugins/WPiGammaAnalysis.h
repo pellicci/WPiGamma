@@ -9,7 +9,7 @@ public:
 private:
   //virtual void beginJob() override;
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
-  //virtual void endJob() override;
+  virtual void endJob() override;
 
   const edm::InputTag packedPFCandidates_;
   const edm::InputTag slimmedMuons_; 
@@ -27,7 +27,8 @@ private:
   void create_trees();
 
   // ----------member data ---------------------------
-  //TFile *WPiGammaAnalysis_output;
+  TH1F* h_Events;
+
   TH1F* inv_mass_1;
   TH1F* inv_mass_2;
 
@@ -44,6 +45,13 @@ private:
   int nPhotons;
   int nBjets;
 
+  int _Nevents_processed;
+  int _Nevents_isMuon;
+  int _Nevents_isElectron;
+  int _Nevents_isLepton;
+  int _Nevents_isPion;
+  int _Nevents_isPhotons;
+
   //TTree and TTree variables
   TTree *mytree;
 
@@ -58,10 +66,15 @@ private:
   float photon_eT_tree;
   float photon_eta_tree;
   float photon_phi_tree;
+
+  float _Wmass;
   
   bool is_muon_tree;
 
   //MC truth
+  bool is_Mu_signal;
+  bool is_Ele_signal;
+
   bool is_pi_a_pi;
   bool is_pi_matched;
   bool is_photon_a_photon;

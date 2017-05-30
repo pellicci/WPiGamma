@@ -54,6 +54,14 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   tok_beamspot_             = consumes<reco::BeamSpot> (edm::InputTag(bsCollection_));
   pileupSummaryToken_       = consumes<std::vector<PileupSummaryInfo> >(edm::InputTag(PileupSrc_));
 
+  h_Events = fs->make<TH1F>("h_Events", "Event counting in different steps", 7, 0., 7.);
+  _Nevents_processed  = 0;
+  _Nevents_isMuon     = 0;
+  _Nevents_isElectron = 0;
+  _Nevents_isLepton   = 0;
+  _Nevents_isPion     = 0;
+  _Nevents_isPhotons  = 0;
+
   inv_mass_1 = fs->make<TH1F>("Mw - no match with MC Truth", "Mw no match", 200,0,120);
   inv_mass_2 = fs->make<TH1F>("Mw - match with MC Truth", "Mw match", 200,0,120);
   track_iso_hist = fs->make<TH1F>("Track iso", "Track isolation", 200,0,60);
@@ -93,6 +101,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   edm::Handle<std::vector<reco::Vertex > > slimmedPV;
   iEvent.getByLabel(pvCollection_, slimmedPV);
 
+  _Nevents_processed++;
+
   nMuons     = 0;
   nElectrons = 0;
   nPions     = 0;
@@ -104,9 +114,10 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   is_photon_a_photon = false;
   is_photon_matched  = false;
 
-  float pTmuMin = -1000.;
-  float pTpiMax = -1000.;
-  float eTphMax = -1000.;
+  float pTmuMax  = -1000.;
+  float pTeleMax = -1000.;
+  float pTpiMax  = -1000.;
+  float eTphMax  = -1000.;
 
   float mu_pT = 0.;
   float mu_eta = 0.;
@@ -128,6 +139,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   float ph_phi = 0.;
   LorentzVector ph_p4;
 
+  _Wmass = 0.;
+
   bool is_muon = false;
   bool is_ele  = false;
 
@@ -148,9 +161,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
-    if(mu->pt() < 25. || mu->pt() < pTmuMin || !mu->isTightMuon(slimmedPV->at(0))) continue;
+    if(mu->pt() < 25. || mu->pt() < pTmuMax || !mu->isTightMuon(slimmedPV->at(0))) continue;
     if( (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso())/mu->pt()) > 0.2) continue;
-    pTmuMin = mu->pt();
+    pTmuMax = mu->pt();
     //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
 
     mu_ID    = mu->pdgId();
@@ -163,7 +176,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //Loop over electrons
   for(auto el = slimmedElectrons->begin(); el != slimmedElectrons->end(); ++el){
-    if(el->pt() < 26. || el->pt() < pTmuMin || el->trackIso() > 3. || el->caloIso() > 5.) continue;
+    if(el->pt() < 26. || el->pt() < pTeleMax || el->trackIso() > 3. || el->caloIso() > 5.) continue;
 
     el_ID       = el->pdgId();
     is_ele      = true;
@@ -178,12 +191,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     lepton_pT_tree  = mu_pT;
     lepton_eta_tree = mu_eta;
     lepton_phi_tree = mu_phi;
+    _Nevents_isMuon++;
   }
 
   if(!is_muon && is_ele){
     lepton_pT_tree  = el_pT;
     lepton_eta_tree = el_eta;
     lepton_phi_tree = el_phi;
+    _Nevents_isElectron++;
   }
 
   //Do NOT continue if you didn't find either a muon or an electron
@@ -191,6 +206,18 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   if(is_muon) is_muon_tree = true;
   else is_muon_tree = false;
+
+  _Nevents_isLepton++;
+
+  //In signal, identify if there's a real mu or ele from W
+  is_Ele_signal = false;
+  is_Mu_signal = false;
+  if(!runningOnData_){
+    for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
+      if(fabs(gen->pdgId() ) == 11 && fabs(gen->mother()->pdgId()) == 24) is_Ele_signal = true;
+      if(fabs(gen->pdgId() ) == 13 && fabs(gen->mother()->pdgId()) == 24) is_Mu_signal = true;
+    }
+  }
 
   //----------- Starting to search for pi and gamma -------------
   bool cand_pion_found = false;
@@ -213,6 +240,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     const float deltaRMax  = 0.3;
     int   gen_mother = 0;
     int   gen_ID = 0;
+
+    is_pi_a_pi = false;
+    is_pi_matched = false;
 
     //gen_ID = cand.pdgId()#so if it doesn't enter the following loop-and-if, it doesn't display "reconstructed particle is different..." either 
     if(!runningOnData_){
@@ -238,6 +268,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //Do NOT continue if you didn't find a pion
   if(!cand_pion_found) return;
 
+  _Nevents_isPion++;
+
   pi_pT_tree  = pi_pT;
   pi_eta_tree = pi_eta;
   pi_phi_tree = pi_phi;
@@ -246,15 +278,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   for (auto photon = slimmedPhotons->begin(); photon != slimmedPhotons->end(); ++photon){
 
-    if(photon->et() < 20. || photon->et() < eTphMax) continue;
-
-    eTphMax = photon->et();
-    //std::cout << "px: " << photon->px() << "py: " << photon->py() << "pz: " << photon->pz() << "energy: " << photon->energy() << std::endl;
-
     ph_pT  = photon->pt();
     ph_eta = photon->eta();
     ph_phi = photon->phi();
     ph_p4  = photon->p4();
+
+    if(is_ele && fabs(ph_pT - lepton_pT_tree) < 1.) continue;
+    if(photon->et() < 20. || photon->et() < eTphMax) continue;
+    eTphMax = photon->et();
 
     cand_photon_found = true;
     nPhotons++;
@@ -276,6 +307,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     int   gen_mother = 0;
     int   gen_ID = 0;
 
+    is_photon_a_photon = false;
+    is_photon_matched = false;
+
     //gen_ID = cand.pdgId()#so if it doesn't enter the following loop-and-if, it doesn't display "reconstructed particle is different..." either 
     if(!runningOnData_){
       for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
@@ -289,6 +323,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       }
             
       if(gen_ID == 22) is_photon_a_photon = true;
+      if(gen_ID != 22) std::cout << "ph gen ID = " << gen_ID << std::endl;
+      if(gen_ID != 22 && fabs(gen_mother) == 24) std::cout << "ph gen ID when matched = " << gen_ID << std::endl;
       if(fabs(gen_mother) == 24) is_photon_matched = true;
     }
 
@@ -301,13 +337,17 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //Do not continue if there's no photons
   if(!cand_photon_found) return;
 
+  _Nevents_isPhotons++;
+
+  _Wmass = (pi_p4 + ph_p4).M();
+
   if (!is_pi_a_pi || !is_photon_a_photon){
     inv_mass_1->SetLineColor(3);
-    inv_mass_1->Fill((pi_p4 + ph_p4).M());
+    inv_mass_1->Fill(_Wmass);
   }
-  if(is_pi_a_pi && is_photon_a_photon){
+  if(is_pi_a_pi && is_photon_a_photon && is_pi_matched && is_photon_matched){
     inv_mass_2->SetLineColor(2);
-    inv_mass_2->Fill((pi_p4 + ph_p4).M());
+    inv_mass_2->Fill(_Wmass);
   }
 
   nBjets = 0;
@@ -335,6 +375,8 @@ void WPiGammaAnalysis::create_trees(){
   mytree->Branch("photon_eta",&photon_eta_tree);
   mytree->Branch("photon_phi",&photon_phi_tree);
 
+  mytree->Branch("Wmass",&_Wmass);
+
   mytree->Branch("nMuons",&nMuons);
   mytree->Branch("nElectrons",&nElectrons);
   mytree->Branch("nPions",&nPions);
@@ -343,6 +385,8 @@ void WPiGammaAnalysis::create_trees(){
 
   //Save MC truth
   if(!runningOnData_){
+    mytree->Branch("isMuonSignal",&is_Mu_signal);
+    mytree->Branch("isEleSignal",&is_Ele_signal);
     mytree->Branch("isPionTrue",&is_pi_a_pi);
     mytree->Branch("isPionMatched",&is_pi_matched);
     mytree->Branch("isPhotonTrue",&is_photon_a_photon);
@@ -350,6 +394,17 @@ void WPiGammaAnalysis::create_trees(){
   }
 
 }
+
+void WPiGammaAnalysis::endJob() 
+{
+  h_Events->Fill(0.5,_Nevents_processed);
+  h_Events->Fill(1.5,_Nevents_isMuon);
+  h_Events->Fill(2.5,_Nevents_isElectron);
+  h_Events->Fill(3.5,_Nevents_isLepton);
+  h_Events->Fill(4.5,_Nevents_isPion);
+  h_Events->Fill(5.5,_Nevents_isPhotons);
+}
+
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(WPiGammaAnalysis);
