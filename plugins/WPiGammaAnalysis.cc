@@ -199,10 +199,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     const auto el = slimmedElectrons->ptrAt(i);
     if(el->pt() < 26. || el->pt() < pTeleMax) continue;
 
-    bool isPassMedium = (*medium_id_decisions)[el];
     bool isPassTight = (*tight_id_decisions)[el];
-
-    std::cout << isPassMedium << " " << isPassTight << std::endl;
+    if(!isPassTight) continue;
 
     el_ID       = el->pdgId();
     is_ele      = true;
@@ -210,6 +208,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     el_eta      = el->eta();
     el_phi      = el->phi();
     el_pT       = el->pt();
+
+    pTeleMax = el_pT;
     nElectrons++;
   }
 
@@ -304,14 +304,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   for (auto photon = slimmedPhotons->begin(); photon != slimmedPhotons->end(); ++photon){
 
+    if(photon->et() < 20. || photon->et() < eTphMax) continue;
+    if(photon->hasPixelSeed()) continue;   //electron veto
+    eTphMax = photon->et();
+
     ph_pT  = photon->pt();
     ph_eta = photon->eta();
     ph_phi = photon->phi();
     ph_p4  = photon->p4();
-
-    if(is_ele && fabs(ph_pT - lepton_pT_tree) < 1.) continue;
-    if(photon->et() < 20. || photon->et() < eTphMax) continue;
-    eTphMax = photon->et();
 
     cand_photon_found = true;
     nPhotons++;
