@@ -40,9 +40,10 @@ private:
   int nBjets;
 
   int _Nevents_processed;
-  int _Nevents_isMuon;
-  int _Nevents_isElectron;
+  int _Nevents_muVeto;
+  int _Nevents_eleVeto;
   int _Nevents_isLepton;
+  int _Nevents_TwoLepton;
   int _Nevents_isPion;
   int _Nevents_isPhotons;
   int _Nevents_isWmass;

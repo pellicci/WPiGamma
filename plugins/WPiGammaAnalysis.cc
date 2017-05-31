@@ -76,11 +76,12 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   tok_beamspot_             = consumes<reco::BeamSpot> (edm::InputTag(bsCollection_));
   pileupSummaryToken_       = consumes<std::vector<PileupSummaryInfo> >(edm::InputTag(PileupSrc_));
 
-  h_Events = fs->make<TH1F>("h_Events", "Event counting in different steps", 7, 0., 7.);
+  h_Events = fs->make<TH1F>("h_Events", "Event counting in different steps", 8, 0., 8.);
   _Nevents_processed  = 0;
-  _Nevents_isMuon     = 0;
-  _Nevents_isElectron = 0;
+  _Nevents_muVeto     = 0;
+  _Nevents_eleVeto    = 0;
   _Nevents_isLepton   = 0;
+  _Nevents_TwoLepton  = 0;
   _Nevents_isPion     = 0;
   _Nevents_isPhotons  = 0;
   _Nevents_isWmass    = 0;
@@ -212,6 +213,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     nMuons++;
   }
 
+  if(nMuons > 1) return;
+  _Nevents_muVeto++;
+
   //Loop over electrons
   for (size_t i = 0; i < slimmedElectrons->size(); ++i){
     const auto el = slimmedElectrons->ptrAt(i);
@@ -231,24 +235,27 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     nElectrons++;
   }
 
+  if(nElectrons > 1) return;
+  _Nevents_eleVeto++;
+
   if(is_muon){
     lepton_pT_tree  = mu_pT;
     lepton_eta_tree = mu_eta;
     lepton_phi_tree = mu_phi;
-    _Nevents_isMuon++;
   }
 
   if(!is_muon && is_ele){
     lepton_pT_tree  = el_pT;
     lepton_eta_tree = el_eta;
     lepton_phi_tree = el_phi;
-    _Nevents_isElectron++;
   }
 
   //Do NOT continue if you didn't find either a muon or an electron
   if(!is_muon && !is_ele) return;
-
   _Nevents_isLepton++;
+
+  if(is_muon && is_ele) return;
+  _Nevents_TwoLepton++;
 
   //In signal, identify if there's a real mu or ele from W
   is_Ele_signal = false;
@@ -423,20 +430,22 @@ void WPiGammaAnalysis::create_trees(){
 void WPiGammaAnalysis::endJob() 
 {
   h_Events->Fill(0.5,_Nevents_processed);
-  h_Events->Fill(1.5,_Nevents_isMuon);
-  h_Events->Fill(2.5,_Nevents_isElectron);
+  h_Events->Fill(1.5,_Nevents_muVeto);
+  h_Events->Fill(2.5,_Nevents_eleVeto);
   h_Events->Fill(3.5,_Nevents_isLepton);
-  h_Events->Fill(4.5,_Nevents_isPion);
-  h_Events->Fill(5.5,_Nevents_isPhotons);
-  h_Events->Fill(6.5,_Nevents_isWmass);
+  h_Events->Fill(4.5,_Nevents_TwoLepton);
+  h_Events->Fill(5.5,_Nevents_isPion);
+  h_Events->Fill(6.5,_Nevents_isPhotons);
+  h_Events->Fill(7.5,_Nevents_isWmass);
 
   h_Events->GetXaxis()->SetBinLabel(1,"Events triggered");
-  h_Events->GetXaxis()->SetBinLabel(2,"Events with mu");
-  h_Events->GetXaxis()->SetBinLabel(3,"Events with ele");
+  h_Events->GetXaxis()->SetBinLabel(2,"After mu veto");
+  h_Events->GetXaxis()->SetBinLabel(3,"After ele veto");
   h_Events->GetXaxis()->SetBinLabel(4,"Events with lept");
-  h_Events->GetXaxis()->SetBinLabel(5,"Events with pi");
-  h_Events->GetXaxis()->SetBinLabel(6,"Events with gam");
-  h_Events->GetXaxis()->SetBinLabel(7,"Events in W mass");
+  h_Events->GetXaxis()->SetBinLabel(5,"Two lep veto");
+  h_Events->GetXaxis()->SetBinLabel(6,"Events with pi");
+  h_Events->GetXaxis()->SetBinLabel(7,"Events with gam");
+  h_Events->GetXaxis()->SetBinLabel(8,"Events in W mass");
 
 }
 
