@@ -83,6 +83,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   _Nevents_isLepton   = 0;
   _Nevents_isPion     = 0;
   _Nevents_isPhotons  = 0;
+  _Nevents_isWmass    = 0;
 
   inv_mass_1 = fs->make<TH1F>("Mw - no match with MC Truth", "Mw no match", 200,0,120);
   inv_mass_2 = fs->make<TH1F>("Mw - match with MC Truth", "Mw match", 200,0,120);
@@ -175,35 +176,26 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   float el_phi = 0.;
   int   el_ID = 0;
 
-  float pi_pT = 0.;
-  float pi_eta = 0.;
-  float pi_phi = 0.;
+  //These variables will go in the tree
+  pi_pT = 0.;
+  pi_eta = 0.;
+  pi_phi = 0.;
   LorentzVector pi_p4;
 
-  float ph_pT = 0.;
-  float ph_eta = 0.;
-  float ph_phi = 0.;
+  ph_pT = 0.;
+  ph_eta = 0.;
+  ph_phi = 0.;
   LorentzVector ph_p4;
 
   _Wmass = 0.;
 
-  bool is_muon = false;
+  is_muon = false;
   bool is_ele  = false;
 
-  //These variables will go in the tree
   lepton_pT_tree = 0.;
   lepton_eta_tree = 0.;
   lepton_phi_tree = 0.;
 
-  pi_pT_tree = 0.;
-  pi_eta_tree = 0.;
-  pi_phi_tree = 0.;
-
-  photon_eT_tree = 0.;
-  photon_eta_tree = 0.;
-  photon_phi_tree = 0.;
-
-  is_muon_tree = false;
 
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
@@ -255,9 +247,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //Do NOT continue if you didn't find either a muon or an electron
   if(!is_muon && !is_ele) return;
-
-  if(is_muon) is_muon_tree = true;
-  else is_muon_tree = false;
 
   _Nevents_isLepton++;
 
@@ -315,12 +304,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //Do NOT continue if you didn't find a pion
   if(!cand_pion_found) return;
-
   _Nevents_isPion++;
-
-  pi_pT_tree  = pi_pT;
-  pi_eta_tree = pi_eta;
-  pi_phi_tree = pi_phi;
 
   bool cand_photon_found = false;
 
@@ -371,16 +355,16 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   }
 
-  photon_eT_tree =  ph_pT;
-  photon_eta_tree = ph_eta;
-  photon_phi_tree = ph_phi;
-
   //Do not continue if there's no photons
   if(!cand_photon_found) return;
-
   _Nevents_isPhotons++;
 
   _Wmass = (pi_p4 + ph_p4).M();
+
+  //Only save events in a certain range
+  if(_Wmass < 20. || _Wmass > 120.) return;
+  _Nevents_isWmass++;
+
 
   if (!is_pi_a_pi || !is_photon_a_photon){
     inv_mass_1->SetLineColor(3);
@@ -408,13 +392,13 @@ void WPiGammaAnalysis::create_trees(){
   mytree->Branch("lepton_pT",&lepton_pT_tree);
   mytree->Branch("lepton_eta",&lepton_eta_tree);
   mytree->Branch("lepton_phi",&lepton_phi_tree);
-  mytree->Branch("is_muon",&is_muon_tree);
-  mytree->Branch("pi_pT",&pi_pT_tree);
-  mytree->Branch("pi_eta",&pi_eta_tree);
-  mytree->Branch("pi_phi",&pi_phi_tree);
-  mytree->Branch("photon_eT",&photon_eT_tree);
-  mytree->Branch("photon_eta",&photon_eta_tree);
-  mytree->Branch("photon_phi",&photon_phi_tree);
+  mytree->Branch("is_muon",&is_muon);
+  mytree->Branch("pi_pT",&pi_pT);
+  mytree->Branch("pi_eta",&pi_eta);
+  mytree->Branch("pi_phi",&pi_phi);
+  mytree->Branch("photon_eT",&ph_pT);
+  mytree->Branch("photon_eta",&ph_eta);
+  mytree->Branch("photon_phi",&ph_phi);
 
   mytree->Branch("Wmass",&_Wmass);
 
@@ -444,6 +428,16 @@ void WPiGammaAnalysis::endJob()
   h_Events->Fill(3.5,_Nevents_isLepton);
   h_Events->Fill(4.5,_Nevents_isPion);
   h_Events->Fill(5.5,_Nevents_isPhotons);
+  h_Events->Fill(6.5,_Nevents_isWmass);
+
+  h_Events->GetXaxis()->SetBinLabel(1,"Events triggered");
+  h_Events->GetXaxis()->SetBinLabel(2,"Events with mu");
+  h_Events->GetXaxis()->SetBinLabel(3,"Events with ele");
+  h_Events->GetXaxis()->SetBinLabel(4,"Events with lept");
+  h_Events->GetXaxis()->SetBinLabel(5,"Events with pi");
+  h_Events->GetXaxis()->SetBinLabel(6,"Events with gam");
+  h_Events->GetXaxis()->SetBinLabel(7,"Events in W mass");
+
 }
 
 

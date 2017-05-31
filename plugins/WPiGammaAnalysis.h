@@ -45,6 +45,7 @@ private:
   int _Nevents_isLepton;
   int _Nevents_isPion;
   int _Nevents_isPhotons;
+  int _Nevents_isWmass;
 
   //TTree and TTree variables
   TTree *mytree;
@@ -53,17 +54,17 @@ private:
   float lepton_eta_tree;
   float lepton_phi_tree;
 
-  float pi_pT_tree;
-  float pi_eta_tree;
-  float pi_phi_tree;
+  float pi_pT;
+  float pi_eta;
+  float pi_phi;
 
-  float photon_eT_tree;
-  float photon_eta_tree;
-  float photon_phi_tree;
+  float ph_pT;
+  float ph_eta;
+  float ph_phi;
 
   float _Wmass;
   
-  bool is_muon_tree;
+  bool is_muon;
 
   //MC truth
   bool is_Mu_signal;
@@ -71,6 +72,7 @@ private:
 
   bool is_pi_a_pi;
   bool is_pi_matched;
+
   bool is_photon_a_photon;
   bool is_photon_matched;
 
