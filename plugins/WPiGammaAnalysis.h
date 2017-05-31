@@ -78,7 +78,6 @@ private:
   edm::EDGetTokenT<std::vector<pat::PackedCandidate> > packedPFCandidatestoken_; 
   edm::EDGetTokenT<std::vector<pat::Muon> > slimmedMuonstoken_; 
   edm::EDGetTokenT<std::vector<reco::GenParticle> > prunedGenParticlestoken_; 
-  edm::EDGetTokenT<std::vector<pat::Photon> > slimmedPhotonstoken_;
   edm::EDGetTokenT<std::vector<pat::Jet> > slimmedJetstoken_;
   edm::EDGetTokenT<std::vector<reco::Vertex> > tok_Vertex_; 
   edm::EDGetTokenT<reco::BeamSpot> tok_beamspot_;
@@ -88,9 +87,17 @@ private:
   edm::EDGetToken electronsMiniAODToken_;
   edm::EDGetTokenT<edm::ValueMap<bool> > eleMediumIdMapToken_;
   edm::EDGetTokenT<edm::ValueMap<bool> > eleTightIdMapToken_;
-
   // MVA values and categories (optional)
-  edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_;
-  edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_;
+  edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_el_;
+  edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_el_;
+
+  //Photon ID decisions
+  edm::EDGetToken photonsMiniAODToken_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > phoMediumIdBoolMapToken_;
+  edm::EDGetTokenT<edm::ValueMap<vid::CutFlowResult> > phoMediumIdFullInfoMapToken_;
+  // MVA values and categories (optional)
+  edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_ph_;
+  edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_ph_;
+  bool verboseIdFlag_;
 
 };

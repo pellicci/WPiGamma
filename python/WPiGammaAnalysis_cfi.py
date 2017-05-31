@@ -16,6 +16,16 @@ WPiGammaAnalysis = cms.EDAnalyzer('WPiGammaAnalysis',
                                   eleMediumIdMap = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring16-GeneralPurpose-V1-wp90"),
                                   eleTightIdMap  = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring16-GeneralPurpose-V1-wp80"),
                                   # ValueMaps with MVA results
-                                  mvaValuesMap     = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Values"),
-                                  mvaCategoriesMap = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Categories")
+                                  mvaValuesMap_el     = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Values"),
+                                  mvaCategoriesMap_el = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Categories"),
+
+                                  # GAMMA ID decisions (common to all formats)
+                                  phoMediumIdBoolMap = cms.InputTag("egmPhotonIDs:mvaPhoID-Spring16-nonTrig-V1-wp90"),
+                                  phoMediumIdFullInfoMap = cms.InputTag("egmPhotonIDs:mvaPhoID-Spring16-nonTrig-V1-wp90"),
+                                  # This is a fairly verbose mode if switched on, with full cut flow 
+                                  # diagnostics for each candidate. Use it in a low event count test job.
+                                  phoIdVerbose = cms.bool(False),
+                                  # ValueMaps with MVA results
+                                  mvaValuesMap_ph     = cms.InputTag("photonMVAValueMapProducer:PhotonMVAEstimatorRun2Spring16NonTrigV1Values"),
+                                  mvaCategoriesMap_ph = cms.InputTag("photonMVAValueMapProducer:PhotonMVAEstimatorRun2Spring16NonTrigV1Categories")
 )

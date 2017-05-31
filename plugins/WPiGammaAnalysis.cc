@@ -11,7 +11,6 @@
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
-#include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
@@ -35,6 +34,11 @@
 #include "DataFormats/EgammaCandidates/interface/Conversion.h"
 #include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 
+//Photon ID stuff
+#include "DataFormats/EgammaCandidates/interface/Photon.h"
+#include "DataFormats/PatCandidates/interface/Photon.h"
+#include "DataFormats/PatCandidates/interface/VIDCutFlowResult.h"
+
 typedef math::XYZTLorentzVector LorentzVector;
  
 #include "WPiGammaAnalysis.h"
@@ -53,13 +57,19 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   PileupSrc_(iConfig.getParameter<edm::InputTag>("PileupSrc")),
   eleMediumIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleMediumIdMap"))),
   eleTightIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleTightIdMap"))),
-  mvaValuesMapToken_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap"))),
-  mvaCategoriesMapToken_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap")))
+  mvaValuesMapToken_el_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap_el"))),
+  mvaCategoriesMapToken_el_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap_el"))),
+  phoMediumIdBoolMapToken_(consumes<edm::ValueMap<bool> > (iConfig.getParameter<edm::InputTag>("phoMediumIdBoolMap"))),
+  phoMediumIdFullInfoMapToken_(consumes<edm::ValueMap<vid::CutFlowResult> > (iConfig.getParameter<edm::InputTag>("phoMediumIdFullInfoMap"))),
+  mvaValuesMapToken_ph_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap_ph"))),
+  mvaCategoriesMapToken_ph_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap_ph"))),
+  verboseIdFlag_(iConfig.getParameter<bool>("phoIdVerbose"))
+
 {
   packedPFCandidatestoken_  = consumes<std::vector<pat::PackedCandidate> >(packedPFCandidates_); 
   slimmedMuonstoken_        = consumes<std::vector<pat::Muon> >(slimmedMuons_);
   prunedGenParticlestoken_  = consumes<std::vector<reco::GenParticle> >(prunedGenParticles_);
-  slimmedPhotonstoken_      = consumes<std::vector<pat::Photon> >(slimmedPhotons_);
+  photonsMiniAODToken_      = mayConsume<edm::View<reco::Photon> > (slimmedPhotons_);
   electronsMiniAODToken_    = mayConsume<edm::View<reco::GsfElectron> > (slimmedElectrons_);
   slimmedJetstoken_         = consumes<std::vector<pat::Jet> >(slimmedJets_);
   tok_Vertex_               = consumes<std::vector<reco::Vertex> > (pvCollection_);  
@@ -96,8 +106,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   edm::Handle<std::vector<reco::GenParticle>  > genParticles;
   if(!runningOnData_)iEvent.getByLabel(prunedGenParticles_, genParticles);
 
-  edm::Handle<std::vector<pat::Photon>  > slimmedPhotons;
-  iEvent.getByLabel(slimmedPhotons_, slimmedPhotons);
+  edm::Handle<edm::View<reco::Photon> > slimmedPhotons;
+  iEvent.getByToken(photonsMiniAODToken_,slimmedPhotons);
 
   edm::Handle<edm::View<reco::GsfElectron> > slimmedElectrons;
   iEvent.getByToken(electronsMiniAODToken_,slimmedElectrons);
@@ -110,16 +120,32 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //Get the electron ID data from the event stream.
   // Note: this implies that the VID ID modules have been run upstream.
-  edm::Handle<edm::ValueMap<bool> > medium_id_decisions;
-  edm::Handle<edm::ValueMap<bool> > tight_id_decisions; 
-  iEvent.getByToken(eleMediumIdMapToken_,medium_id_decisions);
-  iEvent.getByToken(eleTightIdMapToken_,tight_id_decisions);
+  edm::Handle<edm::ValueMap<bool> > el_medium_id_decisions;
+  edm::Handle<edm::ValueMap<bool> > el_tight_id_decisions; 
+  iEvent.getByToken(eleMediumIdMapToken_,el_medium_id_decisions);
+  iEvent.getByToken(eleTightIdMapToken_,el_tight_id_decisions);
 
   // Get MVA values and categories (optional)
-  edm::Handle<edm::ValueMap<float> > mvaValues;
-  edm::Handle<edm::ValueMap<int> > mvaCategories;
-  iEvent.getByToken(mvaValuesMapToken_,mvaValues);
-  iEvent.getByToken(mvaCategoriesMapToken_,mvaCategories);
+  edm::Handle<edm::ValueMap<float> > el_mvaValues;
+  edm::Handle<edm::ValueMap<int> > el_mvaCategories;
+  iEvent.getByToken(mvaValuesMapToken_el_,el_mvaValues);
+  iEvent.getByToken(mvaCategoriesMapToken_el_,el_mvaCategories);
+
+  // Get the photon ID data from the event stream.
+  // Note: this implies that the VID ID modules have been run upstream.
+  // The first map simply has pass/fail for each particle
+  edm::Handle<edm::ValueMap<bool> > ph_medium_id_decisions;
+  iEvent.getByToken(phoMediumIdBoolMapToken_,ph_medium_id_decisions);
+  //
+  // The second map has the full info about the cut flow
+  edm::Handle<edm::ValueMap<vid::CutFlowResult> > ph_medium_id_cutflow_data;
+  iEvent.getByToken(phoMediumIdFullInfoMapToken_,ph_medium_id_cutflow_data);
+
+  // Get MVA values and categories (optional)
+  edm::Handle<edm::ValueMap<float> > ph_mvaValues;
+  edm::Handle<edm::ValueMap<int> > ph_mvaCategories;
+  iEvent.getByToken(mvaValuesMapToken_ph_,ph_mvaValues);
+  iEvent.getByToken(mvaCategoriesMapToken_ph_,ph_mvaCategories);
 
   _Nevents_processed++;
 
@@ -199,7 +225,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     const auto el = slimmedElectrons->ptrAt(i);
     if(el->pt() < 26. || el->pt() < pTeleMax) continue;
 
-    bool isPassTight = (*tight_id_decisions)[el];
+    bool isPassTight = (*el_tight_id_decisions)[el];
     if(!isPassTight) continue;
 
     el_ID       = el->pdgId();
@@ -270,7 +296,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     is_pi_a_pi = false;
     is_pi_matched = false;
 
-    //gen_ID = cand.pdgId()#so if it doesn't enter the following loop-and-if, it doesn't display "reconstructed particle is different..." either 
     if(!runningOnData_){
       for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){//matching candidate for W reconstruction with MC truth
 	float deltaR = sqrt((pi_eta-gen->eta())*(pi_eta-gen->eta())+(pi_phi-gen->phi())*(pi_phi-gen->phi()));
@@ -285,9 +310,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       if(fabs(gen_ID) == 211) is_pi_a_pi = true;
       if(fabs(gen_mother) == 24) is_pi_matched = true;
 
-      //std::cout << "\\identity of generated PION's mother: " << gen_mother << std::endl;
-      //std::cout << "reco px: " << pxpi << "reco py: " << pypi << "reco pz: " << pzpi << "reco pT: " << pTpi << std::endl;
-      //std::cout << "gen px: " << gen_px << "gen py: " << gen_py << "gen pz: " << gen_pz << "gen pT: " << gen_pt << std::endl;
     }
   }
 
@@ -302,10 +324,16 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   bool cand_photon_found = false;
 
-  for (auto photon = slimmedPhotons->begin(); photon != slimmedPhotons->end(); ++photon){
+  for (size_t i = 0; i < slimmedPhotons->size(); ++i){
+    const auto photon = slimmedPhotons->ptrAt(i);
 
     if(photon->et() < 20. || photon->et() < eTphMax) continue;
     if(photon->hasPixelSeed()) continue;   //electron veto
+
+    // The minimal info
+    bool isPassMedium = (*ph_medium_id_decisions)[photon];
+    if(!isPassMedium) continue;
+
     eTphMax = photon->et();
 
     ph_pT  = photon->pt();
@@ -324,7 +352,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     is_photon_a_photon = false;
     is_photon_matched = false;
 
-    //gen_ID = cand.pdgId()#so if it doesn't enter the following loop-and-if, it doesn't display "reconstructed particle is different..." either 
     if(!runningOnData_){
       for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
 	float deltaR = sqrt((ph_eta-gen->eta())*(ph_eta-gen->eta())+(ph_phi-gen->phi())*(ph_phi-gen->phi()));

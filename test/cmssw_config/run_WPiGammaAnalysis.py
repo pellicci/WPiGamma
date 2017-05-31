@@ -39,18 +39,21 @@ process.TFileService = cms.Service("TFileService",
 )
 
 #ELE ID
-#Upload the ele ID information
+#Upload the ele/gamma ID information
 from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
 dataFormat = DataFormat.MiniAOD
 switchOnVIDElectronIdProducer(process, dataFormat)
+switchOnVIDPhotonIdProducer(process, dataFormat)
 
 # define which IDs we want to produce
-my_id_modules = ['RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring16_GeneralPurpose_V1_cff']
+my_id_modules_el = ['RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring16_GeneralPurpose_V1_cff']
+my_id_modules_ph = ['RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Spring16_nonTrig_V1_cff']
 
 #add them to the VID producer
-for idmod in my_id_modules:
-    setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
-
+for idmod in my_id_modules_el:
+   setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
+for idmod in my_id_modules_ph:
+   setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
 process.load("StandardModel.WPiGamma.WPiGammaAnalysis_cfi")
 process.WPiGammaAnalysis.runningOnData = options.runningOnData
@@ -63,6 +66,6 @@ process.trigger_filter.hltResults = cms.InputTag("TriggerResults", "", "HLT")
 process.trigger_filter.l1tResults = cms.InputTag("")
 process.trigger_filter.throw = cms.bool( False )
 
-process.seq = cms.Path(process.trigger_filter * process.egmGsfElectronIDSequence * process.WPiGammaAnalysis)
+process.seq = cms.Path(process.trigger_filter * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.WPiGammaAnalysis)
 
 process.schedule = cms.Schedule(process.seq)
