@@ -79,9 +79,9 @@ for sample_name in samplename_list:
         theSampleName = sample_name
 
     h_base[theSampleName+list_histos[0]]  = ROOT.TH1F(theSampleName+list_histos[0], "p_{T} of the muon", 25, MU_MIN_PT, 300.)
-    h_base[theSampleName+list_histos[0]]  = ROOT.TH1F(theSampleName+list_histos[0], "p_{T} of the electron", 25, ELE_MIN_PT, 300.)
-    h_base[theSampleName+list_histos[0]]  = ROOT.TH1F(theSampleName+list_histos[0], "p_{T} of the pion", 25, PI_MIN_PT, 300.)
-    h_base[theSampleName+list_histos[0]]  = ROOT.TH1F(theSampleName+list_histos[0], "p_{T} of the gamma", 25, GAMMA_MIN_PT, 300.)
+    h_base[theSampleName+list_histos[1]]  = ROOT.TH1F(theSampleName+list_histos[1], "p_{T} of the electron", 25, ELE_MIN_PT, 300.)
+    h_base[theSampleName+list_histos[2]]  = ROOT.TH1F(theSampleName+list_histos[2], "p_{T} of the pion", 25, PI_MIN_PT, 300.)
+    h_base[theSampleName+list_histos[3]]  = ROOT.TH1F(theSampleName+list_histos[3], "p_{T} of the gamma", 25, GAMMA_MIN_PT, 300.)
 
 leg1 = ROOT.TLegend(0.6868687,0.6120093,0.9511784,0.9491917)
 leg1.SetHeader(" ")
