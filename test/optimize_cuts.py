@@ -3,8 +3,6 @@ import math
 import numpy as np
 import sys
 
-sys.path.append("../")
-
 ##normalize to the 2016 lumi
 luminosity_norm = 36.46
 
