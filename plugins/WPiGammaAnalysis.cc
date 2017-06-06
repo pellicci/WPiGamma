@@ -355,8 +355,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       }
             
       if(gen_ID == 22) is_photon_a_photon = true;
-      if(gen_ID != 22) std::cout << "ph gen ID = " << gen_ID << std::endl;
-      if(gen_ID != 22 && fabs(gen_mother) == 24) std::cout << "ph gen ID when matched = " << gen_ID << std::endl;
+      //if(gen_ID != 22) std::cout << "ph gen ID = " << gen_ID << std::endl;
+      //if(gen_ID != 22 && fabs(gen_mother) == 24) std::cout << "ph gen ID when matched = " << gen_ID << std::endl;
       if(fabs(gen_mother) == 24) is_photon_matched = true;
     }
 
