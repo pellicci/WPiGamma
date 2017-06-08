@@ -20,11 +20,11 @@ def is_Event_selected(nbjets,Wmass):
 ##Here starts the program
 Norm_Map = myWF.get_normalizations_map()
 
-steps_cut1 = 5
+steps_cut1 = 10
 cut1_init = 20.
 cut1_stepsize = 10.
 
-steps_cut2 = 5
+steps_cut2 = 10
 cut2_init = 20.
 cut2_stepsize = 10.
 
@@ -129,5 +129,5 @@ c1.SaveAs("plots/cut1_signif.png")
 c2 = ROOT.TCanvas("c2","c2")
 c2.cd()
 graph_cut2.Draw("A*")
-graph_cut2.SetTitle("Significance vs e_{T} of pi; e_{T} of pi; Significance")
+graph_cut2.SetTitle("Significance vs e_{T} of gamma; e_{T} of gamma; Significance")
 c2.SaveAs("plots/cut2_signif.png")
