@@ -9,7 +9,7 @@ luminosity_norm = 36.46
 from Workflow_Handler import Workflow_Handler
 myWF = Workflow_Handler("Signal")
 
-def is_Event_selected(nbjets):
+def is_Event_selected(nbjets,Wmass):
     """Save events according to some basic selection criteria"""
     bjet_cut = nbjets > 0.
 
@@ -28,8 +28,8 @@ steps_cut2 = 5
 cut2_init = 20.
 cut2_stepsize = 10.
 
-cut_Nbkg = [[for x in range(steps_cut2)] for x in range(steps_cut1)]
-cut_Nsig = [[for x in range(steps_cut2)] for x in range(steps_cut1)]
+cut_Nbkg = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
+cut_Nsig = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
 
 ##collect all the root files
 samplename_list = myWF.get_samples_names()
@@ -78,7 +78,7 @@ for name_sample in samplename_list:
 print "Done looping over the events"
 
 ##Calculate the significance
-signif_list = [[  for x in range(steps_cut2)] for x in range(steps_cut1)]
+signif_list = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
 
 cut1_x_list = [cut1_init + cut1_stepsize*icut for icut in range(steps_cut1)]
 cut2_x_list = [cut2_init + cut2_stepsize*icut for icut in range(steps_cut2)]
@@ -102,8 +102,8 @@ for icut1 in xrange(steps_cut1):
 
 print "The cut1 value is ", cut1_init + cut1_stepsize*cut1_max
 print "The cut2 value is ", cut2_init + cut2_stepsize*cut2_max
-print "Number of signal events are ", cut_Nsig[cut1_max][cut2_max]
-print "Number of background events are ", cut_Nbkg[cut1_max][cut2_max]
+print "Number of signal events is ", cut_Nsig[cut1_max][cut2_max]
+print "Number of background events is ", cut_Nbkg[cut1_max][cut2_max]
 print "Max significance is ", signif_max
 
 ##Plot the significance as function of the cuts
@@ -121,10 +121,13 @@ graph_cut2 = ROOT.TGraph(steps_cut2,cut2_x,cut2_y)
 
 c1 = ROOT.TCanvas("c1","c1")
 c1.cd()
-graph_cut1.Draw("AC*")
-c1.SaveAs("plots/cut1_signif.gif")
+graph_cut1.Draw("A*")
+graph_cut1.SetTitle("Significance vs p_{T} of pi; p_{T} of pi; Significance")
+
+c1.SaveAs("plots/cut1_signif.png")
 
 c2 = ROOT.TCanvas("c2","c2")
 c2.cd()
-graph_cut2.Draw("AC*")
-c2.SaveAs("plots/cut2_signif.gif")
+graph_cut2.Draw("A*")
+graph_cut2.SetTitle("Significance vs e_{T} of pi; e_{T} of pi; Significance")
+c2.SaveAs("plots/cut2_signif.png")

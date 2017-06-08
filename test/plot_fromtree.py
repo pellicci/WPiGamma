@@ -223,11 +223,11 @@ x_axis_list = ["p_{T} of the muon", "p_{T} of the electron", "p_{T} of the pion"
 
 for hname in list_histos: 
     canvas[hname].cd()
-
+    
     hs[hname].Draw("histo")
-        
+    
     #Graphic names
-        
+    
     hs[hname].SetTitle(" ")
     hs[hname].GetYaxis().SetTitle("Events")
     hs[hname].GetXaxis().SetTitle(hname)
