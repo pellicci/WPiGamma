@@ -77,6 +77,8 @@ private:
   bool is_photon_a_photon;
   bool is_photon_matched;
 
+  bool is_ttbar_lnu;
+
   //Tokens
   edm::EDGetTokenT<std::vector<pat::PackedCandidate> > packedPFCandidatestoken_; 
   edm::EDGetTokenT<std::vector<pat::Muon> > slimmedMuonstoken_; 

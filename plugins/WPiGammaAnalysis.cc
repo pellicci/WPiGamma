@@ -177,6 +177,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   float el_phi = 0.;
   int   el_ID = 0;
 
+  float deltaphi_lep_pi = 0.;
+
   //These variables will go in the tree
   pi_pT = 0.;
   pi_eta = 0.;
@@ -196,7 +198,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   lepton_pT_tree = 0.;
   lepton_eta_tree = 0.;
   lepton_phi_tree = 0.;
-
 
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
@@ -258,15 +259,28 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   _Nevents_TwoLepton++;
 
   //In signal, identify if there's a real mu or ele from W
+  bool is_Wplus_from_t = false;
+  bool is_Wminus_from_tbar = false;
+  bool is_Wplus_in_lep = false;
+  bool is_Wminus_in_lep = false;
+  is_ttbar_lnu = false;
   is_Ele_signal = false;
   is_Mu_signal = false;
   if(!runningOnData_){
     for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
       if(fabs(gen->pdgId() ) == 11 && fabs(gen->mother()->pdgId()) == 24) is_Ele_signal = true;
       if(fabs(gen->pdgId() ) == 13 && fabs(gen->mother()->pdgId()) == 24) is_Mu_signal = true;
+      if(gen->pdgId() == 24 && gen->mother()->pdgId() == 6) is_Wplus_from_t = true;
+      if(gen->pdgId() == -24 && gen->mother()->pdgId() == -6) is_Wminus_from_tbar = true;
+      if(fabs(gen->pdgId() != 24) || gen->numberOfDaughters() != 2) continue;
+      for (int i=0; i<2; i++){
+	if(gen->daughter(i)->pdgId() == 11 || gen->daughter(i)->pdgId() == 13 || gen->daughter(i)->pdgId() == 15) is_Wminus_in_lep = true;
+	if(gen->daughter(i)->pdgId() == -11 || gen->daughter(i)->pdgId() == -13 || gen->daughter(i)->pdgId() == -15) is_Wplus_in_lep = true;
+      }
     }
+    if(is_Wplus_from_t == true && is_Wminus_from_tbar == true && is_Wminus_in_lep == true && is_Wplus_in_lep == true) is_ttbar_lnu = true;
   }
-
+  
   //----------- Starting to search for pi and gamma -------------
   bool cand_pion_found = false;
 
@@ -274,6 +288,17 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     if(cand->pdgId()*mu_ID < 0 && cand->pdgId()*el_ID < 0) continue;    
     if(cand->pt() < 20. || !cand->trackHighPurity() || cand->fromPV() != 3) continue;
     if(cand->pt() < pTpiMax) continue;
+
+    if(is_muon){
+      deltaphi_lep_pi = fabs(mu_phi-cand->phi());
+      if(deltaphi_lep_pi > 3.14) deltaphi_lep_pi = 6.28-deltaphi_lep_pi;
+    } 
+    if(!is_muon && is_ele){
+      deltaphi_lep_pi = fabs(el_phi-cand->phi());
+      if(deltaphi_lep_pi > 3.14) deltaphi_lep_pi = 6.28-deltaphi_lep_pi;
+    } 
+
+    if(deltaphi_lep_pi < 0.00005) continue;
 
     pTpiMax = cand->pt();
     cand_pion_found = true;
@@ -284,13 +309,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     pi_phi = cand->phi();
     pi_p4  = cand->p4();
 
+    is_pi_a_pi = false;
+    is_pi_matched = false;
+
     float deltapTMax = 10000.;
     const float deltaRMax  = 0.3;
     int   gen_mother = 0;
     int   gen_ID = 0;
-
-    is_pi_a_pi = false;
-    is_pi_matched = false;
 
     if(!runningOnData_){
       for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){//matching candidate for W reconstruction with MC truth
@@ -423,6 +448,7 @@ void WPiGammaAnalysis::create_trees(){
     mytree->Branch("isPionMatched",&is_pi_matched);
     mytree->Branch("isPhotonTrue",&is_photon_a_photon);
     mytree->Branch("isPhotonMatched",&is_photon_matched);
+    mytree->Branch("isttbarlnu",&is_ttbar_lnu);
   }
 
 }
