@@ -9,9 +9,9 @@ luminosity_norm = 36.46
 from Workflow_Handler import Workflow_Handler
 myWF = Workflow_Handler("Signal")
 
-def is_Event_selected(nbjets,Wmass):
+def is_Event_selected(nBjets,Wmass):
     """Save events according to some basic selection criteria"""
-    bjet_cut = nbjets > 0.
+    bjet_cut = nBjets > 0.
 
     mass_cut = Wmass > 20.
 
@@ -57,7 +57,7 @@ for name_sample in samplename_list:
 
         if not is_Event_selected(mytree.nBjets, mytree.Wmass):
             continue
-
+        
         for icut1 in xrange(steps_cut1):
             cut1_value = cut1_init + cut1_stepsize*icut1
 

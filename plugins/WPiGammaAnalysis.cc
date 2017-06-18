@@ -278,7 +278,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	if(gen->daughter(i)->pdgId() == -11 || gen->daughter(i)->pdgId() == -13 || gen->daughter(i)->pdgId() == -15) is_Wplus_in_lep = true;
       }
     }
-    if(is_Wplus_from_t == true && is_Wminus_from_tbar == true && is_Wminus_in_lep == true && is_Wplus_in_lep == true) is_ttbar_lnu = true;
+    if(is_Wplus_from_t && is_Wminus_from_tbar && is_Wminus_in_lep && is_Wplus_in_lep) is_ttbar_lnu = true;
   }
   
   //----------- Starting to search for pi and gamma -------------

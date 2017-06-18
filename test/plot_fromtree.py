@@ -16,12 +16,13 @@ PI_MIN_PT    = 50.
 GAMMA_MIN_ET = 70.
 N_BJETS_MIN  = 0.
 WMASS_MIN    = 40.
+DELTAPHI_MIN = 1.2
 
 #Normalize to this luminsity, in fb-1
 luminosity_norm = 36.46
 
 #Make signal histos larger
-signal_magnify = 100
+signal_magnify = 10.
 
 output_dir = "plots"
 
@@ -32,7 +33,7 @@ if not os.path.exists(output_dir):
 list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_Wmass", "h_nBjets", "h_mueta", "h_eleeta","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass_flag_mu","h_Wmass_flag_ele"]
 
 #Color mask must have the same number of entries as non-QCD backgrounds
-colors_mask = [26,400,840,616,860,432,880,416,800,900,820,920,101]   
+colors_mask = [26,400,840,616,860,432,880,900,800,416,885,920,101]  #Invert 900 and 416 for previous colors 
 
 def select_all_but_one(cutstring):
 
@@ -42,10 +43,11 @@ def select_all_but_one(cutstring):
     selection_bools["h_pipt"]             = pi_pt > PI_MIN_PT
     selection_bools["h_gammaet"]          = gamma_et > GAMMA_MIN_ET
     selection_bools["h_nBjets"]           = nBjets > N_BJETS_MIN
-    selection_bools["h_Wmass"]            = Wmass > WMASS_MIN
-    selection_bools["h_Wmass_flag_mu"]    = Wmass > WMASS_MIN
+    #selection_bools["h_Wmass"]            = Wmass > WMASS_MIN
+    #selection_bools["h_Wmass_flag_mu"]    = Wmass > WMASS_MIN
     selection_bools["h_Wmass_flag_ele"]   = Wmass > WMASS_MIN
-
+    selection_bools["h_deltaphi_mu_pi"]   = deltaphi_lep_pi > DELTAPHI_MIN
+    #selection_bools["h_deltaphi_ele_pi"]  = deltaphi_lep_pi > DELTAPHI_MIN
     result = True
 
     for hname in selection_bools:
@@ -93,13 +95,15 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[6]]  = ROOT.TH1F(theSampleName+list_histos[6], "eta of the muon", 20, -3, 3)
     h_base[theSampleName+list_histos[7]]  = ROOT.TH1F(theSampleName+list_histos[7], "eta of the electron", 20, -3, 3)
     h_base[theSampleName+list_histos[8]]  = ROOT.TH1F(theSampleName+list_histos[8], "deltaphi mu-pi", 10, 0, 3.14)
-    h_base[theSampleName+list_histos[9]]  = ROOT.TH1F(theSampleName+list_histos[9], "deltaphi ele-pi", 100, 0, 0.0001)
+    h_base[theSampleName+list_histos[9]]  = ROOT.TH1F(theSampleName+list_histos[9], "deltaphi ele-pi", 10, 0, 3.14)
     h_base[theSampleName+list_histos[10]] = ROOT.TH1F(theSampleName+list_histos[10], "deltaeta mu-pi", 20, -5, 5)
     h_base[theSampleName+list_histos[11]] = ROOT.TH1F(theSampleName+list_histos[11], "deltaeta ele-pi", 20, -5, 5)
     h_base[theSampleName+list_histos[12]] = ROOT.TH1F(theSampleName+list_histos[12], "W mass if flag mu", 25, 20, 125)
     h_base[theSampleName+list_histos[13]] = ROOT.TH1F(theSampleName+list_histos[13], "W mass if flag ele", 25, 20, 125)
 
-leg1 = ROOT.TLegend(0.6868687,0.6120093,0.9511784,0.9491917)
+#For right positioning 0.6868687,0.6120093,0.9511784,0.9491917
+#For left positioning 0.1,0.5,0.25,0.9
+leg1 = ROOT.TLegend(0.1,0.5,0.25,0.9)
 leg1.SetHeader(" ")
 leg1.SetFillColor(0)
 leg1.SetBorderSize(0)
@@ -143,30 +147,30 @@ for name_sample in samplename_list:
         nb = mytree.GetEntry(jentry )
         if nb <= 0:
             continue
-
+            
         Event_Weight = norm_factor   #Add other event weights here if necessary
-
+            
         #This is how you access the tree variables
         lep_pt  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
         lep_phi = mytree.lepton_phi
-
+        
         isMuon = mytree.is_muon
-
+        
         pi_pt = mytree.pi_pT
         pi_eta = mytree.pi_eta
         pi_phi = mytree.pi_phi
-
+            
         gamma_et = mytree.photon_eT
-
+        
         Wmass = mytree.Wmass
-
+        
         nBjets = mytree.nBjets
-
+        
         deltaeta_lep_pi = lep_eta-pi_eta
-
+        
         deltaphi_lep_pi = math.fabs(lep_phi-pi_phi)
-
+        
         if deltaphi_lep_pi > 3.14:
             deltaphi_lep_pi = 6.28 - deltaphi_lep_pi
 
@@ -174,19 +178,19 @@ for name_sample in samplename_list:
 
         if select_all_but_one("h_mupt") and isMuon:
             h_base[theSampleName+"h_mupt"].Fill(lep_pt,Event_Weight)
-
+                    
         if select_all_but_one("h_elept") and not isMuon:
             h_base[theSampleName+"h_elept"].Fill(lep_pt,Event_Weight)
-
+                        
         if select_all_but_one("h_pipt"):
             h_base[theSampleName+"h_pipt"].Fill(pi_pt,Event_Weight)
-
+                            
         if select_all_but_one("h_nBjets"):
             h_base[theSampleName+"h_nBjets"].Fill(nBjets,Event_Weight)
-
+                                
         if select_all_but_one("h_gammaet"):
             h_base[theSampleName+"h_gammaet"].Fill(gamma_et,Event_Weight)
-
+                                    
         if select_all_but_one("h_Wmass"):
             h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
 
@@ -201,7 +205,7 @@ for name_sample in samplename_list:
 
         if select_all_but_one("h_deltaeta_mu_pi") and isMuon:
             h_base[theSampleName+"h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
-
+                    
         if select_all_but_one("h_deltaphi_ele_pi") and not isMuon:
             h_base[theSampleName+"h_deltaphi_ele_pi"].Fill(deltaphi_lep_pi,Event_Weight)
 
@@ -242,7 +246,7 @@ for name_sample in samplename_list:
                  leg1.AddEntry(h_base[theSampleName+hname],"QCD","f")
                  isFirstQCDlegend = False
             elif name_sample == myWF.sig_samplename:
-                 sample_legend_name = "100 x " + name_sample
+                 sample_legend_name = "10 x " + name_sample
                  leg1.AddEntry(h_base[name_sample+hname], sample_legend_name,"f")  #To comment when signal is has to be excluded.
             elif not QCDflag:
                  leg1.AddEntry(h_base[theSampleName+hname],theSampleName,"f")
@@ -258,13 +262,11 @@ print "Finished runnning over samples!"
 for idx_histo,hname in enumerate(list_histos):
     hs[hname].Add(h_base["QCD_"+hname])
 
-x_axis_list = ["p_{T} of the muon", "p_{T} of the electron", "p_{T} of the pion", "p_{T} of the photon", "m_{W}", "eta of the muon", "eta of the electron"]
-
 for hname in list_histos: 
     canvas[hname].cd()
-    
+
     hs[hname].Draw("histo")
-    
+
     #Graphic names
     
     hs[hname].SetTitle(" ")
@@ -273,11 +275,11 @@ for hname in list_histos:
     
     if signal_magnify != 1:
         h_base[myWF.sig_samplename+hname].Scale(signal_magnify)
-        h_base[myWF.sig_samplename+hname].Draw("SAME,hist")
+    h_base[myWF.sig_samplename+hname].Draw("SAME,hist")
         
-        leg1.Draw()
+    leg1.Draw()
         
-        canvas[hname].SaveAs("plots/" + hname + ".png")
+    canvas[hname].SaveAs("plots/" + hname + ".png")
 
 print "Number of expected events for ", luminosity_norm, " in fb-1"
 print "Number of signal events passed = ", Nsig_passed
