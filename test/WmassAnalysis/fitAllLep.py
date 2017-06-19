@@ -98,3 +98,15 @@ xframe_mu.Draw()
 canvas.cd(2)
 xframe_el.Draw()
 canvas.SaveAs("fitAllLep.png")
+
+#Save the fit into a root file
+fOutput = ROOT.TFile("fitAllLep.root","RECREATE")
+fOutput.cd()
+
+workspace = ROOT.RooWorkspace("workspace")
+getattr(workspace,'import')(data)
+getattr(workspace,'import')(totPDF)
+
+workspace.Write()
+
+fOutput.Close()
