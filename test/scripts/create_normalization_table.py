@@ -111,14 +111,19 @@ for dirname in list_dirs:
     print crab_command
 
     event_string = os.popen(crab_command).read()
+    print "event string: ", event_string
     number_events = float((event_string.split())[4])
     print "No. of events processed = " + str (number_events) + "\n"
     xsection = float(get_xsec_fromsample(samplename))
-    print "crsoection = ", xsection
-    scale_factor = float(xsection*1000./number_events)
-    print "scale_factor = ", scale_factor
-    write_string = samplename + " " + str(scale_factor) + "\n"
-    print "Output Norm = ", write_string
-    out_file.write(write_string)
+    print "crossection = ", xsection
+    if number_events == 0:
+        scale_factor = 0.
+        print "NUMBER OF EVENTS RETRIEVED = 0. SCALE FACTOR SET TO 0"
+    else:
+        scale_factor = float(xsection*1000./number_events)
+        print "scale_factor = ", scale_factor
+        write_string = samplename + " " + str(scale_factor) + "\n"
+        print "Output Norm = ", write_string
+        out_file.write(write_string)
 
 print "All done!"
