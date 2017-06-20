@@ -35,6 +35,8 @@ private:
   TH1F* inv_mass_2;
 
   //Counters
+  int nPV;
+
   int nMuons;
   int nElectrons;
   int nPions;

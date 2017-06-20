@@ -158,6 +158,16 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   _Nevents_processed++;
 
+  //Count the number of vertices
+  nPV = -1;
+  if(slimmedPV->size()<=0) return;
+  for(reco::VertexCollection::const_iterator vtx=slimmedPV->begin();vtx!=slimmedPV->end();++vtx) {
+    // check that the primary vertex is not a fake one, that is the beamspot (it happens when no primary vertex is reconstructed)
+    if(!vtx->isFake()) {
+      nPV++;
+    }
+  } 
+
   //PileUp code for examining the Pileup information
   PU_Weight = 1.;
   float npT = -1.;
@@ -466,8 +476,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //std::cout << "n fotoni: " << events_least_one_ph << std::endl;
 }
 
-void WPiGammaAnalysis::create_trees(){
+void WPiGammaAnalysis::create_trees()
+{
   mytree = fs->make<TTree>("mytree", "Tree containing gen&reco");
+
+  mytree->Branch("nPV",&nPV);
+  mytree->Branch("isSingleMuTrigger",&isSingleMuTrigger);
+  mytree->Branch("isSingleEleTrigger",&isSingleEleTrigger);
+
   mytree->Branch("lepton_pT",&lepton_pT_tree);
   mytree->Branch("lepton_eta",&lepton_eta_tree);
   mytree->Branch("lepton_phi",&lepton_phi_tree);
@@ -486,9 +502,6 @@ void WPiGammaAnalysis::create_trees(){
   mytree->Branch("nPions",&nPions);
   mytree->Branch("nPhotons",&nPhotons);
   mytree->Branch("nBjets",&nBjets);
-
-  mytree->Branch("isSingleMuTrigger",&isSingleMuTrigger);
-  mytree->Branch("isSingleEleTrigger",&isSingleEleTrigger);
 
   //Save MC info
   if(!runningOnData_){

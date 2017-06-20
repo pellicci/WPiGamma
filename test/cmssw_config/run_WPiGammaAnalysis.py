@@ -21,7 +21,7 @@ options.parseArguments()
 
 #Input source
 if options.runningOnData: 
-   process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_Prompt_v14') #which conditions to use
+   process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_2016SeptRepro_v7') #which conditions to use
    print "Data Sample will be taken as input for check up of the code working "
    inputFiles="root://cms-xrd-global.cern.ch//store/data/Run2016C/BTagCSV/MINIAOD/23Sep2016-v1/70000/00B6A0EA-A783-E611-8973-02163E0165C4.root"
 else:
@@ -55,8 +55,27 @@ for idmod in my_id_modules_el:
 for idmod in my_id_modules_ph:
    setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
+#Use the latest JECs
+from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+if not options.runningOnData:      #This loop is for MC
+   print "Jet Energy Corrections on Monte Carlo will be applied "
+   jetCorrectionsList = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute']), 'None')
+else:
+   print "Jet Energy Corrections on Data will be applied "
+   jetCorrectionsList = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']), 'None')# Added 'L2L3Residual'for data!
+   print "Data reprocessing is already using the latest JEC"
+
+updateJetCollection(
+   process,
+   jetSource = cms.InputTag('slimmedJets'),
+   labelName = 'UpdatedJEC',
+   jetCorrections = jetCorrectionsList
+)
+
 process.load("StandardModel.WPiGamma.WPiGammaAnalysis_cfi")
 process.WPiGammaAnalysis.runningOnData = options.runningOnData
+if not options.runningOnData:    #Only for MC, data reprocessing already has corrections!
+   process.WPiGammaAnalysis.slimmedJets = cms.InputTag("updatedPatJetsUpdatedJEC")
 
 #Add the trigger request
 import HLTrigger.HLTfilters.triggerResultsFilter_cfi as hlt
@@ -66,6 +85,9 @@ process.trigger_filter.hltResults = cms.InputTag("TriggerResults", "", "HLT")
 process.trigger_filter.l1tResults = cms.InputTag("")
 process.trigger_filter.throw = cms.bool( False )
 
-process.seq = cms.Path(process.trigger_filter * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.WPiGammaAnalysis)
+if options.runningOnData:
+   process.seq = cms.Path(process.trigger_filter * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.WPiGammaAnalysis)
+else:
+   process.seq = cms.Path(process.trigger_filter * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.WPiGammaAnalysis)
 
 process.schedule = cms.Schedule(process.seq)
