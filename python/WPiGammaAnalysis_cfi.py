@@ -11,6 +11,7 @@ WPiGammaAnalysis = cms.EDAnalyzer('WPiGammaAnalysis',
                                   pvCollection       = cms.InputTag("offlineSlimmedPrimaryVertices"), #New Stuff 
                                   bsCollection       = cms.InputTag("offlineBeamSpot"),
                                   PileupSrc          = cms.InputTag("slimmedAddPileupInfo"),
+                                  triggerbits        = cms.InputTag("TriggerResults","","HLT"),
 
                                   # ELE ID decisions (common to all formats)
                                   eleMediumIdMap = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring16-GeneralPurpose-V1-wp90"),

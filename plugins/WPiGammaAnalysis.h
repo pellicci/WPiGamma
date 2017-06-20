@@ -7,7 +7,7 @@ public:
   ~WPiGammaAnalysis();
 
 private:
-  //virtual void beginJob() override;
+  virtual void beginJob() override;
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void endJob() override;
 
@@ -21,6 +21,8 @@ private:
   const edm::InputTag pvCollection_;  
   const edm::InputTag bsCollection_;  
   const edm::InputTag PileupSrc_;
+
+  edm::LumiReWeighting Lumiweights_;
 
   edm::Service<TFileService> fs;
 
@@ -66,8 +68,12 @@ private:
   float _Wmass;
   
   bool is_muon;
+  bool isSingleMuTrigger;
+  bool isSingleEleTrigger;
 
   //MC truth
+  float PU_Weight;
+
   bool is_Mu_signal;
   bool is_Ele_signal;
 
@@ -87,6 +93,7 @@ private:
   edm::EDGetTokenT<std::vector<reco::Vertex> > tok_Vertex_; 
   edm::EDGetTokenT<reco::BeamSpot> tok_beamspot_;
   edm::EDGetTokenT<std::vector<PileupSummaryInfo> > pileupSummaryToken_;
+  edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
 
   //Ele ID decisions objects
   edm::EDGetToken electronsMiniAODToken_;

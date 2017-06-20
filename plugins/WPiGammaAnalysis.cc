@@ -8,26 +8,29 @@
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
+#include "DataFormats/Candidate/interface/Candidate.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
-#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
-#include "DataFormats/Candidate/interface/Candidate.h"
   
-#include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Common/interface/TriggerNames.h"
  
-// vertex inclusions
+//Vertex inclusions
 #include "DataFormats/VertexReco/interface/Vertex.h" 
 #include "DataFormats/BeamSpot/interface/BeamSpot.h" 
+#include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
-// electron ID stuff
+//Electron ID stuff
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/EgammaCandidates/interface/ConversionFwd.h"
@@ -55,6 +58,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   pvCollection_(iConfig.getParameter<edm::InputTag>("pvCollection")),   
   bsCollection_(iConfig.getParameter<edm::InputTag>("bsCollection")),  
   PileupSrc_(iConfig.getParameter<edm::InputTag>("PileupSrc")),
+  triggerBits_(consumes<edm::TriggerResults> (iConfig.getParameter<edm::InputTag>("triggerbits"))),
   eleMediumIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleMediumIdMap"))),
   eleTightIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleTightIdMap"))),
   mvaValuesMapToken_el_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap_el"))),
@@ -120,6 +124,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   edm::Handle<std::vector<reco::Vertex > > slimmedPV;
   iEvent.getByLabel(pvCollection_, slimmedPV);
 
+  edm::Handle<edm::TriggerResults> triggerBits;
+  iEvent.getByToken(triggerBits_, triggerBits);
+
   //Get the electron ID data from the event stream.
   // Note: this implies that the VID ID modules have been run upstream.
   edm::Handle<edm::ValueMap<bool> > el_medium_id_decisions;
@@ -150,6 +157,46 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   iEvent.getByToken(mvaCategoriesMapToken_ph_,ph_mvaCategories);
 
   _Nevents_processed++;
+
+  //PileUp code for examining the Pileup information
+  PU_Weight = 1.;
+  float npT = -1.;
+
+  if(!runningOnData_){
+    edm::Handle<std::vector< PileupSummaryInfo>>  PupInfo;
+    iEvent.getByLabel(PileupSrc_, PupInfo);
+  
+    std::vector<PileupSummaryInfo>::const_iterator PVI; 
+ 
+    for(PVI = PupInfo->begin(); PVI != PupInfo->end(); ++PVI) {
+      const int BX = PVI->getBunchCrossing();
+      if(BX == 0) {
+	npT  = PVI->getTrueNumInteractions();
+      }
+    }
+
+    // calculate weight using above code
+    PU_Weight = Lumiweights_.weight(npT);
+  }
+
+  //Examine the trigger information
+  isSingleMuTrigger = false;
+  isSingleEleTrigger = false;
+
+  const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
+  for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i){
+    if(!triggerBits->accept(i)) continue;
+    std::string tmp_triggername = names.triggerName(i);
+    if( tmp_triggername.find("HLT_IsoMu24_v") != std::string::npos ||
+	tmp_triggername.find("HLT_Mu45_eta2p1_v") != std::string::npos ||
+	tmp_triggername.find("HLT_Mu50_v") != std::string::npos){
+      isSingleMuTrigger = true;
+    }
+    if( tmp_triggername.find("HLT_Ele25_eta2p1_WPTight_Gsf_v") != std::string::npos ||
+	tmp_triggername.find("HLT_Ele27_WPTight_Gsf_v7") != std::string::npos){
+      isSingleEleTrigger = true;
+    }
+  }
 
   nMuons     = 0;
   nElectrons = 0;
@@ -440,8 +487,13 @@ void WPiGammaAnalysis::create_trees(){
   mytree->Branch("nPhotons",&nPhotons);
   mytree->Branch("nBjets",&nBjets);
 
-  //Save MC truth
+  mytree->Branch("isSingleMuTrigger",&isSingleMuTrigger);
+  mytree->Branch("isSingleEleTrigger",&isSingleEleTrigger);
+
+  //Save MC info
   if(!runningOnData_){
+    mytree->Branch("PU_Weight",&PU_Weight);
+
     mytree->Branch("isMuonSignal",&is_Mu_signal);
     mytree->Branch("isEleSignal",&is_Ele_signal);
     mytree->Branch("isPionTrue",&is_pi_a_pi);
@@ -452,6 +504,15 @@ void WPiGammaAnalysis::create_trees(){
   }
 
 }
+
+void WPiGammaAnalysis::beginJob()
+{
+  //Flag for PileUp reweighting
+  if (!runningOnData_){
+   Lumiweights_ = edm::LumiReWeighting("pileUpHistogramFromjson_Nominal.root","MCpileUp_25ns_Recent2016.root", "pileup", "pileup");
+  }
+}
+
 
 void WPiGammaAnalysis::endJob() 
 {
@@ -474,7 +535,6 @@ void WPiGammaAnalysis::endJob()
   h_Events->GetXaxis()->SetBinLabel(8,"Events in W mass");
 
 }
-
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(WPiGammaAnalysis);

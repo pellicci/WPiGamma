@@ -9,6 +9,7 @@ config.General.workArea = 'crab_projects/samples/'
 config.section_('JobType')
 config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
 config.JobType.pluginName = 'Analysis'
+config.JobType.inputFiles = ['MCpileUp_25ns_Recent2016.root','pileUpHistogramFromjson_Nominal.root' ] #data files for PileUp reweighting
 config.JobType.outputFiles = ['WPiGammaAnalysis_output.root']
 config.JobType.pyCfgParams = ['runningOnData=False']
 
