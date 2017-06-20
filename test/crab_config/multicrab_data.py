@@ -4,7 +4,7 @@ config = Configuration()
 
 config.section_('General')
 config.General.transferOutputs = True
-config.General.workArea = 'crab_projects/samples/'
+config.General.workArea = 'crab_projects/data/'
 
 config.section_('JobType')
 config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
@@ -14,7 +14,9 @@ config.JobType.outputFiles = ['WPiGammaAnalysis_output.root']
 config.JobType.pyCfgParams = ['runningOnData=True']
 
 config.section_('Data')
-config.Data.splitting = 'FileBased'
+config.Data.lumiMask = 'json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
+config.Data.inputDBS = 'global'
+config.Data.splitting = 'LumiBased'
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = False
 
