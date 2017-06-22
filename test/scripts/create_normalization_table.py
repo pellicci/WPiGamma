@@ -104,7 +104,10 @@ def get_xsec_fromsample(samplename):
 
 out_file = open(output_filename,"w")
 
+signal_events_cumul = 0.
+
 for dirname in list_dirs:
+
     samplename = dirname.split("crab_WPiGammaAnalysis_")[1]
     print "Processing sample dir " + dirname
     crab_command = "crab report -d " + dir_input + dirname + " | grep read"
@@ -114,6 +117,12 @@ for dirname in list_dirs:
     print "event string: ", event_string
     number_events = float((event_string.split())[4])
     print "No. of events processed = " + str (number_events) + "\n"
+    
+    #Treat signal differently to account for different samples with same xsec
+    if "Signal" in samplename:
+        signal_events_cumul = signal_events_cumul + number_events
+        continue
+
     xsection = float(get_xsec_fromsample(samplename))
     print "crossection = ", xsection
     if number_events == 0:
@@ -125,5 +134,13 @@ for dirname in list_dirs:
         write_string = samplename + " " + str(scale_factor) + "\n"
         print "Output Norm = ", write_string
         out_file.write(write_string)
+
+if signal_events_cumul > 0.:
+    xsection = float(get_xsec_fromsample("Signal"))
+    scale_factor = float(xsection*1000./signal_events_cumul)
+    print "Signal scale_factor = ", scale_factor
+    write_string = Signal + " " + str(scale_factor) + "\n"
+    print "Output Norm = ", write_string
+    out_file.write(write_string)
 
 print "All done!"
