@@ -9,7 +9,15 @@ workspace = fInput.Get("workspace")
 
 workspace.Print()
 
-workspace.var("W_pigamma_BR").setRange(0.,0.00001)
+workspace.var("W_pigamma_BR").setRange(0.,0.001)
+
+#Set a few things constant
+workspace.var("a0_el").setConstant(1)
+workspace.var("a1_el").setConstant(1)
+workspace.var("a0_mu").setConstant(1)
+workspace.var("a1_mu").setConstant(1)
+workspace.var("Nbkg_el").setConstant(1)
+workspace.var("Nbkg_mu").setConstant(1)
 
 #Define the parameter of interest
 W_pigamma_BR = workspace.var("W_pigamma_BR")
