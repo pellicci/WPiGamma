@@ -4,18 +4,13 @@
 import ROOT
 
 #Define the observable
-Wmass = ROOT.RooRealVar("Wmass","#pi-#gamma invariant mass",40.,120.)
+Wmass = ROOT.RooRealVar("Wmass","#pi-#gamma invariant mass",50.,110.)
 
 #Retrive the sample
 fInput = ROOT.TFile("Tree_MC.root")
 fInput.cd()
 
 mytree = fInput.Get("minitree")
-
-#Define the signal category
-#isSignal = ROOT.RooCategory("isSignal","isSignal")
-#isSignal.defineType("Signal",1)
-#isSignal.defineType("Background",0)
 
 #Define the mu/ele category
 isMuon = ROOT.RooCategory("isMuon","isMuon")
@@ -80,13 +75,13 @@ totPDF = ROOT.RooSimultaneous("totPDF","The total PDF",isMuon)
 totPDF.addPdf(totPDF_mu,"Muon")
 totPDF.addPdf(totPDF_el,"Electron")
 
-totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1) )
+totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1), ROOT.RooFit.NumCPU(4) )
 
-xframe_mu = Wmass.frame()
+xframe_mu = Wmass.frame(50)
 data.plotOn(xframe_mu, ROOT.RooFit.Cut("isMuon==1"))
 totPDF.plotOn(xframe_mu, ROOT.RooFit.Slice(isMuon,"Muon"), ROOT.RooFit.ProjWData(data))
 
-xframe_el = Wmass.frame()
+xframe_el = Wmass.frame(50)
 data.plotOn(xframe_el, ROOT.RooFit.Cut("isMuon==0"))
 totPDF.plotOn(xframe_el, ROOT.RooFit.Slice(isMuon,"Electron"), ROOT.RooFit.ProjWData(data))
 

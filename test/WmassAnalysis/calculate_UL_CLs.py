@@ -54,7 +54,7 @@ print "Number of events in data = ", workspace.data("data").numEntries()
 
 fc = ROOT.RooStats.AsymptoticCalculator(workspace.data("data"), bModel, sbModel,0)
 fc.SetOneSided(1)
-#fc.UseSameAltToys()
+fc.UseSameAltToys()
 
 #Configure ToyMC Samler
 toymcs = fc.GetTestStatSampler()

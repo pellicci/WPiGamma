@@ -4,7 +4,7 @@
 import ROOT
 
 #Define the observable
-Wmass = ROOT.RooRealVar("Wmass","#pi-#gamma invariant mass",40.,120.)
+Wmass = ROOT.RooRealVar("Wmass","#pi-#gamma invariant mass",50.,110.)
 
 #Retrive the sample
 fInput = ROOT.TFile("Tree_MC.root")
