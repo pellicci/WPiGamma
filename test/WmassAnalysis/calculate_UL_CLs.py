@@ -10,10 +10,10 @@ workspace.Print()
 workspace.var("W_pigamma_BR").setRange(0.,0.001)
 
 #Set a few things constant
-workspace.var("a0_el").setConstant(1)
-workspace.var("a1_el").setConstant(1)
-workspace.var("a0_mu").setConstant(1)
-workspace.var("a1_mu").setConstant(1)
+#workspace.var("a0_el").setConstant(1)
+#workspace.var("a1_el").setConstant(1)
+#workspace.var("a0_mu").setConstant(1)
+#workspace.var("a1_mu").setConstant(1)
 #workspace.var("Nbkg_el").setConstant(1)
 #workspace.var("Nbkg_mu").setConstant(1)
 
@@ -28,20 +28,38 @@ observables = ROOT.RooArgSet()
 observables.add(Wmass)
 observables.add(isMuon)
 
+#Define nuisances
+constrained_params = ROOT.RooArgSet()
+constrained_params.add(workspace.var("lumi_ratio"))
+constrained_params.add(workspace.var("W_cross_sec_ratio"))
+constrained_params.add(workspace.var("eff_mu_ratio"))
+constrained_params.add(workspace.var("eff_el_ratio"))
+
+#Define global observables
+global_params = ROOT.RooArgSet()
+global_params.add(workspace.var("glb_W_xsec"))
+global_params.add(workspace.var("glb_lumi"))
+global_params.add(workspace.var("glb_eff_mu"))
+global_params.add(workspace.var("glb_eff_el"))
+
 #Define the model container
 #First the S+B
 sbModel = ROOT.RooStats.ModelConfig()
 sbModel.SetWorkspace(workspace)
 sbModel.SetObservables(observables)
+sbModel.SetNuisanceParameters(constrained_params)
+sbModel.SetGlobalObservables(global_params)
 sbModel.SetPdf("totPDF")
 sbModel.SetName("S+B Model")
 sbModel.SetParametersOfInterest(poi)
 
 bModel = sbModel.Clone()
+bModel.SetObservables(observables)
+bModel.SetNuisanceParameters(constrained_params)
+sbModel.SetGlobalObservables(global_params)
 bModel.SetPdf("totPDF")
-sbModel.SetObservables(observables)
-bModel.SetParametersOfInterest(poi)
 bModel.SetName("B model")
+bModel.SetParametersOfInterest(poi)
 oldval = poi.find("W_pigamma_BR").getVal()
 poi.find("W_pigamma_BR").setVal(0)
 bModel.SetSnapshot(poi)
@@ -54,10 +72,7 @@ print "Number of events in data = ", workspace.data("data").numEntries()
 
 fc = ROOT.RooStats.AsymptoticCalculator(workspace.data("data"), bModel, sbModel,0)
 fc.SetOneSided(1)
-fc.UseSameAltToys()
-
-#Configure ToyMC Samler
-toymcs = fc.GetTestStatSampler()
+#fc.UseSameAltToys()
 
 #Create hypotest inverter passing the desired calculator 
 calc = ROOT.RooStats.HypoTestInverter(fc)
@@ -68,26 +83,13 @@ calc.SetConfidenceLevel(0.95)
 #use CLs
 calc.UseCLs(1)
 
-#We can use PROOF to speed things along in parallel
-pc = ROOT.RooStats.ProofConfig(workspace, 0, "", 0)
-toymcs.SetProofConfig(pc)
-
-#Use profile likelihood as test statistics 
-profll = ROOT.RooStats.ProfileLikelihoodTestStat(sbModel.GetPdf())
-
-#for CLs (bounded intervals) use one-sided profile likelihood
-profll.SetOneSided(1)
-
-#set the test statistic to use for toys
-toymcs.SetTestStatistic(profll)
-
-npoints = 10 #8 #Number of points to scan
+npoints = 15 #8 #Number of points to scan
 #x min and max for the scan (better to choose smaller intervals)
 poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
 print "Doing a fixed scan  in interval : ", poimin, " , ", poimax
-calc.SetFixedScan(npoints,poimin,0.0001);
+calc.SetFixedScan(npoints,poimin,0.00005);
 
 result = calc.GetInterval() #This is a HypoTestInveter class object
 upperLimit = result.UpperLimit()
@@ -104,10 +106,10 @@ print " expected limit (+1 sig) ", result.GetExpectedUpperLimit(1)
 print "################"
 
 #Plot the results
-#freq_plot = ROOT.RooStats.HypoTestInverterPlot("HTI_Result_Plot","Frequentist scan result for the W -> pigamma BR",result)
+freq_plot = ROOT.RooStats.HypoTestInverterPlot("HTI_Result_Plot","Frequentist scan result for the W -> pigamma BR",result)
 
-#Plot in a new canvas with style
-#canvas = ROOT.TCanvas()
-#canvas.cd()
-#freq_plot.Draw("2CL")
-#canvas.SaveAs("calculate_UL_CLs.png")
+#xPlot in a new canvas with style
+canvas = ROOT.TCanvas()
+canvas.cd()
+freq_plot.Draw("2CL")
+canvas.SaveAs("calculate_UL_CLs.png")

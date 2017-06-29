@@ -2,6 +2,7 @@
 #This program only fits a single lepton sample at a time
 
 import ROOT
+import math
 
 #Define the observable
 Wmass = ROOT.RooRealVar("Wmass","#pi-#gamma invariant mass",50.,110.)
@@ -51,31 +52,68 @@ a0_el = ROOT.RooRealVar("a0_el","a0_el",0.1,-5.,5.)
 a1_el = ROOT.RooRealVar("a1_el","a1_el",-0.1,-5.,5.)
 backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el))
 
-
 #Now fit signal + background
 
 #Define signal as sigma*BR*eff*lumi
-W_cross_sec  = ROOT.RooRealVar("W_cross_sec","W_cross_sec",20.64/(2.*10.86) * 1000. ) #Taken from the ATLAS paper, in pb
-lumi         = ROOT.RooRealVar("lumi","lumi",36.46 * 1000.) #In pb
-W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.00001,0.,0.1) # The parameter of interest
+
+#First the cross section, with a modifier for systematics
+#CMS ttbar measurement/W->lnu BR (it is measured with both W in lnu), in pb
+#http://cms-results.web.cern.ch/cms-results/public-results/publications/TOP-16-005/index.html
+W_cross_sec       = ROOT.RooRealVar("W_cross_sec","W_cross_sec", 815./0.1086 )
+W_cross_sec_ratio = ROOT.RooRealVar("W_cross_sec_ratio","W_cross_sec_ratio",1.,0.,2.)
+glb_W_xsec        = ROOT.RooRealVar("glb_W_xsec","glb_W_xsec",1.,0.,3.)
+W_xsec_syst       = ROOT.RooRealVar("W_xsec_syst","W_xsec_syst",43./815.)
+gauss_W_xsec      = ROOT.RooGaussian("gauss_W_xsec","gauss_W_xsec",glb_W_xsec,W_cross_sec_ratio,W_xsec_syst)
+
+#Represent the luminosity with a modifier for systematics. For 2016, 2.5% systematics
+lumi       = ROOT.RooRealVar("lumi","lumi",36.46 * 1000.) #In pb
+lumi_ratio = ROOT.RooRealVar("lumi_ratio","lumi_ratio",1.,0.,2.)
+glb_lumi   = ROOT.RooRealVar("glb_lumi","glb_lumi",1.,0.,3.)
+lumi_syst  = ROOT.RooRealVar("lumi_syst","lumi_syst",0.025)
+gauss_lumi = ROOT.RooGaussian("gauss_lumi","gauss_lumi",glb_lumi,lumi_ratio,lumi_syst) 
 
 W_eff_mu     = ROOT.RooRealVar("W_eff_mu","W_eff_mu",708.*2./36900.) #For now, just the raw MC passed/generated number
-W_eff_el     = ROOT.RooRealVar("W_eff_el","W_eff_el",1326.*2./36900.) #For now, just the raw MC passed/generated number
+eff_mu_ratio = ROOT.RooRealVar("eff_mu_ratio","eff_mu_ratio",1.,0.,2.)
+glb_eff_mu   = ROOT.RooRealVar("glb_eff_mu","glb_eff_mu",1.,0.,3.)
+eff_mu_syst  = ROOT.RooRealVar("eff_mu_syst","eff_mu_syst", math.sqrt(1./708. + 2./36900.)*708.*2./36900.)
+gauss_eff_mu = ROOT.RooGaussian("gauss_eff_mu","gauss_eff_mu",glb_eff_mu,eff_mu_ratio,eff_mu_syst) 
 
-Nsig_mu = ROOT.RooFormulaVar("Nsig_mu","@0*@1*@2*@3", ROOT.RooArgList(W_cross_sec,W_pigamma_BR,W_eff_mu,lumi))
-Nsig_el = ROOT.RooFormulaVar("Nsig_el","@0*@1*@2*@3", ROOT.RooArgList(W_cross_sec,W_pigamma_BR,W_eff_el,lumi))
+W_eff_el     = ROOT.RooRealVar("W_eff_el","W_eff_el",1326.*2./36900.) #For now, just the raw MC passed/generated number
+eff_el_ratio = ROOT.RooRealVar("eff_el_ratio","eff_el_ratio",1.,0.,2.)
+glb_eff_el   = ROOT.RooRealVar("glb_eff_el","glb_eff_el",1.,0.,3.)
+eff_el_syst  = ROOT.RooRealVar("eff_el_syst","eff_el_syst", math.sqrt(1./708. + 2./36900.)*708.*2./36900.)
+gauss_eff_el = ROOT.RooGaussian("gauss_eff_el","gauss_eff_el",glb_eff_el,eff_el_ratio,eff_el_syst) 
+
+W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.00001,0.,0.1) # The parameter of interest
+
+glb_W_xsec.setConstant(1)
+glb_lumi.setConstant(1)
+glb_eff_mu.setConstant(1)
+glb_eff_el.setConstant(1)
+
+Nsig_mu = ROOT.RooFormulaVar("Nsig_mu","@0*@1*@2*@3*@4*@5", ROOT.RooArgList(W_cross_sec,W_pigamma_BR,W_eff_mu,lumi,W_cross_sec_ratio,lumi_ratio,eff_mu_ratio))
+Nsig_el = ROOT.RooFormulaVar("Nsig_el","@0*@1*@2*@3*@4*@5", ROOT.RooArgList(W_cross_sec,W_pigamma_BR,W_eff_el,lumi,W_cross_sec_ratio,lumi_ratio,eff_el_ratio))
 
 Nbkg_mu = ROOT.RooRealVar("Nbkg_mu","Nbkg_mu",100.,0.,500.)
 Nbkg_el = ROOT.RooRealVar("Nbkg_el","Nbkg_el",160.,0.,1000.)
 
-totPDF_mu = ROOT.RooAddPdf("totPDF_mu","Total PDF for the mu channel",ROOT.RooArgList(totSignal,backPDF_mu),ROOT.RooArgList(Nsig_mu,Nbkg_mu))
-totPDF_el = ROOT.RooAddPdf("totPDF_el","Total PDF for the el channel",ROOT.RooArgList(totSignal,backPDF_el),ROOT.RooArgList(Nsig_el,Nbkg_el))
+totPDF_mu_unconstr = ROOT.RooAddPdf("totPDF_mu_unconstr","Total PDF for the mu channel",ROOT.RooArgList(totSignal,backPDF_mu),ROOT.RooArgList(Nsig_mu,Nbkg_mu))
+totPDF_el_unconstr = ROOT.RooAddPdf("totPDF_el_unconstr","Total PDF for the el channel",ROOT.RooArgList(totSignal,backPDF_el),ROOT.RooArgList(Nsig_el,Nbkg_el))
+
+totPDF_mu = ROOT.RooProdPdf("totPDF_mu","totPDF_mu", ROOT.RooArgList(totPDF_mu_unconstr,gauss_lumi,gauss_W_xsec,gauss_eff_mu))
+totPDF_el = ROOT.RooProdPdf("totPDF_el","totPDF_el", ROOT.RooArgList(totPDF_el_unconstr,gauss_lumi,gauss_W_xsec,gauss_eff_el))
 
 totPDF = ROOT.RooSimultaneous("totPDF","The total PDF",isMuon)
 totPDF.addPdf(totPDF_mu,"Muon")
 totPDF.addPdf(totPDF_el,"Electron")
 
-totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1), ROOT.RooFit.NumCPU(4) )
+constrained_params = ROOT.RooArgSet()
+constrained_params.add(lumi_ratio)
+constrained_params.add(W_cross_sec_ratio)
+constrained_params.add(eff_mu_ratio)
+constrained_params.add(eff_el_ratio)
+
+totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
 
 xframe_mu = Wmass.frame(50)
 data.plotOn(xframe_mu, ROOT.RooFit.Cut("isMuon==1"))
