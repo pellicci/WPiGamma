@@ -89,7 +89,7 @@ poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
 print "Doing a fixed scan  in interval : ", poimin, " , ", poimax
-calc.SetFixedScan(npoints,poimin,0.000003);
+calc.SetFixedScan(npoints,poimin,0.000005);
 
 result = calc.GetInterval() #This is a HypoTestInveter class object
 upperLimit = result.UpperLimit()

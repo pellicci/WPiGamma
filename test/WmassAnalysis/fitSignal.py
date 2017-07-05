@@ -4,13 +4,16 @@
 import ROOT
 
 #Define the observable
-Wmass = ROOT.RooRealVar("Wmass","#pi-#gamma invariant mass",50.,110.)
+Wmass = ROOT.RooRealVar("Wmass","#pi-#gamma invariant mass",50.,100.,"GeV")
 
 #Retrive the sample
 fInput = ROOT.TFile("Tree_MC.root")
 fInput.cd()
 
 mytree = fInput.Get("minitree")
+
+#Define the event weight
+weight = ROOT.RooRealVar("weight","The event weight",0.,10.)
 
 #Define the signal category
 isSignal = ROOT.RooCategory("isSignal","isSignal")
@@ -23,7 +26,7 @@ isMuon.defineType("Muon",1)
 isMuon.defineType("Electron",0)
 
 #Create the RooDataSet. No need to import weight for signal only analysis
-data = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isSignal,isMuon), ROOT.RooFit.Import(mytree))
+data = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isSignal,weight), ROOT.RooFit.Import(mytree))
 
 #Skim the signal only
 data_Signal = data.reduce("isSignal==1")
@@ -40,7 +43,8 @@ BW_W = ROOT.RooBreitWigner("BW_W","The Breit-Wigner",Wmass,Wpole,Wwidth)
 W_resol_pole  = ROOT.RooRealVar("W_resol_pole","The center of the resolution",0.,-10.,10.)
 W_resol_width = ROOT.RooRealVar("W_resol_width","The width of resolution",10.,0.1,50.)
 W_resol_alpha = ROOT.RooRealVar("W_resol_alpha","The alpha of resolution",1.,-10.,10.)
-W_resol_n     = ROOT.RooRealVar("W_resol_n","The n of resolution",1.,-10.,10.)
+W_resol_n     = ROOT.RooRealVar("W_resol_n","The n of resolution",2.,-10.,10.)
+W_resol_n.setConstant(1)
 
 gauss_resol = ROOT.RooCBShape("gauss_resol","The resolution function",Wmass,W_resol_pole,W_resol_width,W_resol_alpha,W_resol_n)
 
