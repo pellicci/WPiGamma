@@ -98,7 +98,9 @@ def get_xsec_fromsample(samplename):
         return 47.13
 
     if "Signal" in samplename:
-        return 831.76*0.1086*2.*0.0000001       #cross section taken from 1603.09222, BR assumed 1*10-7
+        #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
+        return 831.76*0.1086*2.*0.000001*2.
+    
 
 ##Now starts the program
 
