@@ -59,8 +59,8 @@ backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a
 #First the cross section, with a modifier for systematics
 #CMS ttbar measurement/W->lnu BR (it is measured with both W in lnu), in pb
 #http://cms-results.web.cern.ch/cms-results/public-results/publications/TOP-16-005/index.html
-glb_W_xsec    = ROOT.RooRealVar("glb_W_xsec","glb_W_xsec", 815./0.1086, 0., 20000. )
-W_xsec_constr = ROOT.RooRealVar("W_xsec_constr","W_x_sec_constr", 815/0.1086, 0., 20000.)
+glb_W_xsec    = ROOT.RooRealVar("glb_W_xsec","glb_W_xsec", 2.*815./0.1086, 0., 20000. )
+W_xsec_constr = ROOT.RooRealVar("W_xsec_constr","W_x_sec_constr", 2.*815./0.1086, 0., 20000.)
 W_xsec_syst   = ROOT.RooRealVar("W_xsec_syst","W_xsec_syst",43.)
 gauss_W_xsec  = ROOT.RooGaussian("gauss_W_xsec","gauss_W_xsec",glb_W_xsec,W_xsec_constr,W_xsec_syst)
 

@@ -98,7 +98,7 @@ def get_xsec_fromsample(samplename):
         return 47.13
 
     if "Signal" in samplename:
-        return 186444.*0.0000001       #cross section taken from 1603.09222, BR assumed 1*10-7
+        return 831.76*0.1086*2.*0.0000001       #cross section taken from 1603.09222, BR assumed 1*10-7
 
 ##Now starts the program
 
