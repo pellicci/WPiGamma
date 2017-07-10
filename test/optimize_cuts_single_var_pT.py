@@ -26,13 +26,9 @@ def is_Event_selected(nBjets,Wmass,pi_pt,gamma_et):
 ##Here starts the program
 Norm_Map = myWF.get_normalizations_map()
 
-steps_cut1 = 10
-cut1_init = 0.
-cut1_stepsize = 0.3
-
-#steps_cut2 = 10
-#cut2_init = 20.
-#cut2_stepsize = 10.
+steps_cut1 = 25
+cut1_init = 25.
+cut1_stepsize = 1.
 
 cut_Nbkg = [0 for x in range(steps_cut1)]
 cut_Nsig = [0 for x in range(steps_cut1)]
@@ -67,7 +63,7 @@ for name_sample in samplename_list:
         PU_Weight = mytree.PU_Weight
         Event_Weight = norm_factor*PU_Weight
 
-        if mytree.is_muon: #to be set to 'if mytree.is_muon' if you want to find the cut on electrons
+        if not mytree.is_muon: #to be set to 'if mytree.is_muon' if you want to find the cut on electrons
             continue
 
         deltaphi = math.fabs(mytree.lepton_phi-mytree.pi_phi)
@@ -77,7 +73,7 @@ for name_sample in samplename_list:
         for icut1 in xrange(steps_cut1):
             cut1_value = cut1_init + cut1_stepsize*icut1
 
-            if  deltaphi < cut1_value:
+            if  mytree.lepton_pT < cut1_value:
                 continue
 
             if name_sample == myWF.sig_samplename:
@@ -129,6 +125,7 @@ graph_cut1 = ROOT.TGraph(steps_cut1,cut1_x,cut1_y)
 c1 = ROOT.TCanvas("c1","c1")
 c1.cd()
 graph_cut1.Draw("A*")
-graph_cut1.SetTitle("Significance vs deltaphi_lepton_pi; deltaphi; Significance")
+graph_cut1.SetTitle("Significance vs muon pT; muon pT; Significance")
 
-c1.SaveAs("plots/deltaphi_mu_pi_signif.png")
+c1.SaveAs("plots/mu_pT_signif.png")
+

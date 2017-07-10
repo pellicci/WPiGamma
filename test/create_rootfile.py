@@ -14,7 +14,7 @@ Wmass = np.zeros(1, dtype=float)
 isMuon = np.zeros(1, dtype=int)
 isSignal = np.zeros(1, dtype=int)
 weight = np.zeros(1, dtype=float)
-f = TFile('Tree_MC.root','recreate')
+f = TFile('WmassAnalysis/Tree_MC.root','recreate')
 t = TTree('minitree','tree with branches')
 t.Branch('Wmass',Wmass,'Wmass/D')
 t.Branch('isMuon',isMuon,'isMuon/I')
@@ -25,10 +25,12 @@ t.Branch('weight',weight,'weight/D')
 MU_MIN_PT    = 25.
 ELE_MIN_PT   = 26.
 PI_MIN_PT    = 50.
-GAMMA_MIN_ET = 70.
+GAMMA_MIN_ET = 50.
 N_BJETS_MIN  = 0.
-#WMASS_MIN    = 40.
-DELTAPHI_MIN = 1.2
+WMASS_MIN    = 50.
+WMASS_MAX    = 100.
+DELTAPHI_MU_PI_MIN = 1.2
+DELTAPHI_ELE_PI_MIN = 1.8
 
 #Normalize to this luminsity, in fb-1
 luminosity_norm = 36.46
@@ -36,14 +38,17 @@ luminosity_norm = 36.46
 def select_all_but_one(cutstring):
 
     selection_bools = dict()
-    selection_bools["mupt"]      = lep_pt > MU_MIN_PT
-    selection_bools["elept"]     = lep_pt > ELE_MIN_PT
+    if ismuon:
+        selection_bools["mupt"]      = lep_pt > MU_MIN_PT
+        selection_bools["deltaphi_mu_pi"]  = deltaphi_lep_pi > DELTAPHI_MU_PI_MIN
+    if not ismuon:
+        selection_bools["elept"]     = lep_pt > ELE_MIN_PT
+        selection_bools["deltaphi_ele_pi"]  = deltaphi_lep_pi > DELTAPHI_ELE_PI_MIN
     selection_bools["pipt"]      = pi_pt > PI_MIN_PT
     selection_bools["gammaet"]   = gamma_et > GAMMA_MIN_ET
     selection_bools["nBjets"]    = nBjets > N_BJETS_MIN
-    #selection_bools["Wmass"]     = Wmass[0] > WMASS_MIN
-    selection_bools["deltaphi"]  = deltaphi_lep_pi > DELTAPHI_MIN
-
+    selection_bools["Wmass_bottom"]     = wmass > WMASS_MIN
+    selection_bools["Wmass_top"]     = wmass < WMASS_MAX
     result = True
 
     for hname in selection_bools:
@@ -79,24 +84,31 @@ for name_sample in samplename_list:
         if nb <= 0:
             continue
         
-        Event_Weight = norm_factor
+        if name_sample == "ttbar" and mytree.isttbarlnu:
+            continue
+
+        PU_Weight = mytree.PU_Weight
+        Event_Weight = norm_factor*PU_Weight
         
         lep_pt  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
         lep_phi = mytree.lepton_phi
         
+        ismuon = mytree.is_muon
+
         pi_pt = mytree.pi_pT
         pi_eta = mytree.pi_eta
         pi_phi = mytree.pi_phi
         
         gamma_et = mytree.photon_eT
-        
+
+        wmass = mytree.Wmass
+
         nBjets = mytree.nBjets
         
         deltaeta_lep_pi = lep_eta-pi_eta
         
         deltaphi_lep_pi = math.fabs(lep_phi-pi_phi)
-        
         if deltaphi_lep_pi > 3.14:
             deltaphi_lep_pi = 6.28 - deltaphi_lep_pi
 
@@ -114,4 +126,5 @@ for name_sample in samplename_list:
 print "Finished runnning over samples!"
 
 f.Write()
+print "file written"
 f.Close()

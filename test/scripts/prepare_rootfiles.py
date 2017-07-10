@@ -32,7 +32,7 @@ for dirname in list_dirs:
     os.system(hadd_command)
 
 list_signals = os.listdir(dir_output_sig)
-if list_signals.size > 1:
+if len(list_signals) > 1:
     hadd_command = "hadd -f " + dir_output_sig + "/WPiGammaAnalysis_Signal.root " + dir_output_sig + "/WPiGammaAnalysis_Signal_*.root "
     rm_command = "rm -rf " + dir_output_sig + "/WPiGammaAnalysis_Signal_*.root "
 
