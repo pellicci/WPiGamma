@@ -7,7 +7,7 @@ fInput.cd()
 
 workspace = fInput.Get("workspace")
 workspace.Print()
-workspace.var("W_pigamma_BR").setRange(0.,0.001)
+workspace.var("W_pigamma_BR").setRange(0.,0.0005)
 
 #Set a few things constant
 #workspace.var("a0_el").setConstant(1)
@@ -30,10 +30,10 @@ observables.add(isMuon)
 
 #Define nuisances
 constrained_params = ROOT.RooArgSet()
-constrained_params.add(workspace.var("lumi_ratio"))
-constrained_params.add(workspace.var("W_cross_sec_ratio"))
-constrained_params.add(workspace.var("eff_mu_ratio"))
-constrained_params.add(workspace.var("eff_el_ratio"))
+constrained_params.add(workspace.var("lumi_constr"))
+constrained_params.add(workspace.var("W_xsec_constr"))
+constrained_params.add(workspace.var("eff_mu_constr"))
+constrained_params.add(workspace.var("eff_el_constr"))
 
 #Define global observables
 global_params = ROOT.RooArgSet()
@@ -83,13 +83,13 @@ calc.SetConfidenceLevel(0.95)
 #use CLs
 calc.UseCLs(1)
 
-npoints = 15 #8 #Number of points to scan
+npoints = 20 #Number of points to scan
 #x min and max for the scan (better to choose smaller intervals)
 poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
 print "Doing a fixed scan  in interval : ", poimin, " , ", poimax
-calc.SetFixedScan(npoints,poimin,0.00005);
+calc.SetFixedScan(npoints,poimin,0.000005);
 
 result = calc.GetInterval() #This is a HypoTestInveter class object
 upperLimit = result.UpperLimit()
