@@ -59,15 +59,15 @@ backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a
 #First the cross section, with a modifier for systematics
 #CMS ttbar measurement/W->lnu BR (it is measured with both W in lnu), in pb
 #http://cms-results.web.cern.ch/cms-results/public-results/publications/TOP-16-005/index.html
-glb_W_xsec    = ROOT.RooRealVar("glb_W_xsec","glb_W_xsec", 2.*815./0.1086, 0., 20000. )
-W_xsec_constr = ROOT.RooRealVar("W_xsec_constr","W_x_sec_constr", 2.*815./0.1086, 0., 20000.)
-W_xsec_syst   = ROOT.RooRealVar("W_xsec_syst","W_xsec_syst",43.)
+glb_W_xsec    = ROOT.RooRealVar("glb_W_xsec","glb_W_xsec", 2.*815.*2.*0.1086, 0., 20000. )
+W_xsec_constr = ROOT.RooRealVar("W_xsec_constr","W_x_sec_constr", 2.*815.*2.*0.1086, 0., 20000.)
+W_xsec_syst   = ROOT.RooRealVar("W_xsec_syst","W_xsec_syst",43.*2.*0.1086*2.)
 gauss_W_xsec  = ROOT.RooGaussian("gauss_W_xsec","gauss_W_xsec",glb_W_xsec,W_xsec_constr,W_xsec_syst)
 
 #Represent the luminosity with a modifier for systematics. For 2016, 2.5% systematics
 glb_lumi    = ROOT.RooRealVar("glb_lumi","glb_lumi",36.46 * 1000., 0., 100000.) #In pb
 lumi_constr = ROOT.RooRealVar("lumi_constr","lumi_constr", 36.46 * 1000., 0., 100000.)
-lumi_syst   = ROOT.RooRealVar("lumi_syst","lumi_syst", 36.46*0.025)
+lumi_syst   = ROOT.RooRealVar("lumi_syst","lumi_syst", 36.46*0.025*1000.)
 gauss_lumi  = ROOT.RooGaussian("gauss_lumi","gauss_lumi",glb_lumi,lumi_constr,lumi_syst) 
 
 #Now the efficiency

@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     config.General.requestName = 'WPiGammaAnalysis_ttbarlnu'
     config.Data.unitsPerJob = 5
-    config.Data.inputDataset = '/TTTo2L2Nu_13TeV-powheg/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/MINIAODSIM'
+    config.Data.inputDataset = '/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
     p = Process(target=submit, args=(config,))
     p.start()
     p.join()
@@ -75,6 +75,13 @@ if __name__ == '__main__':
     p.start()
     p.join()
 
+    config.General.requestName = 'WPiGammaAnalysis_ttbarZlnu'
+    config.Data.unitsPerJob = 5
+    config.Data.inputDataset = '/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
+    p = Process(target=submit, args=(config,))
+    p.start()
+    p.join()
+    
     config.General.requestName = 'WPiGammaAnalysis_SingleTop_tW'
     config.Data.unitsPerJob = 5
     config.Data.inputDataset = '/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'

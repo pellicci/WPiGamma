@@ -28,6 +28,9 @@ def get_xsec_fromsample(samplename):
     if samplename == "ttbarZQQ":
         return 0.5297 
 
+    if samplename == "ttbarZlnu":
+        return 0.2529 
+
     if samplename == "SingleTop_tW":
         return 35.85
 
