@@ -103,7 +103,6 @@ def get_xsec_fromsample(samplename):
     if "Signal" in samplename:
         #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
         return 831.76*0.1086*2.*0.000001*2.
-    
 
 ##Now starts the program
 
@@ -144,7 +143,7 @@ if signal_events_cumul > 0.:
     xsection = float(get_xsec_fromsample("Signal"))
     scale_factor = float(xsection*1000./signal_events_cumul)
     print "Signal scale_factor = ", scale_factor
-    write_string = Signal + " " + str(scale_factor) + "\n"
+    write_string = "Signal" + " " + str(scale_factor) + "\n"
     print "Output Norm = ", write_string
     out_file.write(write_string)
 

@@ -13,10 +13,12 @@ myWF = Workflow_Handler("Signal")
 MU_MIN_PT    = 25.
 ELE_MIN_PT   = 26.
 PI_MIN_PT    = 50.
-GAMMA_MIN_ET = 70.
+GAMMA_MIN_ET = 50.
 N_BJETS_MIN  = 0.
-WMASS_MIN    = 40.
-DELTAPHI_MIN = 1.2
+WMASS_MIN    = 50.
+WMASS_MAX    = 100.
+DELTAPHI_MU_PI_MIN = 1.2
+DELTAPHI_ELE_PI_MIN = 1.8
 
 #Normalize to this luminsity, in fb-1
 luminosity_norm = 36.46
@@ -38,16 +40,17 @@ colors_mask = [26,400,840,616,860,432,880,900,800,416,885,920,101]  #Invert 900 
 def select_all_but_one(cutstring):
 
     selection_bools = dict()
-    selection_bools["h_mupt"]             = lep_pt > MU_MIN_PT
-    selection_bools["h_elept"]            = lep_pt > ELE_MIN_PT
+    if isMuon:
+        selection_bools["h_mupt"]             = lep_pt > MU_MIN_PT
+        selection_bools["h_deltaphi_mu_pi"]   = deltaphi_lep_pi > DELTAPHI_MU_PI_MIN
+    if not isMuon:
+        selection_bools["h_elept"]            = lep_pt > ELE_MIN_PT
+        selection_bools["h_deltaphi_ele_pi"]  = deltaphi_lep_pi > DELTAPHI_ELE_PI_MIN
     selection_bools["h_pipt"]             = pi_pt > PI_MIN_PT
     selection_bools["h_gammaet"]          = gamma_et > GAMMA_MIN_ET
     selection_bools["h_nBjets"]           = nBjets > N_BJETS_MIN
-    #selection_bools["h_Wmass"]            = Wmass > WMASS_MIN
-    #selection_bools["h_Wmass_flag_mu"]    = Wmass > WMASS_MIN
-    selection_bools["h_Wmass_flag_ele"]   = Wmass > WMASS_MIN
-    selection_bools["h_deltaphi_mu_pi"]   = deltaphi_lep_pi > DELTAPHI_MIN
-    #selection_bools["h_deltaphi_ele_pi"]  = deltaphi_lep_pi > DELTAPHI_MIN
+    selection_bools["h_Wmass"]            = Wmass > WMASS_MIN and Wmass < WMASS_MAX
+    #selection_bools["h_Wmass"]            = Wmass < WMASS_MASS
     result = True
 
     for hname in selection_bools:
@@ -88,9 +91,9 @@ for sample_name in samplename_list:
 
     h_base[theSampleName+list_histos[0]]  = ROOT.TH1F(theSampleName+list_histos[0], "p_{T} of the muon", 30, 25, 300.)
     h_base[theSampleName+list_histos[1]]  = ROOT.TH1F(theSampleName+list_histos[1], "p_{T} of the electron", 30, 26, 300.)
-    h_base[theSampleName+list_histos[2]]  = ROOT.TH1F(theSampleName+list_histos[2], "p_{T} of the pion", 35, 20, 300.)
-    h_base[theSampleName+list_histos[3]]  = ROOT.TH1F(theSampleName+list_histos[3], "e_{T} of the gamma", 35, 20, 300.)
-    h_base[theSampleName+list_histos[4]]  = ROOT.TH1F(theSampleName+list_histos[4], "W mass", 25, 20, 125)
+    h_base[theSampleName+list_histos[2]]  = ROOT.TH1F(theSampleName+list_histos[2], "p_{T} of the pion", 17, 20, 100.)
+    h_base[theSampleName+list_histos[3]]  = ROOT.TH1F(theSampleName+list_histos[3], "e_{T} of the gamma", 17, 20, 100.)
+    h_base[theSampleName+list_histos[4]]  = ROOT.TH1F(theSampleName+list_histos[4], "W mass", 20, 40, 100)
     h_base[theSampleName+list_histos[5]]  = ROOT.TH1F(theSampleName+list_histos[5], "n Bjets", 6, 0, 6.)
     h_base[theSampleName+list_histos[6]]  = ROOT.TH1F(theSampleName+list_histos[6], "eta of the muon", 20, -3, 3)
     h_base[theSampleName+list_histos[7]]  = ROOT.TH1F(theSampleName+list_histos[7], "eta of the electron", 20, -3, 3)
@@ -98,8 +101,8 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[9]]  = ROOT.TH1F(theSampleName+list_histos[9], "deltaphi ele-pi", 10, 0, 3.14)
     h_base[theSampleName+list_histos[10]] = ROOT.TH1F(theSampleName+list_histos[10], "deltaeta mu-pi", 20, -5, 5)
     h_base[theSampleName+list_histos[11]] = ROOT.TH1F(theSampleName+list_histos[11], "deltaeta ele-pi", 20, -5, 5)
-    h_base[theSampleName+list_histos[12]] = ROOT.TH1F(theSampleName+list_histos[12], "W mass if flag mu", 25, 20, 125)
-    h_base[theSampleName+list_histos[13]] = ROOT.TH1F(theSampleName+list_histos[13], "W mass if flag ele", 25, 20, 125)
+    h_base[theSampleName+list_histos[12]] = ROOT.TH1F(theSampleName+list_histos[12], "W mass if flag mu", 20, 40, 100)
+    h_base[theSampleName+list_histos[13]] = ROOT.TH1F(theSampleName+list_histos[13], "W mass if flag ele", 20, 40, 100)
 
 #For right positioning 0.6868687,0.6120093,0.9511784,0.9491917
 #For left positioning 0.1,0.5,0.25,0.9
@@ -147,8 +150,12 @@ for name_sample in samplename_list:
         nb = mytree.GetEntry(jentry )
         if nb <= 0:
             continue
-            
-        Event_Weight = norm_factor   #Add other event weights here if necessary
+
+        if name_sample == "ttbar" and mytree.isttbarlnu:
+            continue
+
+        PU_Weight = mytree.PU_Weight  
+        Event_Weight = norm_factor*PU_Weight   #Add other event weights here if necessary
             
         #This is how you access the tree variables
         lep_pt  = mytree.lepton_pT
@@ -170,9 +177,14 @@ for name_sample in samplename_list:
         deltaeta_lep_pi = lep_eta-pi_eta
         
         deltaphi_lep_pi = math.fabs(lep_phi-pi_phi)
-        
         if deltaphi_lep_pi > 3.14:
             deltaphi_lep_pi = 6.28 - deltaphi_lep_pi
+
+        #if not isMuon:
+        #    deltaphi_ele_pi = math.fabs(lep_phi-pi_phi)
+        #    if deltaphi_ele_pi > 3.14:
+        #        deltaphi_ele_pi = 6.28 - deltaphi_ele_pi
+        #else: deltaphi_ele_pi = 100.
 
 #---------- filling histos ------------
 
@@ -212,10 +224,10 @@ for name_sample in samplename_list:
         if select_all_but_one("h_deltaeta_ele_pi") and not isMuon:
             h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
 
-        if select_all_but_one("h_Wmass_flag_mu") and isMuon:
+        if select_all_but_one("h_Wmass") and isMuon:
             h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
 
-        if select_all_but_one("h_Wmass_flag_ele") and not isMuon:
+        if select_all_but_one("h_Wmass") and not isMuon:
             h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
 
         #Count the events
@@ -246,8 +258,8 @@ for name_sample in samplename_list:
                  leg1.AddEntry(h_base[theSampleName+hname],"QCD","f")
                  isFirstQCDlegend = False
             elif name_sample == myWF.sig_samplename:
-                 sample_legend_name = "10 x " + name_sample
-                 leg1.AddEntry(h_base[name_sample+hname], sample_legend_name,"f")  #To comment when signal is has to be excluded.
+                 sample_legend_name = "1 x " + name_sample
+                 leg1.AddEntry(h_base[name_sample+hname], sample_legend_name,"f")  #To comment when signal has to be excluded.
             elif not QCDflag:
                  leg1.AddEntry(h_base[theSampleName+hname],theSampleName,"f")
 

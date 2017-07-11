@@ -13,9 +13,11 @@ def is_Event_selected(nBjets,Wmass):
     """Save events according to some basic selection criteria"""
     bjet_cut = nBjets > 0.
 
-    mass_cut = Wmass > 20.
+    mass_cut_down = Wmass > 50.
 
-    return bjet_cut and mass_cut
+    mass_cut_up = Wmass < 100.
+
+    return bjet_cut and mass_cut_down and mass_cut_up
 
 ##Here starts the program
 Norm_Map = myWF.get_normalizations_map()
@@ -58,6 +60,9 @@ for name_sample in samplename_list:
         if not is_Event_selected(mytree.nBjets, mytree.Wmass):
             continue
         
+        PU_Weight = mytree.PU_Weight
+        Event_Weight = norm_factor*PU_Weight
+
         for icut1 in xrange(steps_cut1):
             cut1_value = cut1_init + cut1_stepsize*icut1
 
@@ -71,9 +76,9 @@ for name_sample in samplename_list:
                     continue
 
                 if name_sample == myWF.sig_samplename:
-                    cut_Nsig[icut1][icut2] += norm_factor
+                    cut_Nsig[icut1][icut2] += Event_Weight
                 else:
-                    cut_Nbkg[icut1][icut2] += norm_factor
+                    cut_Nbkg[icut1][icut2] += Event_Weight
 
 print "Done looping over the events"
 
@@ -129,5 +134,5 @@ c1.SaveAs("plots/cut1_signif.png")
 c2 = ROOT.TCanvas("c2","c2")
 c2.cd()
 graph_cut2.Draw("A*")
-graph_cut2.SetTitle("Significance vs e_{T} of gamma; e_{T} of gamma; Significance")
+graph_cut2.SetTitle("Significance vs E_{T} of gamma; e_{T} of gamma; Significance")
 c2.SaveAs("plots/cut2_signif.png")
