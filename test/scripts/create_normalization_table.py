@@ -44,7 +44,7 @@ def get_xsec_fromsample(samplename):
         return 18610.0
 
     if samplename == "DY_50":
-        return 5765.0
+        return 1921.8*3.
 
     if samplename == "QCD_HT100to200":
         return 27540000.0 
