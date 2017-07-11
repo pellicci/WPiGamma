@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-WPiGammaAnalysis = cms.EDAnalyzer('WPiGammaAnalysis',
+LeptonMultiplicity = cms.EDAnalyzer('LeptonMultiplicity',
                                   packedPFCandidates = cms.InputTag("packedPFCandidates"),
                                   slimmedMuons       = cms.InputTag("slimmedMuons"),
                                   prunedGenParticles = cms.InputTag("prunedGenParticles"),
@@ -31,5 +31,6 @@ WPiGammaAnalysis = cms.EDAnalyzer('WPiGammaAnalysis',
                                   mvaValuesMap_ph     = cms.InputTag("photonMVAValueMapProducer:PhotonMVAEstimatorRun2Spring16NonTrigV1Values"),
                                   mvaCategoriesMap_ph = cms.InputTag("photonMVAValueMapProducer:PhotonMVAEstimatorRun2Spring16NonTrigV1Categories"),
                                   # Effective areas for computing PU correction for isolations
-                                  effAreasConfigFile = cms.FileInPath("RecoEgamma/ElectronIdentification/data/Spring15/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_25ns.txt")
+                                  effAreasConfigFile  = cms.FileInPath("RecoEgamma/ElectronIdentification/data/Spring15/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_25ns.txt")
                                  )
+
