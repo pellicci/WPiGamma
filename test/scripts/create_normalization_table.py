@@ -28,6 +28,9 @@ def get_xsec_fromsample(samplename):
     if samplename == "ttbarZQQ":
         return 0.5297 
 
+    if samplename == "ttbarZlnu":
+        return 0.2529 
+
     if samplename == "SingleTop_tW":
         return 35.85
 
@@ -41,7 +44,7 @@ def get_xsec_fromsample(samplename):
         return 18610.0
 
     if samplename == "DY_50":
-        return 5765.0
+        return 1921.8*3.
 
     if samplename == "QCD_HT100to200":
         return 27540000.0 
@@ -97,6 +100,15 @@ def get_xsec_fromsample(samplename):
     if samplename == "WZ":
         return 47.13
 
+    if samplename == "GammaJets_20_40":
+        return 137751.
+
+    if samplename == "GammaJets_40_Inf":
+        return 16792.
+
+    if samplename == "GammaJets_20_Inf":
+        return 154500.
+    
     if "Signal" in samplename:
         #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
         return 831.76*0.1086*2.*0.000001*2.
