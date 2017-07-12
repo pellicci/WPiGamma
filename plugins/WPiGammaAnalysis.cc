@@ -35,7 +35,9 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/EgammaCandidates/interface/ConversionFwd.h"
 #include "DataFormats/EgammaCandidates/interface/Conversion.h"
+#include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
+#include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 
 //Photon ID stuff
 #include "DataFormats/EgammaCandidates/interface/Photon.h"
@@ -67,7 +69,8 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   phoMediumIdFullInfoMapToken_(consumes<edm::ValueMap<vid::CutFlowResult> > (iConfig.getParameter<edm::InputTag>("phoMediumIdFullInfoMap"))),
   mvaValuesMapToken_ph_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap_ph"))),
   mvaCategoriesMapToken_ph_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap_ph"))),
-  verboseIdFlag_(iConfig.getParameter<bool>("phoIdVerbose"))
+  verboseIdFlag_(iConfig.getParameter<bool>("phoIdVerbose")),
+  effectiveAreas_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile")).fullPath() )
 
 {
   packedPFCandidatestoken_  = consumes<std::vector<pat::PackedCandidate> >(packedPFCandidates_); 
@@ -79,6 +82,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   tok_Vertex_               = consumes<std::vector<reco::Vertex> > (pvCollection_);  
   tok_beamspot_             = consumes<reco::BeamSpot> (edm::InputTag(bsCollection_));
   pileupSummaryToken_       = consumes<std::vector<PileupSummaryInfo> >(edm::InputTag(PileupSrc_));
+  rhoToken_                 = consumes<double> (iConfig.getParameter <edm::InputTag>("rho"));
 
   h_Events = fs->make<TH1F>("h_Events", "Event counting in different steps", 8, 0., 8.);
   _Nevents_processed  = 0;
@@ -198,7 +202,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     if(!triggerBits->accept(i)) continue;
     std::string tmp_triggername = names.triggerName(i);
     if( tmp_triggername.find("HLT_IsoMu24_v") != std::string::npos ||
-	tmp_triggername.find("HLT_Mu45_eta2p1_v") != std::string::npos ||
+	tmp_triggername.find("HLT_IsoTkMu24_v") != std::string::npos ||
 	tmp_triggername.find("HLT_Mu50_v") != std::string::npos){
       isSingleMuTrigger = true;
     }
@@ -237,6 +241,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   float deltaphi_lep_pi = 0.;
 
   //These variables will go in the tree
+  lepton_iso = 0.;
+  ph_iso_ChargedHadron = 0.;
+  ph_iso_NeutralHadron = 0.;
+  ph_iso_Photon = 0.;
+  //ph_iso_Track = 0.;
+  ph_iso_eArho = 0.;
+
   pi_pT = 0.;
   pi_eta = 0.;
   pi_phi = 0.;
@@ -258,8 +269,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
-    if(mu->pt() < 25. || mu->pt() < pTmuMax || !mu->isTightMuon(slimmedPV->at(0))) continue;
-    if( (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso())/mu->pt()) > 0.2) continue;
+    if(mu->pt() < 26. || mu->pt() < pTmuMax || !mu->isMediumMuon() || abs(mu->eta()) > 2.4) continue;
+    if( (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt() > 0.25) continue;
+    lepton_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
     pTmuMax = mu->pt();
     //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
 
@@ -274,13 +286,28 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   if(nMuons > 1) return;
   _Nevents_muVeto++;
 
+  // Get rho value
+  edm::Handle< double > rhoH;
+  iEvent.getByToken(rhoToken_,rhoH);
+  rho_ = *rhoH;
+
   //Loop over electrons
   for (size_t i = 0; i < slimmedElectrons->size(); ++i){
     const auto el = slimmedElectrons->ptrAt(i);
     if(el->pt() < 26. || el->pt() < pTeleMax) continue;
 
-    bool isPassTight = (*el_tight_id_decisions)[el];
-    if(!isPassTight) continue;
+    //bool isPassTight = (*el_tight_id_decisions)[el];
+    //if(!isPassTight) continue;
+
+    bool isPassMedium = (*el_medium_id_decisions)[el];
+    if(!isPassMedium) continue;
+
+    //PflowIsolationVariables pfIso = el->pfIsolationVariables();
+    float abseta =  abs(el->superCluster()->eta());
+    float eA = effectiveAreas_.getEffectiveArea(abseta);
+    if((el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt() > 0.4) continue;
+    lepton_iso = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
+
 
     el_ID       = el->pdgId();
     is_ele      = true;
@@ -400,20 +427,22 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   for (size_t i = 0; i < slimmedPhotons->size(); ++i){
     const auto photon = slimmedPhotons->ptrAt(i);
 
-    if(photon->et() < 20. || photon->et() < eTphMax) continue;
+    if(photon->et() < 20. || abs(photon->eta()) > 2.5 || photon->et() < eTphMax) continue;
     if(photon->hasPixelSeed()) continue;   //electron veto
 
     // The minimal info
     bool isPassMedium = (*ph_medium_id_decisions)[photon];
     if(!isPassMedium) continue;
 
-    /*float abseta = abs(photon->superCluster()->eta());
+    float abseta = abs(photon->superCluster()->eta());
     float eA = effectiveAreas_.getEffectiveArea(abseta);
-    photon_iso = (pfIso.sumChargedHadronPt + std::max( 0.0f, pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - eA*rho_))/photon->et();
-    photon_iso_ChargedHadron = pfIso.sumChargedHadronPt;
-    photon_iso_NeutralHadron = pfIso.sumNeutralHadronEt;
-    photon_iso_Photon = pfIso.sumPhotonEt;
-    photon_iso_eArho = eA*rho_;*/
+    //photon_iso = (pfIso.sumChargedHadronPt + std::max( 0.0f, pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - eA*rho_))/photon->et();
+    if(photon->chargedHadronIso()/photon->et() > 0.3 || photon->photonIso() > 4) continue; //|| photon->trackIso() > 6
+    ph_iso_ChargedHadron = photon->chargedHadronIso();
+    ph_iso_NeutralHadron = photon->neutralHadronIso();
+    ph_iso_Photon        = photon->photonIso();
+    //ph_iso_Track         = photon->trackIso();
+    ph_iso_eArho         = eA*rho_;
 
     eTphMax = photon->et();
 
@@ -495,6 +524,7 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("lepton_pT",&lepton_pT_tree);
   mytree->Branch("lepton_eta",&lepton_eta_tree);
   mytree->Branch("lepton_phi",&lepton_phi_tree);
+  mytree->Branch("lepton_iso",&lepton_iso);
   mytree->Branch("is_muon",&is_muon);
   mytree->Branch("pi_pT",&pi_pT);
   mytree->Branch("pi_eta",&pi_eta);
@@ -502,6 +532,11 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("photon_eT",&ph_pT);
   mytree->Branch("photon_eta",&ph_eta);
   mytree->Branch("photon_phi",&ph_phi);
+  mytree->Branch("photon_iso_ChargedHadron",&ph_iso_ChargedHadron);
+  mytree->Branch("photon_iso_NeutralHadron",&ph_iso_NeutralHadron);
+  mytree->Branch("photon_iso_Photon",&ph_iso_Photon);
+  //mytree->Branch("photon_iso_Track",&ph_iso_Track);
+  mytree->Branch("photon_iso_eArho",&ph_iso_eArho);
 
   mytree->Branch("Wmass",&_Wmass);
 

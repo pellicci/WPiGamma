@@ -58,6 +58,7 @@ private:
   float lepton_pT_tree;
   float lepton_eta_tree;
   float lepton_phi_tree;
+  float lepton_iso;
 
   float pi_pT;
   float pi_eta;
@@ -66,6 +67,11 @@ private:
   float ph_pT;
   float ph_eta;
   float ph_phi;
+  float ph_iso_ChargedHadron;
+  float ph_iso_NeutralHadron;
+  float ph_iso_Photon;
+  //float ph_iso_Track;
+  float ph_iso_eArho;
 
   float _Wmass;
   
@@ -86,6 +92,10 @@ private:
   bool is_photon_matched;
 
   bool is_ttbar_lnu;
+
+  //rho for isolation
+
+  float rho_;
 
   //Tokens
   edm::EDGetTokenT<std::vector<pat::PackedCandidate> > packedPFCandidatestoken_; 
@@ -109,9 +119,16 @@ private:
   edm::EDGetToken photonsMiniAODToken_;
   edm::EDGetTokenT<edm::ValueMap<bool> > phoMediumIdBoolMapToken_;
   edm::EDGetTokenT<edm::ValueMap<vid::CutFlowResult> > phoMediumIdFullInfoMapToken_;
+
+  //rho (PU energy density)
+  edm::EDGetTokenT<double> rhoToken_;
+
   // MVA values and categories (optional)
   edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_ph_;
   edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_ph_;
   bool verboseIdFlag_;
+
+  //Effective areas for isolation
+  EffectiveAreas   effectiveAreas_;
 
 };

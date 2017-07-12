@@ -202,7 +202,7 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
     if(!triggerBits->accept(i)) continue;
     std::string tmp_triggername = names.triggerName(i);
     if( tmp_triggername.find("HLT_IsoMu24_v") != std::string::npos ||
-	tmp_triggername.find("HLT_Mu45_eta2p1_v") != std::string::npos ||
+	tmp_triggername.find("HLT_IsoTkMu24_v") != std::string::npos ||
 	tmp_triggername.find("HLT_Mu50_v") != std::string::npos){
       isSingleMuTrigger = true;
     }
@@ -238,8 +238,8 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
     //if(mu->pt() < 25. || mu->pt() < pTmuMax || !mu->isTightMuon(slimmedPV->at(0))) continue;
     if(mu->pt() < 25. || mu->pt() < pTmuMax || !mu->isMediumMuon()) continue;
-    mu_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso())/mu->pt()); //filling tree with isolation value
-    if( (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso())/mu->pt()) > 0.3) continue;
+    if((mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt() > 0.3) continue;
+    mu_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt(); //filling tree with isolation value
     pTmuMax = mu->pt();
 
 
@@ -274,8 +274,8 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
     //PflowIsolationVariables pfIso = el->pfIsolationVariables();
     float abseta =  abs(el->superCluster()->eta());
     float eA = effectiveAreas_.getEffectiveArea(abseta);
-    el_iso = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
     if((el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt() > 0.3) continue;
+    el_iso = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
 
     //el_ID       = el->pdgId();
     is_ele      = true;
