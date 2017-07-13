@@ -1,4 +1,5 @@
 import ROOT
+import math
 import os
 
 class Workflow_Handler:
@@ -18,6 +19,46 @@ class Workflow_Handler:
         #self.sig_filename = "rootfiles/" + self.subprocess + "Tight/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
         self.sig_filename = "rootfiles/" + self.subprocess + "Medium/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
 
+        eg_reco_scale_name = "scale_factors/Electron_reco_2D.root"
+        eg_reco_scale_file = ROOT.TFile(eg_reco_scale_name)
+        self.eg_reco_scale_histo = eg_reco_scale_file.Get("EGamma_SF2D")
+
+        eg_ID_scale_name = "scale_factors/Electron_ID_2D.root"
+        eg_ID_scale_file = ROOT.TFile(eg_ID_scale_name)
+        self.eg_ID_scale_histo = eg_ID_scale_file.Get("EGamma_SF2D")
+
+        ph_ID_scale_name = "scale_factors/Photon_ID_2D.root"
+        ph_ID_scale_file = ROOT.TFile(ph_ID_scale_name)
+        self.ph_ID_scale_histo = ph_ID_scale_file.Get("EGamma_SF2D")
+
+        ph_pixVeto_scale_name = "scale_factors/Photon_pixVeto_2D.root"
+        ph_pixVeto_scale_file = ROOT.TFile(ph_pixVeto_scale_name)
+        self.ph_pixVeto_scale_histo = ph_pixVeto_scale_file.Get("Scaling_Factors_HasPix_R9 Inclusive")
+        
+    def get_ele_scale(self, ele_pt, ele_eta):
+        #This is because corrections are up to 200 GeV
+        local_ele_pt = ele_pt
+        if local_ele_pt >= 200.:
+            local_ele_pt = 199.
+
+        scale_factor = 1.
+        scale_factor = scale_factor * eg_reco_scale_histo.GetBinContent( eg_reco_scale_histo.GetXaxis().FindBin(ele_eta), eg_reco_scale_histo.GetYaxis().FindBin(local_ele_pt) )
+        scale_factor = scale_factor * eg_ID_scale_histo.GetBinContent( eg_ID_scale_histo.GetXaxis().FindBin(ele_eta), eg_ID_scale_histo.GetYaxis().FindBin(local_ele_pt) )
+
+        return scale_factor
+
+    def get_photon_scale(self, ph_pt, ph_eta):
+        #This is because corrections are up to 200 GeV
+        local_ph_pt = ph_pt
+        if local_ph_pt >= 200.:
+            local_ph_pt = 199.
+
+        scale_factor = 1.
+        scale_factor = scale_factor * ph_ID_scale_histo.GetBinContent( ph_ID_scale_histo.GetXaxis().FindBin(ph_eta), ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+        scale_factor = scale_factor * ph_pixVeto_scale_histo.GetBinContent( ph_pixVeto_scale_histo.GetXaxis().FindBin(math.abs(ph_eta)), ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+
+        return scale_factor
+    
     def get_normalizations_map(self):
         in_file = open(self.norm_filename,"r")
         norm_map = dict()

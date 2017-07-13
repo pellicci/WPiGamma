@@ -164,9 +164,6 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
-        PU_Weight = mytree.PU_Weight  
-        Event_Weight = norm_factor*PU_Weight   #Add other event weights here if necessary
-            
         #This is how you access the tree variables
         lep_pt  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
@@ -184,6 +181,7 @@ for name_sample in samplename_list:
             
         gamma_et = mytree.photon_eT
         gamma_eta = mytree.photon_eta
+
         gamma_phi = mytree.photon_phi
         gamma_E = mytree.photon_energy
         gamma_FourMomentum = ROOT.TLorentzVector()
@@ -198,7 +196,7 @@ for name_sample in samplename_list:
         Wmass = mytree.Wmass
         
         nBjets = mytree.nBjets
-        
+
         deltaeta_lep_pi = lep_eta-pi_eta
         
         deltaphi_lep_pi = math.fabs(lep_phi-pi_phi)
@@ -209,8 +207,17 @@ for name_sample in samplename_list:
         if deltaphi_lep_W > 3.14:
             deltaphi_lep_W = 6.28 - deltaphi_lep_W
 
+        #Determine the total event weight
+        PU_Weight = mytree.PU_Weight  
+        ele_weight = myWF.get_ele_scale(lep_pt,lep_eta)
+        ph_weight = myWF.get_photon_scale(gamma_et,gamma_eta)
+        
+        Event_Weight = norm_factor*PU_Weight*ph_weight   #Add other event weights here if necessary
 
-#---------- filling histos ------------
+        if(not isMuon):
+            Event_Weight = Event_Weight * ele_weight
+
+        #---------- filling histos ------------
 
         if select_all_but_one("h_mupt") and isMuon:
             h_base[theSampleName+"h_mupt"].Fill(lep_pt,Event_Weight)
@@ -273,7 +280,6 @@ for name_sample in samplename_list:
 
         if select_all_but_one("all cuts"):
             h_base[theSampleName+"h_gamma_iso_eArho"].Fill(gamma_iso_eArho,Event_Weight)
-
 
 
         #Count the events
