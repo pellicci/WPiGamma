@@ -8,12 +8,15 @@ class Workflow_Handler:
         ##Where the root files are
         self.subprocess = subprocess
 
-        self.norm_filename = "rootfiles/" + self.subprocess + "Normalizations_table.txt"
-        self.dir_back_input = "rootfiles/" + self.subprocess + "backgrounds/"
+        #self.norm_filename = "rootfiles/" + self.subprocess + "Tight/Normalizations_table.txt"
+        self.norm_filename = "rootfiles/" + self.subprocess + "Medium/Normalizations_table.txt"
+        #self.dir_back_input = "rootfiles/" + self.subprocess + "Tight/backgrounds/"
+        self.dir_back_input = "rootfiles/" + self.subprocess + "Medium/backgrounds/"
         self.dir_data_input = "rootfiles/" + self.subprocess + "data/"      
 
         self.sig_samplename = signalname
-        self.sig_filename = "rootfiles/" + self.subprocess + "signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
+        #self.sig_filename = "rootfiles/" + self.subprocess + "Tight/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
+        self.sig_filename = "rootfiles/" + self.subprocess + "Medium/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
 
     def get_normalizations_map(self):
         in_file = open(self.norm_filename,"r")

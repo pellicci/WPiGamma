@@ -63,10 +63,12 @@ private:
   float pi_pT;
   float pi_eta;
   float pi_phi;
+  float pi_energy;
 
-  float ph_pT;
+  float ph_eT;
   float ph_eta;
   float ph_phi;
+  float ph_energy;
   float ph_iso_ChargedHadron;
   float ph_iso_NeutralHadron;
   float ph_iso_Photon;

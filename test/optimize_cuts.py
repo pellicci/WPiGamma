@@ -9,15 +9,21 @@ luminosity_norm = 36.46
 from Workflow_Handler import Workflow_Handler
 myWF = Workflow_Handler("Signal")
 
-def is_Event_selected(nBjets,Wmass):
+def is_Event_selected(Wmass,lepton_iso):
     """Save events according to some basic selection criteria"""
-    bjet_cut = nBjets > 0.
+    #bjet_cut = nBjets > 0.
 
-    mass_cut_down = Wmass > 50.
+    mass_cut_down = Wmass >= 50.
 
-    mass_cut_up = Wmass < 100.
+    mass_cut_up = Wmass <= 100.
 
-    return bjet_cut and mass_cut_down and mass_cut_up
+    if not isMuon:
+        ele_iso_cut = lepton_iso <= 0.35
+
+    if isMuon:
+        return mass_cut_down and mass_cut_up
+    else:
+        return mass_cut_down and mass_cut_up and ele_iso_cut
 
 ##Here starts the program
 Norm_Map = myWF.get_normalizations_map()
@@ -57,7 +63,9 @@ for name_sample in samplename_list:
         if nb <= 0:
             continue
 
-        if not is_Event_selected(mytree.nBjets, mytree.Wmass):
+        isMuon = mytree.is_muon        
+
+        if not is_Event_selected(mytree.Wmass, mytree.lepton_iso):
             continue
         
         PU_Weight = mytree.PU_Weight

@@ -251,11 +251,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   pi_pT = 0.;
   pi_eta = 0.;
   pi_phi = 0.;
+  pi_energy = 0.;
   LorentzVector pi_p4;
 
-  ph_pT = 0.;
+  ph_eT = 0.;
   ph_eta = 0.;
   ph_phi = 0.;
+  ph_energy = 0.;
   LorentzVector ph_p4;
 
   _Wmass = 0.;
@@ -391,6 +393,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     pi_pT  = cand->pt();
     pi_eta = cand->eta();
     pi_phi = cand->phi();
+    pi_energy = cand->energy();
     pi_p4  = cand->p4();
 
     is_pi_a_pi = false;
@@ -446,10 +449,11 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     eTphMax = photon->et();
 
-    ph_pT  = photon->pt();
-    ph_eta = photon->eta();
-    ph_phi = photon->phi();
-    ph_p4  = photon->p4();
+    ph_eT     = photon->et();
+    ph_eta    = photon->eta();
+    ph_phi    = photon->phi();
+    ph_energy = photon->energy();
+    ph_p4     = photon->p4();
 
     cand_photon_found = true;
     nPhotons++;
@@ -465,7 +469,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     if(!runningOnData_){
       for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
 	float deltaR = sqrt((ph_eta-gen->eta())*(ph_eta-gen->eta())+(ph_phi-gen->phi())*(ph_phi-gen->phi()));
-	float deltapT = fabs(ph_pT-gen->pt());
+	float deltapT = fabs(ph_eT-gen->pt());
 
 	if(deltaR > deltaRMax || deltapT > deltapTMax) continue;
 	deltapTMax = deltapT;
@@ -529,9 +533,11 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("pi_pT",&pi_pT);
   mytree->Branch("pi_eta",&pi_eta);
   mytree->Branch("pi_phi",&pi_phi);
-  mytree->Branch("photon_eT",&ph_pT);
+  mytree->Branch("pi_energy",&pi_energy);
+  mytree->Branch("photon_eT",&ph_eT);
   mytree->Branch("photon_eta",&ph_eta);
   mytree->Branch("photon_phi",&ph_phi);
+  mytree->Branch("photon_energy",&ph_energy);
   mytree->Branch("photon_iso_ChargedHadron",&ph_iso_ChargedHadron);
   mytree->Branch("photon_iso_NeutralHadron",&ph_iso_NeutralHadron);
   mytree->Branch("photon_iso_Photon",&ph_iso_Photon);

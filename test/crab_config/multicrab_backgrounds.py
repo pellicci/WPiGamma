@@ -4,7 +4,7 @@ config = Configuration()
 
 config.section_('General')
 config.General.transferOutputs = True
-config.General.workArea = 'crab_projects/samples/'
+config.General.workArea = 'crab_projects/samples_Medium/'
 
 config.section_('JobType')
 config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'

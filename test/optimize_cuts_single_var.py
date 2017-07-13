@@ -9,19 +9,25 @@ luminosity_norm = 36.46
 from Workflow_Handler import Workflow_Handler
 myWF = Workflow_Handler("Signal")
 
-def is_Event_selected(nBjets,Wmass,pi_pt,gamma_et):
+def is_Event_selected(nBjets,Wmass,pi_pt,gamma_et,lepton_iso):
     """Save events according to some basic selection criteria"""
-    bjet_cut = nBjets > 0.
+    bjet_cut = nBjets >= 1.
 
-    mass_cut_down = Wmass > 50.
+    mass_cut_down = Wmass >= 50.
 
-    mass_cut_up = Wmass < 100.
+    mass_cut_up = Wmass <= 100.
 
-    pi_pt_cut = pi_pt > 50.
+    pi_pt_cut = pi_pt >= 60.
 
-    gamma_et_cut = gamma_et > 50.
+    gamma_et_cut = gamma_et >= 40.
 
-    return bjet_cut and mass_cut_up and mass_cut_down and pi_pt_cut and gamma_et_cut
+    if not isMuon:
+        ele_iso_cut = lepton_iso <= 0.35
+
+    if isMuon:
+        return bjet_cut and mass_cut_up and mass_cut_down and pi_pt_cut and gamma_et_cut
+    else:
+        return bjet_cut and mass_cut_up and mass_cut_down and pi_pt_cut and gamma_et_cut and ele_iso_cut
 
 ##Here starts the program
 Norm_Map = myWF.get_normalizations_map()
@@ -61,13 +67,15 @@ for name_sample in samplename_list:
         if nb <= 0:
             continue
 
-        if not is_Event_selected(mytree.nBjets, mytree.Wmass, mytree.pi_pT, mytree.photon_eT):
+        isMuon = mytree.is_muon
+
+        if not is_Event_selected(mytree.nBjets, mytree.Wmass, mytree.pi_pT, mytree.photon_eT, mytree.lepton_iso):
             continue
 
         PU_Weight = mytree.PU_Weight
         Event_Weight = norm_factor*PU_Weight
 
-        if mytree.is_muon: #to be set to 'if mytree.is_muon' if you want to find the cut on electrons
+        if not isMuon: #to be set to 'if isMuon' if you want to find the cut on electrons
             continue
 
         deltaphi = math.fabs(mytree.lepton_phi-mytree.pi_phi)
@@ -129,6 +137,8 @@ graph_cut1 = ROOT.TGraph(steps_cut1,cut1_x,cut1_y)
 c1 = ROOT.TCanvas("c1","c1")
 c1.cd()
 graph_cut1.Draw("A*")
-graph_cut1.SetTitle("Significance vs deltaphi_lepton_pi; deltaphi; Significance")
+graph_cut1.SetTitle("Significance vs deltaphi_mu_pi; deltaphi; Significance") #for muons
+#graph_cut1.SetTitle("Significance vs deltaphi_ele_pi; deltaphi; Significance") #for electrons
 
-c1.SaveAs("plots/deltaphi_mu_pi_signif.png")
+c1.SaveAs("plots/deltaphi_mu_pi_signif.png") #for muons
+#c1.SaveAs("plots/deltaphi_ele_pi_signif.png") #for electrons

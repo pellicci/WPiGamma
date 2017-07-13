@@ -9,19 +9,19 @@ luminosity_norm = 36.46
 from Workflow_Handler import Workflow_Handler
 myWF = Workflow_Handler("Signal")
 
-def is_Event_selected(nBjets,Wmass,pi_pt,gamma_et):
+def is_Event_selected(Wmass):
     """Save events according to some basic selection criteria"""
-    bjet_cut = nBjets > 0.
+    #bjet_cut = nBjets > 0.
 
-    mass_cut_down = Wmass > 50.
+    mass_cut_down = Wmass >= 50.
 
-    mass_cut_up = Wmass < 100.
+    mass_cut_up = Wmass =< 100.
 
-    pi_pt_cut = pi_pt > 50.
+    #pi_pt_cut = pi_pt > 50.
 
-    gamma_et_cut = gamma_et > 50.
+    #gamma_et_cut = gamma_et > 50.
 
-    return bjet_cut and mass_cut_up and mass_cut_down and pi_pt_cut and gamma_et_cut
+    return mass_cut_up and mass_cut_down #and pi_pt_cut and gamma_et_cut and bjet_cut
 
 ##Here starts the program
 Norm_Map = myWF.get_normalizations_map()
@@ -57,13 +57,13 @@ for name_sample in samplename_list:
         if nb <= 0:
             continue
 
-        if not is_Event_selected(mytree.nBjets, mytree.Wmass, mytree.pi_pT, mytree.photon_eT):
+        if not is_Event_selected(mytree.Wmass):
             continue
 
         PU_Weight = mytree.PU_Weight
         Event_Weight = norm_factor*PU_Weight
 
-        if not mytree.is_muon: #to be set to 'if mytree.is_muon' if you want to find the cut on electrons
+        if mytree.is_muon: #to be set to 'if mytree.is_muon' if you want to find the cut on electrons
             continue
 
         deltaphi = math.fabs(mytree.lepton_phi-mytree.pi_phi)
@@ -125,7 +125,8 @@ graph_cut1 = ROOT.TGraph(steps_cut1,cut1_x,cut1_y)
 c1 = ROOT.TCanvas("c1","c1")
 c1.cd()
 graph_cut1.Draw("A*")
-graph_cut1.SetTitle("Significance vs muon pT; muon pT; Significance")
+#graph_cut1.SetTitle("Significance vs muon p_{T}; muon p_{T}; Significance") #for muons
+graph_cut1.SetTitle("Significance vs electron p_{T}; electron p_{T}; Significance") #for electrons
 
-c1.SaveAs("plots/mu_pT_signif.png")
-
+#c1.SaveAs("plots/mu_pT_signif.png") #for muons
+c1.SaveAs("plots/ele_pT_signif.png") #for electrons

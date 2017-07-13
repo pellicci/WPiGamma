@@ -10,21 +10,23 @@ from Workflow_Handler import Workflow_Handler
 myWF = Workflow_Handler("Signal")
 
 ##Global constants
-MU_MIN_PT    = 25.
-ELE_MIN_PT   = 26.
-PI_MIN_PT    = 50.
+MU_MIN_PT = 26.
+ELE_MIN_PT = 26.
+PI_MIN_PT = 50.
 GAMMA_MIN_ET = 50.
-N_BJETS_MIN  = 0.
-WMASS_MIN    = 50.
-WMASS_MAX    = 100.
+N_BJETS_MIN = 1.
+WMASS_MIN = 50.
+WMASS_MAX  = 100.
 DELTAPHI_MU_PI_MIN = 1.2
 DELTAPHI_ELE_PI_MIN = 1.8
+#MU_ISO_MAX = 0.15
+#ELE_ISO_MAX = 0.35
 
 #Normalize to this luminsity, in fb-1
 luminosity_norm = 36.46
 
 #Make signal histos larger
-signal_magnify = 10.
+signal_magnify = 100.
 
 output_dir = "plots"
 
@@ -32,25 +34,26 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 #Here's the list of histos to plot
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_Wmass", "h_nBjets", "h_mueta", "h_eleeta","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass_flag_mu","h_Wmass_flag_ele"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_Wmass", "h_nBjets", "h_mueta", "h_eleeta","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_iso","h_ele_iso","h_gamma_iso_ChHad","h_gamma_iso_NeuHad","h_gamma_iso_Ph","h_gamma_iso_eArho"]
 
 #Color mask must have the same number of entries as non-QCD backgrounds
-colors_mask = [26,400,840,616,860,432,880,900,800,416,885,920,101]  #Invert 900 and 416 for previous colors 
+colors_mask = [26,400,840,616,860,432,880,900,800,416,885,910,200,630,420,608,960]  #Invert 900 and 416 for previous colors 
 
 def select_all_but_one(cutstring):
 
     selection_bools = dict()
     if isMuon:
-        selection_bools["h_mupt"]             = lep_pt > MU_MIN_PT
-        selection_bools["h_deltaphi_mu_pi"]   = deltaphi_lep_pi > DELTAPHI_MU_PI_MIN
+        selection_bools["h_mupt"]             = lep_pt >= MU_MIN_PT
+        selection_bools["h_deltaphi_mu_pi"]   = deltaphi_lep_pi >= DELTAPHI_MU_PI_MIN
+        #selection_bools["h_mu_iso"]           = lep_iso <= MU_ISO_MAX
     if not isMuon:
-        selection_bools["h_elept"]            = lep_pt > ELE_MIN_PT
-        selection_bools["h_deltaphi_ele_pi"]  = deltaphi_lep_pi > DELTAPHI_ELE_PI_MIN
-    selection_bools["h_pipt"]             = pi_pt > PI_MIN_PT
-    selection_bools["h_gammaet"]          = gamma_et > GAMMA_MIN_ET
-    selection_bools["h_nBjets"]           = nBjets > N_BJETS_MIN
-    selection_bools["h_Wmass"]            = Wmass > WMASS_MIN and Wmass < WMASS_MAX
-    #selection_bools["h_Wmass"]            = Wmass < WMASS_MASS
+        selection_bools["h_elept"]            = lep_pt >= ELE_MIN_PT
+        selection_bools["h_deltaphi_ele_pi"]  = deltaphi_lep_pi >= DELTAPHI_ELE_PI_MIN
+        #selection_bools["h_ele_iso"]          = lep_iso <= ELE_ISO_MAX
+    selection_bools["h_pipt"]                 = pi_pt >= PI_MIN_PT
+    selection_bools["h_gammaet"]              = gamma_et >= GAMMA_MIN_ET
+    selection_bools["h_nBjets"]               = nBjets >= N_BJETS_MIN
+    selection_bools["h_Wmass"]                = Wmass >= WMASS_MIN and Wmass <= WMASS_MAX
     result = True
 
     for hname in selection_bools:
@@ -99,14 +102,21 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[7]]  = ROOT.TH1F(theSampleName+list_histos[7], "eta of the electron", 20, -3, 3)
     h_base[theSampleName+list_histos[8]]  = ROOT.TH1F(theSampleName+list_histos[8], "deltaphi mu-pi", 10, 0, 3.14)
     h_base[theSampleName+list_histos[9]]  = ROOT.TH1F(theSampleName+list_histos[9], "deltaphi ele-pi", 10, 0, 3.14)
-    h_base[theSampleName+list_histos[10]] = ROOT.TH1F(theSampleName+list_histos[10], "deltaeta mu-pi", 20, -5, 5)
-    h_base[theSampleName+list_histos[11]] = ROOT.TH1F(theSampleName+list_histos[11], "deltaeta ele-pi", 20, -5, 5)
-    h_base[theSampleName+list_histos[12]] = ROOT.TH1F(theSampleName+list_histos[12], "W mass if flag mu", 20, 40, 100)
-    h_base[theSampleName+list_histos[13]] = ROOT.TH1F(theSampleName+list_histos[13], "W mass if flag ele", 20, 40, 100)
+    h_base[theSampleName+list_histos[10]] = ROOT.TH1F(theSampleName+list_histos[10], "deltaphi mu-W", 10, 0, 3.14)
+    h_base[theSampleName+list_histos[11]] = ROOT.TH1F(theSampleName+list_histos[11], "deltaphi ele-W", 10, 0, 3.14)
+    h_base[theSampleName+list_histos[12]] = ROOT.TH1F(theSampleName+list_histos[12], "deltaeta mu-pi", 20, -5, 5)
+    h_base[theSampleName+list_histos[13]] = ROOT.TH1F(theSampleName+list_histos[13], "deltaeta ele-pi", 20, -5, 5)
+    h_base[theSampleName+list_histos[14]] = ROOT.TH1F(theSampleName+list_histos[14], "W mass if flag mu", 20, 40, 100)
+    h_base[theSampleName+list_histos[15]] = ROOT.TH1F(theSampleName+list_histos[15], "W mass if flag ele", 20, 40, 100)
+    h_base[theSampleName+list_histos[16]] = ROOT.TH1F(theSampleName+list_histos[16], "muon isolation", 20, 0, 0.3)
+    h_base[theSampleName+list_histos[17]] = ROOT.TH1F(theSampleName+list_histos[17], "electron isolation", 20, 0, 0.3)
+    h_base[theSampleName+list_histos[18]] = ROOT.TH1F(theSampleName+list_histos[18], "Photon isolation - ChargedHadron", 50, 0, 5)
+    h_base[theSampleName+list_histos[19]] = ROOT.TH1F(theSampleName+list_histos[19], "Photon isolation - NeutralHadron", 50, 0, 5)
+    h_base[theSampleName+list_histos[20]] = ROOT.TH1F(theSampleName+list_histos[20], "Photon isolation - Photon", 50, 0, 5)
+    h_base[theSampleName+list_histos[21]] = ROOT.TH1F(theSampleName+list_histos[21], "Photon isolation - eArho", 50, 0, 5)
 
-#For right positioning 0.6868687,0.6120093,0.9511784,0.9491917
-#For left positioning 0.1,0.5,0.25,0.9
-leg1 = ROOT.TLegend(0.1,0.5,0.25,0.9)
+#leg1 = ROOT.TLegend(0.1,0.5,0.25,0.9) #left positioning
+leg1 = ROOT.TLegend(0.6868687,0.6120093,0.9511784,0.9491917) #right positioning
 leg1.SetHeader(" ")
 leg1.SetFillColor(0)
 leg1.SetBorderSize(0)
@@ -161,15 +171,30 @@ for name_sample in samplename_list:
         lep_pt  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
         lep_phi = mytree.lepton_phi
+        lep_iso = mytree.lepton_iso
         
         isMuon = mytree.is_muon
         
         pi_pt = mytree.pi_pT
         pi_eta = mytree.pi_eta
         pi_phi = mytree.pi_phi
+        pi_E = mytree.pi_energy
+        pi_FourMomentum = ROOT.TLorentzVector()
+        pi_FourMomentum.SetPtEtaPhiE(pi_pt,pi_eta,pi_phi,pi_E)
             
         gamma_et = mytree.photon_eT
-        
+        gamma_eta = mytree.photon_eta
+        gamma_phi = mytree.photon_phi
+        gamma_E = mytree.photon_energy
+        gamma_FourMomentum = ROOT.TLorentzVector()
+        gamma_FourMomentum.SetPtEtaPhiE(gamma_et,gamma_eta,gamma_phi,gamma_E)
+        gamma_iso_ChHad = mytree.photon_iso_ChargedHadron
+        gamma_iso_NeuHad = mytree.photon_iso_NeutralHadron
+        gamma_iso_Ph = mytree.photon_iso_Photon
+        gamma_iso_eArho = mytree.photon_iso_eArho
+
+        W_phi = (pi_FourMomentum + gamma_FourMomentum).Phi()
+       
         Wmass = mytree.Wmass
         
         nBjets = mytree.nBjets
@@ -180,11 +205,10 @@ for name_sample in samplename_list:
         if deltaphi_lep_pi > 3.14:
             deltaphi_lep_pi = 6.28 - deltaphi_lep_pi
 
-        #if not isMuon:
-        #    deltaphi_ele_pi = math.fabs(lep_phi-pi_phi)
-        #    if deltaphi_ele_pi > 3.14:
-        #        deltaphi_ele_pi = 6.28 - deltaphi_ele_pi
-        #else: deltaphi_ele_pi = 100.
+        deltaphi_lep_W = math.fabs(lep_phi-W_phi)
+        if deltaphi_lep_W > 3.14:
+            deltaphi_lep_W = 6.28 - deltaphi_lep_W
+
 
 #---------- filling histos ------------
 
@@ -230,6 +254,28 @@ for name_sample in samplename_list:
         if select_all_but_one("h_Wmass") and not isMuon:
             h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
 
+        if select_all_but_one("h_mu_iso") and isMuon:
+            h_base[theSampleName+"h_mu_iso"].Fill(lep_iso,Event_Weight)
+            h_base[theSampleName+"h_deltaphi_mu_W"].Fill(deltaphi_lep_W,Event_Weight)
+
+        if select_all_but_one("h_ele_iso") and not isMuon:
+            h_base[theSampleName+"h_ele_iso"].Fill(lep_iso,Event_Weight)
+            h_base[theSampleName+"h_deltaphi_ele_W"].Fill(deltaphi_lep_W,Event_Weight)
+
+        if select_all_but_one("all cuts"):
+            h_base[theSampleName+"h_gamma_iso_ChHad"].Fill(gamma_iso_ChHad,Event_Weight)
+
+        if select_all_but_one("all cuts"):
+            h_base[theSampleName+"h_gamma_iso_NeuHad"].Fill(gamma_iso_NeuHad,Event_Weight)
+
+        if select_all_but_one("all cuts"):
+            h_base[theSampleName+"h_gamma_iso_Ph"].Fill(gamma_iso_Ph,Event_Weight)
+
+        if select_all_but_one("all cuts"):
+            h_base[theSampleName+"h_gamma_iso_eArho"].Fill(gamma_iso_eArho,Event_Weight)
+
+
+
         #Count the events
         if select_all_but_one("all cuts"):
             if name_sample == myWF.sig_samplename:
@@ -258,7 +304,7 @@ for name_sample in samplename_list:
                  leg1.AddEntry(h_base[theSampleName+hname],"QCD","f")
                  isFirstQCDlegend = False
             elif name_sample == myWF.sig_samplename:
-                 sample_legend_name = "1 x " + name_sample
+                 sample_legend_name = "100 x " + name_sample
                  leg1.AddEntry(h_base[name_sample+hname], sample_legend_name,"f")  #To comment when signal has to be excluded.
             elif not QCDflag:
                  leg1.AddEntry(h_base[theSampleName+hname],theSampleName,"f")
