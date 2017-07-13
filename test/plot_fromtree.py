@@ -154,9 +154,6 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
-        PU_Weight = mytree.PU_Weight  
-        Event_Weight = norm_factor*PU_Weight   #Add other event weights here if necessary
-            
         #This is how you access the tree variables
         lep_pt  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
@@ -169,24 +166,35 @@ for name_sample in samplename_list:
         pi_phi = mytree.pi_phi
             
         gamma_et = mytree.photon_eT
-        
+        gamma_eta = mytree.photon_eta
+
         Wmass = mytree.Wmass
         
         nBjets = mytree.nBjets
-        
+
         deltaeta_lep_pi = lep_eta-pi_eta
         
         deltaphi_lep_pi = math.fabs(lep_phi-pi_phi)
         if deltaphi_lep_pi > 3.14:
             deltaphi_lep_pi = 6.28 - deltaphi_lep_pi
 
+        #Determine the total event weight
+        PU_Weight = mytree.PU_Weight  
+        ele_weight = myWF.get_ele_scale(lep_pt,lep_eta)
+        ph_weight = myWF.get_photon_scale(gamma_et,gamma_eta)
+        
+        Event_Weight = norm_factor*PU_Weight   #Add other event weights here if necessary
+
+        if(not isMuon):
+            Event_Weight = Event_Weight * ele_weight
+            
         #if not isMuon:
         #    deltaphi_ele_pi = math.fabs(lep_phi-pi_phi)
         #    if deltaphi_ele_pi > 3.14:
         #        deltaphi_ele_pi = 6.28 - deltaphi_ele_pi
         #else: deltaphi_ele_pi = 100.
 
-#---------- filling histos ------------
+        #---------- filling histos ------------
 
         if select_all_but_one("h_mupt") and isMuon:
             h_base[theSampleName+"h_mupt"].Fill(lep_pt,Event_Weight)
