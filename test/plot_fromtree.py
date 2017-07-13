@@ -183,7 +183,7 @@ for name_sample in samplename_list:
         ele_weight = myWF.get_ele_scale(lep_pt,lep_eta)
         ph_weight = myWF.get_photon_scale(gamma_et,gamma_eta)
         
-        Event_Weight = norm_factor*PU_Weight   #Add other event weights here if necessary
+        Event_Weight = norm_factor*PU_Weight*ph_weight   #Add other event weights here if necessary
 
         if(not isMuon):
             Event_Weight = Event_Weight * ele_weight
