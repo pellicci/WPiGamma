@@ -13,14 +13,15 @@ myWF = Workflow_Handler("Signal")
 MU_MIN_PT = 26.
 ELE_MIN_PT = 26.
 PI_MIN_PT = 50.
-GAMMA_MIN_ET = 50.
+GAMMA_MIN_ET = 40.
 N_BJETS_MIN = 1.
 WMASS_MIN = 50.
 WMASS_MAX  = 100.
-DELTAPHI_MU_PI_MIN = 1.2
-DELTAPHI_ELE_PI_MIN = 1.8
-#MU_ISO_MAX = 0.15
-#ELE_ISO_MAX = 0.35
+DELTAPHI_MU_PI_MIN = 1.
+DELTAPHI_ELE_PI_MIN = 1.
+ELE_ISO_MAX = 0.35
+ELE_GAMMA_INVMASS_MIN = 85
+ELE_GAMMA_INVMASS_MAX = 95
 
 #Normalize to this luminsity, in fb-1
 luminosity_norm = 36.46
@@ -34,7 +35,7 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 #Here's the list of histos to plot
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_Wmass", "h_nBjets", "h_mueta", "h_eleeta","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_iso","h_ele_iso","h_gamma_iso_ChHad","h_gamma_iso_NeuHad","h_gamma_iso_Ph","h_gamma_iso_eArho"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_Wmass", "h_nBjets", "h_mueta", "h_eleeta","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_iso","h_ele_iso","h_gamma_iso_ChHad","h_gamma_iso_NeuHad","h_gamma_iso_Ph","h_gamma_iso_eArho","h_ele_gamma_InvMass","h_mu_gamma_InvMass"]
 
 #Color mask must have the same number of entries as non-QCD backgrounds
 colors_mask = [26,400,840,616,860,432,880,900,800,416,885,910,200,630,420,608,960]  #Invert 900 and 416 for previous colors 
@@ -43,15 +44,15 @@ def select_all_but_one(cutstring):
 
     selection_bools = dict()
     if isMuon:
-        selection_bools["h_mupt"]             = lep_pt >= MU_MIN_PT
+        selection_bools["h_mupt"]             = lep_pT >= MU_MIN_PT
         selection_bools["h_deltaphi_mu_pi"]   = deltaphi_lep_pi >= DELTAPHI_MU_PI_MIN
-        #selection_bools["h_mu_iso"]           = lep_iso <= MU_ISO_MAX
     if not isMuon:
-        selection_bools["h_elept"]            = lep_pt >= ELE_MIN_PT
+        selection_bools["h_elept"]            = lep_pT >= ELE_MIN_PT
         selection_bools["h_deltaphi_ele_pi"]  = deltaphi_lep_pi >= DELTAPHI_ELE_PI_MIN
-        #selection_bools["h_ele_iso"]          = lep_iso <= ELE_ISO_MAX
-    selection_bools["h_pipt"]                 = pi_pt >= PI_MIN_PT
-    selection_bools["h_gammaet"]              = gamma_et >= GAMMA_MIN_ET
+        selection_bools["h_ele_iso"]          = lep_iso <= ELE_ISO_MAX
+        selection_bools["h_ele_gamma_InvMass"]= (ele_gamma_InvMass < ELE_GAMMA_INVMASS_MIN or ele_gamma_InvMass > ELE_GAMMA_INVMASS_MAX)
+    selection_bools["h_pipt"]                 = pi_pT >= PI_MIN_PT
+    selection_bools["h_gammaet"]              = gamma_eT >= GAMMA_MIN_ET
     selection_bools["h_nBjets"]               = nBjets >= N_BJETS_MIN
     selection_bools["h_Wmass"]                = Wmass >= WMASS_MIN and Wmass <= WMASS_MAX
     result = True
@@ -94,8 +95,8 @@ for sample_name in samplename_list:
 
     h_base[theSampleName+list_histos[0]]  = ROOT.TH1F(theSampleName+list_histos[0], "p_{T} of the muon", 30, 25, 300.)
     h_base[theSampleName+list_histos[1]]  = ROOT.TH1F(theSampleName+list_histos[1], "p_{T} of the electron", 30, 26, 300.)
-    h_base[theSampleName+list_histos[2]]  = ROOT.TH1F(theSampleName+list_histos[2], "p_{T} of the pion", 17, 20, 100.)
-    h_base[theSampleName+list_histos[3]]  = ROOT.TH1F(theSampleName+list_histos[3], "e_{T} of the gamma", 17, 20, 100.)
+    h_base[theSampleName+list_histos[2]]  = ROOT.TH1F(theSampleName+list_histos[2], "p_{T} of the pion", 15, 30, 100.)
+    h_base[theSampleName+list_histos[3]]  = ROOT.TH1F(theSampleName+list_histos[3], "E_{T} of the gamma", 15, 30, 100.)
     h_base[theSampleName+list_histos[4]]  = ROOT.TH1F(theSampleName+list_histos[4], "W mass", 20, 40, 100)
     h_base[theSampleName+list_histos[5]]  = ROOT.TH1F(theSampleName+list_histos[5], "n Bjets", 6, 0, 6.)
     h_base[theSampleName+list_histos[6]]  = ROOT.TH1F(theSampleName+list_histos[6], "eta of the muon", 20, -3, 3)
@@ -114,6 +115,8 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[19]] = ROOT.TH1F(theSampleName+list_histos[19], "Photon isolation - NeutralHadron", 50, 0, 5)
     h_base[theSampleName+list_histos[20]] = ROOT.TH1F(theSampleName+list_histos[20], "Photon isolation - Photon", 50, 0, 5)
     h_base[theSampleName+list_histos[21]] = ROOT.TH1F(theSampleName+list_histos[21], "Photon isolation - eArho", 50, 0, 5)
+    h_base[theSampleName+list_histos[22]] = ROOT.TH1F(theSampleName+list_histos[22], "ele-gamma InvMass", 50, 0, 300)
+    h_base[theSampleName+list_histos[23]] = ROOT.TH1F(theSampleName+list_histos[23], "mu-gamma InvMass", 50, 0, 300)
 
 #leg1 = ROOT.TLegend(0.1,0.5,0.25,0.9) #left positioning
 leg1 = ROOT.TLegend(0.6868687,0.6120093,0.9511784,0.9491917) #right positioning
@@ -165,27 +168,26 @@ for name_sample in samplename_list:
             continue
 
         #This is how you access the tree variables
-        lep_pt  = mytree.lepton_pT
+        isMuon = mytree.is_muon
+
+        lep_pT  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
         lep_phi = mytree.lepton_phi
         lep_iso = mytree.lepton_iso
-        
-        isMuon = mytree.is_muon
-        
-        pi_pt = mytree.pi_pT
+
+        pi_pT = mytree.pi_pT
         pi_eta = mytree.pi_eta
         pi_phi = mytree.pi_phi
         pi_E = mytree.pi_energy
         pi_FourMomentum = ROOT.TLorentzVector()
-        pi_FourMomentum.SetPtEtaPhiE(pi_pt,pi_eta,pi_phi,pi_E)
+        pi_FourMomentum.SetPtEtaPhiE(pi_pT,pi_eta,pi_phi,pi_E)
             
-        gamma_et = mytree.photon_eT
+        gamma_eT = mytree.photon_eT
         gamma_eta = mytree.photon_eta
-
         gamma_phi = mytree.photon_phi
         gamma_E = mytree.photon_energy
         gamma_FourMomentum = ROOT.TLorentzVector()
-        gamma_FourMomentum.SetPtEtaPhiE(gamma_et,gamma_eta,gamma_phi,gamma_E)
+        gamma_FourMomentum.SetPtEtaPhiE(gamma_eT,gamma_eta,gamma_phi,gamma_E)
         gamma_iso_ChHad = mytree.photon_iso_ChargedHadron
         gamma_iso_NeuHad = mytree.photon_iso_NeutralHadron
         gamma_iso_Ph = mytree.photon_iso_Photon
@@ -194,6 +196,14 @@ for name_sample in samplename_list:
         W_phi = (pi_FourMomentum + gamma_FourMomentum).Phi()
        
         Wmass = mytree.Wmass
+
+        lep_FourMomentum = ROOT.TLorentzVector()
+        lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
+
+        if not isMuon:
+            ele_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
+        else:
+            mu_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
         
         nBjets = mytree.nBjets
 
@@ -209,51 +219,53 @@ for name_sample in samplename_list:
 
         #Determine the total event weight
         PU_Weight = mytree.PU_Weight  
-        ele_weight = myWF.get_ele_scale(lep_pt,lep_eta)
-        ph_weight = myWF.get_photon_scale(gamma_et,gamma_eta)
+        #ele_weight = myWF.get_ele_scale(lep_pt,lep_eta)
+        #print "uagadoudou"
+        #ph_weight = myWF.get_photon_scale(gamma_et,gamma_eta)
+        #print "honolulu"
         
-        Event_Weight = norm_factor*PU_Weight*ph_weight   #Add other event weights here if necessary
 
-        if(not isMuon):
-            Event_Weight = Event_Weight * ele_weight
+        Event_Weight = norm_factor*PU_Weight #*ph_weight   #Add other event weights here if necessary
+
+        #if(not isMuon):
+        #    Event_Weight = Event_Weight * ele_weight
 
         #---------- filling histos ------------
 
         if select_all_but_one("h_mupt") and isMuon:
-            h_base[theSampleName+"h_mupt"].Fill(lep_pt,Event_Weight)
+            h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
                     
         if select_all_but_one("h_elept") and not isMuon:
-            h_base[theSampleName+"h_elept"].Fill(lep_pt,Event_Weight)
+            h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
                         
         if select_all_but_one("h_pipt"):
-            h_base[theSampleName+"h_pipt"].Fill(pi_pt,Event_Weight)
+            h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
                             
         if select_all_but_one("h_nBjets"):
             h_base[theSampleName+"h_nBjets"].Fill(nBjets,Event_Weight)
                                 
         if select_all_but_one("h_gammaet"):
-            h_base[theSampleName+"h_gammaet"].Fill(gamma_et,Event_Weight)
+            h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
                                     
         if select_all_but_one("h_Wmass"):
             h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
 
-        if select_all_but_one("h_mueta") and isMuon:
-            h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
-
-        if select_all_but_one("h_eleeta") and not isMuon:
-            h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
-
         if select_all_but_one("h_deltaphi_mu_pi") and isMuon:
             h_base[theSampleName+"h_deltaphi_mu_pi"].Fill(deltaphi_lep_pi,Event_Weight)
 
-        if select_all_but_one("h_deltaeta_mu_pi") and isMuon:
+        if select_all_but_one("all cuts") and isMuon:
             h_base[theSampleName+"h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
+            h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
                     
         if select_all_but_one("h_deltaphi_ele_pi") and not isMuon:
             h_base[theSampleName+"h_deltaphi_ele_pi"].Fill(deltaphi_lep_pi,Event_Weight)
 
-        if select_all_but_one("h_deltaeta_ele_pi") and not isMuon:
+        if select_all_but_one("all cuts") and not isMuon:
             h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
+            h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
+
+        if select_all_but_one("h_ele_gamma_InvMass") and not isMuon:
+            h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
 
         if select_all_but_one("h_Wmass") and isMuon:
             h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
@@ -261,9 +273,10 @@ for name_sample in samplename_list:
         if select_all_but_one("h_Wmass") and not isMuon:
             h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
 
-        if select_all_but_one("h_mu_iso") and isMuon:
+        if select_all_but_one("all cuts") and isMuon:
             h_base[theSampleName+"h_mu_iso"].Fill(lep_iso,Event_Weight)
             h_base[theSampleName+"h_deltaphi_mu_W"].Fill(deltaphi_lep_W,Event_Weight)
+            h_base[theSampleName+"h_mu_gamma_InvMass"].Fill(mu_gamma_InvMass,Event_Weight)   
 
         if select_all_but_one("h_ele_iso") and not isMuon:
             h_base[theSampleName+"h_ele_iso"].Fill(lep_iso,Event_Weight)
@@ -271,16 +284,9 @@ for name_sample in samplename_list:
 
         if select_all_but_one("all cuts"):
             h_base[theSampleName+"h_gamma_iso_ChHad"].Fill(gamma_iso_ChHad,Event_Weight)
-
-        if select_all_but_one("all cuts"):
             h_base[theSampleName+"h_gamma_iso_NeuHad"].Fill(gamma_iso_NeuHad,Event_Weight)
-
-        if select_all_but_one("all cuts"):
             h_base[theSampleName+"h_gamma_iso_Ph"].Fill(gamma_iso_Ph,Event_Weight)
-
-        if select_all_but_one("all cuts"):
             h_base[theSampleName+"h_gamma_iso_eArho"].Fill(gamma_iso_eArho,Event_Weight)
-
 
         #Count the events
         if select_all_but_one("all cuts"):

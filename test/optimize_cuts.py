@@ -9,30 +9,55 @@ luminosity_norm = 36.46
 from Workflow_Handler import Workflow_Handler
 myWF = Workflow_Handler("Signal")
 
-def is_Event_selected(Wmass,lepton_iso):
+def is_Event_selected(Wmass,nBjets,lepton_iso,ele_gamma_InvMass,pi_pT,gamma_eT):
     """Save events according to some basic selection criteria"""
-    #bjet_cut = nBjets > 0.
+    bjet_cut = nBjets > 0.
 
     mass_cut_down = Wmass >= 50.
 
     mass_cut_up = Wmass <= 100.
 
+    pi_pT_cut = pi_pT >= 50.
+
+    gamma_eT_cut = gamma_eT >= 40.
+
     if not isMuon:
         ele_iso_cut = lepton_iso <= 0.35
+        ele_gamma_InvMass_cut = (ele_gamma_InvMass < 85 or ele_gamma_InvMass > 95)
 
     if isMuon:
-        return mass_cut_down and mass_cut_up
+        return mass_cut_down and mass_cut_up and bjet_cut and gamma_eT_cut and pi_pT_cut
     else:
-        return mass_cut_down and mass_cut_up and ele_iso_cut
+        return mass_cut_down and mass_cut_up and bjet_cut and ele_iso_cut and ele_gamma_InvMass_cut and gamma_eT_cut and pi_pT_cut
 
 ##Here starts the program
 Norm_Map = myWF.get_normalizations_map()
 
-steps_cut1 = 10
-cut1_init = 20.
-cut1_stepsize = 10.
+#----pi pT and gamma ET cuts----- 
+#steps_cut1 = 10
+#cut1_init = 20.
+#cut1_stepsize = 10.
 
-steps_cut2 = 10
+#steps_cut2 = 10
+#cut2_init = 20.
+#cut2_stepsize = 10.
+
+#----The next one is for lepton pT-----
+#steps_cut1 = 26
+#cut1_init = 26.
+#cut1_stepsize = 1.
+
+#----The next one is for deltaphi------
+steps_cut1 = 30
+cut1_init = 0.
+cut1_stepsize = 0.1
+
+#----The next one is for Z peak--------
+#steps_cut1 = 30
+#cut1_init = 0.
+#cut1_stepsize = 0.25
+
+steps_cut2 = 1
 cut2_init = 20.
 cut2_stepsize = 10.
 
@@ -63,24 +88,60 @@ for name_sample in samplename_list:
         if nb <= 0:
             continue
 
-        isMuon = mytree.is_muon        
-
-        if not is_Event_selected(mytree.Wmass, mytree.lepton_iso):
+        if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
-        
+
+        isMuon = mytree.is_muon       
+        if not isMuon: 
+            continue
+
         PU_Weight = mytree.PU_Weight
         Event_Weight = norm_factor*PU_Weight
+        
+        lep_pT  = mytree.lepton_pT
+        lep_eta = mytree.lepton_eta
+        lep_phi = mytree.lepton_phi
+        lep_iso = mytree.lepton_iso
+        ele_FourMomentum = ROOT.TLorentzVector()
+        ele_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
+        pi_pT = mytree.pi_pT
+        gamma_eta = mytree.photon_eta
+        gamma_phi = mytree.photon_phi
+        gamma_eT = mytree.photon_eT
+        gamma_E = mytree.photon_energy
+        gamma_FourMomentum = ROOT.TLorentzVector()
+        gamma_FourMomentum.SetPtEtaPhiE(gamma_eT,gamma_eta,gamma_phi,gamma_E)
+        ele_gamma_InvMass = (ele_FourMomentum + gamma_FourMomentum).M()
+
+        deltaphi = math.fabs(mytree.lepton_phi-mytree.pi_phi)
+        if deltaphi > 3.14:
+            deltaphi = 6.28-deltaphi
+
+        if not is_Event_selected(mytree.Wmass,mytree.nBjets,mytree.lepton_iso,ele_gamma_InvMass,pi_pT,gamma_eT):
+            continue
 
         for icut1 in xrange(steps_cut1):
             cut1_value = cut1_init + cut1_stepsize*icut1
 
-            if mytree.pi_pT < cut1_value:
+            #if ele_gamma_InvMass > 90 - cut1_value and ele_gamma_InvMass < 90 + cut1_value:
+            #    continue
+            
+            #if pi_pT < cut1_value:
+            #    continue
+
+            #if lep_pT < cut1_value:
+            #    continue
+
+            if deltaphi < cut1_value:
                 continue
 
             for icut2 in xrange(steps_cut2):
                 cut2_value = cut2_init + cut2_stepsize*icut2
 
-                if mytree.photon_eT < cut2_value:
+                #if gamma_eT < cut2_value:
+                #    continue
+                
+                if gamma_eT < 0: #-----a possible condition to use to optimize a single variable (the precedent)-----
                     continue
 
                 if name_sample == myWF.sig_samplename:
@@ -135,12 +196,21 @@ graph_cut2 = ROOT.TGraph(steps_cut2,cut2_x,cut2_y)
 c1 = ROOT.TCanvas("c1","c1")
 c1.cd()
 graph_cut1.Draw("A*")
-graph_cut1.SetTitle("Significance vs p_{T} of pi; p_{T} of pi; Significance")
+#graph_cut1.SetTitle("Significance vs p_{T}^{#pi}; p_{T}^{#pi}; Significance")
+#graph_cut1.SetTitle("Significance vs 90 #pm #varepsilon; 90 #pm #varepsilon; Significance")
+#graph_cut1.SetTitle("Significance vs p_{T}^{e}; p_{T}^{e}; Significance")
+graph_cut1.SetTitle("Significance vs #Delta#varphi(#mu,#pi); #Delta#varphi(#mu,#pi); Significance") #for muons
+#graph_cut1.SetTitle("Significance vs #Delta#varphi(e,#pi);  #Delta#varphi(e,#pi); Significance") #for electrons
 
-c1.SaveAs("plots/cut1_signif.png")
+
+#c1.SaveAs("plots/pi_pT_signif.png")
+#c1.SaveAs("plots/ele_pT_signif.png")
+c1.SaveAs("plots/deltaphi_mu_pi_signif.png") #for muons
+#c1.SaveAs("plots/deltaphi_ele_pi_signif.png") #for electrons
 
 c2 = ROOT.TCanvas("c2","c2")
 c2.cd()
 graph_cut2.Draw("A*")
-graph_cut2.SetTitle("Significance vs E_{T} of gamma; e_{T} of gamma; Significance")
-c2.SaveAs("plots/cut2_signif.png")
+graph_cut2.SetTitle("Significance vs E_{T}^{#gamma}; E_{T}^{#gamma}; Significance")
+#c2.SaveAs("plots/gamma_eT_signif.png")
+c2.SaveAs("plots/nothing.png")
