@@ -217,6 +217,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   nPions     = 0;
   nPhotons   = 0;
   nBjets     = 0;
+  nBjets_25  = 0;
 
   is_pi_a_pi         = false;
   is_pi_matched      = false;
@@ -507,11 +508,15 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   nBjets = 0;
   for (auto jet = slimmedJets->begin(); jet != slimmedJets->end(); ++jet){
-    if(jet->pt() < 30.) continue;
     if(jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") < 0.46) continue;   //0.46 = loose
+    if(jet->pt() < 25.) continue;
+    nBjets_25++;
+    if(jet->pt() < 30.) continue;
     nBjets++;
   }
 
+  //Only fill the tree outside of blind Wmass window (to be used for DATA)
+  if (_Wmass > 65 && _Wmass < 90) return; 
   mytree->Fill();
 
   //std::cout << "n fotoni: " << events_least_one_ph << std::endl;
@@ -551,6 +556,7 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("nPions",&nPions);
   mytree->Branch("nPhotons",&nPhotons);
   mytree->Branch("nBjets",&nBjets);
+  mytree->Branch("nBjets_25",&nBjets_25);
 
   //Save MC info
   if(!runningOnData_){

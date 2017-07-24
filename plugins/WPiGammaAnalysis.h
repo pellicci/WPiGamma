@@ -42,6 +42,7 @@ private:
   int nPions;
   int nPhotons;
   int nBjets;
+  int nBjets_25;
 
   int _Nevents_processed;
   int _Nevents_muVeto;

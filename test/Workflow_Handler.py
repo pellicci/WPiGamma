@@ -4,20 +4,30 @@ import os
 
 class Workflow_Handler:
 
-    def __init__(self,signalname, subprocess="//"):
+    def __init__(self,signalname,dataname,isMedium,subprocess="//"):
 
         ##Where the root files are
         self.subprocess = subprocess
 
-        #self.norm_filename = "rootfiles/" + self.subprocess + "Tight/Normalizations_table.txt"
-        self.norm_filename = "rootfiles/" + self.subprocess + "Medium/Normalizations_table.txt"
-        #self.dir_back_input = "rootfiles/" + self.subprocess + "Tight/backgrounds/"
-        self.dir_back_input = "rootfiles/" + self.subprocess + "Medium/backgrounds/"
-        self.dir_data_input = "rootfiles/" + self.subprocess + "data/"      
-
+        self.data_samplename = dataname  
         self.sig_samplename = signalname
-        #self.sig_filename = "rootfiles/" + self.subprocess + "Tight/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
-        self.sig_filename = "rootfiles/" + self.subprocess + "Medium/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
+        #self.isMedium = isMedium
+        
+        #----Medium selection----#
+        if isMedium:
+            self.norm_filename = "rootfiles/" + self.subprocess + "Medium/Normalizations_table.txt"
+            self.dir_back_input = "rootfiles/" + self.subprocess + "Medium/backgrounds/"
+            self.sig_filename = "rootfiles/" + self.subprocess + "Medium/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
+
+        #----Tight selection----#
+        if not isMedium:
+            self.norm_filename = "rootfiles/" + self.subprocess + "Tight/Normalizations_table.txt" 
+            self.dir_back_input = "rootfiles/" + self.subprocess + "Tight/backgrounds/" 
+            self.sig_filename = "rootfiles/" + self.subprocess + "Tight/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
+
+        #----Data----#
+        self.dir_data_input = "rootfiles/" + self.subprocess + "data/"  
+
 
         eg_reco_scale_name = "scale_factors/Electron_reco_2D.root"
         eg_reco_scale_file = ROOT.TFile(eg_reco_scale_name)
@@ -74,7 +84,7 @@ class Workflow_Handler:
         return norm_map
 
    # get the sample names and signal names
-    def get_samples_names(self, Add_Signal=True):
+    def get_samples_names(self, Add_Signal=True,Add_Data=True):
         list_dirs_bkg = os.listdir(self.dir_back_input)
         samplename_list = []
 
@@ -85,6 +95,8 @@ class Workflow_Handler:
 
         if Add_Signal:
             samplename_list.append(self.sig_samplename)
+        if Add_Data:
+            samplename_list.append(self.data_samplename)
         return samplename_list 
 
    # get data sample names
@@ -99,9 +111,10 @@ class Workflow_Handler:
 
         return dataName_list
 
-   # get the corresponding root files for the background and signal sample names
+  # get the corresponding root files for the background, signal and data sample names
     def get_root_files(self,Add_Signal=True):
         list_dirs = os.listdir(self.dir_back_input)
+        list_dirs_data = os.listdir(self.dir_data_input)
         root_file = dict()
 
         for dirname in list_dirs:
@@ -109,8 +122,25 @@ class Workflow_Handler:
             tmp_samplename2 = tmp_samplename.replace(".root","")
             root_file[tmp_samplename2] = ROOT.TFile(self.dir_back_input + dirname)
 
+        for dirname in list_dirs_data:
+            tmp_samplename3 = dirname.split("WPiGammaAnalysis_")[1]
+            tmp_samplename4 = tmp_samplename3.replace(".root","")
+            root_file[tmp_samplename4] = ROOT.TFile(self.dir_data_input + dirname)
+
         if Add_Signal:
             root_file[self.sig_samplename] = ROOT.TFile(self.sig_filename)
+
         return root_file
 
+   # to be used for data only
+   # def get_root_files_data(self):
+   #     list_dirs = os.listdir(self.dir_data_input)
+   #     root_file = dict()
+
+   #     for dirname in list_dirs:
+   #         tmp_samplename3 = dirname.split("WPiGammaAnalysis_")[1]
+   #         tmp_samplename4 = tmp_samplename3.replace(".root","")
+   #         root_file[tmp_samplename4] = ROOT.TFile(self.dir_data_input + dirname)
+
+   #     return root_file
 

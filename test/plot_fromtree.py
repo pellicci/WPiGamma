@@ -2,21 +2,24 @@ import ROOT
 import os
 import math
 import numpy as np
+import copy
 
 #Supress the opening of many Canvas's
 ROOT.gROOT.SetBatch(True)   
 
 from Workflow_Handler import Workflow_Handler
-myWF = Workflow_Handler("Signal")
+myWF = Workflow_Handler("Signal","Data",isMedium = True)
 
 ##Global constants
 MU_MIN_PT = 26.
 ELE_MIN_PT = 26.
 PI_MIN_PT = 50.
 GAMMA_MIN_ET = 40.
-N_BJETS_MIN = 1.
+N_BJETS_MIN = 2.
 WMASS_MIN = 50.
 WMASS_MAX  = 100.
+WMASS_MIN_1 = 65.
+WMASS_MAX_1 = 90.
 DELTAPHI_MU_PI_MIN = 1.
 DELTAPHI_ELE_PI_MIN = 1.
 ELE_ISO_MAX = 0.35
@@ -27,7 +30,7 @@ ELE_GAMMA_INVMASS_MAX = 95
 luminosity_norm = 36.46
 
 #Make signal histos larger
-signal_magnify = 100.
+signal_magnify = 100000.
 
 output_dir = "plots"
 
@@ -55,6 +58,9 @@ def select_all_but_one(cutstring):
     selection_bools["h_gammaet"]              = gamma_eT >= GAMMA_MIN_ET
     selection_bools["h_nBjets"]               = nBjets >= N_BJETS_MIN
     selection_bools["h_Wmass"]                = Wmass >= WMASS_MIN and Wmass <= WMASS_MAX
+    #selection_bools["h_Wmass"]                = (Wmass >= WMASS_MIN and Wmass <= WMASS_MIN_1) or (Wmass >= WMASS_MAX_1 and Wmass <= WMASS_MAX)
+    #if not "Data" in name_sample:
+        #selection_bools["h_Wmass"]            = Wmass >= WMASS_MAX or Wmass <= WMASS_MIN
     result = True
 
     for hname in selection_bools:
@@ -129,6 +135,7 @@ leg1.SetLineWidth(1)
 leg1.SetFillStyle(1001)
 
 Nsig_passed = 0.
+Ndata_passed = 0.
 Nbkg_passed = 0.
 
 ##Loop on samples, and then on events, and merge QCD stuff
@@ -145,13 +152,8 @@ for name_sample in samplename_list:
     else:
         QCDflag = False
 
-    if "DY_50" in name_sample:
-        DYflag = True
-        #theSampleName = "DY_"
-    else:
-        DYflag = False
-
-    norm_factor = Norm_Map[name_sample]*luminosity_norm
+    if not "Data" in name_sample:
+        norm_factor = Norm_Map[name_sample]*luminosity_norm
 
     mytree = root_file[name_sample].Get("WPiGammaAnalysis/mytree")
  
@@ -197,6 +199,8 @@ for name_sample in samplename_list:
        
         Wmass = mytree.Wmass
 
+        if not "Data" in name_sample and Wmass > 65 and Wmass < 90: continue #cut on MC in the blind window
+
         lep_FourMomentum = ROOT.TLorentzVector()
         lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
 
@@ -218,20 +222,22 @@ for name_sample in samplename_list:
             deltaphi_lep_W = 6.28 - deltaphi_lep_W
 
         #Determine the total event weight
-        PU_Weight = mytree.PU_Weight  
-        #ele_weight = myWF.get_ele_scale(lep_pt,lep_eta)
-        #print "uagadoudou"
-        #ph_weight = myWF.get_photon_scale(gamma_et,gamma_eta)
-        #print "honolulu"
+        if not "Data" in name_sample:
+            PU_Weight = mytree.PU_Weight  
+        #ele_weight = myWF.get_ele_scale(lep_pT,lep_eta)
+        #ph_weight = myWF.get_photon_scale(gamma_eT,gamma_eta)
         
-
-        Event_Weight = norm_factor*PU_Weight #*ph_weight   #Add other event weights here if necessary
+        
+            Event_Weight = norm_factor*PU_Weight #*ph_weight   #Add other event weights here if necessary
 
         #if(not isMuon):
         #    Event_Weight = Event_Weight * ele_weight
 
-        #---------- filling histos ------------
+        if "Data" in name_sample:
+            Event_Weight = 1
 
+        #---------- filling histos ------------
+        
         if select_all_but_one("h_mupt") and isMuon:
             h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
                     
@@ -287,11 +293,72 @@ for name_sample in samplename_list:
             h_base[theSampleName+"h_gamma_iso_NeuHad"].Fill(gamma_iso_NeuHad,Event_Weight)
             h_base[theSampleName+"h_gamma_iso_Ph"].Fill(gamma_iso_Ph,Event_Weight)
             h_base[theSampleName+"h_gamma_iso_eArho"].Fill(gamma_iso_eArho,Event_Weight)
+"""
+
+        if isMuon:
+            h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
+                
+        if not isMuon:
+            h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
+                        
+ 
+        h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
+                    
+                    
+        h_base[theSampleName+"h_nBjets"].Fill(nBjets,Event_Weight)
+                                
+
+        h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
+                                    
+
+        h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
+
+        if isMuon:
+            h_base[theSampleName+"h_deltaphi_mu_pi"].Fill(deltaphi_lep_pi,Event_Weight)
+
+        if  isMuon:
+            h_base[theSampleName+"h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
+            h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
+                    
+        if  not isMuon:
+            h_base[theSampleName+"h_deltaphi_ele_pi"].Fill(deltaphi_lep_pi,Event_Weight)
+
+        if not isMuon:
+            h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
+            h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
+            
+        if not isMuon:
+            h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
+
+        if isMuon:
+            h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+
+        if not isMuon:
+            h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+            
+        if isMuon:
+            h_base[theSampleName+"h_mu_iso"].Fill(lep_iso,Event_Weight)
+            h_base[theSampleName+"h_deltaphi_mu_W"].Fill(deltaphi_lep_W,Event_Weight)
+            h_base[theSampleName+"h_mu_gamma_InvMass"].Fill(mu_gamma_InvMass,Event_Weight)   
+
+        if not isMuon:
+            h_base[theSampleName+"h_ele_iso"].Fill(lep_iso,Event_Weight)
+            h_base[theSampleName+"h_deltaphi_ele_W"].Fill(deltaphi_lep_W,Event_Weight)
+
+
+        h_base[theSampleName+"h_gamma_iso_ChHad"].Fill(gamma_iso_ChHad,Event_Weight)
+        h_base[theSampleName+"h_gamma_iso_NeuHad"].Fill(gamma_iso_NeuHad,Event_Weight)
+        h_base[theSampleName+"h_gamma_iso_Ph"].Fill(gamma_iso_Ph,Event_Weight)
+        h_base[theSampleName+"h_gamma_iso_eArho"].Fill(gamma_iso_eArho,Event_Weight)
+"""
+        
 
         #Count the events
         if select_all_but_one("all cuts"):
             if name_sample == myWF.sig_samplename:
                 Nsig_passed += Event_Weight
+            elif name_sample == "Data":
+                Ndata_passed += Event_Weight
             else:
                 Nbkg_passed += Event_Weight
 
@@ -301,30 +368,32 @@ for name_sample in samplename_list:
             h_base[theSampleName+hname].SetFillColor(12)
         elif name_sample == myWF.sig_samplename:
             h_base[theSampleName+hname].SetLineStyle(2)   #dashed
-            h_base[theSampleName+hname].SetLineColor(4)   #blue
+            h_base[theSampleName+hname].SetLineColor(2)   #red
             h_base[theSampleName+hname].SetLineWidth(4)   #kind of thick
+        elif name_sample == myWF.data_samplename:
+            h_base[theSampleName+hname].SetMarkerStyle(20)   #dashed
+            #h_base[theSampleName+hname].SetLineColor(4)   #blue
+            #h_base[theSampleName+hname].SetLineWidth(4)   #kind of thick
         else:
             h_base[theSampleName+hname].SetFillColor(colors_mask[idx_sample])
-            #h_base[theSampleName+hname].SetLineStyle(1)
-        #if DYflag:
-        #    h_base[theSampleName+hname].SetLineStyle(1)
-        #    h_base[theSampleName+hname].SetLineColor(2)
-        #    h_base[theSampleName+hname].SetLineWidth(4)
+
 
         if idx_histo == 0:
             if QCDflag and isFirstQCDlegend:
-                 leg1.AddEntry(h_base[theSampleName+hname],"QCD","f")
-                 isFirstQCDlegend = False
+                leg1.AddEntry(h_base[theSampleName+hname],"QCD","f")
+                isFirstQCDlegend = False
             elif name_sample == myWF.sig_samplename:
-                 sample_legend_name = "100 x " + name_sample
-                 leg1.AddEntry(h_base[name_sample+hname], sample_legend_name,"f")  #To comment when signal has to be excluded.
+                sample_legend_name = "100000 x " + name_sample
+                leg1.AddEntry(h_base[name_sample+hname], sample_legend_name,"f")  #To comment when signal has to be excluded.
+            elif name_sample == myWF.data_samplename:
+                leg1.AddEntry(h_base[name_sample+hname], name_sample,"f")
             elif not QCDflag:
-                 leg1.AddEntry(h_base[theSampleName+hname],theSampleName,"f")
+                leg1.AddEntry(h_base[theSampleName+hname],theSampleName,"f")
 
-        if not QCDflag and not name_sample == myWF.sig_samplename:
+        if not QCDflag and not name_sample == myWF.sig_samplename and not name_sample == myWF.data_samplename:
             hs[hname].Add(h_base[theSampleName+hname])
 
-    if not QCDflag and not name_sample == myWF.sig_samplename:
+    if not QCDflag and not name_sample == myWF.sig_samplename and not name_sample == myWF.data_samplename:
         idx_sample += 1
 
 print "Finished runnning over samples!"
@@ -332,7 +401,8 @@ print "Finished runnning over samples!"
 for idx_histo,hname in enumerate(list_histos):
     hs[hname].Add(h_base["QCD_"+hname])
 
-for hname in list_histos: 
+for hname in list_histos:
+
     canvas[hname].cd()
 
     hs[hname].Draw("histo")
@@ -346,6 +416,13 @@ for hname in list_histos:
     if signal_magnify != 1:
         h_base[myWF.sig_samplename+hname].Scale(signal_magnify)
     h_base[myWF.sig_samplename+hname].Draw("SAME,hist")
+    h_base[myWF.data_samplename+hname].Draw("SAME,E1")
+
+    hMCErr = copy.deepcopy(hs[hname].GetStack().Last())
+    hMCErr.SetFillStyle(3005)
+    hMCErr.SetMarkerStyle(1)
+    hMCErr.SetFillColor(ROOT.kBlack)
+    hMCErr.Draw("sameE2")
         
     leg1.Draw()
         
@@ -354,6 +431,7 @@ for hname in list_histos:
 print "Number of expected events for ", luminosity_norm, " in fb-1"
 print "Number of signal events passed = ", Nsig_passed
 print "Number of background events passed = ", Nbkg_passed
+print "Number of data events passed = ", Ndata_passed
 print "Significance S/sqrt(B) = ", Nsig_passed/math.sqrt(Nbkg_passed)
 print "Significance S/sqrt(B + deltaB^2) = ", Nsig_passed/(math.sqrt(Nbkg_passed) + 0.2*Nbkg_passed)
 print "Significance S/sqrt(S+B) = ", Nsig_passed/math.sqrt(Nsig_passed + Nbkg_passed)
