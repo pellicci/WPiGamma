@@ -516,7 +516,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
 
   //Only fill the tree outside of blind Wmass window (to be used for DATA)
-  if (_Wmass > 65 && _Wmass < 90) return; 
+  //if (_Wmass > 65 && _Wmass < 90) return; 
   mytree->Fill();
 
   //std::cout << "n fotoni: " << events_least_one_ph << std::endl;

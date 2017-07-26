@@ -8,7 +8,7 @@ from ROOT import TFile, TTree, TBranch
 ROOT.gROOT.SetBatch(True)   
 
 from Workflow_Handler import Workflow_Handler
-myWF = Workflow_Handler("Signal")
+myWF = Workflow_Handler("Signal","Data",isMedium = True)
 
 Wmass = np.zeros(1, dtype=float)
 isMuon = np.zeros(1, dtype=int)
@@ -22,15 +22,20 @@ t.Branch('isSignal',isSignal,'isSignal/I')
 t.Branch('weight',weight,'weight/D')
 
 ##Global constants
-MU_MIN_PT    = 25.
-ELE_MIN_PT   = 26.
-PI_MIN_PT    = 50.
-GAMMA_MIN_ET = 50.
-N_BJETS_MIN  = 0.
-WMASS_MIN    = 50.
-WMASS_MAX    = 100.
-DELTAPHI_MU_PI_MIN = 1.2
-DELTAPHI_ELE_PI_MIN = 1.8
+MU_MIN_PT = 26.
+ELE_MIN_PT = 26.
+PI_MIN_PT = 50.
+GAMMA_MIN_ET = 40.
+N_BJETS_MIN = 2.
+WMASS_MIN = 50.
+WMASS_MAX  = 100.
+WMASS_MIN_1 = 65.
+WMASS_MAX_1 = 90.
+DELTAPHI_MU_PI_MIN = 1.
+DELTAPHI_ELE_PI_MIN = 1.
+ELE_ISO_MAX = 0.35
+ELE_GAMMA_INVMASS_MIN = 85
+ELE_GAMMA_INVMASS_MAX = 95
 
 #Normalize to this luminsity, in fb-1
 luminosity_norm = 36.46
@@ -39,16 +44,17 @@ def select_all_but_one(cutstring):
 
     selection_bools = dict()
     if ismuon:
-        selection_bools["mupt"]      = lep_pt > MU_MIN_PT
-        selection_bools["deltaphi_mu_pi"]  = deltaphi_lep_pi > DELTAPHI_MU_PI_MIN
+        selection_bools["mupt"]                = lep_pT >= MU_MIN_PT
+        selection_bools["deltaphi_mu_pi"]      = deltaphi_lep_pi >= DELTAPHI_MU_PI_MIN
     if not ismuon:
-        selection_bools["elept"]     = lep_pt > ELE_MIN_PT
-        selection_bools["deltaphi_ele_pi"]  = deltaphi_lep_pi > DELTAPHI_ELE_PI_MIN
-    selection_bools["pipt"]      = pi_pt > PI_MIN_PT
-    selection_bools["gammaet"]   = gamma_et > GAMMA_MIN_ET
-    selection_bools["nBjets"]    = nBjets > N_BJETS_MIN
-    selection_bools["Wmass_bottom"]     = wmass > WMASS_MIN
-    selection_bools["Wmass_top"]     = wmass < WMASS_MAX
+        selection_bools["elept"]               = lep_pT >= ELE_MIN_PT
+        selection_bools["deltaphi_ele_pi"]     = deltaphi_lep_pi >= DELTAPHI_ELE_PI_MIN
+        selection_bools["h_ele_iso"]           = lep_iso <= ELE_ISO_MAX
+        selection_bools["h_ele_gamma_InvMass"] = (ele_gamma_InvMass < ELE_GAMMA_INVMASS_MIN or ele_gamma_InvMass > ELE_GAMMA_INVMASS_MAX)
+    selection_bools["pipt"]                    = pi_pT >= PI_MIN_PT
+    selection_bools["gammaet"]                 = gamma_eT >= GAMMA_MIN_ET
+    selection_bools["nBjets"]                  = nBjets_25 >= N_BJETS_MIN
+    selection_bools["Wmass"]                   = (wmass >= WMASS_MIN and wmass <= WMASS_MAX)
     result = True
 
     for hname in selection_bools:
@@ -70,8 +76,6 @@ for name_sample in samplename_list:
 
     theSampleName = name_sample
 
-    norm_factor = Norm_Map[name_sample]*luminosity_norm
-
     mytree = root_file[name_sample].Get("WPiGammaAnalysis/mytree")
  
     print "Processing Sample ", name_sample
@@ -83,34 +87,65 @@ for name_sample in samplename_list:
         nb = mytree.GetEntry(jentry )
         if nb <= 0:
             continue
+
+        if "Data" in name_sample: continue
         
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
+        norm_factor = Norm_Map[name_sample]*luminosity_norm
         PU_Weight = mytree.PU_Weight
         Event_Weight = norm_factor*PU_Weight
-        
-        lep_pt  = mytree.lepton_pT
-        lep_eta = mytree.lepton_eta
-        lep_phi = mytree.lepton_phi
-        
+
         ismuon = mytree.is_muon
 
-        pi_pt = mytree.pi_pT
+        lep_pT  = mytree.lepton_pT
+        lep_eta = mytree.lepton_eta
+        lep_phi = mytree.lepton_phi
+        lep_iso = mytree.lepton_iso
+
+        pi_pT = mytree.pi_pT
         pi_eta = mytree.pi_eta
         pi_phi = mytree.pi_phi
-        
-        gamma_et = mytree.photon_eT
+        pi_E = mytree.pi_energy
+        pi_FourMomentum = ROOT.TLorentzVector()
+        pi_FourMomentum.SetPtEtaPhiE(pi_pT,pi_eta,pi_phi,pi_E)
+            
+        gamma_eT = mytree.photon_eT
+        gamma_eta = mytree.photon_eta
+        gamma_phi = mytree.photon_phi
+        gamma_E = mytree.photon_energy
+        gamma_FourMomentum = ROOT.TLorentzVector()
+        gamma_FourMomentum.SetPtEtaPhiE(gamma_eT,gamma_eta,gamma_phi,gamma_E)
+        gamma_iso_ChHad = mytree.photon_iso_ChargedHadron
+        gamma_iso_NeuHad = mytree.photon_iso_NeutralHadron
+        gamma_iso_Ph = mytree.photon_iso_Photon
+        gamma_iso_eArho = mytree.photon_iso_eArho
+
+        W_phi = (pi_FourMomentum + gamma_FourMomentum).Phi()
 
         wmass = mytree.Wmass
 
+        lep_FourMomentum = ROOT.TLorentzVector()
+        lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
+
+        if not ismuon:
+            ele_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
+        else:
+            mu_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
+        
         nBjets = mytree.nBjets
-        
+        nBjets_25 = mytree.nBjets_25
+
         deltaeta_lep_pi = lep_eta-pi_eta
-        
+
         deltaphi_lep_pi = math.fabs(lep_phi-pi_phi)
         if deltaphi_lep_pi > 3.14:
             deltaphi_lep_pi = 6.28 - deltaphi_lep_pi
+
+        deltaphi_lep_W = math.fabs(lep_phi-W_phi)
+        if deltaphi_lep_W > 3.14:
+            deltaphi_lep_W = 6.28 - deltaphi_lep_W        
 
 #-------- Filling tree -------------
         if select_all_but_one("all cuts"):

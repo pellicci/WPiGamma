@@ -7,40 +7,40 @@ import sys
 luminosity_norm = 36.46
 
 from Workflow_Handler import Workflow_Handler
-myWF = Workflow_Handler("Signal")
+myWF = Workflow_Handler("Signal","Data",isMedium = True)
 
-def is_Event_selected(Wmass,nBjets,lepton_iso,ele_gamma_InvMass,pi_pT,gamma_eT):
+def is_Event_selected(Wmass,nBjets,lepton_iso,ele_gamma_InvMass): #,pi_pT,gamma_eT):
     """Save events according to some basic selection criteria"""
-    bjet_cut = nBjets > 0.
+    bjet_cut = nBjets > 1.
 
     mass_cut_down = Wmass >= 50.
 
     mass_cut_up = Wmass <= 100.
 
-    pi_pT_cut = pi_pT >= 50.
+    #pi_pT_cut = pi_pT >= 50.
 
-    gamma_eT_cut = gamma_eT >= 40.
+    #gamma_eT_cut = gamma_eT >= 40.
 
     if not isMuon:
         ele_iso_cut = lepton_iso <= 0.35
         ele_gamma_InvMass_cut = (ele_gamma_InvMass < 85 or ele_gamma_InvMass > 95)
 
     if isMuon:
-        return mass_cut_down and mass_cut_up and bjet_cut and gamma_eT_cut and pi_pT_cut
+        return mass_cut_down and mass_cut_up and bjet_cut #and gamma_eT_cut and pi_pT_cut
     else:
-        return mass_cut_down and mass_cut_up and bjet_cut and ele_iso_cut and ele_gamma_InvMass_cut and gamma_eT_cut and pi_pT_cut
+        return mass_cut_down and mass_cut_up and bjet_cut and ele_iso_cut and ele_gamma_InvMass_cut #and gamma_eT_cut and pi_pT_cut
 
 ##Here starts the program
 Norm_Map = myWF.get_normalizations_map()
 
 #----pi pT and gamma ET cuts----- 
-#steps_cut1 = 10
-#cut1_init = 20.
-#cut1_stepsize = 10.
+steps_cut1 = 10
+cut1_init = 20.
+cut1_stepsize = 10.
 
-#steps_cut2 = 10
-#cut2_init = 20.
-#cut2_stepsize = 10.
+steps_cut2 = 10
+cut2_init = 20.
+cut2_stepsize = 10.
 
 #----The next one is for lepton pT-----
 #steps_cut1 = 26
@@ -48,18 +48,18 @@ Norm_Map = myWF.get_normalizations_map()
 #cut1_stepsize = 1.
 
 #----The next one is for deltaphi------
-steps_cut1 = 30
-cut1_init = 0.
-cut1_stepsize = 0.1
+#steps_cut1 = 30
+#cut1_init = 0.
+#cut1_stepsize = 0.1
 
 #----The next one is for Z peak--------
 #steps_cut1 = 30
 #cut1_init = 0.
 #cut1_stepsize = 0.25
 
-steps_cut2 = 1
-cut2_init = 20.
-cut2_stepsize = 10.
+#steps_cut2 = 1
+#cut2_init = 20.
+#cut2_stepsize = 10.
 
 cut_Nbkg = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
 cut_Nsig = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
@@ -71,7 +71,6 @@ root_file = myWF.get_root_files()
 ##loop on the samples and on the cuts and calculate N_bkg and N_sig
 for name_sample in samplename_list:
 
-    norm_factor = Norm_Map[name_sample]*luminosity_norm
     mytree = root_file[name_sample].Get("WPiGammaAnalysis/mytree")
 
     if "Signal" in name_sample and not name_sample == myWF.sig_samplename:
@@ -88,6 +87,9 @@ for name_sample in samplename_list:
         if nb <= 0:
             continue
 
+        if "Data" in name_sample: 
+            continue
+
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
@@ -95,6 +97,7 @@ for name_sample in samplename_list:
         if not isMuon: 
             continue
 
+        norm_factor = Norm_Map[name_sample]*luminosity_norm
         PU_Weight = mytree.PU_Weight
         Event_Weight = norm_factor*PU_Weight
         
@@ -117,7 +120,7 @@ for name_sample in samplename_list:
         if deltaphi > 3.14:
             deltaphi = 6.28-deltaphi
 
-        if not is_Event_selected(mytree.Wmass,mytree.nBjets,mytree.lepton_iso,ele_gamma_InvMass,pi_pT,gamma_eT):
+        if not is_Event_selected(mytree.Wmass,mytree.nBjets_25,mytree.lepton_iso,ele_gamma_InvMass): #,pi_pT,gamma_eT):
             continue
 
         for icut1 in xrange(steps_cut1):
@@ -126,23 +129,23 @@ for name_sample in samplename_list:
             #if ele_gamma_InvMass > 90 - cut1_value and ele_gamma_InvMass < 90 + cut1_value:
             #    continue
             
-            #if pi_pT < cut1_value:
-            #    continue
+            if pi_pT < cut1_value:
+                continue
 
             #if lep_pT < cut1_value:
             #    continue
 
-            if deltaphi < cut1_value:
-                continue
+            #if deltaphi < cut1_value:
+            #    continue
 
             for icut2 in xrange(steps_cut2):
                 cut2_value = cut2_init + cut2_stepsize*icut2
 
-                #if gamma_eT < cut2_value:
-                #    continue
-                
-                if gamma_eT < 0: #-----a possible condition to use to optimize a single variable (the precedent)-----
+                if gamma_eT < cut2_value:
                     continue
+                
+                #if gamma_eT < 0: #-----a possible condition to use to optimize a single variable (the precedent)-----
+                #    continue
 
                 if name_sample == myWF.sig_samplename:
                     cut_Nsig[icut1][icut2] += Event_Weight
@@ -196,21 +199,21 @@ graph_cut2 = ROOT.TGraph(steps_cut2,cut2_x,cut2_y)
 c1 = ROOT.TCanvas("c1","c1")
 c1.cd()
 graph_cut1.Draw("A*")
-#graph_cut1.SetTitle("Significance vs p_{T}^{#pi}; p_{T}^{#pi}; Significance")
+graph_cut1.SetTitle("Significance vs p_{T}^{#pi}; p_{T}^{#pi}; Significance")
 #graph_cut1.SetTitle("Significance vs 90 #pm #varepsilon; 90 #pm #varepsilon; Significance")
 #graph_cut1.SetTitle("Significance vs p_{T}^{e}; p_{T}^{e}; Significance")
-graph_cut1.SetTitle("Significance vs #Delta#varphi(#mu,#pi); #Delta#varphi(#mu,#pi); Significance") #for muons
+#graph_cut1.SetTitle("Significance vs #Delta#varphi(#mu,#pi); #Delta#varphi(#mu,#pi); Significance") #for muons
 #graph_cut1.SetTitle("Significance vs #Delta#varphi(e,#pi);  #Delta#varphi(e,#pi); Significance") #for electrons
 
 
-#c1.SaveAs("plots/pi_pT_signif.png")
+c1.SaveAs("plots/pi_pT_signif.png")
 #c1.SaveAs("plots/ele_pT_signif.png")
-c1.SaveAs("plots/deltaphi_mu_pi_signif.png") #for muons
+#c1.SaveAs("plots/deltaphi_mu_pi_signif.png") #for muons
 #c1.SaveAs("plots/deltaphi_ele_pi_signif.png") #for electrons
 
 c2 = ROOT.TCanvas("c2","c2")
 c2.cd()
 graph_cut2.Draw("A*")
 graph_cut2.SetTitle("Significance vs E_{T}^{#gamma}; E_{T}^{#gamma}; Significance")
-#c2.SaveAs("plots/gamma_eT_signif.png")
-c2.SaveAs("plots/nothing.png")
+c2.SaveAs("plots/gamma_eT_signif.png")
+#c2.SaveAs("plots/nothing.png")
