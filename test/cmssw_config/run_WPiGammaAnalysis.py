@@ -80,7 +80,7 @@ if not options.runningOnData:    #Only for MC, data reprocessing already has cor
 #Add the trigger request
 import HLTrigger.HLTfilters.triggerResultsFilter_cfi as hlt
 process.trigger_filter = hlt.triggerResultsFilter.clone()
-process.trigger_filter.triggerConditions = cms.vstring('HLT_IsoMu24_v*', 'HLT_IsoTkMu24_v*', 'HLT_Mu50_v*' , 'HLT_Ele25_eta2p1_WPTight_Gsf_v*', 'HLT_Ele27_WPTight_Gsf_v7')   #paths for 2016 samples
+process.trigger_filter.triggerConditions = cms.vstring('HLT_IsoMu24_v*', 'HLT_IsoTkMu24_v*', 'HLT_Mu50_v*' , 'HLT_Ele25_eta2p1_WPTight_Gsf_v*', 'HLT_Ele27_WPTight_Gsf_v*')   #paths for 2016 samples
 process.trigger_filter.hltResults = cms.InputTag("TriggerResults", "", "HLT")
 process.trigger_filter.l1tResults = cms.InputTag("")
 process.trigger_filter.throw = cms.bool( False )

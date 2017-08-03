@@ -7,7 +7,7 @@ fInput.cd()
 
 workspace = fInput.Get("workspace")
 workspace.Print()
-workspace.var("W_pigamma_BR").setRange(0.,0.0005)
+workspace.var("W_pigamma_BR").setRange(0.,0.0001)
 
 #Set a few things constant
 #workspace.var("a0_el").setConstant(1)
@@ -89,7 +89,7 @@ poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
 print "Doing a fixed scan  in interval : ", poimin, " , ", poimax
-calc.SetFixedScan(npoints,poimin,0.000005);
+calc.SetFixedScan(npoints,poimin,0.00005);
 
 result = calc.GetInterval() #This is a HypoTestInveter class object
 upperLimit = result.UpperLimit()

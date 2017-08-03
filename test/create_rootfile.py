@@ -12,14 +12,15 @@ myWF = Workflow_Handler("Signal","Data",isMedium = True)
 
 Wmass = np.zeros(1, dtype=float)
 isMuon = np.zeros(1, dtype=int)
-isSignal = np.zeros(1, dtype=int)
-weight = np.zeros(1, dtype=float)
-f = TFile('WmassAnalysis/Tree_MC.root','recreate')
+#isSignal = np.zeros(1, dtype=int)
+#weight = np.zeros(1, dtype=float)
+#f = TFile('WmassAnalysis/Tree_MC.root','recreate')
+f = TFile('WmassAnalysis/Tree_Data.root','recreate')
 t = TTree('minitree','tree with branches')
 t.Branch('Wmass',Wmass,'Wmass/D')
 t.Branch('isMuon',isMuon,'isMuon/I')
-t.Branch('isSignal',isSignal,'isSignal/I')
-t.Branch('weight',weight,'weight/D')
+#t.Branch('isSignal',isSignal,'isSignal/I')
+#t.Branch('weight',weight,'weight/D')
 
 ##Global constants
 MU_MIN_PT = 26.
@@ -88,14 +89,14 @@ for name_sample in samplename_list:
         if nb <= 0:
             continue
 
-        if "Data" in name_sample: continue
+        if not "Data" in name_sample: continue  #--------Switch from MC to DATA and vice versa
         
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
-        norm_factor = Norm_Map[name_sample]*luminosity_norm
-        PU_Weight = mytree.PU_Weight
-        Event_Weight = norm_factor*PU_Weight
+        #norm_factor = Norm_Map[name_sample]*luminosity_norm
+        #PU_Weight = mytree.PU_Weight
+        #Event_Weight = norm_factor*PU_Weight
 
         ismuon = mytree.is_muon
 
@@ -126,6 +127,8 @@ for name_sample in samplename_list:
 
         wmass = mytree.Wmass
 
+        if (wmass > 65 and wmass < 90): continue  #-------Blind window----------
+
         lep_FourMomentum = ROOT.TLorentzVector()
         lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
 
@@ -151,11 +154,11 @@ for name_sample in samplename_list:
         if select_all_but_one("all cuts"):
             isMuon[0] = mytree.is_muon
             Wmass[0] = mytree.Wmass
-            weight[0] = Event_Weight
-            if name_sample == myWF.sig_samplename:
-                isSignal[0] = 1
-            else:
-                isSignal[0] = 0
+            #weight[0] = Event_Weight
+            #if name_sample == myWF.sig_samplename:
+            #    isSignal[0] = 1
+            #else:
+            #    isSignal[0] = 0
             t.Fill()
 
 print "Finished runnning over samples!"

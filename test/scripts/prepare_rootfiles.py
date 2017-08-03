@@ -1,5 +1,6 @@
 import ROOT
 import os
+import subprocess
 
 #dir_input = "crab_projects/samples_Medium/"
 #dir_output_bkg = "rootfiles/Medium/backgrounds/"
@@ -26,8 +27,29 @@ if not os.path.exists(dir_output_data):
 for dirname in list_dirs:
 
     print "Processing sample dir " + dirname
-    #crab_command = "crab getoutput -d " + dir_input + dirname
-    #os.system(crab_command)
+
+    #n_jobs_command = "crab status -d " + dir_input + dirname + " | grep status: " + "| awk " + """'{split($0,array,"/") ; print array[2]}'""" + "| sed 's/.$//'"
+    #n_jobs = subprocess.check_output(n_jobs_command, shell=True)
+
+    #crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 501-" + n_jobs
+    #print crab_command
+    #crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1001-" + n_jobs
+    #print crab_command
+    #if n_jobs <= 500:
+    #    crab_command = "crab getoutput -d " + dir_input + dirname
+    #    os.system(crab_command)
+    #if n_jobs > 500 and n_jobs <= 1000:
+    #    crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
+    #    os.system(crab_command)
+    #    crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-" + n_jobs
+    #    os.system(crab_command_1)
+    #if n_jobs > 1000:
+    #    crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
+    #    os.system(crab_command)
+    #    crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-1000"
+    #    os.system(crab_command_1)
+    #    crab_command_2 = "crab getoutput -d " + dir_input + dirname + " --jobids 1001-" + n_jobs
+    #    os.system(crab_command_2)
 
     samplename = dirname.split("crab_WPiGammaAnalysis_") #--which means "dirname"-"crab_WPiGammaAnalysys_"
 

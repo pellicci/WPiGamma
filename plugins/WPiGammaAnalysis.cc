@@ -207,7 +207,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       isSingleMuTrigger = true;
     }
     if( tmp_triggername.find("HLT_Ele25_eta2p1_WPTight_Gsf_v") != std::string::npos ||
-	tmp_triggername.find("HLT_Ele27_WPTight_Gsf_v7") != std::string::npos){
+	tmp_triggername.find("HLT_Ele27_WPTight_Gsf_v") != std::string::npos){
       isSingleEleTrigger = true;
     }
   }

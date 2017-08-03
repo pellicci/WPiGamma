@@ -72,8 +72,8 @@ gauss_lumi  = ROOT.RooGaussian("gauss_lumi","gauss_lumi",glb_lumi,lumi_constr,lu
 
 #Now the efficiency
 totsig = 107810.  #total number of signal events
-totmu = 908.  #total number of signal muon events
-totel = 1405.  #total number of signal muon events
+totmu = 1880.  #total number of signal muon events
+totel = 1431.  #total number of signal muon events
 
 glb_eff_mu    = ROOT.RooRealVar("glb_eff_mu","glb_eff_mu",totmu*2./totsig, 0., 1.) #For now, just the raw MC passed/generated number
 eff_mu_constr = ROOT.RooRealVar("eff_mu_constr","eff_mu_constr", totel*2./totsig, 0., 1.)
