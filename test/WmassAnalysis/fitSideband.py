@@ -71,7 +71,7 @@ Npars_x = result_x.floatParsFinal().getSize()
 xframe = Wmass.frame(ROOT.RooFit.Bins(30))
 data_lep.plotOn(xframe,ROOT.RooFit.Name("data_lep"))
 sidebandPDF_j.plotOn(xframe,ROOT.RooFit.Name("PDF_j"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(5)) # yellow. 1 degree
-sidebandPDF_a.plotOn(xframe,ROOT.RooFit.Name("PDF_a"),ROOT.RooFit.Range("LowerRange,UpperRange")) # blue. 2 degree
+sidebandPDF_a.plotOn(xframe,ROOT.RooFit.Name("PDF_a"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(4)) # blue. 2 degree
 sidebandPDF_b.plotOn(xframe,ROOT.RooFit.Name("PDF_b"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(2)) # red. 3 degree
 sidebandPDF_c.plotOn(xframe,ROOT.RooFit.Name("PDF_c"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(3)) # green. 4 degree
 sidebandPDF_x.plotOn(xframe,ROOT.RooFit.Name("PDF_x"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(6)) # purple. exponential
