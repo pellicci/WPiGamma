@@ -39,50 +39,76 @@ c0 = ROOT.RooRealVar("c0","c0",0.1,-5.,5.) # 4 degree polynomial
 c1 = ROOT.RooRealVar("c1","c1",0.1,-5.,5.)
 c2 = ROOT.RooRealVar("c2","c2",0.1,-5.,5.)
 c3 = ROOT.RooRealVar("c3","c3",0.1,-5.,5.)
+x0 = ROOT.RooRealVar("x0","x0",0.1,0.01,0.5) # exponential
 
-sidebandPDF_j = ROOT.RooChebychev("backPDF_j","backPDF_j",Wmass,ROOT.RooArgList(j0))
-sidebandPDF_a = ROOT.RooChebychev("backPDF_a","backPDF_a",Wmass,ROOT.RooArgList(a0,a1))
-sidebandPDF_b = ROOT.RooChebychev("backPDF_b","backPDF_b",Wmass,ROOT.RooArgList(b0,b1,b2))
-sidebandPDF_c = ROOT.RooChebychev("backPDF_c","backPDF_c",Wmass,ROOT.RooArgList(c0,c1,c2,c3))
+sidebandPDF_j = ROOT.RooBernstein("backPDF_j","backPDF_j",Wmass,ROOT.RooArgList(j0))
+sidebandPDF_a = ROOT.RooBernstein("backPDF_a","backPDF_a",Wmass,ROOT.RooArgList(a0,a1))
+sidebandPDF_b = ROOT.RooBernstein("backPDF_b","backPDF_b",Wmass,ROOT.RooArgList(b0,b1,b2))
+sidebandPDF_c = ROOT.RooBernstein("backPDF_c","backPDF_c",Wmass,ROOT.RooArgList(c0,c1,c2,c3))
+sidebandPDF_x = ROOT.RooExponential("backPDF_x","backPDF_x",Wmass,x0)
 
-result_j = sidebandPDF_j.fitTo(data_lep, ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save(1))
-result_a = sidebandPDF_a.fitTo(data_lep, ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save(1))
-result_b = sidebandPDF_b.fitTo(data_lep, ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save(1))
-result_c = sidebandPDF_c.fitTo(data_lep, ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save(1))
+#Fit the PDFs on data
+result_j = sidebandPDF_j.fitTo(data_lep,ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save())
+result_a = sidebandPDF_a.fitTo(data_lep,ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save())
+result_b = sidebandPDF_b.fitTo(data_lep,ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save())
+result_c = sidebandPDF_c.fitTo(data_lep,ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save())
+result_x = sidebandPDF_x.fitTo(data_lep,ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save())
 
 #Get the minimum of the likelihood from RooFitResult
 minNll_j = result_j.minNll()
 minNll_a = result_a.minNll()
 minNll_b = result_b.minNll()
 minNll_c = result_c.minNll()
+minNll_x = result_x.minNll()
 
 #Get the number of free parameters
 Npars_j = result_j.floatParsFinal().getSize()
 Npars_a = result_a.floatParsFinal().getSize()
 Npars_b = result_b.floatParsFinal().getSize()
 Npars_c = result_c.floatParsFinal().getSize()
+Npars_x = result_x.floatParsFinal().getSize()
 
-xframe = Wmass.frame(ROOT.RooFit.Bins(50))
-data_lep.plotOn(xframe,ROOT.RooFit.Name("data"))
-sidebandPDF_j.plotOn(xframe,ROOT.RooFit.Name("PDF_j"), ROOT.RooFit.Range("Full"),ROOT.RooFit.LineColor(5))
-sidebandPDF_a.plotOn(xframe,ROOT.RooFit.Name("PDF_a"), ROOT.RooFit.Range("Full"))
-sidebandPDF_b.plotOn(xframe,ROOT.RooFit.Name("PDF_b"), ROOT.RooFit.Range("Full"),ROOT.RooFit.LineColor(2))
-sidebandPDF_c.plotOn(xframe,ROOT.RooFit.Name("PDF_c"), ROOT.RooFit.Range("Full"),ROOT.RooFit.LineColor(3))
+xframe = Wmass.frame(ROOT.RooFit.Bins(30))
+data_lep.plotOn(xframe,ROOT.RooFit.Name("data_lep"))
+sidebandPDF_j.plotOn(xframe,ROOT.RooFit.Name("PDF_j"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(5)) # yellow. 1 degree
+sidebandPDF_a.plotOn(xframe,ROOT.RooFit.Name("PDF_a"),ROOT.RooFit.Range("LowerRange,UpperRange")) # blue. 2 degree
+sidebandPDF_b.plotOn(xframe,ROOT.RooFit.Name("PDF_b"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(2)) # red. 3 degree
+sidebandPDF_c.plotOn(xframe,ROOT.RooFit.Name("PDF_c"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(3)) # green. 4 degree
+sidebandPDF_x.plotOn(xframe,ROOT.RooFit.Name("PDF_x"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(6)) # purple. exponential
 
 #chi2 = ROOT.RooChi2Var("chi2","chi2",sidebandPDF,data_lep)
-chi_2_j = xframe.chiSquare("PDF_j","data",Npars_j)
-chi_2_a = xframe.chiSquare("PDF_a","data",Npars_a)
-chi_2_b = xframe.chiSquare("PDF_b","data",Npars_b)
-chi_2_c = xframe.chiSquare("PDF_c","data",Npars_c)
+chi_2_j = xframe.chiSquare("PDF_j","data_lep",Npars_j)
+chi_2_a = xframe.chiSquare("PDF_a","data_lep",Npars_a)
+chi_2_b = xframe.chiSquare("PDF_b","data_lep",Npars_b)
+chi_2_c = xframe.chiSquare("PDF_c","data_lep",Npars_c)
+chi_2_x = xframe.chiSquare("PDF_x","data_lep",Npars_x)
 
-print "reduced_chi2_j = ", chi_2_j, "   |||||||   reduced_chi2_a = ", chi_2_a, "   |||||||   reduced_chi2_b = ", chi_2_b , "   |||||||   reduced_chi2_c = ", chi_2_c 
-print "minNll_j = ", minNll_j, " |||||||   minNll_a = ", minNll_a, " |||||||   minNll_b = ", minNll_b,  " |||||||   minNll_c = ", minNll_c
-print "Deltaloglikelihood_ja = ", -2*ROOT.TMath.Log(minNll_a/minNll_j)
-print "Deltaloglikelihood_ab = ", -2*ROOT.TMath.Log(minNll_b/minNll_a)
-print "Deltaloglikelihood_bc = ", -2*ROOT.TMath.Log(minNll_c/minNll_b)
+Deltaloglikelihood_12 = -2*(minNll_a-minNll_j)
+Deltaloglikelihood_23 = -2*(minNll_b-minNll_a)
+Deltaloglikelihood_34 = -2*(minNll_c-minNll_b)
 
+prob_12 = ROOT.TMath.Prob(Deltaloglikelihood_12, 1)
+prob_23 = ROOT.TMath.Prob(Deltaloglikelihood_23, 1)
+prob_34 = ROOT.TMath.Prob(Deltaloglikelihood_34, 1)
+
+print "reduced_chi2_1 = ", chi_2_j, "   |||||||   reduced_chi2_2 = ", chi_2_a, "   |||||||   reduced_chi2_3 = ", chi_2_b , "   |||||||   reduced_chi2_4 = ", chi_2_c, "  |||||||   reduced_chi2_exp = ", chi_2_x
+print "minNll_1 = ", minNll_j, " |||||||   minNll_2 = ", minNll_a, " |||||||   minNll_3 = ", minNll_b,  " |||||||   minNll_4 = ", minNll_c, "  |||||||  minNll_exp = ", minNll_x
+print "Deltaloglikelihood_12 = ", -2*(minNll_a-minNll_j)
+print "Deltaloglikelihood_23 = ", -2*(minNll_b-minNll_a)
+print "Deltaloglikelihood_34 = ", -2*(minNll_c-minNll_b)
+print "prob_12 = ", prob_12
+print "prob_23 = ", prob_23
+print "prob_34 = ", prob_34
 
 canvas = ROOT.TCanvas()
 canvas.cd()
+legend = ROOT.TLegend(0.1,0.7,0.48,0.9)
+legend.SetNColumns(2)
+legend.AddEntry(0,"yellow: 1 degree","")
+legend.AddEntry(0,"blue: 2 degree","")
+legend.AddEntry(0,"red: 3 degree","")
+legend.AddEntry(0,"green: 4 degree","")
+legend.AddEntry(0,"purple: exp","")
 xframe.Draw()
-canvas.SaveAs("fitSidebands_full_4.png")
+legend.Draw()
+canvas.SaveAs("fitSidebands_exp_muons.png")

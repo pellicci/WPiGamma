@@ -35,8 +35,8 @@ WMASS_MAX_1 = 90.
 DELTAPHI_MU_PI_MIN = 1.
 DELTAPHI_ELE_PI_MIN = 1.
 ELE_ISO_MAX = 0.35
-ELE_GAMMA_INVMASS_MIN = 85
-ELE_GAMMA_INVMASS_MAX = 95
+ELE_GAMMA_INVMASS_MIN = 85.
+ELE_GAMMA_INVMASS_MAX = 95.
 
 #Normalize to this luminsity, in fb-1
 luminosity_norm = 36.46
@@ -127,7 +127,7 @@ for name_sample in samplename_list:
 
         wmass = mytree.Wmass
 
-        if (wmass > 65 and wmass < 90): continue  #-------Blind window----------
+        if (wmass > 65. and wmass < 90.): continue  #-------Blind window----------
 
         lep_FourMomentum = ROOT.TLorentzVector()
         lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
