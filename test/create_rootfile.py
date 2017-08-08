@@ -12,11 +12,12 @@ myWF = Workflow_Handler("Signal","Data",isMedium = True)
 
 isData = True ##---------switch from DATA to MC and vice versa---------##
 
+Wmass = np.zeros(1, dtype=float)
+isMuon = np.zeros(1, dtype=int)
+isSignal = np.zeros(1, dtype=int)
+weight = np.zeros(1, dtype=float)
+
 if not isData:
-    Wmass = np.zeros(1, dtype=float)
-    isMuon = np.zeros(1, dtype=int)
-    isSignal = np.zeros(1, dtype=int)
-    weight = np.zeros(1, dtype=float)
     f = TFile('WmassAnalysis/Tree_MC.root','recreate')
     t = TTree('minitree','tree with branches')
     t.Branch('Wmass',Wmass,'Wmass/D')
@@ -25,8 +26,6 @@ if not isData:
     t.Branch('weight',weight,'weight/D')
 
 if isData:
-    Wmass = np.zeros(1, dtype=float)
-    isMuon = np.zeros(1, dtype=int)
     f = TFile('WmassAnalysis/Tree_Data.root','recreate')
     t = TTree('minitree','tree with branches')
     t.Branch('Wmass',Wmass,'Wmass/D')
@@ -99,13 +98,13 @@ for name_sample in samplename_list:
         if nb <= 0:
             continue
 
-        if isData:
-            if not "Data" in name_sample: 
-                continue
+        if isData and not "Data" in name_sample: 
+            continue
         
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
+        Event_Weight = 1.
         if not isData:
             norm_factor = Norm_Map[name_sample]*luminosity_norm
             PU_Weight = mytree.PU_Weight

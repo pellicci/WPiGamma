@@ -18,16 +18,14 @@ list_dirs = os.listdir(dir_input)
 if not os.path.exists("rootfiles"):
     os.makedirs("rootfiles")
 
-if not isData:
-    if not os.path.exists(dir_output_bkg):
-        os.makedirs(dir_output_bkg)
+if not isData and not os.path.exists(dir_output_bkg):
+    os.makedirs(dir_output_bkg)
 
-    if not os.path.exists(dir_output_sig):
-        os.makedirs(dir_output_sig)
+if not isData and not os.path.exists(dir_output_sig):
+    os.makedirs(dir_output_sig)
 
-if isData:
-    if not os.path.exists(dir_output_data):
-        os.makedirs(dir_output_data)
+if isData and not os.path.exists(dir_output_data):
+    os.makedirs(dir_output_data)
 
 for dirname in list_dirs:
 
@@ -56,12 +54,12 @@ for dirname in list_dirs:
 
     if "Signal" in dirname:
         hadd_command = "hadd -f " + dir_output_sig + "/WPiGammaAnalysis_" + samplename[1] + ".root " + dir_input + dirname + "/results/*.root"
+    elif isData:
+        hadd_command = "hadd -f " + dir_output_data + "/WPiGammaAnalysis_" + samplename[1] + ".root " + dir_input + dirname + "/results/*.root"
     else:
         hadd_command = "hadd -f " + dir_output_bkg + "/WPiGammaAnalysis_" + samplename[1] + ".root " + dir_input + dirname + "/results/*.root"
 
-    if isData:
-        hadd_command = "hadd -f " + dir_output_data + "/WPiGammaAnalysis_" + samplename[1] + ".root " + dir_input + dirname + "/results/*.root"
-        os.system(hadd_command)
+    os.system(hadd_command)
 
 if not isData:
     list_signals = os.listdir(dir_output_sig)
