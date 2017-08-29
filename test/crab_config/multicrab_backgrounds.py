@@ -39,7 +39,7 @@ if __name__ == '__main__':
     #############################################################################################
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
-    
+
     config.General.requestName = 'WPiGammaAnalysis_ttbar'
     config.Data.unitsPerJob = 5
     config.Data.inputDataset = '/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
@@ -261,6 +261,13 @@ if __name__ == '__main__':
     config.General.requestName = 'WPiGammaAnalysis_GammaJets_20_Inf'
     config.Data.unitsPerJob = 5
     config.Data.inputDataset = '/GJet_Pt-20toInf_DoubleEMEnriched_MGG-40to80_TuneCUETP8M1_13TeV_Pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
+    p = Process(target=submit, args=(config,))
+    p.start()
+    p.join()
+    
+    config.General.requestName = 'WPiGammaAnalysis_WGToLNuG'
+    config.Data.unitsPerJob = 5
+    config.Data.inputDataset = '/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM'
     p = Process(target=submit, args=(config,))
     p.start()
     p.join()

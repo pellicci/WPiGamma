@@ -109,6 +109,9 @@ def get_xsec_fromsample(samplename):
 
     if samplename == "GammaJets_20_Inf":
         return 154500.
+
+    #if samplename == "WGToLNuG":
+    #    return 489.
     
     if "Signal" in samplename:
         #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)

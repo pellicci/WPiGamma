@@ -85,7 +85,7 @@ eff_el_constr = ROOT.RooRealVar("eff_el_constr","eff_el_constr",totel*2./totsig,
 eff_el_syst  = ROOT.RooRealVar("eff_el_syst","eff_el_syst", math.sqrt(1./totel + 2./totsig)*totel*2./totsig)
 gauss_eff_el = ROOT.RooGaussian("gauss_eff_el","gauss_eff_el",glb_eff_el,eff_el_constr,eff_el_syst) 
 
-W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.00001,0.,0.01) # The parameter of interest
+W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.00001,-0.000045,0.0001) # The parameter of interest
 
 glb_W_xsec.setConstant(1)
 glb_lumi.setConstant(1)
@@ -116,9 +116,11 @@ constrained_params.add(eff_el_constr)
 
 totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
 
+#fitResults = ROOT.RooFitResult(totPDF.fitTo(data, "l", ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params)))
+
 xframe_mu = Wmass.frame(18)
 xframe_mu.SetTitle("Fit to m_{#pi-#gamma} for the #mu channel")
-data.plotOn(xframe_mu, ROOT.RooFit.Cut("isMuon==1"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson) )
+data.plotOn(xframe_mu, ROOT.RooFit.Cut("isMuon==1"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
 totPDF.plotOn(xframe_mu, ROOT.RooFit.Slice(isMuon,"Muon"), ROOT.RooFit.ProjWData(data))
 
 xframe_el = Wmass.frame(18)

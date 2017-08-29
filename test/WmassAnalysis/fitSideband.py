@@ -76,6 +76,24 @@ sidebandPDF_b.plotOn(xframe,ROOT.RooFit.Name("PDF_b"),ROOT.RooFit.Range("LowerRa
 sidebandPDF_c.plotOn(xframe,ROOT.RooFit.Name("PDF_c"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(3)) # green. 4 degree
 sidebandPDF_x.plotOn(xframe,ROOT.RooFit.Name("PDF_x"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(6)) # purple. exponential
 
+#Redisuals
+hresid_j = ROOT.TH1F()
+hresid_j = xframe.residHist("data_lep","PDF_j")
+hresid_a = xframe.residHist("data_lep","PDF_a")
+hresid_b = xframe.residHist("data_lep","PDF_b")
+hresid_c = xframe.residHist("data_lep","PDF_c")
+"""
+res_j = 0.
+res_a = 0.
+res_b = 0.
+res_c = 0.
+
+for x in range (1, 31):
+    res_j += hresid_j.getBinContent(x)
+    res_a += hresid_a.ROOT.getBinContent(x)
+    res_b += hresid_b.ROOT.getBinContent(x)
+    res_c += hresid_c.ROOT.getBinContent(x)
+"""
 #chi2 = ROOT.RooChi2Var("chi2","chi2",sidebandPDF,data_lep)
 chi_2_j = xframe.chiSquare("PDF_j","data_lep",Npars_j)
 chi_2_a = xframe.chiSquare("PDF_a","data_lep",Npars_a)
