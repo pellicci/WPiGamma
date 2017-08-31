@@ -8,7 +8,7 @@ import math
 Wmass = ROOT.RooRealVar("Wmass","#pi-#gamma invariant mass",50.,100.,"GeV")
 
 #Retrive the sample
-fInput = ROOT.TFile("Tree_MC.root")
+fInput = ROOT.TFile("Tree_Data.root")
 fInput.cd()
 
 mytree = fInput.Get("minitree")
@@ -22,7 +22,8 @@ isMuon.defineType("Electron",0)
 weight = ROOT.RooRealVar("weight","The event weight",0.,10.)
 
 #Create the RooDataSet. No need to import weight for signal only analysis
-data = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isMuon,weight), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
+#data = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isMuon,weight), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
+data = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isMuon), ROOT.RooFit.Import(mytree))
 
 print "Using ", data.numEntries(), " events to fit"
 
@@ -45,12 +46,12 @@ totSignal = workspace.pdf("totSignal")
 #First the muon
 a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",0.1,-5.,5.)
 a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",0.1,-5.,5.)
-backPDF_mu = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu))
+backPDF_mu = ROOT.RooBernstein("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu))
 
 #Then the electron
 a0_el = ROOT.RooRealVar("a0_el","a0_el",0.1,-5.,5.)
 a1_el = ROOT.RooRealVar("a1_el","a1_el",0.1,-5.,5.)
-backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el))
+backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el))
 
 #Now fit signal + background
 
@@ -72,8 +73,8 @@ gauss_lumi  = ROOT.RooGaussian("gauss_lumi","gauss_lumi",glb_lumi,lumi_constr,lu
 
 #Now the efficiency
 totsig = 107810.  #total number of signal events
-totmu = 1880.  #total number of signal muon events
-totel = 1431.  #total number of signal muon events
+totmu = 2063.  #total number of signal muon events
+totel = 1572.  #total number of signal muon events
 
 glb_eff_mu    = ROOT.RooRealVar("glb_eff_mu","glb_eff_mu",totmu*2./totsig, 0., 1.) #For now, just the raw MC passed/generated number
 eff_mu_constr = ROOT.RooRealVar("eff_mu_constr","eff_mu_constr", totel*2./totsig, 0., 1.)
@@ -85,7 +86,7 @@ eff_el_constr = ROOT.RooRealVar("eff_el_constr","eff_el_constr",totel*2./totsig,
 eff_el_syst  = ROOT.RooRealVar("eff_el_syst","eff_el_syst", math.sqrt(1./totel + 2./totsig)*totel*2./totsig)
 gauss_eff_el = ROOT.RooGaussian("gauss_eff_el","gauss_eff_el",glb_eff_el,eff_el_constr,eff_el_syst) 
 
-W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.00001,-0.000045,0.0001) # The parameter of interest
+W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.00001,0.,0.0001) # The parameter of interest
 
 glb_W_xsec.setConstant(1)
 glb_lumi.setConstant(1)
@@ -114,7 +115,8 @@ constrained_params.add(lumi_constr)
 constrained_params.add(eff_mu_constr)
 constrained_params.add(eff_el_constr)
 
-totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
+#totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
+totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
 
 #fitResults = ROOT.RooFitResult(totPDF.fitTo(data, "l", ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params)))
 
@@ -134,10 +136,10 @@ canvas.cd(1)
 xframe_mu.Draw()
 canvas.cd(2)
 xframe_el.Draw()
-canvas.SaveAs("fitAllLep.png")
+canvas.SaveAs("fitData.png")
 
 #Save the fit into a root file
-fOutput = ROOT.TFile("fitAllLep.root","RECREATE")
+fOutput = ROOT.TFile("fitData.root","RECREATE")
 fOutput.cd()
 
 workspace = ROOT.RooWorkspace("workspace")

@@ -1,6 +1,6 @@
 import ROOT
 
-fInput = ROOT.TFile("fitAllLep.root")
+fInput = ROOT.TFile("fitData.root")
 fInput.cd()
 
 workspace = fInput.Get("workspace")

@@ -2,7 +2,7 @@
 import ROOT
 
 #Get the model and the data
-fInput = ROOT.TFile("fitAllLep.root")
+fInput = ROOT.TFile("fitData.root")
 fInput.cd()
 
 workspace = fInput.Get("workspace")
@@ -112,4 +112,4 @@ freq_plot = ROOT.RooStats.HypoTestInverterPlot("HTI_Result_Plot","Frequentist sc
 canvas = ROOT.TCanvas()
 canvas.cd()
 freq_plot.Draw("2CL")
-canvas.SaveAs("calculate_UL_CLs.png")
+canvas.SaveAs("calculate_UL_CLs_Data.png")

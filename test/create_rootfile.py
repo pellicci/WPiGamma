@@ -39,8 +39,6 @@ GAMMA_MIN_ET = 40.
 N_BJETS_MIN = 2.
 WMASS_MIN = 50.
 WMASS_MAX  = 100.
-WMASS_MIN_1 = 65.
-WMASS_MAX_1 = 90.
 DELTAPHI_MU_PI_MIN = 1.
 DELTAPHI_ELE_PI_MIN = 1.
 ELE_ISO_MAX = 0.35
@@ -55,14 +53,14 @@ def select_all_but_one(cutstring):
     selection_bools = dict()
     if ismuon:
         selection_bools["mupt"]                = lep_pT >= MU_MIN_PT
-        selection_bools["deltaphi_mu_pi"]      = deltaphi_lep_pi >= DELTAPHI_MU_PI_MIN
+        #selection_bools["deltaphi_mu_pi"]      = deltaphi_lep_pi >= DELTAPHI_MU_PI_MIN
     if not ismuon:
         selection_bools["elept"]               = lep_pT >= ELE_MIN_PT
-        selection_bools["deltaphi_ele_pi"]     = deltaphi_lep_pi >= DELTAPHI_ELE_PI_MIN
+        #selection_bools["deltaphi_ele_pi"]     = deltaphi_lep_pi >= DELTAPHI_ELE_PI_MIN
         selection_bools["h_ele_iso"]           = lep_iso <= ELE_ISO_MAX
         selection_bools["h_ele_gamma_InvMass"] = (ele_gamma_InvMass < ELE_GAMMA_INVMASS_MIN or ele_gamma_InvMass > ELE_GAMMA_INVMASS_MAX)
     selection_bools["pipt"]                    = pi_pT >= PI_MIN_PT
-    selection_bools["gammaet"]                 = gamma_eT >= GAMMA_MIN_ET
+    selection_bools["gammaet"]                 = gamma_eT > GAMMA_MIN_ET
     selection_bools["nBjets"]                  = nBjets_25 >= N_BJETS_MIN
     selection_bools["Wmass"]                   = (wmass >= WMASS_MIN and wmass <= WMASS_MAX)
     result = True
@@ -99,6 +97,9 @@ for name_sample in samplename_list:
             continue
 
         if isData and not "Data" in name_sample: 
+            continue
+        
+        if not isData and "Data" in name_sample:
             continue
         
         if name_sample == "ttbar" and mytree.isttbarlnu:
@@ -139,7 +140,7 @@ for name_sample in samplename_list:
 
         wmass = mytree.Wmass
 
-        if (wmass > 65. and wmass < 90.): continue  #-------Blind window----------
+        #if (wmass > 65. and wmass < 90.): continue  #-------Blind window----------
 
         lep_FourMomentum = ROOT.TLorentzVector()
         lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
@@ -177,5 +178,5 @@ for name_sample in samplename_list:
 print "Finished runnning over samples!"
 
 f.Write()
-print "file written"
+print "File written"
 f.Close()
