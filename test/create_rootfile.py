@@ -39,8 +39,8 @@ GAMMA_MIN_ET = 40.
 N_BJETS_MIN = 2.
 WMASS_MIN = 50.
 WMASS_MAX  = 100.
-DELTAPHI_MU_PI_MIN = 1.
-DELTAPHI_ELE_PI_MIN = 1.
+DELTAPHI_MU_PI_MIN = 0.
+DELTAPHI_ELE_PI_MIN = 0.
 ELE_ISO_MAX = 0.35
 ELE_GAMMA_INVMASS_MIN = 85.
 ELE_GAMMA_INVMASS_MAX = 95.
@@ -53,14 +53,14 @@ def select_all_but_one(cutstring):
     selection_bools = dict()
     if ismuon:
         selection_bools["mupt"]                = lep_pT >= MU_MIN_PT
-        #selection_bools["deltaphi_mu_pi"]      = deltaphi_lep_pi >= DELTAPHI_MU_PI_MIN
+        selection_bools["deltaphi_mu_pi"]      = deltaphi_lep_pi >= DELTAPHI_MU_PI_MIN
     if not ismuon:
         selection_bools["elept"]               = lep_pT >= ELE_MIN_PT
-        #selection_bools["deltaphi_ele_pi"]     = deltaphi_lep_pi >= DELTAPHI_ELE_PI_MIN
+        selection_bools["deltaphi_ele_pi"]     = deltaphi_lep_pi >= DELTAPHI_ELE_PI_MIN
         selection_bools["h_ele_iso"]           = lep_iso <= ELE_ISO_MAX
         selection_bools["h_ele_gamma_InvMass"] = (ele_gamma_InvMass < ELE_GAMMA_INVMASS_MIN or ele_gamma_InvMass > ELE_GAMMA_INVMASS_MAX)
     selection_bools["pipt"]                    = pi_pT >= PI_MIN_PT
-    selection_bools["gammaet"]                 = gamma_eT > GAMMA_MIN_ET
+    selection_bools["gammaet"]                 = gamma_eT >= GAMMA_MIN_ET
     selection_bools["nBjets"]                  = nBjets_25 >= N_BJETS_MIN
     selection_bools["Wmass"]                   = (wmass >= WMASS_MIN and wmass <= WMASS_MAX)
     result = True
