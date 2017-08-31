@@ -26,7 +26,7 @@ arglist = ROOT.RooArgList(Wmass, isMuon)
 
 mcstudy = ROOT.RooMCStudy(totPDF, ROOT.RooArgSet(arglist), ROOT.RooFit.Silence(), ROOT.RooFit.Extended(1), ROOT.RooFit.FitOptions(ROOT.RooFit.Extended(1),  ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save(1), ROOT.RooFit.PrintEvalErrors(0)))
 
-mcstudy.generateAndFit(3000)
+mcstudy.generateAndFit(3)
 
 W_pigamma_BR_val_frame = mcstudy.plotParam(W_pigamma_BR, ROOT.RooFit.Bins(20))
 W_pigamma_BR_err_frame = mcstudy.plotError(W_pigamma_BR, ROOT.RooFit.Bins(20))
@@ -36,6 +36,15 @@ Nbkg_el_frame = mcstudy.plotPull(Nbkg_el, ROOT.RooFit.Bins(20), ROOT.RooFit.FitG
 W_xsec_constr_frame = mcstudy.plotPull(W_xsec_constr, ROOT.RooFit.Bins(20), ROOT.RooFit.FitGauss(1))
 
 NLLframe = mcstudy.plotNLL(ROOT.RooFit.Bins(20))
+
+#Some settings
+W_pigamma_BR_val_frame.SetTitle("")
+W_pigamma_BR_val_frame.SetXTitle("BR(W#rightarrow#pi#gamma)")
+W_pigamma_BR_err_frame.SetTitle("")
+W_pigamma_BR_err_frame.SetXTitle("#sigma_{BR(W#rightarrow#pi#gamma)}")
+W_pigamma_BR_pull_frame.SetTitle("")
+W_pigamma_BR_pull_frame.SetXTitle("PULL_{BR(W#rightarrow#pi#gamma)}")
+NLLframe.SetTitle("")
 
 canvas1 = ROOT.TCanvas("canvas1","canvas1",900,700)
 canvas1.Divide(2,2)
