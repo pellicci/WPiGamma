@@ -11,26 +11,26 @@ from Workflow_Handler import Workflow_Handler
 myWF = Workflow_Handler("Signal","Data",isMedium = True)
 
 ##Global constants
-MU_MIN_PT = 26.
-ELE_MIN_PT = 26.
+MU_MIN_PT = 27.
+ELE_MIN_PT = 29.
 PI_MIN_PT = 50.
-GAMMA_MIN_ET = 40.
+GAMMA_MIN_ET = 60.
 N_BJETS_MIN = 2.
 WMASS_MIN = 50.
 WMASS_MAX  = 100.
 WMASS_MIN_1 = 65.
 WMASS_MAX_1 = 90.
-DELTAPHI_MU_PI_MIN = 1.
-DELTAPHI_ELE_PI_MIN = 1.
+DELTAPHI_MU_PI_MIN = 0.
+DELTAPHI_ELE_PI_MIN = 0.
 ELE_ISO_MAX = 0.35
-ELE_GAMMA_INVMASS_MIN = 85
-ELE_GAMMA_INVMASS_MAX = 95
+ELE_GAMMA_INVMASS_MIN = 88.5
+ELE_GAMMA_INVMASS_MAX = 91.5
 
 #Normalize to this luminsity, in fb-1
 luminosity_norm = 36.46
 
 #Make signal histos larger
-signal_magnify = 0.5
+signal_magnify = 100000
 
 output_dir = "plots"
 
@@ -204,6 +204,7 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
+        if "Data" in name_sample: continue
         #This is how you access the tree variables
         isMuon = mytree.is_muon
 
@@ -311,7 +312,7 @@ for name_sample in samplename_list:
             h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
             h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
 
-        if select_all_but_one("h_ele_gamma_InvMass") and not isMuon:
+        if not isMuon:#select_all_but_one("h_ele_gamma_InvMass") and not isMuon:
             h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
 
         if select_all_but_one("h_Wmass") and isMuon:
@@ -424,58 +425,58 @@ for name_sample in samplename_list:
         if name_sample == myWF.sig_samplename:
             if isMuon:
                 mu_sig_events += 1
-                if deltaphi_lep_pi >= 1: mu_sig_events_deltaphi_mu_pi += 1
+                if deltaphi_lep_pi >= DELTAPHI_MU_PI_MIN: mu_sig_events_deltaphi_mu_pi += 1
                 else: continue
-                if pi_pT >= 50: mu_sig_events_pi_pT += 1
+                if pi_pT >= PI_MIN_PT: mu_sig_events_pi_pT += 1
                 else: continue
-                if gamma_eT >= 40: mu_sig_events_gamma_eT += 1
+                if gamma_eT >= GAMMA_MIN_ET: mu_sig_events_gamma_eT += 1
                 else: continue
-                if nBjets_25 >= 2: mu_sig_events_nBjets += 1
+                if nBjets_25 >= N_BJETS_MIN: mu_sig_events_nBjets += 1
                 else: continue
-                if (Wmass >= 50 and Wmass <= 100): mu_sig_events_Wmass += 1
+                if (Wmass >= WMASS_MIN and Wmass <= WMASS_MAX): mu_sig_events_Wmass += 1
             if not isMuon:
                 ele_sig_events += 1
-                if deltaphi_lep_pi >= 1: ele_sig_events_deltaphi_ele_pi += 1
+                if deltaphi_lep_pi >= DELTAPHI_ELE_PI_MIN: ele_sig_events_deltaphi_ele_pi += 1
                 else: continue
-                if lep_iso <= 0.35: ele_sig_events_lep_iso += 1
+                if lep_iso <= ELE_ISO_MAX: ele_sig_events_lep_iso += 1
                 else: continue
-                if (ele_gamma_InvMass < 85 or ele_gamma_InvMass > 95): ele_sig_events_elegamma += 1
+                if (ele_gamma_InvMass < ELE_GAMMA_INVMASS_MIN or ele_gamma_InvMass > ELE_GAMMA_INVMASS_MAX): ele_sig_events_elegamma += 1
                 else: continue
-                if pi_pT >= 50: ele_sig_events_pi_pT += 1
+                if pi_pT >= PI_MIN_PT: ele_sig_events_pi_pT += 1
                 else: continue
-                if gamma_eT >= 40: ele_sig_events_gamma_eT += 1
+                if gamma_eT >= GAMMA_MIN_ET: ele_sig_events_gamma_eT += 1
                 else: continue
-                if nBjets_25 >= 2: ele_sig_events_nBjets += 1
+                if nBjets_25 >= N_BJETS_MIN: ele_sig_events_nBjets += 1
                 else: continue
-                if (Wmass >= 50 and Wmass <= 100): ele_sig_events_Wmass += 1
+                if (Wmass >= WMASS_MIN and Wmass <= WMASS_MAX): ele_sig_events_Wmass += 1
         else:
             if not "Data" in name_sample:
                 if isMuon:
                     mu_bkg_events += 1
-                    if deltaphi_lep_pi >= 1: mu_bkg_events_deltaphi_mu_pi += 1
+                    if deltaphi_lep_pi >= DELTAPHI_MU_PI_MIN: mu_bkg_events_deltaphi_mu_pi += 1
                     else: continue
-                    if pi_pT >= 50: mu_bkg_events_pi_pT += 1
+                    if pi_pT >= PI_MIN_PT: mu_bkg_events_pi_pT += 1
                     else: continue
-                    if gamma_eT >= 40: mu_bkg_events_gamma_eT += 1
+                    if gamma_eT >= GAMMA_MIN_ET: mu_bkg_events_gamma_eT += 1
                     else: continue
-                    if nBjets_25 >= 2: mu_bkg_events_nBjets += 1
+                    if nBjets_25 >= N_BJETS_MIN: mu_bkg_events_nBjets += 1
                     else: continue
-                    if (Wmass >= 50 and Wmass <= 100): mu_bkg_events_Wmass += 1
+                    if (Wmass >= WMASS_MIN and Wmass <= WMASS_MAX): mu_bkg_events_Wmass += 1
                 if not isMuon:
                     ele_bkg_events += 1
-                    if deltaphi_lep_pi >= 1: ele_bkg_events_deltaphi_ele_pi += 1
+                    if deltaphi_lep_pi >= DELTAPHI_ELE_PI_MIN: ele_bkg_events_deltaphi_ele_pi += 1
                     else:continue
-                    if lep_iso <= 0.35: ele_bkg_events_lep_iso += 1
+                    if lep_iso <= ELE_ISO_MAX: ele_bkg_events_lep_iso += 1
                     else: continue
-                    if (ele_gamma_InvMass < 85 or ele_gamma_InvMass > 95): ele_bkg_events_elegamma += 1
+                    if (ele_gamma_InvMass < ELE_GAMMA_INVMASS_MIN or ele_gamma_InvMass > ELE_GAMMA_INVMASS_MAX): ele_bkg_events_elegamma += 1
                     else: continue
-                    if pi_pT >= 50: ele_bkg_events_pi_pT += 1
+                    if pi_pT >= PI_MIN_PT: ele_bkg_events_pi_pT += 1
                     else: continue
-                    if gamma_eT >= 40: ele_bkg_events_gamma_eT += 1
+                    if gamma_eT >= GAMMA_MIN_ET: ele_bkg_events_gamma_eT += 1
                     else: continue
-                    if nBjets_25 >= 2: ele_bkg_events_nBjets += 1
+                    if nBjets_25 >= N_BJETS_MIN: ele_bkg_events_nBjets += 1
                     else: continue
-                    if (Wmass >= 50 and Wmass <= 100): ele_bkg_events_Wmass += 1
+                    if (Wmass >= WMASS_MIN and Wmass <= WMASS_MAX): ele_bkg_events_Wmass += 1
                 
 
     for idx_histo,hname in enumerate(list_histos):
@@ -499,10 +500,10 @@ for name_sample in samplename_list:
                 leg1.AddEntry(h_base[theSampleName+hname],"QCD","f")
                 isFirstQCDlegend = False
             elif name_sample == myWF.sig_samplename:
-                sample_legend_name = "0.5 x " + name_sample
+                sample_legend_name = "100000 x " + name_sample
                 leg1.AddEntry(h_base[name_sample+hname], sample_legend_name,"f")  #To comment when signal has to be excluded.
             elif name_sample == myWF.data_samplename:
-                leg1.AddEntry(h_base[name_sample+hname], name_sample,"f")
+                leg1.AddEntry(h_base[name_sample+hname], name_sample,"lep") # lep shows on the TLegend a point with errors to indicate data
             elif not QCDflag:
                 leg1.AddEntry(h_base[theSampleName+hname],theSampleName,"f")
 
@@ -519,18 +520,26 @@ for idx_histo,hname in enumerate(list_histos):
 
 for hname in list_histos:
 
+    #if hname == "h_Wmass": continue
+    #if not hname == "h_nBjets_25": continue
+    if not hname == "h_ele_gamma_InvMass": continue
+
     canvas[hname].cd()
 
     hs[hname].Draw("histo")
+    hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),40000.))
 
     #Graphic names
     
     hs[hname].SetTitle(" ")
+    hs[hname].GetYaxis().SetTitleOffset(1.5)
     #hs[hname].GetYaxis().SetTitle("Events")
-    hs[hname].GetXaxis().SetTitle(hname)
+    #hs[hname].GetXaxis().SetTitle("Number of b-jets")
+    hs[hname].GetXaxis().SetTitle("m_{e#gamma} (GeV/c^{2})")
     
     if signal_magnify != 1:
         h_base[myWF.sig_samplename+hname].Scale(signal_magnify)
+
     h_base[myWF.sig_samplename+hname].Draw("SAME,hist")
     h_base[myWF.data_samplename+hname].Draw("SAME,E1")
 
@@ -542,7 +551,8 @@ for hname in list_histos:
         
     leg1.Draw()
         
-    canvas[hname].SaveAs("plots/" + hname + ".png")
+    #canvas[hname].SaveAs("plots/" + hname + ".png")
+    canvas[hname].SaveAs("~rselvati/www/WPiGamma/InterestingVariables/21_09_2017_nBjets/" + hname + ".pdf")
 
 #------draw progressive histo------
 canvas1 = ROOT.TCanvas()
@@ -560,7 +570,8 @@ h_events_sig_mu.GetXaxis().SetBinLabel(4,"E_{T}^{#gamma}")
 h_events_sig_mu.GetXaxis().SetBinLabel(5,"nBjets")
 h_events_sig_mu.GetXaxis().SetBinLabel(6,"Wmass")
 h_events_sig_mu.Draw("hist")
-canvas1.SaveAs("plots/h_events_sig_mu.png")
+#canvas1.SaveAs("plots/h_events_sig_mu.png")
+#canvas1.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_sig_mu.pdf")
 
 canvas2 = ROOT.TCanvas()
 h_events_sig_ele.Fill(0.5,ele_sig_events)
@@ -581,7 +592,8 @@ h_events_sig_ele.GetXaxis().SetBinLabel(6,"E_{T}^{#gamma}")
 h_events_sig_ele.GetXaxis().SetBinLabel(7,"nBjets")
 h_events_sig_ele.GetXaxis().SetBinLabel(8,"Wmass")
 h_events_sig_ele.Draw("hist")
-canvas2.SaveAs("plots/h_events_sig_ele.png")
+#canvas2.SaveAs("plots/h_events_sig_ele.png")
+#canvas2.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_sig_ele.pdf")
 
 canvas3 = ROOT.TCanvas()
 h_events_bkg_mu.Fill(0.5,mu_bkg_events)
@@ -598,7 +610,8 @@ h_events_bkg_mu.GetXaxis().SetBinLabel(4,"E_{T}^{#gamma}")
 h_events_bkg_mu.GetXaxis().SetBinLabel(5,"nBjets")
 h_events_bkg_mu.GetXaxis().SetBinLabel(6,"Wmass")
 h_events_bkg_mu.Draw("hist")
-canvas3.SaveAs("plots/h_events_bkg_mu.png")
+#canvas3.SaveAs("plots/h_events_bkg_mu.png")
+#canvas3.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_bkg_mu.pdf")
 
 canvas4 = ROOT.TCanvas()
 h_events_bkg_ele.Fill(0.5,ele_bkg_events)
@@ -619,7 +632,8 @@ h_events_bkg_ele.GetXaxis().SetBinLabel(6,"E_{T}^{#gamma}")
 h_events_bkg_ele.GetXaxis().SetBinLabel(7,"nBjets")
 h_events_bkg_ele.GetXaxis().SetBinLabel(8,"Wmass")
 h_events_bkg_ele.Draw("hist")
-canvas4.SaveAs("plots/h_events_bkg_ele.png")
+#canvas4.SaveAs("plots/h_events_bkg_ele.png")
+#canvas4.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_bkg_ele.pdf")
 
 print "Number of expected events for ", luminosity_norm, " in fb-1"
 print "Number of signal events passed = ", Nsig_passed

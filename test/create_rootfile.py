@@ -32,18 +32,18 @@ if isData:
     t.Branch('isMuon',isMuon,'isMuon/I')
 
 ##Global constants
-MU_MIN_PT = 26.
-ELE_MIN_PT = 26.
+MU_MIN_PT = 27.
+ELE_MIN_PT = 29.
 PI_MIN_PT = 50.
-GAMMA_MIN_ET = 40.
+GAMMA_MIN_ET = 60.
 N_BJETS_MIN = 2.
 WMASS_MIN = 50.
 WMASS_MAX  = 100.
 DELTAPHI_MU_PI_MIN = 0.
 DELTAPHI_ELE_PI_MIN = 0.
 ELE_ISO_MAX = 0.35
-ELE_GAMMA_INVMASS_MIN = 85.
-ELE_GAMMA_INVMASS_MAX = 95.
+ELE_GAMMA_INVMASS_MIN = 88.5
+ELE_GAMMA_INVMASS_MAX = 91.5
 
 #Normalize to this luminsity, in fb-1
 luminosity_norm = 36.46

@@ -4,11 +4,17 @@
 import ROOT
 import math
 
+#Define if working on MC or DATA
+isData = False
+
 #Define the observable
 Wmass = ROOT.RooRealVar("Wmass","#pi-#gamma invariant mass",50.,100.,"GeV")
 
 #Retrive the sample
-fInput = ROOT.TFile("Tree_Data.root")
+if isData:
+    fInput = ROOT.TFile("Tree_Data.root")
+else:
+    fInput = ROOT.TFile("Tree_MC.root")
 fInput.cd()
 
 mytree = fInput.Get("minitree")
@@ -22,8 +28,11 @@ isMuon.defineType("Electron",0)
 weight = ROOT.RooRealVar("weight","The event weight",0.,10.)
 
 #Create the RooDataSet. No need to import weight for signal only analysis
-#data = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isMuon,weight), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
-data = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isMuon), ROOT.RooFit.Import(mytree))
+if isData:
+    data = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isMuon), ROOT.RooFit.Import(mytree))
+else:
+    data = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isMuon,weight), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
+
 
 print "Using ", data.numEntries(), " events to fit"
 
@@ -35,9 +44,13 @@ workspace = fInput_sigmodel.Get("myworkspace")
 
 #Fix the signal parametrization
 workspace.var("W_resol_pole").setConstant(1)
-workspace.var("W_resol_width").setConstant(1)
+#workspace.var("W_resol_width").setConstant(1)
 workspace.var("W_resol_alpha").setConstant(1)
 workspace.var("W_resol_n").setConstant(1)
+workspace.var("Gauss_pole").setConstant(1)
+workspace.var("Gauss_sigma").setConstant(1)
+workspace.var("frac").setConstant(1)
+
 
 totSignal = workspace.pdf("totSignal")
 
@@ -52,6 +65,12 @@ backPDF_mu = ROOT.RooBernstein("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a
 a0_el = ROOT.RooRealVar("a0_el","a0_el",0.1,-5.,5.)
 a1_el = ROOT.RooRealVar("a1_el","a1_el",0.1,-5.,5.)
 backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el))
+
+#Gaussian distribution of W resolution width
+glb_W_resol_width = workspace.var("W_resol_width")
+W_resol_width_constr = ROOT.RooRealVar("W_resol_width_constr","W_resol_width_constr",glb_W_resol_width.getVal())
+W_resol_width_err = ROOT.RooRealVar("W_resol_width_err","W_resol_width_err",glb_W_resol_width.getError())
+gauss_W_resol = ROOT.RooGaussian("gauss_W_resol","Gauss_W_resol",glb_W_resol_width,W_resol_width_constr,W_resol_width_err)
 
 #Now fit signal + background
 
@@ -73,8 +92,8 @@ gauss_lumi  = ROOT.RooGaussian("gauss_lumi","gauss_lumi",glb_lumi,lumi_constr,lu
 
 #Now the efficiency
 totsig = 107810.  #total number of signal events
-totmu = 2063.  #total number of signal muon events
-totel = 1572.  #total number of signal muon events
+totmu = 1200.  #total number of signal muon events
+totel = 916.  #total number of signal muon events
 
 glb_eff_mu    = ROOT.RooRealVar("glb_eff_mu","glb_eff_mu",totmu*2./totsig, 0., 1.) #For now, just the raw MC passed/generated number
 eff_mu_constr = ROOT.RooRealVar("eff_mu_constr","eff_mu_constr", totel*2./totsig, 0., 1.)
@@ -92,6 +111,7 @@ glb_W_xsec.setConstant(1)
 glb_lumi.setConstant(1)
 glb_eff_mu.setConstant(1)
 glb_eff_el.setConstant(1)
+glb_W_resol_width.setConstant(1)
 
 Nsig_mu = ROOT.RooFormulaVar("Nsig_mu","@0*@1*@2*@3", ROOT.RooArgList(W_pigamma_BR, W_xsec_constr,lumi_constr,eff_mu_constr))
 Nsig_el = ROOT.RooFormulaVar("Nsig_el","@0*@1*@2*@3", ROOT.RooArgList(W_pigamma_BR, W_xsec_constr,lumi_constr,eff_el_constr))
@@ -102,21 +122,25 @@ Nbkg_el = ROOT.RooRealVar("Nbkg_el","Nbkg_el",200.,0.,1000.)
 totPDF_mu_unconstr = ROOT.RooAddPdf("totPDF_mu_unconstr","Total PDF for the mu channel",ROOT.RooArgList(totSignal,backPDF_mu),ROOT.RooArgList(Nsig_mu,Nbkg_mu))
 totPDF_el_unconstr = ROOT.RooAddPdf("totPDF_el_unconstr","Total PDF for the el channel",ROOT.RooArgList(totSignal,backPDF_el),ROOT.RooArgList(Nsig_el,Nbkg_el))
 
-totPDF_mu = ROOT.RooProdPdf("totPDF_mu","totPDF_mu", ROOT.RooArgList(totPDF_mu_unconstr,gauss_lumi,gauss_W_xsec,gauss_eff_mu))
-totPDF_el = ROOT.RooProdPdf("totPDF_el","totPDF_el", ROOT.RooArgList(totPDF_el_unconstr,gauss_lumi,gauss_W_xsec,gauss_eff_el))
+totPDF_mu = ROOT.RooProdPdf("totPDF_mu","totPDF_mu", ROOT.RooArgList(totPDF_mu_unconstr,gauss_lumi,gauss_W_xsec,gauss_eff_mu,gauss_W_resol))
+totPDF_el = ROOT.RooProdPdf("totPDF_el","totPDF_el", ROOT.RooArgList(totPDF_el_unconstr,gauss_lumi,gauss_W_xsec,gauss_eff_el,gauss_W_resol))
 
 totPDF = ROOT.RooSimultaneous("totPDF","The total PDF",isMuon)
 totPDF.addPdf(totPDF_mu,"Muon")
 totPDF.addPdf(totPDF_el,"Electron")
 
 constrained_params = ROOT.RooArgSet()
+constrained_params.add(W_resol_width_constr)
 constrained_params.add(W_xsec_constr)
 constrained_params.add(lumi_constr)
 constrained_params.add(eff_mu_constr)
 constrained_params.add(eff_el_constr)
 
-#totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
-totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
+
+if isData:
+    totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
+else:
+    totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
 
 #fitResults = ROOT.RooFitResult(totPDF.fitTo(data, "l", ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params)))
 
@@ -136,10 +160,16 @@ canvas.cd(1)
 xframe_mu.Draw()
 canvas.cd(2)
 xframe_el.Draw()
-canvas.SaveAs("fitData.png")
+if isData:
+    canvas.SaveAs("fitData.png")
+else:
+    canvas.SaveAs("fitMC.png")
 
 #Save the fit into a root file
-fOutput = ROOT.TFile("fitData.root","RECREATE")
+if isData:
+    fOutput = ROOT.TFile("fitData.root","RECREATE")
+else:
+    fOutput = ROOT.TFile("fitMC.root","RECREATE")
 fOutput.cd()
 
 workspace = ROOT.RooWorkspace("workspace")

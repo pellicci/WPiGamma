@@ -38,6 +38,10 @@ print "Using ", data_Signal.numEntries(), " events to fit the signal shape"
 Wpole = ROOT.RooRealVar("Wpole","The W pole mass",80.385)
 Wwidth = ROOT.RooRealVar("Wwidth","The W intrinsic width",2.085)
 BW_W = ROOT.RooBreitWigner("BW_W","The Breit-Wigner",Wmass,Wpole,Wwidth)
+Gauss_pole = ROOT.RooRealVar("Gauss_pole","The gaussian pole", 75.,70.,80.)
+Gauss_sigma = ROOT.RooRealVar("Gauss_sigma","The gaussian sigma",5.,0.1,9.)
+Gauss_W = ROOT.RooGaussian("Gauss_W","The Gaussian",Wmass,Gauss_pole,Gauss_sigma)
+frac = ROOT.RooRealVar("frac","Fraction",0.5,0.,1.)
 
 #Second the resolution part
 W_resol_pole  = ROOT.RooRealVar("W_resol_pole","The center of the resolution",0.,-10.,10.)
@@ -48,7 +52,8 @@ W_resol_n.setConstant(1)
 
 gauss_resol = ROOT.RooCBShape("gauss_resol","The resolution function",Wmass,W_resol_pole,W_resol_width,W_resol_alpha,W_resol_n)
 
-totSignal = ROOT.RooNumConvPdf("totSignal","Total signal PDF",Wmass,gauss_resol,BW_W)
+partSignal = ROOT.RooNumConvPdf("partSignal","Partial signal PDF",Wmass,gauss_resol,BW_W)
+totSignal = ROOT.RooAddPdf("totSignal","Total signal PDF",ROOT.RooArgList(partSignal,Gauss_W),ROOT.RooArgList(frac))
 
 totSignal.fitTo(data_Signal)
 
