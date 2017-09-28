@@ -30,7 +30,7 @@ ELE_GAMMA_INVMASS_MAX = 91.5
 luminosity_norm = 36.46
 
 #Make signal histos larger
-signal_magnify = 100000
+signal_magnify = 100
 
 output_dir = "plots"
 
@@ -40,10 +40,10 @@ if not os.path.exists(output_dir):
 #Here's the list of histos to plot
 list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_Wmass", "h_nBjets", "h_mueta", "h_eleeta","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_iso","h_ele_iso","h_gamma_iso_ChHad","h_gamma_iso_NeuHad","h_gamma_iso_Ph","h_gamma_iso_eArho","h_ele_gamma_InvMass","h_mu_gamma_InvMass","h_nBjets_25","h_evts_Bjets"]
 
-h_events_sig_mu = ROOT.TH1F("h_events_sig_mu","Progressive event loss (#mu)",6,0,6)
-h_events_sig_ele = ROOT.TH1F("h_events_sig_ele","Progressive event loss (e)",8,0,8)
-h_events_bkg_mu = ROOT.TH1F("h_events_bkg_mu","Progressive event loss (#mu)",6,0,6)
-h_events_bkg_ele = ROOT.TH1F("h_events_bkg_ele","Progressive event loss (e)",8,0,8)
+h_events_sig_mu = ROOT.TH1F("h_events_sig_mu","Progressive event loss (#mu)",5,0,5)
+h_events_sig_ele = ROOT.TH1F("h_events_sig_ele","Progressive event loss (e)",7,0,7)
+h_events_bkg_mu = ROOT.TH1F("h_events_bkg_mu","Progressive event loss (#mu)",5,0,5)
+h_events_bkg_ele = ROOT.TH1F("h_events_bkg_ele","Progressive event loss (e)",7,0,7)
 
 #Color mask must have the same number of entries as non-QCD backgrounds
 colors_mask = [26,400,840,616,860,432,880,900,800,416,885,910,200,630,420,608,960]  #Invert 900 and 416 for previous colors 
@@ -204,7 +204,8 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
-        if "Data" in name_sample: continue
+        #if "Data" in name_sample: continue
+
         #This is how you access the tree variables
         isMuon = mytree.is_muon
 
@@ -312,7 +313,7 @@ for name_sample in samplename_list:
             h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
             h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
 
-        if not isMuon:#select_all_but_one("h_ele_gamma_InvMass") and not isMuon:
+        if select_all_but_one("h_ele_gamma_InvMass") and not isMuon:
             h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
 
         if select_all_but_one("h_Wmass") and isMuon:
@@ -352,65 +353,6 @@ for name_sample in samplename_list:
             if nBjets > 3:
                 h_base[theSampleName+"h_evts_Bjets"].Fill(3.5,1)
 
-        """
-
-        if isMuon:
-            h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
-                
-        if not isMuon:
-            h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
-                        
- 
-        h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
-                    
-                    
-        h_base[theSampleName+"h_nBjets"].Fill(nBjets,Event_Weight)
-                                
-
-        h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
-                                    
-
-        h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
-
-        if isMuon:
-            h_base[theSampleName+"h_deltaphi_mu_pi"].Fill(deltaphi_lep_pi,Event_Weight)
-
-        if  isMuon:
-            h_base[theSampleName+"h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
-            h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
-                    
-        if  not isMuon:
-            h_base[theSampleName+"h_deltaphi_ele_pi"].Fill(deltaphi_lep_pi,Event_Weight)
-
-        if not isMuon:
-            h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
-            h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
-            
-        if not isMuon:
-            h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
-
-        if isMuon:
-            h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
-
-        if not isMuon:
-            h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
-            
-        if isMuon:
-            h_base[theSampleName+"h_mu_iso"].Fill(lep_iso,Event_Weight)
-            h_base[theSampleName+"h_deltaphi_mu_W"].Fill(deltaphi_lep_W,Event_Weight)
-            h_base[theSampleName+"h_mu_gamma_InvMass"].Fill(mu_gamma_InvMass,Event_Weight)   
-
-        if not isMuon:
-            h_base[theSampleName+"h_ele_iso"].Fill(lep_iso,Event_Weight)
-            h_base[theSampleName+"h_deltaphi_ele_W"].Fill(deltaphi_lep_W,Event_Weight)
-
-
-        h_base[theSampleName+"h_gamma_iso_ChHad"].Fill(gamma_iso_ChHad,Event_Weight)
-        h_base[theSampleName+"h_gamma_iso_NeuHad"].Fill(gamma_iso_NeuHad,Event_Weight)
-        h_base[theSampleName+"h_gamma_iso_Ph"].Fill(gamma_iso_Ph,Event_Weight)
-        h_base[theSampleName+"h_gamma_iso_eArho"].Fill(gamma_iso_eArho,Event_Weight)
-        """
-        
 
         #Count the events
         if select_all_but_one("all cuts"):
@@ -489,8 +431,6 @@ for name_sample in samplename_list:
             h_base[theSampleName+hname].SetLineWidth(4)   #kind of thick
         elif name_sample == myWF.data_samplename:
             h_base[theSampleName+hname].SetMarkerStyle(20)   #dashed
-            #h_base[theSampleName+hname].SetLineColor(4)   #blue
-            #h_base[theSampleName+hname].SetLineWidth(4)   #kind of thick
         else:
             h_base[theSampleName+hname].SetFillColor(colors_mask[idx_sample])
 
@@ -500,7 +440,7 @@ for name_sample in samplename_list:
                 leg1.AddEntry(h_base[theSampleName+hname],"QCD","f")
                 isFirstQCDlegend = False
             elif name_sample == myWF.sig_samplename:
-                sample_legend_name = "100000 x " + name_sample
+                sample_legend_name = "100 x " + name_sample
                 leg1.AddEntry(h_base[name_sample+hname], sample_legend_name,"f")  #To comment when signal has to be excluded.
             elif name_sample == myWF.data_samplename:
                 leg1.AddEntry(h_base[name_sample+hname], name_sample,"lep") # lep shows on the TLegend a point with errors to indicate data
@@ -522,20 +462,85 @@ for hname in list_histos:
 
     #if hname == "h_Wmass": continue
     #if not hname == "h_nBjets_25": continue
-    if not hname == "h_ele_gamma_InvMass": continue
+    #if not hname == "h_ele_gamma_InvMass": continue
+    #if not hname == "h_mupt" or hname == "h_elept": continue
+    #if not hname == "h_gammaet": continue
+    if not hname == "h_Wmass": continue
 
     canvas[hname].cd()
 
     hs[hname].Draw("histo")
-    hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),40000.))
+    hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),50.))
 
-    #Graphic names
+    down = ROOT.gPad.GetUymin()
+    up   = ROOT.gPad.GetUymax()
+
+    #---------Histos names---------#
     
     hs[hname].SetTitle(" ")
     hs[hname].GetYaxis().SetTitleOffset(1.5)
-    #hs[hname].GetYaxis().SetTitle("Events")
-    #hs[hname].GetXaxis().SetTitle("Number of b-jets")
-    hs[hname].GetXaxis().SetTitle("m_{e#gamma} (GeV/c^{2})")
+    hs[hname].GetYaxis().SetTitle("Events")
+    
+    if hname == "h_Wmass" or hname == "h_Wmass_flag_mu" or hname == "h_Wmass_flag_ele":
+        hs[hname].GetXaxis().SetTitle("m_{#pi#gamma} (GeV/c^{2})")
+        line = ROOT.TLine(WMASS_MIN, 0, WMASS_MIN, 52)
+        line.SetLineColor(8)
+        line.SetLineStyle(9)
+        line.SetLineWidth(4)
+        line.Draw()
+
+    if hname == "h_mupt":
+        hs[hname].GetXaxis().SetTitle("p_{T}^{#mu} (GeV/c)")
+        line = ROOT.TLine(MU_MIN_PT, 0, MU_MIN_PT, 520)
+        line.SetLineColor(8)
+        line.SetLineStyle(9)
+        line.SetLineWidth(4)
+        line.Draw()
+
+    if hname == "h_elept":
+        hs[hname].GetXaxis().SetTitle("p_{T}^{e} (GeV/c)")
+        line = ROOT.TLine(ELE_MIN_PT, 0, ELE_MIN_PT, 520)
+        line.SetLineColor(8)
+        line.SetLineStyle(9)
+        line.SetLineWidth(4)
+        line.Draw()
+    
+    if hname == "h_pipt":
+        hs[hname].GetXaxis().SetTitle("p_{T}^{#pi} (GeV/c)")
+        line = ROOT.TLine(PI_MIN_PT, 0, PI_MIN_PT, 520)
+        line.SetLineColor(8)
+        line.SetLineStyle(9)
+        line.SetLineWidth(4)
+        line.Draw()
+
+    if hname == "h_gammaet":
+        hs[hname].GetXaxis().SetTitle("E_{T}^{#gamma} (GeV)")
+        line = ROOT.TLine(GAMMA_MIN_ET, 0, GAMMA_MIN_ET, 520)
+        line.SetLineColor(8)
+        line.SetLineStyle(9)
+        line.SetLineWidth(4)
+        line.Draw()
+
+    if hname == "h_mueta":
+        hs[hname].GetXaxis().SetTitle("#eta^{#mu}")
+
+    if hname == "h_eleeta":
+        hs[hname].GetXaxis().SetTitle("#eta^{e}")
+
+    if hname == "h_deltaphi_mu_pi":
+        hs[hname].GetXaxis().SetTitle("#Delta#varphi_{#mu-#pi})")
+
+    if hname == "h_deltaphi_ele_pi":
+        hs[hname].GetXaxis().SetTitle("#Delta#varphi_{e-#pi})")
+
+    if hname == "h_ele_gamma_InvMass":
+        hs[hname].GetXaxis().SetTitle("m_{e#gamma} (GeV/c^{2})")
+
+    if hname == "h_nBjets":
+        hs[hname].GetXaxis().SetTitle("Number of b-jets")
+
+    if hname == "h_nBjets_25":
+        hs[hname].GetXaxis().SetTitle("Number of b-jets (p_{T}>25 GeV/c)")
     
     if signal_magnify != 1:
         h_base[myWF.sig_samplename+hname].Scale(signal_magnify)
@@ -552,88 +557,92 @@ for hname in list_histos:
     leg1.Draw()
         
     #canvas[hname].SaveAs("plots/" + hname + ".png")
-    canvas[hname].SaveAs("~rselvati/www/WPiGamma/InterestingVariables/21_09_2017_nBjets/" + hname + ".pdf")
+    canvas[hname].SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/" + hname + ".pdf")
 
 #------draw progressive histo------
 canvas1 = ROOT.TCanvas()
 h_events_sig_mu.Fill(0.5,mu_sig_events)
-h_events_sig_mu.Fill(1.5,mu_sig_events_deltaphi_mu_pi)
-h_events_sig_mu.Fill(2.5,mu_sig_events_pi_pT)
-h_events_sig_mu.Fill(3.5,mu_sig_events_gamma_eT)
-h_events_sig_mu.Fill(4.5,mu_sig_events_nBjets)
-h_events_sig_mu.Fill(5.5,mu_sig_events_Wmass)
+#h_events_sig_mu.Fill(1.5,mu_sig_events_deltaphi_mu_pi)
+h_events_sig_mu.Fill(1.5,mu_sig_events_pi_pT)
+h_events_sig_mu.Fill(2.5,mu_sig_events_gamma_eT)
+h_events_sig_mu.Fill(3.5,mu_sig_events_nBjets)
+h_events_sig_mu.Fill(4.5,mu_sig_events_Wmass)
 
+ROOT.gStyle.SetOptStat(0)
 h_events_sig_mu.GetXaxis().SetBinLabel(1,"initial events")
-h_events_sig_mu.GetXaxis().SetBinLabel(2,"#Delta#varphi(#mu-#pi)")
-h_events_sig_mu.GetXaxis().SetBinLabel(3,"p_{T}^{#pi}")
-h_events_sig_mu.GetXaxis().SetBinLabel(4,"E_{T}^{#gamma}")
-h_events_sig_mu.GetXaxis().SetBinLabel(5,"nBjets")
-h_events_sig_mu.GetXaxis().SetBinLabel(6,"Wmass")
+#h_events_sig_mu.GetXaxis().SetBinLabel(2,"#Delta#varphi(#mu-#pi)")
+h_events_sig_mu.GetXaxis().SetBinLabel(2,"p_{T}^{#pi}")
+h_events_sig_mu.GetXaxis().SetBinLabel(3,"E_{T}^{#gamma}")
+h_events_sig_mu.GetXaxis().SetBinLabel(4,"nBjets")
+h_events_sig_mu.GetXaxis().SetBinLabel(5,"Wmass")
 h_events_sig_mu.Draw("hist")
 #canvas1.SaveAs("plots/h_events_sig_mu.png")
-#canvas1.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_sig_mu.pdf")
+canvas1.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_sig_mu.pdf")
 
 canvas2 = ROOT.TCanvas()
 h_events_sig_ele.Fill(0.5,ele_sig_events)
-h_events_sig_ele.Fill(1.5,ele_sig_events_deltaphi_ele_pi)
-h_events_sig_ele.Fill(2.5,ele_sig_events_lep_iso)
-h_events_sig_ele.Fill(3.5,ele_sig_events_elegamma)
-h_events_sig_ele.Fill(4.5,ele_sig_events_pi_pT)
-h_events_sig_ele.Fill(5.5,ele_sig_events_gamma_eT)
-h_events_sig_ele.Fill(6.5,ele_sig_events_nBjets)
-h_events_sig_ele.Fill(7.5,ele_sig_events_Wmass)
+#h_events_sig_ele.Fill(1.5,ele_sig_events_deltaphi_ele_pi)
+h_events_sig_ele.Fill(1.5,ele_sig_events_lep_iso)
+h_events_sig_ele.Fill(2.5,ele_sig_events_elegamma)
+h_events_sig_ele.Fill(3.5,ele_sig_events_pi_pT)
+h_events_sig_ele.Fill(4.5,ele_sig_events_gamma_eT)
+h_events_sig_ele.Fill(5.5,ele_sig_events_nBjets)
+h_events_sig_ele.Fill(6.5,ele_sig_events_Wmass)
 
+ROOT.gStyle.SetOptStat(0)
 h_events_sig_ele.GetXaxis().SetBinLabel(1,"initial events")
-h_events_sig_ele.GetXaxis().SetBinLabel(2,"#Delta#varphi(e-#pi)")
-h_events_sig_ele.GetXaxis().SetBinLabel(3,"ele iso")
-h_events_sig_ele.GetXaxis().SetBinLabel(4,"e-#gamma inv mass")
-h_events_sig_ele.GetXaxis().SetBinLabel(5,"p_{T}^{#pi}")
-h_events_sig_ele.GetXaxis().SetBinLabel(6,"E_{T}^{#gamma}")
-h_events_sig_ele.GetXaxis().SetBinLabel(7,"nBjets")
-h_events_sig_ele.GetXaxis().SetBinLabel(8,"Wmass")
+#h_events_sig_ele.GetXaxis().SetBinLabel(2,"#Delta#varphi(e-#pi)")
+h_events_sig_ele.GetXaxis().SetBinLabel(2,"ele iso")
+h_events_sig_ele.GetXaxis().SetBinLabel(3,"e-#gamma inv mass")
+h_events_sig_ele.GetXaxis().SetBinLabel(4,"p_{T}^{#pi}")
+h_events_sig_ele.GetXaxis().SetBinLabel(5,"E_{T}^{#gamma}")
+h_events_sig_ele.GetXaxis().SetBinLabel(6,"nBjets")
+h_events_sig_ele.GetXaxis().SetBinLabel(7,"Wmass")
 h_events_sig_ele.Draw("hist")
 #canvas2.SaveAs("plots/h_events_sig_ele.png")
-#canvas2.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_sig_ele.pdf")
+canvas2.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_sig_ele.pdf")
 
 canvas3 = ROOT.TCanvas()
 h_events_bkg_mu.Fill(0.5,mu_bkg_events)
-h_events_bkg_mu.Fill(1.5,mu_bkg_events_deltaphi_mu_pi)
-h_events_bkg_mu.Fill(2.5,mu_bkg_events_pi_pT)
-h_events_bkg_mu.Fill(3.5,mu_bkg_events_gamma_eT)
-h_events_bkg_mu.Fill(4.5,mu_bkg_events_nBjets)
-h_events_bkg_mu.Fill(5.5,mu_bkg_events_Wmass)
+#h_events_bkg_mu.Fill(1.5,mu_bkg_events_deltaphi_mu_pi)
+h_events_bkg_mu.Fill(1.5,mu_bkg_events_pi_pT)
+h_events_bkg_mu.Fill(2.5,mu_bkg_events_gamma_eT)
+h_events_bkg_mu.Fill(3.5,mu_bkg_events_nBjets)
+h_events_bkg_mu.Fill(4.5,mu_bkg_events_Wmass)
 
+ROOT.gStyle.SetOptStat(0)
 h_events_bkg_mu.GetXaxis().SetBinLabel(1,"initial events")
-h_events_bkg_mu.GetXaxis().SetBinLabel(2,"#Delta#varphi(#mu-#pi)")
-h_events_bkg_mu.GetXaxis().SetBinLabel(3,"p_{T}^{#pi}")
-h_events_bkg_mu.GetXaxis().SetBinLabel(4,"E_{T}^{#gamma}")
-h_events_bkg_mu.GetXaxis().SetBinLabel(5,"nBjets")
-h_events_bkg_mu.GetXaxis().SetBinLabel(6,"Wmass")
+#h_events_bkg_mu.GetXaxis().SetBinLabel(2,"#Delta#varphi(#mu-#pi)")
+h_events_bkg_mu.GetXaxis().SetBinLabel(2,"p_{T}^{#pi}")
+h_events_bkg_mu.GetXaxis().SetBinLabel(3,"E_{T}^{#gamma}")
+h_events_bkg_mu.GetXaxis().SetBinLabel(4,"nBjets")
+h_events_bkg_mu.GetXaxis().SetBinLabel(5,"Wmass")
 h_events_bkg_mu.Draw("hist")
 #canvas3.SaveAs("plots/h_events_bkg_mu.png")
-#canvas3.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_bkg_mu.pdf")
+canvas3.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_bkg_mu.pdf")
 
 canvas4 = ROOT.TCanvas()
 h_events_bkg_ele.Fill(0.5,ele_bkg_events)
-h_events_bkg_ele.Fill(1.5,ele_bkg_events_deltaphi_ele_pi)
-h_events_bkg_ele.Fill(2.5,ele_bkg_events_lep_iso)
-h_events_bkg_ele.Fill(3.5,ele_bkg_events_elegamma)
-h_events_bkg_ele.Fill(4.5,ele_bkg_events_pi_pT)
-h_events_bkg_ele.Fill(5.5,ele_bkg_events_gamma_eT)
-h_events_bkg_ele.Fill(6.5,ele_bkg_events_nBjets)
-h_events_bkg_ele.Fill(7.5,ele_bkg_events_Wmass)
+#h_events_bkg_ele.Fill(1.5,ele_bkg_events_deltaphi_ele_pi)
+h_events_bkg_ele.Fill(1.5,ele_bkg_events_lep_iso)
+h_events_bkg_ele.Fill(2.5,ele_bkg_events_elegamma)
+h_events_bkg_ele.Fill(3.5,ele_bkg_events_pi_pT)
+h_events_bkg_ele.Fill(4.5,ele_bkg_events_gamma_eT)
+h_events_bkg_ele.Fill(5.5,ele_bkg_events_nBjets)
+h_events_bkg_ele.Fill(6.5,ele_bkg_events_Wmass)
 
+ROOT.gStyle.SetOptStat(0)
 h_events_bkg_ele.GetXaxis().SetBinLabel(1,"initial events")
-h_events_bkg_ele.GetXaxis().SetBinLabel(2,"#Delta#varphi(e-#pi)")
-h_events_bkg_ele.GetXaxis().SetBinLabel(3,"ele iso")
-h_events_bkg_ele.GetXaxis().SetBinLabel(4,"e-#gamma inv mass")
-h_events_bkg_ele.GetXaxis().SetBinLabel(5,"p_{T}^{#pi}")
-h_events_bkg_ele.GetXaxis().SetBinLabel(6,"E_{T}^{#gamma}")
-h_events_bkg_ele.GetXaxis().SetBinLabel(7,"nBjets")
-h_events_bkg_ele.GetXaxis().SetBinLabel(8,"Wmass")
+#h_events_bkg_ele.GetXaxis().SetBinLabel(2,"#Delta#varphi(e-#pi)")
+h_events_bkg_ele.GetXaxis().SetBinLabel(2,"ele iso")
+h_events_bkg_ele.GetXaxis().SetBinLabel(3,"e-#gamma inv mass")
+h_events_bkg_ele.GetXaxis().SetBinLabel(4,"p_{T}^{#pi}")
+h_events_bkg_ele.GetXaxis().SetBinLabel(5,"E_{T}^{#gamma}")
+h_events_bkg_ele.GetXaxis().SetBinLabel(6,"nBjets")
+h_events_bkg_ele.GetXaxis().SetBinLabel(7,"Wmass")
 h_events_bkg_ele.Draw("hist")
 #canvas4.SaveAs("plots/h_events_bkg_ele.png")
-#canvas4.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_bkg_ele.pdf")
+canvas4.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_bkg_ele.pdf")
 
 print "Number of expected events for ", luminosity_norm, " in fb-1"
 print "Number of signal events passed = ", Nsig_passed

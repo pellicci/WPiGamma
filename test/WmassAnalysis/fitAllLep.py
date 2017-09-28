@@ -5,7 +5,7 @@ import ROOT
 import math
 
 #Define if working on MC or DATA
-isData = False
+isData = True
 
 #Define the observable
 Wmass = ROOT.RooRealVar("Wmass","#pi-#gamma invariant mass",50.,100.,"GeV")
@@ -68,7 +68,7 @@ backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a
 
 #Gaussian distribution of W resolution width
 glb_W_resol_width = workspace.var("W_resol_width")
-W_resol_width_constr = ROOT.RooRealVar("W_resol_width_constr","W_resol_width_constr",glb_W_resol_width.getVal())
+W_resol_width_constr = ROOT.RooRealVar("W_resol_width_constr","W_resol_width_constr",glb_W_resol_width.getVal(),0.,1.)
 W_resol_width_err = ROOT.RooRealVar("W_resol_width_err","W_resol_width_err",glb_W_resol_width.getError())
 gauss_W_resol = ROOT.RooGaussian("gauss_W_resol","Gauss_W_resol",glb_W_resol_width,W_resol_width_constr,W_resol_width_err)
 
@@ -140,9 +140,8 @@ constrained_params.add(eff_el_constr)
 if isData:
     totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
 else:
-    totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
+    totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(0), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
 
-#fitResults = ROOT.RooFitResult(totPDF.fitTo(data, "l", ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params)))
 
 xframe_mu = Wmass.frame(18)
 xframe_mu.SetTitle("Fit to m_{#pi-#gamma} for the #mu channel")

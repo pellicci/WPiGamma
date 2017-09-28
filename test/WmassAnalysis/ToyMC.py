@@ -1,7 +1,7 @@
 import ROOT
 import math
 
-fInput = ROOT.TFile("fitAllLep.root")
+fInput = ROOT.TFile("fitMC.root")
 fInput.cd()
 workspace = fInput.Get("workspace")
 
@@ -9,6 +9,7 @@ Wmass = workspace.var("Wmass")
 W_xsec_constr = workspace.var("W_xsec_constr")
 Nbkg_mu = workspace.var("Nbkg_mu")
 Nbkg_el = workspace.var("Nbkg_el")
+W_resol_width_constr = workspace.var("W_resol_width_constr")
 lumi_constr = workspace.var("lumi_constr")
 eff_mu_constr = workspace.var("eff_mu_constr")
 eff_el_constr = workspace.var("eff_el_constr")
@@ -18,6 +19,7 @@ totPDF = workspace.pdf("totPDF")
 
 constrained_params = ROOT.RooArgSet()
 constrained_params.add(W_xsec_constr)
+constrained_params.add(W_resol_width_constr)
 constrained_params.add(lumi_constr)
 constrained_params.add(eff_mu_constr)
 constrained_params.add(eff_el_constr)
@@ -26,7 +28,7 @@ arglist = ROOT.RooArgList(Wmass, isMuon)
 
 mcstudy = ROOT.RooMCStudy(totPDF, ROOT.RooArgSet(arglist), ROOT.RooFit.Silence(), ROOT.RooFit.Extended(1), ROOT.RooFit.FitOptions(ROOT.RooFit.Extended(1),  ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save(1), ROOT.RooFit.PrintEvalErrors(0)))
 
-mcstudy.generateAndFit(3)
+mcstudy.generateAndFit(20)
 
 W_pigamma_BR_val_frame = mcstudy.plotParam(W_pigamma_BR, ROOT.RooFit.Bins(20))
 W_pigamma_BR_err_frame = mcstudy.plotError(W_pigamma_BR, ROOT.RooFit.Bins(20))

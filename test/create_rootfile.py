@@ -10,7 +10,7 @@ ROOT.gROOT.SetBatch(True)
 from Workflow_Handler import Workflow_Handler
 myWF = Workflow_Handler("Signal","Data",isMedium = True)
 
-isData = True ##---------switch from DATA to MC and vice versa---------##
+isData = False ##---------switch from DATA to MC and vice versa---------##
 
 Wmass = np.zeros(1, dtype=float)
 isMuon = np.zeros(1, dtype=int)
