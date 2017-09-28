@@ -55,6 +55,11 @@ scan_params.setRealValue("W_pigamma_BR",0.00001)    #1*10-5
 points_to_scan.add(scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.000011)   #1.1*10-5
 points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.00002)    #2.*10-5
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.00003)    #3.*10-5
+points_to_scan.add(scan_params)
+
 
 fc.SetPOIPointsToTest(points_to_scan)
 
