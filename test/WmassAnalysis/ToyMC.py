@@ -26,6 +26,8 @@ constrained_params.add(eff_el_constr)
 
 arglist = ROOT.RooArgList(Wmass, isMuon)
 
+W_pigamma_BR.setVal(0.)
+
 mcstudy = ROOT.RooMCStudy(totPDF, ROOT.RooArgSet(arglist), ROOT.RooFit.Silence(), ROOT.RooFit.Extended(1), ROOT.RooFit.FitOptions(ROOT.RooFit.Extended(1),  ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save(1), ROOT.RooFit.PrintEvalErrors(0)))
 
 mcstudy.generateAndFit(5000)
