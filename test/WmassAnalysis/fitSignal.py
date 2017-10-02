@@ -4,7 +4,7 @@
 import ROOT
 
 #Define the observable
-Wmass = ROOT.RooRealVar("Wmass","#pi-#gamma invariant mass",50.,100.,"GeV")
+Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV/c^{2}")
 
 #Retrive the sample
 fInput = ROOT.TFile("Tree_MC.root")
@@ -44,7 +44,6 @@ W_resol_pole  = ROOT.RooRealVar("W_resol_pole","The center of the resolution",80
 W_resol_width = ROOT.RooRealVar("W_resol_width","The width of resolution",1.,0.01,10.)
 W_resol_alpha = ROOT.RooRealVar("W_resol_alpha","The alpha of resolution",1.,-10.,10.)
 W_resol_n     = ROOT.RooRealVar("W_resol_n","The n of resolution",2.,-10.,10.)
-#W_resol_n.setConstant(1)
 CBshape = ROOT.RooCBShape("CBshape","The resolution function",Wmass,W_resol_pole,W_resol_width,W_resol_alpha,W_resol_n)
 
 totSignal = ROOT.RooAddPdf("totSignal","Total signal PDF",ROOT.RooArgList(CBshape,Gauss_W),ROOT.RooArgList(fracSig))
@@ -58,7 +57,8 @@ totSignal.plotOn(massplot)
 canvas = ROOT.TCanvas()
 canvas.cd()
 massplot.Draw()
-canvas.SaveAs("SignalFit.png")
+canvas.SaveAs("SignalFit.pdf")
+
 
 workspace = ROOT.RooWorkspace("myworkspace")
 getattr(workspace,'import')(totSignal)

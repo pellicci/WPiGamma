@@ -8,7 +8,7 @@ import math
 isData = False
 
 #Define the observable
-Wmass = ROOT.RooRealVar("Wmass","#pi-#gamma invariant mass",50.,100.,"GeV")
+Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV/c^{2}")
 
 #Retrive the sample
 if isData:
@@ -44,7 +44,7 @@ workspace = fInput_sigmodel.Get("myworkspace")
 
 #Fix the signal parametrization
 workspace.var("W_resol_pole").setConstant(1)
-workspace.var("W_resol_width").setConstant(1)
+#workspace.var("W_resol_width").setConstant(1)
 workspace.var("W_resol_alpha").setConstant(1)
 workspace.var("W_resol_n").setConstant(1)
 workspace.var("Gauss_pole").setConstant(1)
@@ -68,10 +68,10 @@ a2_el = ROOT.RooRealVar("a2_el","a2_el",0.1,-5.,5.)
 backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el))
 
 #Gaussian distribution of W resolution width
-glb_W_resol_width = workspace.var("W_resol_width")
-W_resol_width_constr = ROOT.RooRealVar("W_resol_width_constr","W_resol_width_constr",glb_W_resol_width.getVal(),0.,5.)
-W_resol_width_err = ROOT.RooRealVar("W_resol_width_err","W_resol_width_err",glb_W_resol_width.getError())
-gauss_W_resol = ROOT.RooGaussian("gauss_W_resol","Gauss_W_resol",glb_W_resol_width,W_resol_width_constr,W_resol_width_err)
+W_resol_width = workspace.var("W_resol_width")
+W_resol_width_constr = ROOT.RooRealVar("W_resol_width_constr","W_resol_width_constr",W_resol_width.getVal())
+W_resol_width_err = ROOT.RooRealVar("W_resol_width_err","W_resol_width_err",W_resol_width.getError())
+gauss_W_resol = ROOT.RooGaussian("gauss_W_resol","gauss_W_resol",W_resol_width,W_resol_width_constr,W_resol_width_err)
 
 #Now fit signal + background
 
@@ -106,13 +106,13 @@ eff_el_constr = ROOT.RooRealVar("eff_el_constr","eff_el_constr",totel*2./totsig,
 eff_el_syst  = ROOT.RooRealVar("eff_el_syst","eff_el_syst", math.sqrt(1./totel + 2./totsig)*totel*2./totsig)
 gauss_eff_el = ROOT.RooGaussian("gauss_eff_el","gauss_eff_el",glb_eff_el,eff_el_constr,eff_el_syst) 
 
-W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.00001,0.,0.0001) # The parameter of interest
+W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.00001,-0.0001,0.0001) # The parameter of interest
 
 glb_W_xsec.setConstant(1)
 glb_lumi.setConstant(1)
 glb_eff_mu.setConstant(1)
 glb_eff_el.setConstant(1)
-glb_W_resol_width.setConstant(1)
+#W_resol_width_constr.setConstant(1)
 
 Nsig_mu = ROOT.RooFormulaVar("Nsig_mu","@0*@1*@2*@3", ROOT.RooArgList(W_pigamma_BR, W_xsec_constr,lumi_constr,eff_mu_constr))
 Nsig_el = ROOT.RooFormulaVar("Nsig_el","@0*@1*@2*@3", ROOT.RooArgList(W_pigamma_BR, W_xsec_constr,lumi_constr,eff_el_constr))
@@ -131,7 +131,7 @@ totPDF.addPdf(totPDF_mu,"Muon")
 totPDF.addPdf(totPDF_el,"Electron")
 
 constrained_params = ROOT.RooArgSet()
-constrained_params.add(W_resol_width_constr)
+constrained_params.add(W_resol_width)
 constrained_params.add(W_xsec_constr)
 constrained_params.add(lumi_constr)
 constrained_params.add(eff_mu_constr)
@@ -160,9 +160,9 @@ xframe_mu.Draw()
 canvas.cd(2)
 xframe_el.Draw()
 if isData:
-    canvas.SaveAs("fitData.png")
+    canvas.SaveAs("fitData.pdf")
 else:
-    canvas.SaveAs("fitMC.png")
+    canvas.SaveAs("fitMC.pdf")
 
 #Save the fit into a root file
 if isData:

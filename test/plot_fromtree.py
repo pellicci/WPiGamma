@@ -30,7 +30,7 @@ ELE_GAMMA_INVMASS_MAX = 91.5
 luminosity_norm = 36.46
 
 #Make signal histos larger
-signal_magnify = 100
+signal_magnify = 100000
 
 output_dir = "plots"
 
@@ -204,7 +204,7 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
-        #if "Data" in name_sample: continue
+        if "Data" in name_sample: continue
 
         #This is how you access the tree variables
         isMuon = mytree.is_muon
@@ -288,7 +288,8 @@ for name_sample in samplename_list:
                             
         if select_all_but_one("h_nBjets"):
             h_base[theSampleName+"h_nBjets"].Fill(nBjets,Event_Weight)
-            h_base[theSampleName+"h_nBjets_25"].Fill(nBjets_25,Event_Weight)
+        #if not "Data" in name_sample:
+        h_base[theSampleName+"h_nBjets_25"].Fill(nBjets_25,Event_Weight)
                                 
         if select_all_but_one("h_gammaet"):
             h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
@@ -440,7 +441,7 @@ for name_sample in samplename_list:
                 leg1.AddEntry(h_base[theSampleName+hname],"QCD","f")
                 isFirstQCDlegend = False
             elif name_sample == myWF.sig_samplename:
-                sample_legend_name = "100 x " + name_sample
+                sample_legend_name = str(signal_magnify) + " x " + name_sample
                 leg1.AddEntry(h_base[name_sample+hname], sample_legend_name,"f")  #To comment when signal has to be excluded.
             elif name_sample == myWF.data_samplename:
                 leg1.AddEntry(h_base[name_sample+hname], name_sample,"lep") # lep shows on the TLegend a point with errors to indicate data
@@ -461,16 +462,16 @@ for idx_histo,hname in enumerate(list_histos):
 for hname in list_histos:
 
     #if hname == "h_Wmass": continue
-    #if not hname == "h_nBjets_25": continue
+    if not hname == "h_nBjets_25": continue
     #if not hname == "h_ele_gamma_InvMass": continue
     #if not hname == "h_mupt" or hname == "h_elept": continue
     #if not hname == "h_gammaet": continue
-    if not hname == "h_Wmass": continue
+    #if not hname == "h_Wmass_flag_mu": continue
 
     canvas[hname].cd()
 
     hs[hname].Draw("histo")
-    hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),50.))
+    hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),40000.))
 
     down = ROOT.gPad.GetUymin()
     up   = ROOT.gPad.GetUymax()
@@ -483,7 +484,7 @@ for hname in list_histos:
     
     if hname == "h_Wmass" or hname == "h_Wmass_flag_mu" or hname == "h_Wmass_flag_ele":
         hs[hname].GetXaxis().SetTitle("m_{#pi#gamma} (GeV/c^{2})")
-        line = ROOT.TLine(WMASS_MIN, 0, WMASS_MIN, 52)
+        line = ROOT.TLine(WMASS_MIN, 0, WMASS_MIN, 62)
         line.SetLineColor(8)
         line.SetLineStyle(9)
         line.SetLineWidth(4)
@@ -557,7 +558,7 @@ for hname in list_histos:
     leg1.Draw()
         
     #canvas[hname].SaveAs("plots/" + hname + ".png")
-    canvas[hname].SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/" + hname + ".pdf")
+    canvas[hname].SaveAs("~rselvati/www/WPiGamma/InterestingVariables/21_09_2017_nBjets/" + hname + ".pdf")
 
 #------draw progressive histo------
 canvas1 = ROOT.TCanvas()
