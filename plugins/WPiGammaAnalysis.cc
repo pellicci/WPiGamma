@@ -272,17 +272,17 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
-    if(mu->pt() < 26. || mu->pt() < pTmuMax || !mu->isMediumMuon() || abs(mu->eta()) > 2.4) continue;
-    if( (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt() > 0.25) continue;
+    if(mu->pt() < 24. || mu->pt() < pTmuMax || !mu->isMediumMuon() || abs(mu->eta()) > 2.4) continue;
     lepton_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
+    if(lepton_iso > 0.25) continue
     pTmuMax = mu->pt();
     //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
 
-    mu_ID    = mu->pdgId();
-    is_muon  = true;
-    mu_eta   = mu->eta();
-    mu_phi   = mu->phi();
-    mu_pT    = mu->pt();
+    mu_ID   = mu->pdgId();
+    is_muon = true;
+    mu_eta  = mu->eta();
+    mu_phi  = mu->phi();
+    mu_pT   = mu->pt();
     nMuons++;
   }
 
@@ -308,16 +308,15 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     //PflowIsolationVariables pfIso = el->pfIsolationVariables();
     float abseta =  abs(el->superCluster()->eta());
     float eA = effectiveAreas_.getEffectiveArea(abseta);
-    if((el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt() > 0.4) continue;
     lepton_iso = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
+    if(lepton_iso > 0.4) continue;
 
-
-    el_ID       = el->pdgId();
-    is_ele      = true;
-    el_ID       = el->pdgId();
-    el_eta      = el->eta();
-    el_phi      = el->phi();
-    el_pT       = el->pt();
+    el_ID    = el->pdgId();
+    is_ele   = true;
+    el_ID    = el->pdgId();
+    el_eta   = el->eta();
+    el_phi   = el->phi();
+    el_pT    = el->pt();
 
     pTeleMax = el_pT;
     nElectrons++;
@@ -441,7 +440,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     float abseta = abs(photon->superCluster()->eta());
     float eA = effectiveAreas_.getEffectiveArea(abseta);
     //photon_iso = (pfIso.sumChargedHadronPt + std::max( 0.0f, pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - eA*rho_))/photon->et();
-    if(photon->chargedHadronIso()/photon->et() > 0.3 || photon->photonIso() > 4) continue; //|| photon->trackIso() > 6
+    if(photon->chargedHadronIso()/photon->et() > 0.3 || photon->photonIso() > 4.) continue; //|| photon->trackIso() > 6
     ph_iso_ChargedHadron = photon->chargedHadronIso();
     ph_iso_NeutralHadron = photon->neutralHadronIso();
     ph_iso_Photon        = photon->photonIso();

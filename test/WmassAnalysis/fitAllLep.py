@@ -97,7 +97,7 @@ totmu = 1200.  #total number of signal muon events
 totel = 916.  #total number of signal muon events
 
 glb_eff_mu    = ROOT.RooRealVar("glb_eff_mu","glb_eff_mu",totmu*2./totsig, 0., 1.) #For now, just the raw MC passed/generated number
-eff_mu_constr = ROOT.RooRealVar("eff_mu_constr","eff_mu_constr", totel*2./totsig, 0., 1.)
+eff_mu_constr = ROOT.RooRealVar("eff_mu_constr","eff_mu_constr", totmu*2./totsig, 0., 1.)
 eff_mu_syst   = ROOT.RooRealVar("eff_mu_syst","eff_mu_syst", math.sqrt(1./totmu + 2./totsig)*totmu*2./totsig)
 gauss_eff_mu  = ROOT.RooGaussian("gauss_eff_mu","gauss_eff_mu",glb_eff_mu,eff_mu_constr,eff_mu_syst) 
 
