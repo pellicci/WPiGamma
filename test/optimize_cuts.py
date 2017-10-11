@@ -10,14 +10,119 @@ from Workflow_Handler import Workflow_Handler
 myWF = Workflow_Handler("Signal","Data",isMedium = True)
 
 #-----Some selection bools------#
-is_pi_gamma        = True
+is_pi_gamma        = False
 is_ele_gamma       = False
 is_mu_pT           = False
-is_ele_pT          = False
+is_ele_pT          = True
 is_deltaphi_mu_pi  = False
 is_deltaphi_ele_pi = False
 
-def is_Event_selected(Wmass,nBjets,lepton_iso,ele_gamma_InvMass,lep_pT):#,pi_pT,gamma_eT):
+def get_xsec_fromsample(samplename):
+    
+    if samplename == "ttbar":
+        return 831.76
+
+    if samplename == "ttbarlnu":
+        return 87.31
+
+    if samplename == "ttbarWQQ":
+        return 0.4062
+
+    if samplename == "ttbarWlnu":
+        return 0.2043
+                  
+    if samplename == "ttbarZQQ":
+        return 0.5297 
+
+    if samplename == "ttbarZlnu":
+        return 0.2529 
+
+    if samplename == "SingleTop_tW":
+        return 35.85
+
+    if samplename == "SingleAntiTop_tW":
+        return 35.85
+
+    if samplename == "WJetsToLNu":
+        return 20508.9*3.
+
+    if samplename == "DY_10_50":
+        return 18610.0
+
+    if samplename == "DY_50":
+        return 1921.8*3.
+
+    if samplename == "QCD_HT100to200":
+        return 27540000.0 
+
+    if samplename == "QCD_HT200to300_1":
+        return 1717000.0
+
+    if samplename == "QCD_HT200to300_2":
+        return 1717000.0
+
+    if samplename == "QCD_HT300to500_1":
+        return 351300.0
+
+    if samplename == "QCD_HT300to500_2":
+        return 351300.0
+
+    if samplename == "QCD_HT500to700_1":
+        return 31630.0
+
+    if samplename == "QCD_HT500to700_2":
+        return 31630.0
+
+    if samplename == "QCD_HT700to1000_1":
+        return 6802.0
+
+    if samplename == "QCD_HT700to1000_2":
+        return 6802.0
+
+    if samplename == "QCD_HT1000to1500_1":
+        return 1206.0
+
+    if samplename == "QCD_HT1000to1500_2":
+        return 1206.0
+
+    if samplename == "QCD_HT1500to2000_1":
+        return 120.4 
+
+    if samplename == "QCD_HT1500to2000_2":
+        return 120.4
+
+    if samplename == "QCD_HT2000toInf_1":
+        return 25.25
+
+    if samplename == "QCD_HT2000toInf_2":
+        return 25.25
+
+    if samplename == "ZZ":
+        return 8.16
+
+    if samplename == "WW":
+        return 51.723
+
+    if samplename == "WZ":
+        return 47.13
+
+    if samplename == "GammaJets_20_40":
+        return 137751.
+
+    if samplename == "GammaJets_40_Inf":
+        return 16792.
+
+    if samplename == "GammaJets_20_Inf":
+        return 154500.
+
+    #if samplename == "WGToLNuG":
+    #    return 489.
+    
+    if "Signal" in samplename:
+        #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
+        return 831.76*0.1086*2.*0.000001*2.
+
+def is_Event_selected(Wmass,nBjets,lepton_iso,ele_gamma_InvMass):#,lep_pT):#,pi_pT,gamma_eT):
     """Save events according to some basic selection criteria"""
     bjet_cut = nBjets >= 2.
 
@@ -37,9 +142,9 @@ def is_Event_selected(Wmass,nBjets,lepton_iso,ele_gamma_InvMass,lep_pT):#,pi_pT,
         mu_pT_cut = lep_pT >= 27.
 
     if isMuon:
-        return mass_cut_down and mass_cut_up and bjet_cut and mu_pT_cut #and gamma_eT_cut and pi_pT_cut
+        return mass_cut_down and mass_cut_up and bjet_cut #and mu_pT_cut #and gamma_eT_cut and pi_pT_cut
     else:
-        return mass_cut_down and mass_cut_up and bjet_cut and ele_iso_cut and ele_gamma_InvMass_cut and ele_pT_cut #and gamma_eT_cut and pi_pT_cut
+        return mass_cut_down and mass_cut_up and bjet_cut and ele_iso_cut and ele_gamma_InvMass_cut #and ele_pT_cut #and gamma_eT_cut and pi_pT_cut
 
 ##Here starts the program
 Norm_Map = myWF.get_normalizations_map()
@@ -84,6 +189,10 @@ if not is_pi_gamma:
 
 cut_Nbkg = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
 cut_Nsig = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
+cut_Nbkg_err = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
+cut_Nsig_err = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
+sigma_Nexp_sig =  [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
+sigma_Nexp_bkg =  [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
 
 ##collect all the root files
 samplename_list = myWF.get_samples_names()
@@ -91,13 +200,21 @@ root_file = myWF.get_root_files()
 
 ##loop on the samples and on the cuts and calculate N_bkg and N_sig
 for name_sample in samplename_list:
-
+   
     mytree = root_file[name_sample].Get("WPiGammaAnalysis/mytree")
 
     if "Signal" in name_sample and not name_sample == myWF.sig_samplename:
         continue
 
     print "Working on sample ", name_sample
+
+    Nsig_passed = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
+    Nbkg_passed = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
+
+    if "Data" in name_sample: continue
+    norm_factor = Norm_Map[name_sample]*luminosity_norm
+    xsec = float(get_xsec_fromsample(name_sample))*1000
+    N_evts = xsec/Norm_Map[name_sample]
 
     for jentry in xrange(mytree.GetEntriesFast()):
         ientry = mytree.LoadTree( jentry )
@@ -106,9 +223,6 @@ for name_sample in samplename_list:
 
         nb = mytree.GetEntry( jentry )
         if nb <= 0:
-            continue
-
-        if "Data" in name_sample: 
             continue
 
         if name_sample == "ttbar" and mytree.isttbarlnu:
@@ -131,9 +245,10 @@ for name_sample in samplename_list:
         if is_deltaphi_mu_pi and not isMuon:
             continue
 
-        norm_factor = Norm_Map[name_sample]*luminosity_norm
+
         PU_Weight = mytree.PU_Weight
         Event_Weight = norm_factor*PU_Weight
+        Event_Weight_err = Event_Weight/math.sqrt(N_evts)
         
         lep_pT  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
@@ -154,7 +269,7 @@ for name_sample in samplename_list:
         if deltaphi > 3.14:
             deltaphi = 6.28-deltaphi
 
-        if not is_Event_selected(mytree.Wmass,mytree.nBjets_25,mytree.lepton_iso,ele_gamma_InvMass,lep_pT):#,pi_pT,gamma_eT):
+        if not is_Event_selected(mytree.Wmass,mytree.nBjets_25,mytree.lepton_iso,ele_gamma_InvMass):#,lep_pT):#,pi_pT,gamma_eT):
             continue
 
         for icut1 in xrange(steps_cut1):
@@ -183,18 +298,47 @@ for name_sample in samplename_list:
                     if gamma_eT < cut2_value:
                         continue
                 else:
-                    if gamma_eT < 0: #-----a possible condition to use to optimize a single variable (the precedent)-----
+                    if gamma_eT < 0: #-----a possible condition to use to optimize a single variable-----#
                         continue
 
                 if name_sample == myWF.sig_samplename:
                     cut_Nsig[icut1][icut2] += Event_Weight
+                    Nsig_passed[icut1][icut2] += 1
+                    #----sum in quadrature of the errors----#
+                    cut_Nsig_err[icut1][icut2] += Event_Weight_err*Event_Weight_err
+ 
                 else:
                     cut_Nbkg[icut1][icut2] += Event_Weight
+                    Nbkg_passed[icut1][icut2] += 1
+                    #----sum in quadrature of the errors----#
+                    cut_Nbkg_err[icut1][icut2] += Event_Weight_err*Event_Weight_err 
+
+
+
+    for icut1 in xrange(steps_cut1):
+        cut1_value = cut1_init + cut1_stepsize*icut1
+
+        for icut2 in xrange(steps_cut2):
+            cut2_value = cut2_init + cut2_stepsize*icut2
+
+
+            #sigma_Nexp_sig[icut1][icut2] += math.pow(norm_factor*(Nsig_passed[icut1][icut2]/N_evts)*(1-(Nsig_passed[icut1][icut2]/N_evts)),2)
+            sigma_Nexp_sig[icut1][icut2] += Nsig_passed[icut1][icut2]*norm_factor*norm_factor
+
+
+            #sigma_Nexp_bkg[icut1][icut2] += math.pow(norm_factor*(Nbkg_passed[icut1][icut2]/N_evts)*(1-(Nbkg_passed[icut1][icut2]/N_evts)),2)
+            sigma_Nexp_bkg[icut1][icut2] += Nbkg_passed[icut1][icut2]*norm_factor*norm_factor
+
+            #print "Nsig passed: ", Nsig_passed[icut1][icut2]
+            #print "Nbkg passed: ", Nbkg_passed[icut1][icut2] 
+            #print "sigma_Nexp_sig:  ",  sigma_Nexp_sig[icut1][icut2]
+            #print "sigma_Nexp_bkg:  ",  sigma_Nexp_bkg[icut1][icut2]
 
 print "Done looping over the events"
 
 ##Calculate the significance
 signif_list = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
+err_list = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
 
 cut1_x_list = [cut1_init + cut1_stepsize*icut for icut in range(steps_cut1)]
 cut2_x_list = [cut2_init + cut2_stepsize*icut for icut in range(steps_cut2)]
@@ -208,6 +352,7 @@ for icut1 in xrange(steps_cut1):
 
         if cut_Nbkg[icut1][icut2] != 0:
             signif_list[icut1][icut2] = cut_Nsig[icut1][icut2]/math.sqrt(cut_Nbkg[icut1][icut2])
+            err_list[icut1][icut2] = math.sqrt((1/cut_Nbkg[icut1][icut2])*sigma_Nexp_sig[icut1][icut2]+math.pow(cut_Nsig[icut1][icut2],2)/(4*math.pow(cut_Nbkg[icut1][icut2],3))* sigma_Nexp_bkg[icut1][icut2])
         else:
             signif_list[icut1][icut2] = 0.
 
@@ -216,10 +361,12 @@ for icut1 in xrange(steps_cut1):
             cut1_max = icut1
             cut2_max = icut2
 
+        print "signif: ", signif_list[icut1][icut2], "pm: ",  err_list[icut1][icut2]
+
 print "The cut1 value is ", cut1_init + cut1_stepsize*cut1_max
 print "The cut2 value is ", cut2_init + cut2_stepsize*cut2_max
-print "Number of signal events is ", cut_Nsig[cut1_max][cut2_max]
-print "Number of background events is ", cut_Nbkg[cut1_max][cut2_max]
+print "Number of signal events is ", cut_Nsig[cut1_max][cut2_max], " pm ", math.sqrt(sigma_Nexp_sig[cut1_max][cut2_max])
+print "Number of background events is ", cut_Nbkg[cut1_max][cut2_max], " pm ", math.sqrt(sigma_Nexp_bkg[cut1_max][cut2_max])
 print "Max significance is ", signif_max
 
 ##Plot the significance as function of the cuts
@@ -229,58 +376,49 @@ cut2_x = np.array(cut2_x_list)
 cut1_y_list = [signif_list[icut][cut2_max] for icut in xrange(steps_cut1)]
 cut2_y_list = [signif_list[cut1_max][icut] for icut in xrange(steps_cut2)]
 
+cut1_y_list_err = [err_list[icut][cut2_max] for icut in xrange(steps_cut1)]
+cut2_y_list_err = [err_list[cut1_max][icut] for icut in xrange(steps_cut2)]
+
 cut1_y = np.array(cut1_y_list)
 cut2_y = np.array(cut2_y_list)
 
-graph_cut1 = ROOT.TGraph(steps_cut1,cut1_x,cut1_y)
-graph_cut2 = ROOT.TGraph(steps_cut2,cut2_x,cut2_y)
+cut1_x_err = np.zeros(steps_cut1)
+cut2_x_err = np.zeros(steps_cut2)
+
+cut1_y_err = np.array(cut1_y_list_err)
+cut2_y_err = np.array(cut2_y_list_err)
+
+graph_cut1 = ROOT.TGraphErrors(steps_cut1,cut1_x,cut1_y,cut1_x_err,cut1_y_err)
+graph_cut2 = ROOT.TGraphErrors(steps_cut2,cut2_x,cut2_y,cut2_x_err,cut2_y_err)
 
 c1 = ROOT.TCanvas("c1","c1",800,500)
 c1.cd()
-graph_cut1.Draw("A*")
+graph_cut1.SetMarkerStyle(20)
+graph_cut1.Draw("AP")
 graph_cut1.GetYaxis().SetTitleOffset(1.6)
-#graph_cut1.SetTitle("Significance vs p_{T}^{#pi}; p_{T}^{#pi}; Significance")
-#graph_cut1.SetTitle("Significance vs 90 #pm #varepsilon; 90 #pm #varepsilon; Significance")
-#graph_cut1.SetTitle("Significance vs p_{T}^{e}; p_{T}^{e}; Significance")
-#graph_cut1.SetTitle("; p_{T}^{e}; Significance")
-#graph_cut1.SetTitle("Significance vs #Delta#varphi(#mu,#pi); #Delta#varphi(#mu,#pi); Significance") #for muons
-#graph_cut1.SetTitle("Significance vs #Delta#varphi(e,#pi);  #Delta#varphi(e,#pi); Significance") #for electrons
 
 if is_ele_gamma:
-    graph_cut1.SetTitle("; 90 #pm #varepsilon (GeV/c^{2}); Significance")
-    c1.SaveAs("~rselvati/www/WPiGamma/Significance/19_09_2017/Z_peak_thesis.pdf")
+    graph_cut1.SetTitle("; #varepsilon (GeV/c^{2}); Significance")
+    c1.SaveAs("plots/Z_peak.pdf")
 if is_ele_pT:
     graph_cut1.SetTitle("; p_{T}^{e} (GeV/c); Significance")
-    c1.SaveAs("~rselvati/www/WPiGamma/Significance/19_09_2017/e_pT_thesis.pdf")
+    c1.SaveAs("plots/e_pT.pdf")
 if is_mu_pT:
     graph_cut1.SetTitle("; p_{T}^{#mu} (GeV/c); Significance")
-    c1.SaveAs("~rselvati/www/WPiGamma/Significance/19_09_2017/mu_pT_thesis.pdf")
+    c1.SaveAs("plots/mu_pT.pdf")
 if is_deltaphi_mu_pi:
     graph_cut1.SetTitle("; #Delta#varphi(#mu,#pi); Significance")
-    c1.SaveAs("~rselvati/www/WPiGamma/Significance/19_09_2017/deltaphi_mu_pi_thesis.pdf")
+    c1.SaveAs("plots/deltaphi_mu_pi.pdf")
 if is_deltaphi_ele_pi:
     graph_cut1.SetTitle("; #Delta#varphi(e,#pi); Significance")
-    c1.SaveAs("~rselvati/www/WPiGamma/Significance/19_09_2017/deltaphi_ele_pi_thesis.pdf")
+    c1.SaveAs("plots/deltaphi_ele_pi.pdf")
 if is_pi_gamma:
     graph_cut1.SetTitle("; p_{T}^{#pi} (GeV/c); Significance")
-    c1.SaveAs("~rselvati/www/WPiGamma/Significance/19_09_2017/pi_pT_thesis.pdf")
+    c1.SaveAs("plots/pi_pT.pdf")
     c2 = ROOT.TCanvas("c2","c2",800,500)
     c2.cd()
-    graph_cut2.Draw("A*")
+    graph_cut2.SetMarkerStyle(20)
+    graph_cut2.Draw("AP")
     graph_cut2.GetYaxis().SetTitleOffset(1.6)
     graph_cut2.SetTitle("; E_{T}^{#gamma} (GeV); Significance")
-    c2.SaveAs("~rselvati/www/WPiGamma/Significance/19_09_2017/gamma_eT_thesis.pdf")
-    
-#c1.SaveAs("plots/pi_pT_signif.png")
-#c1.SaveAs("plots/ele_pT_signif.png")
-#c1.SaveAs("plots/deltaphi_mu_pi_signif.png") #for muons
-#c1.SaveAs("plots/deltaphi_ele_pi_signif.png") #for electrons
-"""
-c2 = ROOT.TCanvas("c2","c2")
-c2.cd()
-graph_cut2.Draw("A*")
-graph_cut2.GetYaxis().SetTitleOffset(1.5)
-graph_cut2.SetTitle("Significance vs E_{T}^{#gamma}; E_{T}^{#gamma}; Significance")
-c2.SaveAs("plots/gamma_eT_signif.png")
-#c2.SaveAs("plots/nothing.png")
-"""
+    c2.SaveAs("plots/gamma_eT.pdf")

@@ -461,13 +461,6 @@ for idx_histo,hname in enumerate(list_histos):
 
 for hname in list_histos:
 
-    #if hname == "h_Wmass": continue
-    if not hname == "h_nBjets_25": continue
-    #if not hname == "h_ele_gamma_InvMass": continue
-    #if not hname == "h_mupt" or hname == "h_elept": continue
-    #if not hname == "h_gammaet": continue
-    #if not hname == "h_Wmass_flag_mu": continue
-
     canvas[hname].cd()
 
     hs[hname].Draw("histo")
@@ -557,8 +550,8 @@ for hname in list_histos:
         
     leg1.Draw()
         
-    #canvas[hname].SaveAs("plots/" + hname + ".png")
-    canvas[hname].SaveAs("~rselvati/www/WPiGamma/InterestingVariables/21_09_2017_nBjets/" + hname + ".pdf")
+    canvas[hname].SaveAs("plots/" + hname + ".pdf")
+    #canvas[hname].SaveAs("~rselvati/www/WPiGamma/InterestingVariables/21_09_2017_nBjets/" + hname + ".pdf")
 
 #------draw progressive histo------
 canvas1 = ROOT.TCanvas()
@@ -577,8 +570,9 @@ h_events_sig_mu.GetXaxis().SetBinLabel(3,"E_{T}^{#gamma}")
 h_events_sig_mu.GetXaxis().SetBinLabel(4,"nBjets")
 h_events_sig_mu.GetXaxis().SetBinLabel(5,"Wmass")
 h_events_sig_mu.Draw("hist")
-#canvas1.SaveAs("plots/h_events_sig_mu.png")
-canvas1.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_sig_mu.pdf")
+ROOT.gPad.SetLogy()
+canvas1.SaveAs("plots/h_events_sig_mu.pdf")
+#canvas1.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_sig_mu_logscale.pdf")
 
 canvas2 = ROOT.TCanvas()
 h_events_sig_ele.Fill(0.5,ele_sig_events)
@@ -600,8 +594,9 @@ h_events_sig_ele.GetXaxis().SetBinLabel(5,"E_{T}^{#gamma}")
 h_events_sig_ele.GetXaxis().SetBinLabel(6,"nBjets")
 h_events_sig_ele.GetXaxis().SetBinLabel(7,"Wmass")
 h_events_sig_ele.Draw("hist")
-#canvas2.SaveAs("plots/h_events_sig_ele.png")
-canvas2.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_sig_ele.pdf")
+ROOT.gPad.SetLogy()
+canvas2.SaveAs("plots/h_events_sig_ele.pdf")
+#canvas2.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_sig_ele_logscale.pdf")
 
 canvas3 = ROOT.TCanvas()
 h_events_bkg_mu.Fill(0.5,mu_bkg_events)
@@ -619,8 +614,9 @@ h_events_bkg_mu.GetXaxis().SetBinLabel(3,"E_{T}^{#gamma}")
 h_events_bkg_mu.GetXaxis().SetBinLabel(4,"nBjets")
 h_events_bkg_mu.GetXaxis().SetBinLabel(5,"Wmass")
 h_events_bkg_mu.Draw("hist")
-#canvas3.SaveAs("plots/h_events_bkg_mu.png")
-canvas3.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_bkg_mu.pdf")
+ROOT.gPad.SetLogy()
+canvas3.SaveAs("plots/h_events_bkg_mu.pdf")
+#canvas3.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_bkg_mu_logscale.pdf")
 
 canvas4 = ROOT.TCanvas()
 h_events_bkg_ele.Fill(0.5,ele_bkg_events)
@@ -642,8 +638,9 @@ h_events_bkg_ele.GetXaxis().SetBinLabel(5,"E_{T}^{#gamma}")
 h_events_bkg_ele.GetXaxis().SetBinLabel(6,"nBjets")
 h_events_bkg_ele.GetXaxis().SetBinLabel(7,"Wmass")
 h_events_bkg_ele.Draw("hist")
-#canvas4.SaveAs("plots/h_events_bkg_ele.png")
-canvas4.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_bkg_ele.pdf")
+ROOT.gPad.SetLogy()
+canvas4.SaveAs("plots/h_events_bkg_ele.pdf")
+#canvas4.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_bkg_ele_logscale.pdf")
 
 print "Number of expected events for ", luminosity_norm, " in fb-1"
 print "Number of signal events passed = ", Nsig_passed

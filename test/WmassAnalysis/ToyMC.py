@@ -26,15 +26,15 @@ constrained_params.add(eff_el_constr)
 
 arglist = ROOT.RooArgList(Wmass, isMuon)
 
-W_pigamma_BR.setVal(0.)
+W_pigamma_BR.setVal(0.000007)
 
 mcstudy = ROOT.RooMCStudy(totPDF, ROOT.RooArgSet(arglist), ROOT.RooFit.Silence(), ROOT.RooFit.Extended(1), ROOT.RooFit.FitOptions(ROOT.RooFit.Extended(1),  ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save(1), ROOT.RooFit.PrintEvalErrors(0)))
 
-mcstudy.generateAndFit(5000)
+mcstudy.generateAndFit(10000)
 
 W_pigamma_BR_val_frame = mcstudy.plotParam(W_pigamma_BR, ROOT.RooFit.Bins(20))
 W_pigamma_BR_err_frame = mcstudy.plotError(W_pigamma_BR, ROOT.RooFit.Bins(20))
-W_pigamma_BR_pull_frame = mcstudy.plotPull(W_pigamma_BR, ROOT.RooFit.Bins(20), ROOT.RooFit.FitGauss(1))
+W_pigamma_BR_pull_frame = mcstudy.plotPull(W_pigamma_BR, ROOT.RooFit.Bins(30),ROOT.RooFit.FrameRange(-3.,3.), ROOT.RooFit.FitGauss(1))
 Nbkg_mu_frame = mcstudy.plotPull(Nbkg_mu, ROOT.RooFit.Bins(20), ROOT.RooFit.FitGauss(1))
 Nbkg_el_frame = mcstudy.plotPull(Nbkg_el, ROOT.RooFit.Bins(20), ROOT.RooFit.FitGauss(1))
 W_xsec_constr_frame = mcstudy.plotPull(W_xsec_constr, ROOT.RooFit.Bins(20), ROOT.RooFit.FitGauss(1))
@@ -43,10 +43,14 @@ NLLframe = mcstudy.plotNLL(ROOT.RooFit.Bins(20))
 
 #Some settings
 W_pigamma_BR_val_frame.SetTitle("")
+W_pigamma_BR_val_frame.SetTitleOffset(1.5,"y")
 W_pigamma_BR_val_frame.SetXTitle("BR(W#rightarrow#pi#gamma)")
 W_pigamma_BR_err_frame.SetTitle("")
+W_pigamma_BR_err_frame.SetTitleOffset(1.5,"y")
 W_pigamma_BR_err_frame.SetXTitle("#sigma_{BR(W#rightarrow#pi#gamma)}")
 W_pigamma_BR_pull_frame.SetTitle("")
+W_pigamma_BR_pull_frame.SetMaximum(900)
+W_pigamma_BR_pull_frame.SetTitleOffset(1.5,"y")
 W_pigamma_BR_pull_frame.SetXTitle("PULL_{BR(W#rightarrow#pi#gamma)}")
 NLLframe.SetTitle("")
 
