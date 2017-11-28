@@ -105,12 +105,6 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
-        Event_Weight = 1.
-        if not isData:
-            norm_factor = Norm_Map[name_sample]*luminosity_norm
-            PU_Weight = mytree.PU_Weight
-            Event_Weight = norm_factor*PU_Weight
-
         ismuon = mytree.is_muon
 
         lep_pT  = mytree.lepton_pT
@@ -161,7 +155,22 @@ for name_sample in samplename_list:
 
         deltaphi_lep_W = math.fabs(lep_phi-W_phi)
         if deltaphi_lep_W > 3.14:
-            deltaphi_lep_W = 6.28 - deltaphi_lep_W        
+            deltaphi_lep_W = 6.28 - deltaphi_lep_W      
+
+        #--------Determining the event weight--------#
+        if(not ismuon):
+            ele_weight = myWF.get_ele_scale(lep_pT,lep_eta)
+
+        ph_weight = myWF.get_photon_scale(gamma_eT,gamma_eta)
+
+        Event_Weight = 1.
+        if not isData:
+            norm_factor = Norm_Map[name_sample]*luminosity_norm
+            PU_Weight = mytree.PU_Weight
+            Event_Weight = norm_factor*PU_Weight*ph_weight
+            if not ismuon:
+                Event_Weight = Event_Weight*ele_weight
+  
 
 #-------- Filling tree -------------
         if select_all_but_one("all cuts"):

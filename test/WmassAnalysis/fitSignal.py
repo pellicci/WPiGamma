@@ -53,6 +53,8 @@ totSignal.fitTo(data_Signal)
 massplot = Wmass.frame()
 data_Signal.plotOn(massplot)
 totSignal.plotOn(massplot)
+#totSignal.paramOn(massplot,ROOT.RooFit.Layout(0.55))
+#data_Signal.statOn(massplot,ROOT.RooFit.Layout(0.55,0.99,0.8))
 
 canvas = ROOT.TCanvas()
 canvas.cd()

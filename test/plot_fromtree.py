@@ -30,7 +30,7 @@ ELE_GAMMA_INVMASS_MAX = 91.5
 luminosity_norm = 36.46
 
 #Make signal histos larger
-signal_magnify = 100000
+signal_magnify = 1000
 
 output_dir = "plots"
 
@@ -204,7 +204,7 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
-        if "Data" in name_sample: continue
+        #if "Data" in name_sample: continue  #-------------Excluding data------------#
 
         #This is how you access the tree variables
         isMuon = mytree.is_muon
@@ -260,18 +260,17 @@ for name_sample in samplename_list:
             deltaphi_lep_W = 6.28 - deltaphi_lep_W
 
         #Determine the total event weight
+        if(not isMuon):
+            ele_weight = myWF.get_ele_scale(lep_pT,lep_eta)
+
+        ph_weight = myWF.get_photon_scale(gamma_eT,gamma_eta)
+
         if not "Data" in name_sample:
-            PU_Weight = mytree.PU_Weight  
-        #ele_weight = myWF.get_ele_scale(lep_pT,lep_eta)
-        #ph_weight = myWF.get_photon_scale(gamma_eT,gamma_eta)
-        
-        
-            Event_Weight = norm_factor*PU_Weight #*ph_weight   #Add other event weights here if necessary
-
-        #if(not isMuon):
-        #    Event_Weight = Event_Weight * ele_weight
-
-        if "Data" in name_sample:
+            PU_Weight = mytree.PU_Weight        
+            Event_Weight = norm_factor*PU_Weight*ph_weight   #Add other event weights here if necessary
+            if not isMuon:
+                Event_Weight = Event_Weight*ele_weight
+        else:
             Event_Weight = 1
 
 
@@ -464,7 +463,7 @@ for hname in list_histos:
     canvas[hname].cd()
 
     hs[hname].Draw("histo")
-    hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),40000.))
+    hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),60.))
 
     down = ROOT.gPad.GetUymin()
     up   = ROOT.gPad.GetUymax()
@@ -551,7 +550,7 @@ for hname in list_histos:
     leg1.Draw()
         
     canvas[hname].SaveAs("plots/" + hname + ".pdf")
-    #canvas[hname].SaveAs("~rselvati/www/WPiGamma/InterestingVariables/21_09_2017_nBjets/" + hname + ".pdf")
+    #canvas[hname].SaveAs("~rselvati/www/WPiGamma/InterestingVariables/09_11_2017_blind/" + hname + ".pdf")
 
 #------draw progressive histo------
 canvas1 = ROOT.TCanvas()
@@ -572,7 +571,7 @@ h_events_sig_mu.GetXaxis().SetBinLabel(5,"Wmass")
 h_events_sig_mu.Draw("hist")
 ROOT.gPad.SetLogy()
 canvas1.SaveAs("plots/h_events_sig_mu.pdf")
-#canvas1.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_sig_mu_logscale.pdf")
+#canvas1.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/09_11_2017_blind/h_events_sig_mu_logscale.pdf")
 
 canvas2 = ROOT.TCanvas()
 h_events_sig_ele.Fill(0.5,ele_sig_events)
@@ -596,7 +595,7 @@ h_events_sig_ele.GetXaxis().SetBinLabel(7,"Wmass")
 h_events_sig_ele.Draw("hist")
 ROOT.gPad.SetLogy()
 canvas2.SaveAs("plots/h_events_sig_ele.pdf")
-#canvas2.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_sig_ele_logscale.pdf")
+#canvas2.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/09_11_2017_blind/h_events_sig_ele_logscale.pdf")
 
 canvas3 = ROOT.TCanvas()
 h_events_bkg_mu.Fill(0.5,mu_bkg_events)
@@ -616,7 +615,7 @@ h_events_bkg_mu.GetXaxis().SetBinLabel(5,"Wmass")
 h_events_bkg_mu.Draw("hist")
 ROOT.gPad.SetLogy()
 canvas3.SaveAs("plots/h_events_bkg_mu.pdf")
-#canvas3.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_bkg_mu_logscale.pdf")
+#canvas3.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/09_11_2017_blind/h_events_bkg_mu_logscale.pdf")
 
 canvas4 = ROOT.TCanvas()
 h_events_bkg_ele.Fill(0.5,ele_bkg_events)
@@ -640,7 +639,7 @@ h_events_bkg_ele.GetXaxis().SetBinLabel(7,"Wmass")
 h_events_bkg_ele.Draw("hist")
 ROOT.gPad.SetLogy()
 canvas4.SaveAs("plots/h_events_bkg_ele.pdf")
-#canvas4.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/20_09_2017_cuts/h_events_bkg_ele_logscale.pdf")
+#canvas4.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/09_11_2017_blind/h_events_bkg_ele_logscale.pdf")
 
 print "Number of expected events for ", luminosity_norm, " in fb-1"
 print "Number of signal events passed = ", Nsig_passed

@@ -31,6 +31,7 @@ W_pigamma_BR.setVal(0.000007)
 mcstudy = ROOT.RooMCStudy(totPDF, ROOT.RooArgSet(arglist), ROOT.RooFit.Silence(), ROOT.RooFit.Extended(1), ROOT.RooFit.FitOptions(ROOT.RooFit.Extended(1),  ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save(1), ROOT.RooFit.PrintEvalErrors(0)))
 
 mcstudy.generateAndFit(10000)
+#dataset = mcstudy.fitParDataSet()
 
 W_pigamma_BR_val_frame = mcstudy.plotParam(W_pigamma_BR, ROOT.RooFit.Bins(20))
 W_pigamma_BR_err_frame = mcstudy.plotError(W_pigamma_BR, ROOT.RooFit.Bins(20))
@@ -52,6 +53,7 @@ W_pigamma_BR_pull_frame.SetTitle("")
 W_pigamma_BR_pull_frame.SetMaximum(900)
 W_pigamma_BR_pull_frame.SetTitleOffset(1.5,"y")
 W_pigamma_BR_pull_frame.SetXTitle("PULL_{BR(W#rightarrow#pi#gamma)}")
+#dataset.plotOn(W_pigamma_BR_pull_frame,ROOT.RooFit.Layout(0.55))
 NLLframe.SetTitle("")
 
 canvas1 = ROOT.TCanvas("canvas1","canvas1",900,700)

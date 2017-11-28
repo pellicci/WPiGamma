@@ -2,6 +2,28 @@ import ROOT
 import math
 import os
 
+#------Acessing scale factor histos for ele-gamma corrections --------#
+
+eg_reco_scale_name = "scale_factors/Electron_reco_2D.root"
+eg_reco_scale_file = ROOT.TFile(eg_reco_scale_name)
+eg_reco_scale_histo = ROOT.TH2F()
+eg_reco_scale_histo = eg_reco_scale_file.Get("EGamma_SF2D")
+
+eg_ID_scale_name = "scale_factors/Electron_ID_2D.root"
+eg_ID_scale_file = ROOT.TFile(eg_ID_scale_name)
+eg_ID_scale_histo = ROOT.TH2F()
+eg_ID_scale_histo = eg_ID_scale_file.Get("EGamma_SF2D")
+
+ph_ID_scale_name = "scale_factors/Photon_ID_2D.root"
+ph_ID_scale_file = ROOT.TFile(ph_ID_scale_name)
+ph_ID_scale_histo = ROOT.TH2F()
+ph_ID_scale_histo = ph_ID_scale_file.Get("EGamma_SF2D")
+
+ph_pixVeto_scale_name = "scale_factors/Photon_pixVeto_2D.root"
+ph_pixVeto_scale_file = ROOT.TFile(ph_pixVeto_scale_name)
+ph_pixVeto_scale_histo = ROOT.TH2F()
+ph_pixVeto_scale_histo = ph_pixVeto_scale_file.Get("Scaling_Factors_HasPix_R9 Inclusive")
+
 class Workflow_Handler:
 
     def __init__(self,signalname,dataname,isMedium,subprocess="//"):
@@ -28,26 +50,6 @@ class Workflow_Handler:
         #----Data----#
         self.dir_data_input = "rootfiles/" + self.subprocess + "data/"  
 
-
-        eg_reco_scale_name = "scale_factors/Electron_reco_2D.root"
-        eg_reco_scale_file = ROOT.TFile(eg_reco_scale_name)
-        self.eg_reco_scale_histo = ROOT.TH2F()
-        self.eg_reco_scale_histo = eg_reco_scale_file.Get("EGamma_SF2D")
-
-        eg_ID_scale_name = "scale_factors/Electron_ID_2D.root"
-        eg_ID_scale_file = ROOT.TFile(eg_ID_scale_name)
-        self.eg_ID_scale_histo = ROOT.TH2F()
-        self.eg_ID_scale_histo = eg_ID_scale_file.Get("EGamma_SF2D")
-
-        ph_ID_scale_name = "scale_factors/Photon_ID_2D.root"
-        ph_ID_scale_file = ROOT.TFile(ph_ID_scale_name)
-        self.ph_ID_scale_histo = ROOT.TH2F()
-        self.ph_ID_scale_histo = ph_ID_scale_file.Get("EGamma_SF2D")
-
-        ph_pixVeto_scale_name = "scale_factors/Photon_pixVeto_2D.root"
-        ph_pixVeto_scale_file = ROOT.TFile(ph_pixVeto_scale_name)
-        self.ph_pixVeto_scale_histo = ROOT.TH2F()
-        self.ph_pixVeto_scale_histo = ph_pixVeto_scale_file.Get("Scaling_Factors_HasPix_R9 Inclusive")
         
     def get_ele_scale(self, ele_pt, ele_eta):
         #This is because corrections are up to 200 GeV
@@ -56,8 +58,8 @@ class Workflow_Handler:
             local_ele_pt = 199.
 
         scale_factor = 1.
-        scale_factor = scale_factor * self.eg_reco_scale_histo.GetBinContent( self.eg_reco_scale_histo.GetXaxis().FindBin(ele_eta), self.eg_reco_scale_histo.GetYaxis().FindBin(local_ele_pt) )
-        scale_factor = scale_factor * self.eg_ID_scale_histo.GetBinContent( self.eg_ID_scale_histo.GetXaxis().FindBin(ele_eta), self.eg_ID_scale_histo.GetYaxis().FindBin(local_ele_pt) )
+        scale_factor = scale_factor * eg_reco_scale_histo.GetBinContent( eg_reco_scale_histo.GetXaxis().FindBin(ele_eta), eg_reco_scale_histo.GetYaxis().FindBin(local_ele_pt) )
+        scale_factor = scale_factor * eg_ID_scale_histo.GetBinContent( eg_ID_scale_histo.GetXaxis().FindBin(ele_eta), eg_ID_scale_histo.GetYaxis().FindBin(local_ele_pt) )
 
         return scale_factor
 
@@ -68,8 +70,8 @@ class Workflow_Handler:
             local_ph_pt = 199.
 
         scale_factor = 1.
-        scale_factor = scale_factor * self.ph_ID_scale_histo.GetBinContent( self.ph_ID_scale_histo.GetXaxis().FindBin(ph_eta), self.ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
-        scale_factor = scale_factor * self.ph_pixVeto_scale_histo.GetBinContent( self.ph_pixVeto_scale_histo.GetXaxis().FindBin(math.abs(ph_eta)), self.ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+        scale_factor = scale_factor * ph_ID_scale_histo.GetBinContent( ph_ID_scale_histo.GetXaxis().FindBin(ph_eta), ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+        scale_factor = scale_factor * ph_pixVeto_scale_histo.GetBinContent( ph_pixVeto_scale_histo.GetXaxis().FindBin(math.fabs(ph_eta)), ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
 
         return scale_factor
     

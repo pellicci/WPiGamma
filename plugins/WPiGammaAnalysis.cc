@@ -274,7 +274,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
     if(mu->pt() < 24. || mu->pt() < pTmuMax || !mu->isMediumMuon() || abs(mu->eta()) > 2.4) continue;
     lepton_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
-    if(lepton_iso > 0.25) continue
+    if(lepton_iso > 0.25) continue;
     pTmuMax = mu->pt();
     //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
 
@@ -374,7 +374,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     if(cand->pdgId()*mu_ID < 0 && cand->pdgId()*el_ID < 0) continue;    
     if(cand->pt() < 20. || !cand->trackHighPurity() || cand->fromPV() != 3) continue;
     if(cand->pt() < pTpiMax) continue;
-
+    //if(cand->trackIso() > 5) continue;
+    //std::cout << cand->pfIsolationVariables().sumChargedHadronPt << std::endl;
+    
     if(is_muon){
       deltaphi_lep_pi = fabs(mu_phi-cand->phi());
       if(deltaphi_lep_pi > 3.14) deltaphi_lep_pi = 6.28-deltaphi_lep_pi;
