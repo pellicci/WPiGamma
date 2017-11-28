@@ -12,25 +12,6 @@ myWF = Workflow_Handler("Signal","Data",isMedium = True)
 
 isData = False ##---------switch from DATA to MC and vice versa---------##
 
-Wmass = np.zeros(1, dtype=float)
-isMuon = np.zeros(1, dtype=int)
-isSignal = np.zeros(1, dtype=int)
-weight = np.zeros(1, dtype=float)
-
-if not isData:
-    f = TFile('WmassAnalysis/Tree_MC.root','recreate')
-    t = TTree('minitree','tree with branches')
-    t.Branch('Wmass',Wmass,'Wmass/D')
-    t.Branch('isMuon',isMuon,'isMuon/I')
-    t.Branch('isSignal',isSignal,'isSignal/I')
-    t.Branch('weight',weight,'weight/D')
-
-if isData:
-    f = TFile('WmassAnalysis/Tree_Data.root','recreate')
-    t = TTree('minitree','tree with branches')
-    t.Branch('Wmass',Wmass,'Wmass/D')
-    t.Branch('isMuon',isMuon,'isMuon/I')
-
 ##Global constants
 MU_MIN_PT = 27.
 ELE_MIN_PT = 29.
@@ -47,6 +28,58 @@ ELE_GAMMA_INVMASS_MAX = 91.5
 
 #Normalize to this luminsity, in fb-1
 luminosity_norm = 36.46
+
+#Variables for the trees
+Wmass    = np.zeros(1, dtype=float)
+isMuon   = np.zeros(1, dtype=int)
+isSignal = np.zeros(1, dtype=int)
+weight   = np.zeros(1, dtype=float)
+
+_gamma_eT        = np.zeros(1, dtype=float)
+_pi_pT           = np.zeros(1, dtype=float)
+_lep_pT          = np.zeros(1, dtype=float)
+_lep_iso         = np.zeros(1, dtype=float)
+_n_bjets         = np.zeros(1, dtype=int)
+_n_bjets_25      = np.zeros(1, dtype=int)
+_deltaphi_lep_pi = np.zeros(1, dtype=float)
+
+if not isData:
+    f = TFile('WmassAnalysis/Tree_MC.root','recreate')
+    t = TTree('minitree','tree with branches')
+    t.Branch('Wmass',Wmass,'Wmass/D')
+    t.Branch('isMuon',isMuon,'isMuon/I')
+    t.Branch('isSignal',isSignal,'isSignal/I')
+    t.Branch('weight',weight,'weight/D')
+
+    fMVA_signal = TFile('MVA/Tree_MC_Signal.root','recreate')
+    tMVA_signal = TTree('minitree_signal','tree with branches')
+    tMVA_signal.Branch('isMuon',isMuon,'isMuon/I')
+    tMVA_signal.Branch('weight',weight,'weight/D')
+    tMVA_signal.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
+    tMVA_signal.Branch('pi_pT',_pi_pT,'pi_pT/D')
+    tMVA_signal.Branch('lep_pT',_lep_pT,'lep_pT/D')
+    tMVA_signal.Branch('lep_iso',_lep_iso,'lep_iso/D')
+    tMVA_signal.Branch('n_bjets',_n_bjets,'n_bjets/I')
+    tMVA_signal.Branch('n_bjets_25',_n_bjets_25,'n_bjets_25/I')
+    tMVA_signal.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
+
+    fMVA_background = TFile('MVA/Tree_MC_Background.root','recreate')
+    tMVA_background = TTree('minitree_background','tree with branches')
+    tMVA_background.Branch('isMuon',isMuon,'isMuon/I')
+    tMVA_background.Branch('weight',weight,'weight/D')
+    tMVA_background.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
+    tMVA_background.Branch('pi_pT',_pi_pT,'pi_pT/D')
+    tMVA_background.Branch('lep_pT',_lep_pT,'lep_pT/D')
+    tMVA_background.Branch('lep_iso',_lep_iso,'lep_iso/D')
+    tMVA_background.Branch('n_bjets',_n_bjets,'n_bjets/I')
+    tMVA_background.Branch('n_bjets_25',_n_bjets_25,'n_bjets_25/I')
+    tMVA_background.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
+
+if isData:
+    f = TFile('WmassAnalysis/Tree_Data.root','recreate')
+    t = TTree('minitree','tree with branches')
+    t.Branch('Wmass',Wmass,'Wmass/D')
+    t.Branch('isMuon',isMuon,'isMuon/I')
 
 def select_all_but_one(cutstring):
 
@@ -111,6 +144,8 @@ for name_sample in samplename_list:
         lep_eta = mytree.lepton_eta
         lep_phi = mytree.lepton_phi
         lep_iso = mytree.lepton_iso
+        lep_FourMomentum = ROOT.TLorentzVector()
+        lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
 
         pi_pT = mytree.pi_pT
         pi_eta = mytree.pi_eta
@@ -125,6 +160,7 @@ for name_sample in samplename_list:
         gamma_E = mytree.photon_energy
         gamma_FourMomentum = ROOT.TLorentzVector()
         gamma_FourMomentum.SetPtEtaPhiE(gamma_eT,gamma_eta,gamma_phi,gamma_E)
+
         gamma_iso_ChHad = mytree.photon_iso_ChargedHadron
         gamma_iso_NeuHad = mytree.photon_iso_NeutralHadron
         gamma_iso_Ph = mytree.photon_iso_Photon
@@ -135,9 +171,6 @@ for name_sample in samplename_list:
         wmass = mytree.Wmass
 
         #if (wmass > 65. and wmass < 90.): continue  #-------Blind window----------
-
-        lep_FourMomentum = ROOT.TLorentzVector()
-        lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
 
         if not ismuon:
             ele_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
@@ -172,20 +205,50 @@ for name_sample in samplename_list:
                 Event_Weight = Event_Weight*ele_weight
   
 
-#-------- Filling tree -------------
+        #-------- Filling mass tree -------------
         if select_all_but_one("all cuts"):
-            isMuon[0] = mytree.is_muon
-            Wmass[0] = mytree.Wmass
+            isMuon[0] = ismuon
+            Wmass[0] = wmass
             if not isData:
                 weight[0] = Event_Weight
-                if name_sample == myWF.sig_samplename:
+                if name_sample == myWF.sig_samplename :
                     isSignal[0] = 1
-                else:
+                else :
                     isSignal[0] = 0
             t.Fill()
 
+        #------- Filling MVA tree ------------
+        if ismuon or (ele_gamma_InvMass < ELE_GAMMA_INVMASS_MIN or ele_gamma_InvMass > ELE_GAMMA_INVMASS_MAX):
+            if not isData :
+
+                _gamma_eT[0] = gamma_eT
+                _pi_pT[0] = pi_pT
+                _lep_pT[0] = lep_pT
+                _lep_iso[0] = lep_iso
+                _n_bjets[0] = nBjets
+                _n_bjets_25[0] = nBjets_25
+                weight[0] = Event_Weight
+                _deltaphi_lep_pi[0] = deltaphi_lep_pi
+                isMuon[0] = ismuon
+
+                if name_sample == myWF.sig_samplename :
+                    tMVA_signal.Fill()
+                else :
+                    tMVA_background.Fill()
+
 print "Finished runnning over samples!"
 
-f.Write()
-print "File written"
+f.cd()
+t.Write()
 f.Close()
+
+if not isData :
+    fMVA_signal.cd()
+    tMVA_signal.Write()
+    fMVA_signal.Close()
+
+    fMVA_background.cd()
+    tMVA_background.Write()
+    fMVA_background.Close()
+
+print "File written"
