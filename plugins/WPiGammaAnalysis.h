@@ -17,6 +17,7 @@ private:
   const edm::InputTag slimmedPhotons_;
   const edm::InputTag slimmedElectrons_;
   const edm::InputTag slimmedJets_;
+  const edm::InputTag slimmedMETs_;
   bool runningOnData_;
   const edm::InputTag pvCollection_;  
   const edm::InputTag bsCollection_;  
@@ -65,6 +66,8 @@ private:
   float pi_eta;
   float pi_phi;
   float pi_energy;
+  float sum_pT_03;
+  float sum_pT_05;
 
   float ph_eT;
   float ph_eta;
@@ -105,6 +108,7 @@ private:
   edm::EDGetTokenT<std::vector<pat::Muon> > slimmedMuonstoken_; 
   edm::EDGetTokenT<std::vector<reco::GenParticle> > prunedGenParticlestoken_; 
   edm::EDGetTokenT<std::vector<pat::Jet> > slimmedJetstoken_;
+  edm::EDGetTokenT<std::vector<pat::MET> > slimmedMETstoken_;
   edm::EDGetTokenT<std::vector<reco::Vertex> > tok_Vertex_; 
   edm::EDGetTokenT<reco::BeamSpot> tok_beamspot_;
   edm::EDGetTokenT<std::vector<PileupSummaryInfo> > pileupSummaryToken_;

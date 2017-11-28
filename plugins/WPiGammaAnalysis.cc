@@ -15,6 +15,7 @@
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
   
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -56,6 +57,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   slimmedPhotons_(iConfig.getParameter<edm::InputTag>("slimmedPhotons")),
   slimmedElectrons_(iConfig.getParameter<edm::InputTag>("slimmedElectrons")),
   slimmedJets_(iConfig.getParameter<edm::InputTag>("slimmedJets")),
+  slimmedMETs_(iConfig.getParameter<edm::InputTag>("slimmedMETs")),
   runningOnData_(iConfig.getParameter<bool>("runningOnData")),
   pvCollection_(iConfig.getParameter<edm::InputTag>("pvCollection")),   
   bsCollection_(iConfig.getParameter<edm::InputTag>("bsCollection")),  
@@ -79,6 +81,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   photonsMiniAODToken_      = mayConsume<edm::View<reco::Photon> > (slimmedPhotons_);
   electronsMiniAODToken_    = mayConsume<edm::View<reco::GsfElectron> > (slimmedElectrons_);
   slimmedJetstoken_         = consumes<std::vector<pat::Jet> >(slimmedJets_);
+  slimmedMETstoken_         = consumes<std::vector<pat::MET> >(slimmedMETs_);
   tok_Vertex_               = consumes<std::vector<reco::Vertex> > (pvCollection_);  
   tok_beamspot_             = consumes<reco::BeamSpot> (edm::InputTag(bsCollection_));
   pileupSummaryToken_       = consumes<std::vector<PileupSummaryInfo> >(edm::InputTag(PileupSrc_));
@@ -124,6 +127,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   edm::Handle<std::vector<pat::Jet > > slimmedJets;
   iEvent.getByLabel(slimmedJets_, slimmedJets);
+
+  edm::Handle<std::vector<pat::MET > > slimmedMETs;
+  iEvent.getByLabel(slimmedMETs_, slimmedMETs);
 
   edm::Handle<std::vector<reco::Vertex > > slimmedPV;
   iEvent.getByLabel(pvCollection_, slimmedPV);
@@ -270,6 +276,10 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   lepton_eta_tree = 0.;
   lepton_phi_tree = 0.;
 
+  //for(auto met = slimmedMETs->begin(); met != slimmedMETs->end(); ++met){
+  //std::cout << "MET: " << met->pt() << std::endl;
+  //}
+
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
     if(mu->pt() < 24. || mu->pt() < pTmuMax || !mu->isMediumMuon() || abs(mu->eta()) > 2.4) continue;
@@ -369,6 +379,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   
   //----------- Starting to search for pi and gamma -------------
   bool cand_pion_found = false;
+  sum_pT_03 = 0.;
+  sum_pT_05 = 0.;
 
   for(auto cand = PFCandidates->begin(); cand != PFCandidates->end(); ++cand){
     if(cand->pdgId()*mu_ID < 0 && cand->pdgId()*el_ID < 0) continue;    
@@ -426,6 +438,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //Do NOT continue if you didn't find a pion
   if(!cand_pion_found) return;
   _Nevents_isPion++;
+
+  //Computing pion isolation
+  for(auto cand_iso = PFCandidates->begin(); cand_iso != PFCandidates->end(); ++cand_iso){
+    float deltaR = sqrt((pi_eta-cand_iso->eta())*(pi_eta-cand_iso->eta())+(pi_phi-cand_iso->phi())*(pi_phi-cand_iso->phi()));
+    if(deltaR <= 0.3 && deltaR >= 0.02) sum_pT_03 += cand_iso->pt();
+    if(deltaR <= 0.5 && deltaR >= 0.02) sum_pT_05 += cand_iso->pt();
+  }
+
 
   bool cand_photon_found = false;
 
@@ -540,6 +560,8 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("pi_eta",&pi_eta);
   mytree->Branch("pi_phi",&pi_phi);
   mytree->Branch("pi_energy",&pi_energy);
+  mytree->Branch("sum_pT_03",&sum_pT_03);
+  mytree->Branch("sum_pT_05",&sum_pT_05);
   mytree->Branch("photon_eT",&ph_eT);
   mytree->Branch("photon_eta",&ph_eta);
   mytree->Branch("photon_phi",&ph_phi);
