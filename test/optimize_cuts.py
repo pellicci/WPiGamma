@@ -16,8 +16,8 @@ is_mu_pT           = False
 is_ele_pT          = False
 is_deltaphi_mu_pi  = False
 is_deltaphi_ele_pi = False
-is_piIso_03        = True
-is_piIso_05        = False
+is_piIso_03        = False
+is_piIso_05        = True
 
 def get_xsec_fromsample(samplename):
     
@@ -144,9 +144,9 @@ def is_Event_selected(Wmass,nBjets,lepton_iso,ele_gamma_InvMass):#,lep_pT):#,pi_
         mu_pT_cut = lep_pT >= 27.
 
     if isMuon:
-        return mass_cut_down and mass_cut_up and bjet_cut #and mu_pT_cut #and gamma_eT_cut and pi_pT_cut
+        return mass_cut_down and mass_cut_up #and bjet_cut #and mu_pT_cut #and gamma_eT_cut and pi_pT_cut
     else:
-        return mass_cut_down and mass_cut_up and bjet_cut and ele_iso_cut and ele_gamma_InvMass_cut #and ele_pT_cut #and gamma_eT_cut and pi_pT_cut
+        return mass_cut_down and mass_cut_up and ele_iso_cut and ele_gamma_InvMass_cut #and nbjet_cut #and ele_pT_cut #and gamma_eT_cut and pi_pT_cut
 
 ##Here starts the program
 Norm_Map = myWF.get_normalizations_map()
@@ -237,6 +237,8 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
+        if name_sample == "DY_50": continue
+
         isMuon = mytree.is_muon
         
         if is_ele_gamma and isMuon: 
@@ -254,8 +256,8 @@ for name_sample in samplename_list:
         if is_deltaphi_mu_pi and not isMuon:
             continue
 
-        if is_piIso_05 and isMuon:
-            continue
+        #if isMuon:
+        #    continue
 
         lep_pT  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta

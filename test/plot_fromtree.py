@@ -368,7 +368,7 @@ for name_sample in samplename_list:
             if nBjets > 3:
                 h_base[theSampleName+"h_evts_Bjets"].Fill(3.5,1)
 
-        if isMuon:# and (mu_pi_InvMass < 85. or mu_pi_InvMass > 95.):
+        if isMuon:# and pi_pT > 60:# and (mu_pi_InvMass < 85. or mu_pi_InvMass > 95.):
             h_base[theSampleName+"h_piIso_03_mu"].Fill(piIso_03,Event_Weight)
             h_base[theSampleName+"h_piIso_05_mu"].Fill(piIso_05,Event_Weight)
             h_base[theSampleName+"h_piRelIso_03_mu"].Fill(piIso_03/pi_pT,Event_Weight)
