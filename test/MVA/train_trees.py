@@ -35,7 +35,7 @@ factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V"]) )
 #method_btd  = factory.BookMethod(ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.5","nCuts=20"]))
 category = factory.BookMethod(ROOT.TMVA.Types.kCategory,"Category")
 category.AddMethod(mycut_mu,"pi_pT:gamma_eT:n_bjets:deltaphi_lep_pi",ROOT.TMVA.Types.kBDT,"Category_muon",":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.5","nCuts=20"]))
-category.AddMethod(mycut_ele,"pi_pT:gamma_eT:n_bjets:deltaphi_lep_pi",ROOT.TMVA.Types.kBDT,":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.5","nCuts=20"]))
+category.AddMethod(mycut_ele,"pi_pT:gamma_eT:n_bjets:deltaphi_lep_pi",ROOT.TMVA.Types.kBDT,"Category_electron",":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.5","nCuts=20"]))
 
 factory.TrainAllMethods()
 factory.TestAllMethods()
