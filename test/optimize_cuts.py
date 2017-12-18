@@ -13,9 +13,11 @@ myWF = Workflow_Handler("Signal","Data",isMedium = True)
 is_pi_gamma        = False
 is_ele_gamma       = False
 is_mu_pT           = False
-is_ele_pT          = True
+is_ele_pT          = False
 is_deltaphi_mu_pi  = False
 is_deltaphi_ele_pi = False
+is_piIso_03        = True
+is_piIso_05        = False
 
 def get_xsec_fromsample(samplename):
     
@@ -187,6 +189,12 @@ if not is_pi_gamma:
     cut2_init = 20.
     cut2_stepsize = 10.
 
+#----The next one is for pion isolation--------
+if is_piIso_03 or is_piIso_05:
+    steps_cut1 = 40
+    cut1_init = 0.
+    cut1_stepsize = 0.05
+
 cut_Nbkg = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
 cut_Nsig = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
 cut_Nbkg_err = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
@@ -212,6 +220,7 @@ for name_sample in samplename_list:
     Nbkg_passed = [[0 for x in range(steps_cut2)] for x in range(steps_cut1)]
 
     if "Data" in name_sample: continue
+
     norm_factor = Norm_Map[name_sample]*luminosity_norm
     xsec = float(get_xsec_fromsample(name_sample))*1000
     N_evts = xsec/Norm_Map[name_sample]
@@ -245,18 +254,20 @@ for name_sample in samplename_list:
         if is_deltaphi_mu_pi and not isMuon:
             continue
 
+        if is_piIso_05 and isMuon:
+            continue
 
-        PU_Weight = mytree.PU_Weight
-        Event_Weight = norm_factor*PU_Weight
-        Event_Weight_err = Event_Weight/math.sqrt(N_evts)
-        
         lep_pT  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
         lep_phi = mytree.lepton_phi
         lep_iso = mytree.lepton_iso
         ele_FourMomentum = ROOT.TLorentzVector()
         ele_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
+
         pi_pT = mytree.pi_pT
+        piIso_03 = mytree.sum_pT_03/pi_pT
+        piIso_05 = mytree.sum_pT_05/pi_pT
+
         gamma_eta = mytree.photon_eta
         gamma_phi = mytree.photon_phi
         gamma_eT = mytree.photon_eT
@@ -268,6 +279,20 @@ for name_sample in samplename_list:
         deltaphi = math.fabs(mytree.lepton_phi-mytree.pi_phi)
         if deltaphi > 3.14:
             deltaphi = 6.28-deltaphi
+
+        #---------Determine the total event weight---------#
+        if(not isMuon):
+            ele_Weight = myWF.get_ele_scale(lep_pT,lep_eta)
+
+        ph_Weight = myWF.get_photon_scale(gamma_eT,gamma_eta)
+        PU_Weight = mytree.PU_Weight
+        Event_Weight = norm_factor*PU_Weight*ph_Weight
+
+        if not isMuon:
+            Event_Weight = Event_Weight*ele_Weight
+
+        Event_Weight_err = Event_Weight/math.sqrt(N_evts)
+        #--------------------------------------------------#
 
         if not is_Event_selected(mytree.Wmass,mytree.nBjets_25,mytree.lepton_iso,ele_gamma_InvMass):#,lep_pT):#,pi_pT,gamma_eT):
             continue
@@ -289,6 +314,14 @@ for name_sample in samplename_list:
             
             if is_deltaphi_mu_pi or is_deltaphi_ele_pi:
                 if deltaphi < cut1_value:
+                    continue
+
+            if is_piIso_03:
+                if piIso_03 > cut1_value:
+                    continue
+
+            if is_piIso_05:
+                if piIso_05 > cut1_value:
                     continue
 
             for icut2 in xrange(steps_cut2):
@@ -422,3 +455,9 @@ if is_pi_gamma:
     graph_cut2.GetYaxis().SetTitleOffset(1.6)
     graph_cut2.SetTitle("; E_{T}^{#gamma} (GeV); Significance")
     c2.SaveAs("plots/gamma_eT.pdf")
+if is_piIso_03:
+    graph_cut1.SetTitle("; Rel.Iso_03; Significance")
+    c1.SaveAs("plots/piIso_03.pdf")
+if is_piIso_05:
+    graph_cut1.SetTitle("; Rel.Iso_05; Significance")
+    c1.SaveAs("plots/piIso_05.pdf")

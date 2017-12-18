@@ -168,6 +168,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   _Nevents_processed++;
 
+
   //Count the number of vertices
   nPV = -1;
   if(slimmedPV->size()<=0) return;
@@ -269,6 +270,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   _Wmass = 0.;
 
+  met_pT = 0.;
+
   is_muon = false;
   bool is_ele  = false;
 
@@ -276,9 +279,10 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   lepton_eta_tree = 0.;
   lepton_phi_tree = 0.;
 
-  //for(auto met = slimmedMETs->begin(); met != slimmedMETs->end(); ++met){
-  //std::cout << "MET: " << met->pt() << std::endl;
-  //}
+
+  for(auto met = slimmedMETs->begin(); met != slimmedMETs->end(); ++met){
+    met_pT = met->pt();
+  }
 
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
@@ -536,11 +540,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     nBjets++;
   }
 
-  //Only fill the tree outside of blind Wmass window (to be used for DATA)
-  //if (_Wmass > 65 && _Wmass < 90) return; 
   mytree->Fill();
 
-  //std::cout << "n fotoni: " << events_least_one_ph << std::endl;
 }
 
 void WPiGammaAnalysis::create_trees()
@@ -580,6 +581,7 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("nPhotons",&nPhotons);
   mytree->Branch("nBjets",&nBjets);
   mytree->Branch("nBjets_25",&nBjets_25);
+  mytree->Branch("met_pT",&met_pT);
 
   //Save MC info
   if(!runningOnData_){

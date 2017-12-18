@@ -80,6 +80,8 @@ private:
   float ph_iso_eArho;
 
   float _Wmass;
+
+  float met_pT;
   
   bool is_muon;
   bool isSingleMuTrigger;

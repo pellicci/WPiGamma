@@ -30,7 +30,7 @@ ELE_GAMMA_INVMASS_MAX = 91.5
 luminosity_norm = 36.46
 
 #Make signal histos larger
-signal_magnify = 1000
+signal_magnify = 10000
 
 output_dir = "plots"
 
@@ -38,7 +38,7 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 #Here's the list of histos to plot
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_Wmass", "h_nBjets", "h_mueta", "h_eleeta","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_iso","h_ele_iso","h_gamma_iso_ChHad","h_gamma_iso_NeuHad","h_gamma_iso_Ph","h_gamma_iso_eArho","h_ele_gamma_InvMass","h_mu_gamma_InvMass","h_nBjets_25","h_evts_Bjets"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_Wmass", "h_nBjets", "h_mueta", "h_eleeta","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_iso","h_ele_iso","h_gamma_iso_ChHad","h_gamma_iso_NeuHad","h_gamma_iso_Ph","h_gamma_iso_eArho","h_ele_gamma_InvMass","h_mu_gamma_InvMass","h_nBjets_25","h_evts_Bjets","h_piIso_03_mu","h_piIso_05_mu","h_piRelIso_03_mu","h_piRelIso_05_mu","h_piIso_03_ele","h_piIso_05_ele","h_piRelIso_03_ele","h_piRelIso_05_ele","h_mu_pi_InvMass"]
 
 h_events_sig_mu = ROOT.TH1F("h_events_sig_mu","Progressive event loss (#mu)",5,0,5)
 h_events_sig_ele = ROOT.TH1F("h_events_sig_ele","Progressive event loss (e)",7,0,7)
@@ -130,6 +130,15 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[23]] = ROOT.TH1F(theSampleName+list_histos[23], "mu-gamma InvMass", 50, 0, 300)
     h_base[theSampleName+list_histos[24]] = ROOT.TH1F(theSampleName+list_histos[24], "n Bjets 25", 6, 0, 6)
     h_base[theSampleName+list_histos[25]] = ROOT.TH1F(theSampleName+list_histos[25], "events with Bjets 25", 4, 0, 4)
+    h_base[theSampleName+list_histos[26]] = ROOT.TH1F(theSampleName+list_histos[26], "Pion isolation 03 - mu", 75, 0, 150)
+    h_base[theSampleName+list_histos[27]] = ROOT.TH1F(theSampleName+list_histos[27], "Pion isolation 05 - mu", 75, 0, 150)
+    h_base[theSampleName+list_histos[28]] = ROOT.TH1F(theSampleName+list_histos[28], "Pion rel. isolation 03 - mu", 20, 0, 1)
+    h_base[theSampleName+list_histos[29]] = ROOT.TH1F(theSampleName+list_histos[29], "Pion rel. isolation 05 - mu", 50, 0, 10)
+    h_base[theSampleName+list_histos[30]] = ROOT.TH1F(theSampleName+list_histos[30], "Pion isolation 03 - ele", 75, 0, 150)
+    h_base[theSampleName+list_histos[31]] = ROOT.TH1F(theSampleName+list_histos[31], "Pion isolation 05 - ele", 75, 0, 150)
+    h_base[theSampleName+list_histos[32]] = ROOT.TH1F(theSampleName+list_histos[32], "Pion rel. isolation 03 - ele", 20, 0, 1)
+    h_base[theSampleName+list_histos[33]] = ROOT.TH1F(theSampleName+list_histos[33], "Pion rel. isolation 05 - ele", 50, 0, 10)
+    h_base[theSampleName+list_histos[34]] = ROOT.TH1F(theSampleName+list_histos[34], "mu-pi InvMass", 50, 0, 200)
 
 #leg1 = ROOT.TLegend(0.1,0.5,0.25,0.9) #left positioning
 leg1 = ROOT.TLegend(0.6868687,0.6120093,0.9511784,0.9491917) #right positioning
@@ -172,6 +181,8 @@ ele_bkg_events_pi_pT = 0
 ele_bkg_events_gamma_eT = 0
 ele_bkg_events_nBjets = 0
 ele_bkg_events_Wmass = 0
+piIso_03 = 0
+piIso_05 = 0
 
 ##Loop on samples, and then on events, and merge QCD stuff
 idx_sample = 0
@@ -204,7 +215,7 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
-        #if "Data" in name_sample: continue  #-------------Excluding data------------#
+        if "Data" in name_sample: continue  #-------------Excluding data------------#
 
         #This is how you access the tree variables
         isMuon = mytree.is_muon
@@ -220,6 +231,8 @@ for name_sample in samplename_list:
         pi_E = mytree.pi_energy
         pi_FourMomentum = ROOT.TLorentzVector()
         pi_FourMomentum.SetPtEtaPhiE(pi_pT,pi_eta,pi_phi,pi_E)
+        piIso_03 = mytree.sum_pT_03
+        piIso_05 = mytree.sum_pT_05
             
         gamma_eT = mytree.photon_eT
         gamma_eta = mytree.photon_eta
@@ -245,6 +258,7 @@ for name_sample in samplename_list:
             ele_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
         else:
             mu_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
+            mu_pi_InvMass = (lep_FourMomentum + pi_FourMomentum).M()
         
         nBjets = mytree.nBjets
         nBjets_25 = mytree.nBjets_25
@@ -313,7 +327,8 @@ for name_sample in samplename_list:
             h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
             h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
 
-        if select_all_but_one("h_ele_gamma_InvMass") and not isMuon:
+        #if select_all_but_one("h_ele_gamma_InvMass") and not isMuon:
+        if not isMuon:
             h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
 
         if select_all_but_one("h_Wmass") and isMuon:
@@ -353,6 +368,18 @@ for name_sample in samplename_list:
             if nBjets > 3:
                 h_base[theSampleName+"h_evts_Bjets"].Fill(3.5,1)
 
+        if isMuon:# and (mu_pi_InvMass < 85. or mu_pi_InvMass > 95.):
+            h_base[theSampleName+"h_piIso_03_mu"].Fill(piIso_03,Event_Weight)
+            h_base[theSampleName+"h_piIso_05_mu"].Fill(piIso_05,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_03_mu"].Fill(piIso_03/pi_pT,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_05_mu"].Fill(piIso_05/pi_pT,Event_Weight)
+            h_base[theSampleName+"h_mu_pi_InvMass"].Fill(mu_pi_InvMass,Event_Weight)
+
+        if not isMuon and (ele_gamma_InvMass < ELE_GAMMA_INVMASS_MIN or ele_gamma_InvMass > ELE_GAMMA_INVMASS_MAX):
+            h_base[theSampleName+"h_piIso_03_ele"].Fill(piIso_03,Event_Weight)
+            h_base[theSampleName+"h_piIso_05_ele"].Fill(piIso_05,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_03_ele"].Fill(piIso_03/pi_pT,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piIso_05/pi_pT,Event_Weight)
 
         #Count the events
         if select_all_but_one("all cuts"):

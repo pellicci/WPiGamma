@@ -7,6 +7,7 @@ WPiGammaAnalysis = cms.EDAnalyzer('WPiGammaAnalysis',
                                   slimmedPhotons     = cms.InputTag("slimmedPhotons"),
                                   slimmedElectrons   = cms.InputTag("slimmedElectrons"),
                                   slimmedJets        = cms.InputTag("slimmedJets"),
+                                  slimmedMETs        = cms.InputTag("slimmedMETs"),
                                   runningOnData      = cms.bool(False),
                                   pvCollection       = cms.InputTag("offlineSlimmedPrimaryVertices"), #New Stuff 
                                   bsCollection       = cms.InputTag("offlineBeamSpot"),
