@@ -3,6 +3,7 @@ import os
 import math
 import numpy as np
 import copy
+from array import array
 
 #Supress the opening of many Canvas's
 ROOT.gROOT.SetBatch(True)   
@@ -30,7 +31,7 @@ ELE_GAMMA_INVMASS_MAX = 91.5
 luminosity_norm = 36.46
 
 #Make signal histos larger
-signal_magnify = 10000
+signal_magnify = 100
 
 output_dir = "plots"
 
@@ -183,12 +184,22 @@ ele_bkg_events_nBjets = 0
 ele_bkg_events_Wmass = 0
 piIso_03 = 0
 piIso_05 = 0
+ttbar_mu = 0
+ttbar_ele = 0
+#isMuon_evt = 0
+#isNotMuon_evt = 0
+Sevts_processed_mu  = 0 # Counters for the number of signal events processed
+Sevts_processed_ele = 0
 
 ##Loop on samples, and then on events, and merge QCD stuff
 idx_sample = 0
 isFirstQCDlegend = True
 
+
 for name_sample in samplename_list:
+
+    Sevts_processed_mu  = 0
+    Sevts_processed_ele = 0
 
     theSampleName = name_sample
 
@@ -215,7 +226,7 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
-        if "Data" in name_sample: continue  #-------------Excluding data------------#
+        if "Data" in name_sample: continue  #-------------Excluding data-------------#
 
         #This is how you access the tree variables
         isMuon = mytree.is_muon
@@ -231,8 +242,8 @@ for name_sample in samplename_list:
         pi_E = mytree.pi_energy
         pi_FourMomentum = ROOT.TLorentzVector()
         pi_FourMomentum.SetPtEtaPhiE(pi_pT,pi_eta,pi_phi,pi_E)
-        piIso_03 = mytree.sum_pT_03
-        piIso_05 = mytree.sum_pT_05
+        piRelIso_03 = mytree.sum_pT_03/pi_pT
+        piRelIso_05 = mytree.sum_pT_05/pi_pT
             
         gamma_eT = mytree.photon_eT
         gamma_eta = mytree.photon_eta
@@ -273,7 +284,8 @@ for name_sample in samplename_list:
         if deltaphi_lep_W > 3.14:
             deltaphi_lep_W = 6.28 - deltaphi_lep_W
 
-        #Determine the total event weight
+        #---------Determine the total event weight---------#
+
         if(not isMuon):
             ele_weight = myWF.get_ele_scale(lep_pT,lep_eta)
 
@@ -286,7 +298,12 @@ for name_sample in samplename_list:
                 Event_Weight = Event_Weight*ele_weight
         else:
             Event_Weight = 1
+ 
 
+        #---------Retrieve the BDT output----------#
+
+        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,deltaphi_lep_pi,lep_pT,piRelIso_05,isMuon)
+        
 
         #---------- filling histos ------------
         
@@ -306,13 +323,14 @@ for name_sample in samplename_list:
                                 
         if select_all_but_one("h_gammaet"):
             h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
-                                    
+        """                           
         if select_all_but_one("h_Wmass"):
+        
             if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
                 h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
             if not "Data" in name_sample:
                 h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
-
+        """
         if select_all_but_one("h_deltaphi_mu_pi") and isMuon:
             h_base[theSampleName+"h_deltaphi_mu_pi"].Fill(deltaphi_lep_pi,Event_Weight)
 
@@ -330,19 +348,22 @@ for name_sample in samplename_list:
         #if select_all_but_one("h_ele_gamma_InvMass") and not isMuon:
         if not isMuon:
             h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
-
+        
+        """
         if select_all_but_one("h_Wmass") and isMuon:
+        
             if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
                 h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
             if not "Data" in name_sample:
                 h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
 
         if select_all_but_one("h_Wmass") and not isMuon:
+        
             if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
                 h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
             if not "Data" in name_sample:
                 h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
-
+        """
         if select_all_but_one("all cuts") and isMuon:
             h_base[theSampleName+"h_mu_iso"].Fill(lep_iso,Event_Weight)
             h_base[theSampleName+"h_deltaphi_mu_W"].Fill(deltaphi_lep_W,Event_Weight)
@@ -369,18 +390,44 @@ for name_sample in samplename_list:
                 h_base[theSampleName+"h_evts_Bjets"].Fill(3.5,1)
 
         if isMuon:# and pi_pT > 60:# and (mu_pi_InvMass < 85. or mu_pi_InvMass > 95.):
-            h_base[theSampleName+"h_piIso_03_mu"].Fill(piIso_03,Event_Weight)
-            h_base[theSampleName+"h_piIso_05_mu"].Fill(piIso_05,Event_Weight)
-            h_base[theSampleName+"h_piRelIso_03_mu"].Fill(piIso_03/pi_pT,Event_Weight)
-            h_base[theSampleName+"h_piRelIso_05_mu"].Fill(piIso_05/pi_pT,Event_Weight)
+            #h_base[theSampleName+"h_piIso_03_mu"].Fill(piIso_03,Event_Weight)
+            #h_base[theSampleName+"h_piIso_05_mu"].Fill(piIso_05,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_03_mu"].Fill(piRelIso_03,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_05_mu"].Fill(piRelIso_05,Event_Weight)
             h_base[theSampleName+"h_mu_pi_InvMass"].Fill(mu_pi_InvMass,Event_Weight)
 
         if not isMuon and (ele_gamma_InvMass < ELE_GAMMA_INVMASS_MIN or ele_gamma_InvMass > ELE_GAMMA_INVMASS_MAX):
-            h_base[theSampleName+"h_piIso_03_ele"].Fill(piIso_03,Event_Weight)
-            h_base[theSampleName+"h_piIso_05_ele"].Fill(piIso_05,Event_Weight)
-            h_base[theSampleName+"h_piRelIso_03_ele"].Fill(piIso_03/pi_pT,Event_Weight)
-            h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piIso_05/pi_pT,Event_Weight)
+            #h_base[theSampleName+"h_piIso_03_ele"].Fill(piIso_03,Event_Weight)
+            #h_base[theSampleName+"h_piIso_05_ele"].Fill(piIso_05,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_03_ele"].Fill(piRelIso_03,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
+        
+        if (isMuon and BDT_out >= 0.21) or (not isMuon and BDT_out >= 0.20):
+            if (Wmass >= 50. and Wmass <= 100.):
+                if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
+                    h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
+                if not "Data" in name_sample:
+                    h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
 
+                if isMuon:
+                    if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
+                        h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+                    if not "Data" in name_sample:
+                        h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+
+                    if "Signal" in name_sample:
+                        Sevts_processed_mu += 1
+
+ 
+                if not isMuon and lep_iso <= 0.35:
+                    if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
+                        h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+                    if not "Data" in name_sample:
+                        h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+
+                    if "Signal" in name_sample:
+                        Sevts_processed_ele += 1
+        
         #Count the events
         if select_all_but_one("all cuts"):
             if name_sample == myWF.sig_samplename:
@@ -447,6 +494,8 @@ for name_sample in samplename_list:
                     else: continue
                     if (Wmass >= WMASS_MIN and Wmass <= WMASS_MAX): ele_bkg_events_Wmass += 1
                 
+    #print "isMuon_evt: ", isMuon_evt, "||  ttbar_mu: ", ttbar_mu
+    #print "isNotMuon_evt: ", isNotMuon_evt, "||  ttbar_ele: ", ttbar_ele
 
     for idx_histo,hname in enumerate(list_histos):
 
@@ -490,7 +539,12 @@ for hname in list_histos:
     canvas[hname].cd()
 
     hs[hname].Draw("histo")
-    hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),60.))
+    if "h_Wmass_flag" in hname:
+        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),70.))
+    if hname == "h_Wmass":
+        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),100.))
+    if hname == "h_piRelIso_05_ele":
+        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),27000.))
 
     down = ROOT.gPad.GetUymin()
     up   = ROOT.gPad.GetUymax()
@@ -498,16 +552,16 @@ for hname in list_histos:
     #---------Histos names---------#
     
     hs[hname].SetTitle(" ")
-    hs[hname].GetYaxis().SetTitleOffset(1.5)
-    hs[hname].GetYaxis().SetTitle("Events")
+    hs[hname].GetYaxis().SetTitleOffset(1.7)
+    #hs[hname].GetYaxis().SetTitle("Events")
     
     if hname == "h_Wmass" or hname == "h_Wmass_flag_mu" or hname == "h_Wmass_flag_ele":
         hs[hname].GetXaxis().SetTitle("m_{#pi#gamma} (GeV/c^{2})")
-        line = ROOT.TLine(WMASS_MIN, 0, WMASS_MIN, 62)
+        line = ROOT.TLine(WMASS_MIN, 0, WMASS_MIN, 72)
         line.SetLineColor(8)
         line.SetLineStyle(9)
         line.SetLineWidth(4)
-        line.Draw()
+        #line.Draw()
 
     if hname == "h_mupt":
         hs[hname].GetXaxis().SetTitle("p_{T}^{#mu} (GeV/c)")
@@ -561,6 +615,9 @@ for hname in list_histos:
 
     if hname == "h_nBjets_25":
         hs[hname].GetXaxis().SetTitle("Number of b-jets (p_{T}>25 GeV/c)")
+
+    if "h_piRelIso" in hname:
+        hs[hname].GetXaxis().SetTitle("#pi_{Iso}/p_{T}^{#pi}")
     
     if signal_magnify != 1:
         h_base[myWF.sig_samplename+hname].Scale(signal_magnify)
@@ -676,3 +733,6 @@ print "Significance S/sqrt(B) = ", Nsig_passed/math.sqrt(Nbkg_passed)
 print "Significance S/sqrt(B + deltaB^2) = ", Nsig_passed/(math.sqrt(Nbkg_passed) + 0.2*Nbkg_passed)
 print "Significance S/sqrt(S+B) = ", Nsig_passed/math.sqrt(Nsig_passed + Nbkg_passed)
 print "\nAll the intresting plots have been produced..!"
+
+print "number of Signal events in mu channel: ", Sevts_processed_mu
+print "number of Signal events in electron channel: ", Sevts_processed_ele

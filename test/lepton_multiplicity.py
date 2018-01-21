@@ -62,7 +62,6 @@ mult_if_signal_mu_2.Draw("SAME")
 gPad.SetLogy()
 legend.Draw("SAME")
 canvas1.Print("Muon_signal_thesis_logscale.pdf")
-#canvas1.Write()
 
 canvas2 = TCanvas()
 mult_if_signal_el_1.SetTitle("")
@@ -76,5 +75,4 @@ mult_if_signal_el_2.Draw("SAME")
 legend.Draw("SAME")
 gPad.SetLogy()
 canvas2.Print("Electron_signal_thesis_logscale.pdf")
-#canvas2.Write()
 

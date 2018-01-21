@@ -2,7 +2,7 @@ import ROOT
 import os
 import subprocess
 
-isData = False ##---------switch from DATA to MC and vice versa---------##
+isData = True ##---------switch from DATA to MC and vice versa---------##
 
 if not isData:
     dir_input = "crab_projects/samples_Medium/"
@@ -34,15 +34,17 @@ for dirname in list_dirs:
     n_jobs_command = "crab status -d " + dir_input + dirname + " | grep status: " + "| awk " + """'{split($0,array,"/") ; print array[2]}'""" + "| sed 's/.$//'"
     n_jobs = subprocess.check_output(n_jobs_command, shell=True)
 
+    print "Number of jobs to be retrieved: ", n_jobs
+
     if n_jobs <= 500:
         crab_command = "crab getoutput -d " + dir_input + dirname
         os.system(crab_command)
-    if n_jobs > 500 and n_jobs <= 1000:
+    elif n_jobs > 500 and n_jobs <= 1000:
         crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
         os.system(crab_command)
         crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-" + n_jobs
         os.system(crab_command_1)
-    if n_jobs > 1000:
+    else:# n_jobs > 1000:
         crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
         os.system(crab_command)
         crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-1000"

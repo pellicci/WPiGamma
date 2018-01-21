@@ -2,6 +2,8 @@ import ROOT
 import math
 import numpy as np
 import sys
+#sys.path.insert(0, '/afs/cern.ch/user/r/rselvati/wpigamma/CMSSW_8_0_28/src/StandardModel/WPiGamma/test/scripts')
+from scripts.create_normalization_table import get_xsec_fromsample
 
 ##normalize to the 2016 lumi
 luminosity_norm = 36.46
@@ -11,118 +13,14 @@ myWF = Workflow_Handler("Signal","Data",isMedium = True)
 
 #-----Some selection bools------#
 is_pi_gamma        = False
-is_ele_gamma       = False
+is_ele_gamma       = True
 is_mu_pT           = False
 is_ele_pT          = False
 is_deltaphi_mu_pi  = False
 is_deltaphi_ele_pi = False
 is_piIso_03        = False
-is_piIso_05        = True
+is_piIso_05        = False
 
-def get_xsec_fromsample(samplename):
-    
-    if samplename == "ttbar":
-        return 831.76
-
-    if samplename == "ttbarlnu":
-        return 87.31
-
-    if samplename == "ttbarWQQ":
-        return 0.4062
-
-    if samplename == "ttbarWlnu":
-        return 0.2043
-                  
-    if samplename == "ttbarZQQ":
-        return 0.5297 
-
-    if samplename == "ttbarZlnu":
-        return 0.2529 
-
-    if samplename == "SingleTop_tW":
-        return 35.85
-
-    if samplename == "SingleAntiTop_tW":
-        return 35.85
-
-    if samplename == "WJetsToLNu":
-        return 20508.9*3.
-
-    if samplename == "DY_10_50":
-        return 18610.0
-
-    if samplename == "DY_50":
-        return 1921.8*3.
-
-    if samplename == "QCD_HT100to200":
-        return 27540000.0 
-
-    if samplename == "QCD_HT200to300_1":
-        return 1717000.0
-
-    if samplename == "QCD_HT200to300_2":
-        return 1717000.0
-
-    if samplename == "QCD_HT300to500_1":
-        return 351300.0
-
-    if samplename == "QCD_HT300to500_2":
-        return 351300.0
-
-    if samplename == "QCD_HT500to700_1":
-        return 31630.0
-
-    if samplename == "QCD_HT500to700_2":
-        return 31630.0
-
-    if samplename == "QCD_HT700to1000_1":
-        return 6802.0
-
-    if samplename == "QCD_HT700to1000_2":
-        return 6802.0
-
-    if samplename == "QCD_HT1000to1500_1":
-        return 1206.0
-
-    if samplename == "QCD_HT1000to1500_2":
-        return 1206.0
-
-    if samplename == "QCD_HT1500to2000_1":
-        return 120.4 
-
-    if samplename == "QCD_HT1500to2000_2":
-        return 120.4
-
-    if samplename == "QCD_HT2000toInf_1":
-        return 25.25
-
-    if samplename == "QCD_HT2000toInf_2":
-        return 25.25
-
-    if samplename == "ZZ":
-        return 8.16
-
-    if samplename == "WW":
-        return 51.723
-
-    if samplename == "WZ":
-        return 47.13
-
-    if samplename == "GammaJets_20_40":
-        return 137751.
-
-    if samplename == "GammaJets_40_Inf":
-        return 16792.
-
-    if samplename == "GammaJets_20_Inf":
-        return 154500.
-
-    #if samplename == "WGToLNuG":
-    #    return 489.
-    
-    if "Signal" in samplename:
-        #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
-        return 831.76*0.1086*2.*0.000001*2.
 
 def is_Event_selected(Wmass,nBjets,lepton_iso,ele_gamma_InvMass):#,lep_pT):#,pi_pT,gamma_eT):
     """Save events according to some basic selection criteria"""
@@ -146,7 +44,7 @@ def is_Event_selected(Wmass,nBjets,lepton_iso,ele_gamma_InvMass):#,lep_pT):#,pi_
     if isMuon:
         return mass_cut_down and mass_cut_up #and bjet_cut #and mu_pT_cut #and gamma_eT_cut and pi_pT_cut
     else:
-        return mass_cut_down and mass_cut_up and ele_iso_cut and ele_gamma_InvMass_cut #and nbjet_cut #and ele_pT_cut #and gamma_eT_cut and pi_pT_cut
+        return mass_cut_down and mass_cut_up and ele_iso_cut #and ele_gamma_InvMass_cut #and nbjet_cut #and ele_pT_cut #and gamma_eT_cut and pi_pT_cut
 
 ##Here starts the program
 Norm_Map = myWF.get_normalizations_map()
@@ -182,7 +80,7 @@ if is_deltaphi_ele_pi or is_deltaphi_mu_pi:
 if is_ele_gamma:
     steps_cut1 = 30
     cut1_init = 0.
-    cut1_stepsize = 0.5
+    cut1_stepsize = 0.1
 
 if not is_pi_gamma:
     steps_cut2 = 1
@@ -223,7 +121,7 @@ for name_sample in samplename_list:
 
     norm_factor = Norm_Map[name_sample]*luminosity_norm
     xsec = float(get_xsec_fromsample(name_sample))*1000
-    N_evts = xsec/Norm_Map[name_sample]
+    N_evts_processed = xsec/Norm_Map[name_sample] # Obtain the number of events processed for each sample
 
     for jentry in xrange(mytree.GetEntriesFast()):
         ientry = mytree.LoadTree( jentry )
@@ -237,7 +135,7 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
-        if name_sample == "DY_50": continue
+        #if name_sample == "DY_50": continue
 
         isMuon = mytree.is_muon
         
@@ -293,7 +191,7 @@ for name_sample in samplename_list:
         if not isMuon:
             Event_Weight = Event_Weight*ele_Weight
 
-        Event_Weight_err = Event_Weight/math.sqrt(N_evts)
+        Event_Weight_err = Event_Weight/math.sqrt(N_evts_processed)
         #--------------------------------------------------#
 
         if not is_Event_selected(mytree.Wmass,mytree.nBjets_25,mytree.lepton_iso,ele_gamma_InvMass):#,lep_pT):#,pi_pT,gamma_eT):
@@ -303,7 +201,7 @@ for name_sample in samplename_list:
             cut1_value = cut1_init + cut1_stepsize*icut1
 
             if is_ele_gamma:
-                if ele_gamma_InvMass > 90 - cut1_value and ele_gamma_InvMass < 90 + cut1_value:
+                if ele_gamma_InvMass > 91. - cut1_value and ele_gamma_InvMass < 91. + cut1_value:
                     continue
             
             if is_pi_gamma:
@@ -357,11 +255,8 @@ for name_sample in samplename_list:
             cut2_value = cut2_init + cut2_stepsize*icut2
 
 
-            #sigma_Nexp_sig[icut1][icut2] += math.pow(norm_factor*(Nsig_passed[icut1][icut2]/N_evts)*(1-(Nsig_passed[icut1][icut2]/N_evts)),2)
             sigma_Nexp_sig[icut1][icut2] += Nsig_passed[icut1][icut2]*norm_factor*norm_factor
 
-
-            #sigma_Nexp_bkg[icut1][icut2] += math.pow(norm_factor*(Nbkg_passed[icut1][icut2]/N_evts)*(1-(Nbkg_passed[icut1][icut2]/N_evts)),2)
             sigma_Nexp_bkg[icut1][icut2] += Nbkg_passed[icut1][icut2]*norm_factor*norm_factor
 
             #print "Nsig passed: ", Nsig_passed[icut1][icut2]
