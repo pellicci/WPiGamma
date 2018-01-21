@@ -39,7 +39,7 @@ for dirname in list_dirs:
     if n_jobs <= 500:
         crab_command = "crab getoutput -d " + dir_input + dirname
         os.system(crab_command)
-    elif n_jobs > 500 and n_jobs <= 1000:
+    elif (n_jobs > 500 and n_jobs <= 1000):
         crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
         os.system(crab_command)
         crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-" + n_jobs
