@@ -57,7 +57,8 @@ private:
 
   bool is_muon;
   bool is_ele;
-  bool isSingleMuTrigger;
+  bool isSingleMuTrigger_24;
+  bool isSingleMuTrigger_50;
   bool isSingleEleTrigger;
   float mu_pT = 0.;
   float mu_eta = 0.;

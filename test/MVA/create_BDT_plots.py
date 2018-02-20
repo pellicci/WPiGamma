@@ -5,14 +5,14 @@ import sys
 import numpy as np
 from ROOT import TH1F, TCanvas, TFile, TLegend, gStyle
 
-isMuon = True
+isMuon = False
 
 def BDT_output():
 
     if isMuon:
-        f = TFile("outputs/Nominal_training_mu_sidebands.root")
+        f = TFile("outputs/Nominal_training_mu_met.root")
     else:
-        f = TFile("outputs/Nominal_training_ele_sidebands.root")
+        f = TFile("outputs/Nominal_training_ele_met.root")
 
     h_BDT_sig = f.Get("Method_BDT/BDT/MVA_BDT_S")
     h_BDT_bkg = f.Get("Method_BDT/BDT/MVA_BDT_B")
@@ -43,17 +43,17 @@ def BDT_output():
     #canvas1.Print("~rselvati/www/WPiGamma/MVA/06_12_2017/double_histo.pdf")
 
     if isMuon:
-        canvas1.Print("plots/double_histo_mu_sidebands.pdf")
+        canvas1.Print("plots/BDT_output_mu_met.pdf")
     else:
-        canvas1.Print("plots/double_histo_ele_sidebands.pdf")
+        canvas1.Print("plots/BDT_output_ele_met.pdf")
 
 def rejB_vs_S():
 
     if isMuon:
-        f1 = TFile("outputs/Nominal_training_mu_sidebands.root")
+        f1 = TFile("outputs/Nominal_training_mu_met.root")
         f2 = TFile("outputs/Nominal_training_mu_MC.root")
     else:
-        f1 = TFile("outputs/Nominal_training_ele_sidebands.root")
+        f1 = TFile("outputs/Nominal_training_ele_met.root")
         f2 = TFile("outputs/Nominal_training_ele_MC.root")
 
     h_rejB_vs_S_1 = f1.Get("Method_BDT/BDT/MVA_BDT_rejBvsS")
@@ -67,8 +67,10 @@ def rejB_vs_S():
     leg2.SetLineStyle(1)
     leg2.SetLineWidth(1)
     leg2.SetFillStyle(0)
-    leg2.AddEntry(h_rejB_vs_S_1,"with data sidebands","l")
-    leg2.AddEntry(h_rejB_vs_S_2,"with MC","l")
+    #leg2.AddEntry(h_rejB_vs_S_1,"with data sidebands","l")
+    leg2.AddEntry(h_rejB_vs_S_1,"with MET","l")
+    #leg2.AddEntry(h_rejB_vs_S_2,"with MC","l")
+    leg2.AddEntry(h_rejB_vs_S_2,"without MET","l")
 
     gStyle.SetOptStat(0)
     canvas2 = TCanvas()
@@ -82,9 +84,11 @@ def rejB_vs_S():
     leg2.Draw("SAME")
 
     if isMuon:
-        canvas2.Print("plots/rejBvsS_mu.pdf")
+        canvas2.Print("plots/rejBvsS_mu_met.pdf")
     else:
-        canvas2.Print("plots/rejBvsS_ele.pdf")
+        canvas2.Print("plots/rejBvsS_ele_met.pdf")
 
 if __name__ == "__main__":
-    rejB_vs_S()
+
+    #rejB_vs_S()
+    BDT_output()

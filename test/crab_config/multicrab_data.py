@@ -4,6 +4,7 @@ config = Configuration()
 
 config.section_('General')
 config.General.transferOutputs = True
+
 config.General.workArea = 'crab_projects/dataprocess/'
 
 config.section_('JobType')
@@ -92,7 +93,7 @@ if __name__ == '__main__':
     p = Process(target=submit, args=(config,))
     p.start()
     p.join()
-
+    
     config.General.requestName = 'WPiGammaAnalysis_SingleMu_H2'
     config.Data.unitsPerJob = 50
     config.Data.inputDataset = '/SingleMuon/Run2016H-03Feb2017_ver3-v1/MINIAOD'
@@ -150,11 +151,10 @@ if __name__ == '__main__':
     p = Process(target=submit, args=(config,))
     p.start()
     p.join()
-
+    
     config.General.requestName = 'WPiGammaAnalysis_SingleEle_H2'
     config.Data.unitsPerJob = 50
     config.Data.inputDataset = '/SingleElectron/Run2016H-03Feb2017_ver3-v1/MINIAOD'
     p = Process(target=submit, args=(config,))
     p.start()
     p.join()
-

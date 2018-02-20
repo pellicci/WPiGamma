@@ -57,6 +57,8 @@ private:
   //TTree and TTree variables
   TTree *mytree;
 
+  int run_number;
+
   float lepton_pT_tree;
   float lepton_eta_tree;
   float lepton_phi_tree;
@@ -84,7 +86,8 @@ private:
   float met_pT;
   
   bool is_muon;
-  bool isSingleMuTrigger;
+  bool isSingleMuTrigger_24;
+  bool isSingleMuTrigger_50;
   bool isSingleEleTrigger;
 
   //MC truth

@@ -3,36 +3,76 @@ import math
 import os
 from array import array
 
-#------Acessing scale factor histos for ele-gamma corrections --------#
+#------Acessing scale factor histos for EGamma and Muon corrections --------#
 
-eg_reco_scale_name = "scale_factors/Electron_reco_2D.root"
-eg_reco_scale_file = ROOT.TFile(eg_reco_scale_name)
+eg_reco_scale_name  = "scale_factors/Electron_reco_2D.root"
+eg_reco_scale_file  = ROOT.TFile(eg_reco_scale_name)
 eg_reco_scale_histo = ROOT.TH2F()
 eg_reco_scale_histo = eg_reco_scale_file.Get("EGamma_SF2D")
 
-eg_ID_scale_name = "scale_factors/Electron_ID_2D.root"
-eg_ID_scale_file = ROOT.TFile(eg_ID_scale_name)
+eg_ID_scale_name  = "scale_factors/Electron_ID_2D.root"
+eg_ID_scale_file  = ROOT.TFile(eg_ID_scale_name)
 eg_ID_scale_histo = ROOT.TH2F()
 eg_ID_scale_histo = eg_ID_scale_file.Get("EGamma_SF2D")
 
-ph_ID_scale_name = "scale_factors/Photon_ID_2D.root"
-ph_ID_scale_file = ROOT.TFile(ph_ID_scale_name)
+ph_ID_scale_name  = "scale_factors/Photon_ID_2D.root"
+ph_ID_scale_file  = ROOT.TFile(ph_ID_scale_name)
 ph_ID_scale_histo = ROOT.TH2F()
 ph_ID_scale_histo = ph_ID_scale_file.Get("EGamma_SF2D")
 
-ph_pixVeto_scale_name = "scale_factors/Photon_pixVeto_2D.root"
-ph_pixVeto_scale_file = ROOT.TFile(ph_pixVeto_scale_name)
+ph_pixVeto_scale_name  = "scale_factors/Photon_pixVeto_2D.root"
+ph_pixVeto_scale_file  = ROOT.TFile(ph_pixVeto_scale_name)
 ph_pixVeto_scale_histo = ROOT.TH2F()
 ph_pixVeto_scale_histo = ph_pixVeto_scale_file.Get("Scaling_Factors_HasPix_R9 Inclusive")
 
+mu_ID_scale_name_BCDEF  = "scale_factors/EfficienciesAndSF_BCDEF.root"
+mu_ID_scale_file_BCDEF  = ROOT.TFile(mu_ID_scale_name_BCDEF)
+mu_ID_scale_histo_BCDEF = ROOT.TH2F()
+mu_ID_scale_histo_BCDEF = mu_ID_scale_file_BCDEF("MC_NUM_MediumID2016_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
+
+mu_ID_scale_name_GH  = "scale_factors/EfficienciesAndSF_GH.root"
+mu_ID_scale_file_GH  = ROOT.TFile(mu_ID_scale_name_GH)
+mu_ID_scale_histo_GH = ROOT.TH2F()
+mu_ID_scale_histo_GH = mu_ID_scale_file_GH("MC_NUM_MediumID2016_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
+
+mu_Iso_scale_name_BCDEF  = "scale_factors/EfficienciesAndSF_Iso_BCDEF.root"
+mu_Iso_scale_file_BCDEF  = ROOT.TFile(mu_Iso_scale_name_BCDEF)
+mu_Iso_scale_histo_BCDEF = ROOT.TH2F()
+mu_Iso_scale_histo_BCDEF = mu_Iso_scale_file_BCDEF("LooseISO_MediumID_pt_eta/abseta_pt_ratio")
+
+mu_Iso_scale_name_GH  = "scale_factors/EfficienciesAndSF_Iso_GH.root"
+mu_Iso_scale_file_GH  = ROOT.TFile(mu_Iso_scale_name_GH)
+mu_Iso_scale_histo_GH = ROOT.TH2F()
+mu_Iso_scale_histo_GH = mu_Iso_scale_file_GH("LooseISO_MediumID_pt_eta/abseta_pt_ratio")
+
+mu_Trigger_scale_name_BCDEF       = "scale_factors/EfficienciesAndSF_RunBtoF.root"
+mu_Trigger_scale_file_BCDEF       = ROOT.TFile(mu_Trigger_scale_name_BCDEF)
+mu_Trigger_scale_histo_BCDEF_Mu24 = ROOT.TH2F()
+mu_Trigger_scale_histo_BCDEF_Mu24 = mu_Iso_scale_file_BCDEF("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio")
+mu_Trigger_scale_histo_BCDEF_Mu50 = ROOT.TH2F()
+mu_Trigger_scale_histo_BCDEF_Mu50 = mu_Iso_scale_file_BCDEF("Mu50_OR_TkMu50_PtEtaBins/abseta_pt_ratio")
+
+mu_Trigger_scale_name_GH       = "scale_factors/EfficienciesAndSF_Period4.root"
+mu_Trigger_scale_file_GH       = ROOT.TFile(mu_Trigger_scale_name_GH)
+mu_Trigger_scale_histo_GH_Mu24 = ROOT.TH2F()
+mu_Trigger_scale_histo_GH_Mu24 = mu_Iso_scale_file_GH("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio")
+mu_Trigger_scale_histo_GH_Mu50 = ROOT.TH2F()
+mu_Trigger_scale_histo_GH_Mu50 = mu_Iso_scale_file_GH("Mu50_OR_TkMu50_PtEtaBins/abseta_pt_ratio")
+
+#mu_Tracking_scale_name_BCDEFGH  = "scale_factors/Tracking_EfficienciesAndSF_BCDEFGH.root"
+#mu_Tracking_scale_file_BCDEFGH  = ROOT.TFile(mu_Tracking_scale_name_BCDEFGH)
+#mu_Tracking_scale_histo_BCDEFGH = ROOT.TGraphAsymmErrors()
+#mu_Tracking_scale_histo_BCDEFGH = mu_Tracking_scale_file_BCDEFGH("ratio_eff_aeta_dr030e030_corr")
+
 #----------Some arrays for the BDT----------#
-pi_pT_array = array('f', [0.])
-gamma_eT_array = array('f', [0.])
-nBjets_25_array = array('f', [0.])
+pi_pT_array           = array('f', [0.])
+gamma_eT_array        = array('f', [0.])
+nBjets_25_array       = array('f', [0.])
 deltaphi_lep_pi_array = array('f', [0.])
-lep_pT_array = array('f', [0.])
-piRelIso_05_array = array('f', [0.])
-isMuon_array = array('i', [0])
+lep_pT_array          = array('f', [0.])
+piRelIso_05_array     = array('f', [0.])
+met_array             = array('f', [0.])
+isMuon_array          = array('i', [0])
 
 reader = ROOT.TMVA.Reader("!Color")
 
@@ -71,9 +111,10 @@ class Workflow_Handler:
         reader.AddVariable("lep_pT",lep_pT_array)
         reader.AddVariable("piRelIso_05",piRelIso_05_array)
         #reader.AddSpectator("isMuon",isMuon_array)
+        reader.AddVariable("MET",met_array)
 
-        reader.BookMVA("BDT_mu","MVA/weights/TMVAClassification_BDT.weights_mu_nodeltaphi.xml")#The first argument is arbitrary. To be chosen in order to distinguish among methods
-        reader.BookMVA("BDT_ele","MVA/weights/TMVAClassification_BDT.weights_ele_nodeltaphi.xml")
+        reader.BookMVA("BDT_mu","MVA/weights/TMVAClassification_BDT.weights_mu_met.xml")#The first argument is arbitrary. To be chosen in order to distinguish among methods
+        reader.BookMVA("BDT_ele","MVA/weights/TMVAClassification_BDT.weights_ele_met.xml")
         
     def get_ele_scale(self, ele_pt, ele_eta):
         #This is because corrections are up to 200 GeV
@@ -96,6 +137,26 @@ class Workflow_Handler:
         scale_factor = 1.
         scale_factor = scale_factor * ph_ID_scale_histo.GetBinContent( ph_ID_scale_histo.GetXaxis().FindBin(ph_eta), ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
         scale_factor = scale_factor * ph_pixVeto_scale_histo.GetBinContent( ph_pixVeto_scale_histo.GetXaxis().FindBin(math.fabs(ph_eta)), ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+
+        return scale_factor
+
+    def get_muon_scale(self, lep_pt, lep_eta, run_number, isSingleMuTrigger_24, isSingleMuTrigger_50):
+
+        scale_factor = 1.
+        if run_number <= 278808:                                        
+            scale_factor = scale_factor * mu_ID_scale_histo_BCDEF.GetBinContent( mu_ID_scale_histo_BCDEF.GetXaxis().FindBin(math.fabs(lep_eta)), mu_ID_scale_histo_BCDEF.GetYaxis().FindBin(lep_pt) )
+            scale_factor = scale_factor * mu_Iso_scale_histo_BCDEF.GetBinContent( mu_Iso_scale_histo_BCDEF.GetXaxis().FindBin(math.fabs(ph_eta)), mu_Iso_scale_histo_BCDEF.GetYaxis().FindBin(lep_pt) )
+            if isSingleMuTrigger_24:
+                scale_factor = scale_factor * mu_Trigger_scale_histo_BCDEF_Mu24.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu24.GetXaxis().FindBin(math.fabs(ph_eta)), mu_Trigger_scale_histo_BCDEF_Mu24.GetYaxis().FindBin(lep_pt) )
+            if isSingleMuTrigger_50:
+                scale_factor = scale_factor * mu_Trigger_scale_histo_BCDEF_Mu50.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu50.GetXaxis().FindBin(math.fabs(ph_eta)), mu_Trigger_scale_histo_BCDEF_Mu50.GetYaxis().FindBin(lep_pt) )
+        if run_number > 278808:                                        
+            scale_factor = scale_factor * mu_ID_scale_histo_GH.GetBinContent( mu_ID_scale_histo_GH.GetXaxis().FindBin(math.fabs(lep_eta)), mu_ID_scale_histo_GH.GetYaxis().FindBin(lep_pt) )
+            scale_factor = scale_factor * mu_Iso_scale_histo_GH.GetBinContent( mu_Iso_scale_histo_GH.GetXaxis().FindBin(math.fabs(ph_eta)), mu_Iso_scale_histo_GH.GetYaxis().FindBin(lep_pt) )
+            if isSingleMuTrigger_24:
+                scale_factor = scale_factor * mu_Trigger_scale_histo_GH_Mu24.GetBinContent( mu_Trigger_scale_histo_GH_Mu24.GetXaxis().FindBin(math.fabs(ph_eta)), mu_Trigger_scale_histo_GH_Mu24.GetYaxis().FindBin(lep_pt) )
+            if isSingleMuTrigger_50:
+                scale_factor = scale_factor * mu_Trigger_scale_histo_GH_Mu50.GetBinContent( mu_Trigger_scale_histo_GH_Mu50.GetXaxis().FindBin(math.fabs(ph_eta)), mu_Trigger_scale_histo_GH_Mu50.GetYaxis().FindBin(lep_pt) )
 
         return scale_factor
     

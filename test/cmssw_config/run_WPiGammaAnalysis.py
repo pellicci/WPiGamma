@@ -23,7 +23,7 @@ options.parseArguments()
 if options.runningOnData: 
    process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_2016SeptRepro_v7') #which conditions to use
    print "Data Sample will be taken as input for check up of the code working "
-   inputFiles="root://cms-xrd-global.cern.ch//store/data/Run2016C/BTagCSV/MINIAOD/23Sep2016-v1/70000/00B6A0EA-A783-E611-8973-02163E0165C4.root"
+   inputFiles="root://cms-xrd-global.cern.ch//store/data/Run2016F/SingleElectron/MINIAOD/03Feb2017-v1/100000/00B336D6-6AEC-E611-8581-E0071B7AC7B0.root"
 else:
    process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc')
    print "MC Sample will be taken as input for check up of the code working "
@@ -80,7 +80,7 @@ if not options.runningOnData:    #Only for MC, data reprocessing already has cor
 #Add the trigger request
 import HLTrigger.HLTfilters.triggerResultsFilter_cfi as hlt
 process.trigger_filter = hlt.triggerResultsFilter.clone()
-process.trigger_filter.triggerConditions = cms.vstring('HLT_IsoMu24_v*', 'HLT_IsoTkMu24_v*', 'HLT_Mu50_v*' , 'HLT_Ele25_eta2p1_WPTight_Gsf_v*', 'HLT_Ele27_WPTight_Gsf_v*')   #paths for 2016 samples
+process.trigger_filter.triggerConditions = cms.vstring('HLT_IsoMu24_v*', 'HLT_IsoTkMu24_v*', 'HLT_Mu50_v*' , 'HLT_TkMu50_v*', 'HLT_Ele25_eta2p1_WPTight_Gsf_v*', 'HLT_Ele27_WPTight_Gsf_v*')   #paths for 2016 samples
 process.trigger_filter.hltResults = cms.InputTag("TriggerResults", "", "HLT")
 process.trigger_filter.l1tResults = cms.InputTag("")
 process.trigger_filter.throw = cms.bool( False )

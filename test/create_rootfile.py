@@ -44,12 +44,13 @@ _gamma_eT          = np.zeros(1, dtype=float)
 _pi_pT             = np.zeros(1, dtype=float)
 _lep_pT            = np.zeros(1, dtype=float)
 _lep_iso           = np.zeros(1, dtype=float)
-_nBjets           = np.zeros(1, dtype=int)
-_nBjets_25        = np.zeros(1, dtype=int)
+_nBjets            = np.zeros(1, dtype=int)
+_nBjets_25         = np.zeros(1, dtype=int)
 _deltaphi_lep_pi   = np.zeros(1, dtype=float)
 _piRelIso_03       = np.zeros(1, dtype=float)
 _piRelIso_05       = np.zeros(1, dtype=float)
 _ele_gamma_InvMass = np.zeros(1, dtype=float)
+_met               = np.zeros(1, dtype=float)
 
 if not isData:
     f = TFile('WmassAnalysis/Tree_MC.root','recreate')
@@ -73,6 +74,7 @@ if not isData:
         tMVA_signal_mu_training.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
         tMVA_signal_mu_training.Branch('piRelIso_03',_piRelIso_03,'piRelIso_03/D')
         tMVA_signal_mu_training.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
+        tMVA_signal_mu_training.Branch('MET',_met,'met/D')
         
         fMVA_signal_ele_training = TFile('MVA/Tree_MC_Signal_ele_training.root','recreate')
         tMVA_signal_ele_training = TTree('minitree_signal_ele_training','tree with branches')
@@ -87,6 +89,7 @@ if not isData:
         tMVA_signal_ele_training.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
         tMVA_signal_ele_training.Branch('piRelIso_03',_piRelIso_03,'piRelIso_03/D')
         tMVA_signal_ele_training.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
+        tMVA_signal_ele_training.Branch('MET',_met,'met/D')
         
         fMVA_signal_mu_test = TFile('MVA/Tree_MC_Signal_mu_test.root','recreate')
         tMVA_signal_mu_test = TTree('minitree_signal_mu_test','tree with branches')
@@ -101,6 +104,7 @@ if not isData:
         tMVA_signal_mu_test.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
         tMVA_signal_mu_test.Branch('piRelIso_03',_piRelIso_03,'piRelIso_03/D')
         tMVA_signal_mu_test.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
+        tMVA_signal_mu_test.Branch('MET',_met,'met/D')
         
         fMVA_signal_ele_test = TFile('MVA/Tree_MC_Signal_ele_test.root','recreate')
         tMVA_signal_ele_test = TTree('minitree_signal_ele_test','tree with branches')
@@ -115,6 +119,7 @@ if not isData:
         tMVA_signal_ele_test.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
         tMVA_signal_ele_test.Branch('piRelIso_03',_piRelIso_03,'piRelIso_03/D')
         tMVA_signal_ele_test.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
+        tMVA_signal_ele_test.Branch('MET',_met,'met/D')
 
     else:
         fMVA_signal_mu = TFile('MVA/Tree_MC_Signal_mu.root','recreate')
@@ -130,7 +135,7 @@ if not isData:
         tMVA_signal_mu.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
         tMVA_signal_mu.Branch('piRelIso_03',_piRelIso_03,'piRelIso_03/D')
         tMVA_signal_mu.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
-        #tMVA_signal_mu_test.Branch('ele_gamma_InvMass',_ele_gamma_InvMass,'ele_gamma_InvMass/D')
+        tMVA_signal_mu.Branch('MET',_met,'met/D')
         
         fMVA_signal_ele = TFile('MVA/Tree_MC_Signal_ele.root','recreate')
         tMVA_signal_ele = TTree('minitree_signal_ele','tree with branches')
@@ -145,7 +150,7 @@ if not isData:
         tMVA_signal_ele.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
         tMVA_signal_ele.Branch('piRelIso_03',_piRelIso_03,'piRelIso_03/D')
         tMVA_signal_ele.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
-        #tMVA_signal_ele_test.Branch('ele_gamma_InvMass',_ele_gamma_InvMass,'ele_gamma_InvMass/D')
+        tMVA_signal_ele.Branch('MET',_met,'met/D')
     
     fMVA_background_mu = TFile('MVA/Tree_MC_Background_mu.root','recreate')
     tMVA_background_mu = TTree('minitree_background_mu','tree with branches')
@@ -160,7 +165,7 @@ if not isData:
     tMVA_background_mu.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
     tMVA_background_mu.Branch('piRelIso_03',_piRelIso_03,'piRelIso_03/D')
     tMVA_background_mu.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
-    #tMVA_background_mu.Branch('ele_gamma_InvMass',_ele_gamma_InvMass,'ele_gamma_InvMass/D')
+    tMVA_background_mu.Branch('MET',_met,'met/D')
 
     fMVA_background_ele = TFile('MVA/Tree_MC_Background_ele.root','recreate')
     tMVA_background_ele = TTree('minitree_background_ele','tree with branches')
@@ -175,7 +180,8 @@ if not isData:
     tMVA_background_ele.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
     tMVA_background_ele.Branch('piRelIso_03',_piRelIso_03,'piRelIso_03/D')
     tMVA_background_ele.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
-    #tMVA_background_ele.Branch('ele_gamma_InvMass',_ele_gamma_InvMass,'ele_gamma_InvMass/D')
+    tMVA_background_ele.Branch('MET',_met,'met/D')
+
 
 if isData:
 
@@ -197,6 +203,7 @@ if isData:
     tMVA_background_mu_DATA.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
     tMVA_background_mu_DATA.Branch('piRelIso_03',_piRelIso_03,'piRelIso_03/D')
     tMVA_background_mu_DATA.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
+    tMVA_background_mu_DATA.Branch('MET',_met,'met/D')
 
     fMVA_background_ele_DATA = TFile('MVA/Tree_MC_Background_ele_DATA.root','recreate')
     tMVA_background_ele_DATA = TTree('minitree_background_ele_DATA','tree with branches')
@@ -211,6 +218,7 @@ if isData:
     tMVA_background_ele_DATA.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
     tMVA_background_ele_DATA.Branch('piRelIso_03',_piRelIso_03,'piRelIso_03/D')
     tMVA_background_ele_DATA.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
+    tMVA_background_ele_DATA.Branch('MET',_met,'met/D')
 
 
 def select_all_but_one(cutstring):
@@ -286,6 +294,10 @@ for name_sample in samplename_list:
 
         ismuon = mytree.is_muon
 
+        run_number = mytree.run_number
+        isSingleMuTrigger24 = mytree.isSingleMuTrigger_24
+        isSingleMuTrigger50 = mytree.isSingleMuTrigger_50
+
         lep_pT  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
         lep_phi = mytree.lepton_phi
@@ -318,7 +330,7 @@ for name_sample in samplename_list:
 
         wmass = mytree.Wmass
 
-        #if (wmass > 65. and wmass < 90.): continue  #-------Blind window----------
+        met = mytree.met_pT
 
         if not ismuon:
             ele_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
@@ -339,17 +351,23 @@ for name_sample in samplename_list:
             deltaphi_lep_W = 6.28 - deltaphi_lep_W      
 
         #--------Determining the event weight--------#
-        if(not ismuon):
+
+        if ismuon:
+            mu_weight = myWF.get_muon_scale(lep_pT,lep_eta,run_number,isSingleMuTrigger_24,isSingleMuTrigger_50)
+        else:
             ele_weight = myWF.get_ele_scale(lep_pT,lep_eta)
 
         ph_weight = myWF.get_photon_scale(gamma_eT,gamma_eta)
 
         Event_Weight = 1.
+
         if not isData:
             norm_factor = Norm_Map[name_sample]*luminosity_norm
             PU_Weight = mytree.PU_Weight
             Event_Weight = norm_factor*PU_Weight*ph_weight
-            if not ismuon:
+            if ismuon:
+                Event_Weight = Event_Weight*mu_weight
+            else:
                 Event_Weight = Event_Weight*ele_weight
   
 
@@ -369,17 +387,18 @@ for name_sample in samplename_list:
 
         if not isData:
             
-            _gamma_eT[0] = gamma_eT
-            _pi_pT[0] = pi_pT
-            _lep_pT[0] = lep_pT
-            _lep_iso[0] = lep_iso
-            _nBjets[0] = nBjets
-            _nBjets_25[0] = nBjets_25
-            weight[0] = Event_Weight
+            _gamma_eT[0]        = gamma_eT
+            _pi_pT[0]           = pi_pT
+            _lep_pT[0]          = lep_pT
+            _lep_iso[0]         = lep_iso
+            _nBjets[0]          = nBjets
+            _nBjets_25[0]       = nBjets_25
+            weight[0]           = Event_Weight
             _deltaphi_lep_pi[0] = deltaphi_lep_pi
-            isMuon[0] = ismuon
-            _piRelIso_03[0] = piRelIso_03
-            _piRelIso_05[0] = piRelIso_05
+            isMuon[0]           = ismuon
+            _piRelIso_03[0]     = piRelIso_03
+            _piRelIso_05[0]     = piRelIso_05
+            _met[0]             = met
             #if not ismuon:
             #    _ele_gamma_InvMass[0] = math.fabs(91.-ele_gamma_InvMass)
 
@@ -402,17 +421,18 @@ for name_sample in samplename_list:
 
         if isData and (wmass < 65. or wmass > 90.):
 
-            _gamma_eT[0] = gamma_eT
-            _pi_pT[0] = pi_pT
-            _lep_pT[0] = lep_pT
-            _lep_iso[0] = lep_iso
-            _nBjets[0] = nBjets
-            _nBjets_25[0] = nBjets_25
-            weight[0] = 1
+            _gamma_eT[0]        = gamma_eT
+            _pi_pT[0]           = pi_pT
+            _lep_pT[0]          = lep_pT
+            _lep_iso[0]         = lep_iso
+            _nBjets[0]          = nBjets
+            _nBjets_25[0]       = nBjets_25
+            weight[0]           = 1
             _deltaphi_lep_pi[0] = deltaphi_lep_pi
-            isMuon[0] = ismuon
-            _piRelIso_03[0] = piRelIso_03
-            _piRelIso_05[0] = piRelIso_05
+            isMuon[0]           = ismuon
+            _piRelIso_03[0]     = piRelIso_03
+            _piRelIso_05[0]     = piRelIso_05
+            _met[0]             = met
             
         if name_sample == "Data" and ismuon:
             tMVA_background_mu_DATA.Fill()

@@ -4,15 +4,15 @@ import math
 import numpy as np
 import copy
 
-isMuon = False
+isMuon = True
 
 Nsig_passed = 2
 Nbkg_passed = 316791
 
 if isMuon:
-    BDT_file = ROOT.TFile("outputs/Nominal_training_mu_MC.root")
+    BDT_file = ROOT.TFile("outputs/Nominal_training_mu_met.root")
 else:
-    BDT_file = ROOT.TFile("outputs/Nominal_training_ele_MC.root")
+    BDT_file = ROOT.TFile("outputs/Nominal_training_ele_met.root")
 
 h_BDT_effB_effS = BDT_file.Get("Method_BDT/BDT/MVA_BDT_effBvsS")
 
@@ -24,11 +24,12 @@ bkg_eff = []
 signif = []
 #print "nbins: ", BDT_hist.GetNbinsX()
 for jbin in range(1,h_BDT_effB_effS.GetNbinsX()):
-    sig_eff.append(h_BDT_effB_effS.GetBinCenter(jbin))
-    bkg_eff.append(h_BDT_effB_effS.GetBinContent(jbin))
-    if h_BDT_effB_effS.GetBinContent(jbin) == 0:
-        signif.append(0) # In fact it would be infinite
-    else:
+    if h_BDT_effB_effS.GetBinCenter(jbin) > 0.1:
+        sig_eff.append(h_BDT_effB_effS.GetBinCenter(jbin))
+        bkg_eff.append(h_BDT_effB_effS.GetBinContent(jbin))
+    #if h_BDT_effB_effS.GetBinContent(jbin) == 0:
+    #    signif.append(0) # In fact it would be infinite
+    #else:
         signif.append(Nsig_passed*h_BDT_effB_effS.GetBinCenter(jbin)/(math.sqrt(Nbkg_passed*h_BDT_effB_effS.GetBinContent(jbin))))
 
     #if not h_BDT_effB_effS.GetBinContent(jbin) == 0:
@@ -37,7 +38,7 @@ for jbin in range(1,h_BDT_effB_effS.GetNbinsX()):
 
 sig_eff_array = np.array(sig_eff)
 signif_array = np.array(signif)
-sign = ROOT.TGraph(100,sig_eff_array,signif_array)
+sign = ROOT.TGraph(89,sig_eff_array,signif_array)
 sign.GetXaxis().SetTitle("Signal efficiency")
 sign.GetYaxis().SetTitle("Significance")
 sign.SetMaximum(0.15)
@@ -46,9 +47,9 @@ sign.SetMarkerColor(4)
 sign.Draw("AP")
 
 if isMuon:
-    canvas1.SaveAs("plots/signif_vs_effS_mu_nodeltaphi.pdf")
+    canvas1.SaveAs("plots/signif_vs_effS_mu_met.pdf")
 else:
-    canvas1.SaveAs("plots/signif_vs_effS_ele_nodeltaphi.pdf")
+    canvas1.SaveAs("plots/signif_vs_effS_ele_met.pdf")
 
 #----Now find the BDT output corresponding to the highest significance
 

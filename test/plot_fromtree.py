@@ -39,7 +39,7 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 #Here's the list of histos to plot
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_Wmass", "h_nBjets", "h_mueta", "h_eleeta","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_iso","h_ele_iso","h_gamma_iso_ChHad","h_gamma_iso_NeuHad","h_gamma_iso_Ph","h_gamma_iso_eArho","h_ele_gamma_InvMass","h_mu_gamma_InvMass","h_nBjets_25","h_evts_Bjets","h_piIso_03_mu","h_piIso_05_mu","h_piRelIso_03_mu","h_piRelIso_05_mu","h_piIso_03_ele","h_piIso_05_ele","h_piRelIso_03_ele","h_piRelIso_05_ele","h_mu_pi_InvMass"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_Wmass", "h_nBjets", "h_mueta", "h_eleeta","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_iso","h_ele_iso","h_gamma_iso_ChHad","h_gamma_iso_NeuHad","h_gamma_iso_Ph","h_gamma_iso_eArho","h_ele_gamma_InvMass","h_mu_gamma_InvMass","h_nBjets_25","h_evts_Bjets","h_piIso_03_mu","h_piIso_05_mu","h_piRelIso_03_mu","h_piRelIso_05_mu","h_piIso_03_ele","h_piIso_05_ele","h_piRelIso_03_ele","h_piRelIso_05_ele","h_mu_pi_InvMass","h_met"]
 
 h_events_sig_mu = ROOT.TH1F("h_events_sig_mu","Progressive event loss (#mu)",5,0,5)
 h_events_sig_ele = ROOT.TH1F("h_events_sig_ele","Progressive event loss (e)",7,0,7)
@@ -140,6 +140,7 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[32]] = ROOT.TH1F(theSampleName+list_histos[32], "Pion rel. isolation 03 - ele", 20, 0, 1)
     h_base[theSampleName+list_histos[33]] = ROOT.TH1F(theSampleName+list_histos[33], "Pion rel. isolation 05 - ele", 50, 0, 10)
     h_base[theSampleName+list_histos[34]] = ROOT.TH1F(theSampleName+list_histos[34], "mu-pi InvMass", 50, 0, 200)
+    h_base[theSampleName+list_histos[35]] = ROOT.TH1F(theSampleName+list_histos[35], "mu-pi InvMass", 150, 0, 200)
 
 #leg1 = ROOT.TLegend(0.1,0.5,0.25,0.9) #left positioning
 leg1 = ROOT.TLegend(0.6868687,0.6120093,0.9511784,0.9491917) #right positioning
@@ -190,6 +191,8 @@ ttbar_ele = 0
 #isNotMuon_evt = 0
 Sevts_processed_mu  = 0 # Counters for the number of signal events processed
 Sevts_processed_ele = 0
+Sevts_tot = 0
+Bevts_tot = 0
 
 ##Loop on samples, and then on events, and merge QCD stuff
 idx_sample = 0
@@ -197,9 +200,6 @@ isFirstQCDlegend = True
 
 
 for name_sample in samplename_list:
-
-    Sevts_processed_mu  = 0
-    Sevts_processed_ele = 0
 
     theSampleName = name_sample
 
@@ -228,8 +228,17 @@ for name_sample in samplename_list:
 
         if "Data" in name_sample: continue  #-------------Excluding data-------------#
 
+        if "Signal" in name_sample:
+            Sevts_tot += 1
+        else:
+            Bevts_tot += 1
+
         #This is how you access the tree variables
         isMuon = mytree.is_muon
+
+        run_number = mytree.run_number
+        isSingleMuTrigger24 = mytree.isSingleMuTrigger_24
+        isSingleMuTrigger50 = mytree.isSingleMuTrigger_50
 
         lep_pT  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
@@ -257,8 +266,11 @@ for name_sample in samplename_list:
         gamma_iso_eArho = mytree.photon_iso_eArho
 
         W_phi = (pi_FourMomentum + gamma_FourMomentum).Phi()
+
+        met = mytree.met_pT
        
         Wmass = mytree.Wmass
+
 
         #if not "Data" in name_sample and Wmass > 65 and Wmass < 90: continue #cut on MC in the blind window
 
@@ -285,8 +297,10 @@ for name_sample in samplename_list:
             deltaphi_lep_W = 6.28 - deltaphi_lep_W
 
         #---------Determine the total event weight---------#
-
-        if(not isMuon):
+        
+        if isMuon:
+            mu_weight = myWF.get_muon_scale(lep_pT,lep_eta,run_number,isSingleMuTrigger_24,isSingleMuTrigger_50)
+        else:
             ele_weight = myWF.get_ele_scale(lep_pT,lep_eta)
 
         ph_weight = myWF.get_photon_scale(gamma_eT,gamma_eta)
@@ -294,7 +308,9 @@ for name_sample in samplename_list:
         if not "Data" in name_sample:
             PU_Weight = mytree.PU_Weight        
             Event_Weight = norm_factor*PU_Weight*ph_weight   #Add other event weights here if necessary
-            if not isMuon:
+            if isMuon:
+                Event_Weight = Event_Weight*mu_weight
+            else:
                 Event_Weight = Event_Weight*ele_weight
         else:
             Event_Weight = 1
@@ -401,8 +417,11 @@ for name_sample in samplename_list:
             #h_base[theSampleName+"h_piIso_05_ele"].Fill(piIso_05,Event_Weight)
             h_base[theSampleName+"h_piRelIso_03_ele"].Fill(piRelIso_03,Event_Weight)
             h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
+
+        if isMuon:
+            h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
         
-        if (isMuon and BDT_out >= 0.21) or (not isMuon and BDT_out >= 0.20):
+        if (isMuon and BDT_out >= 0.18) or (not isMuon and BDT_out >= 0.17):
             if (Wmass >= 50. and Wmass <= 100.):
                 if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
                     h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
@@ -540,7 +559,7 @@ for hname in list_histos:
 
     hs[hname].Draw("histo")
     if "h_Wmass_flag" in hname:
-        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),70.))
+        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),50.))
     if hname == "h_Wmass":
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),100.))
     if hname == "h_piRelIso_05_ele":
@@ -734,5 +753,7 @@ print "Significance S/sqrt(B + deltaB^2) = ", Nsig_passed/(math.sqrt(Nbkg_passed
 print "Significance S/sqrt(S+B) = ", Nsig_passed/math.sqrt(Nsig_passed + Nbkg_passed)
 print "\nAll the intresting plots have been produced..!"
 
-print "number of Signal events in mu channel: ", Sevts_processed_mu
+print "number of Signal events in muon channel: ", Sevts_processed_mu
 print "number of Signal events in electron channel: ", Sevts_processed_ele
+print "total number of S evts: ", Sevts_tot
+print "total number of B evts: ", Bevts_tot

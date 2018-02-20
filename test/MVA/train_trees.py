@@ -3,7 +3,7 @@ import os
 
 #---------------------------------#
 
-isMuon = False  # Switch from muon to electron channel
+isMuon = True  # Switch from muon to electron channel
 data_sidebands = False  # Switch from data sidebands to MC for training (background)
 
 #---------------------------------#
@@ -13,13 +13,13 @@ if isMuon and not data_sidebands:
     tree_bkg = fIn_bkg.Get("minitree_background_mu")
     fIn_sig = ROOT.TFile("Tree_MC_Signal_mu.root")
     tree_sig = fIn_sig.Get("minitree_signal_mu")
-    fOut = ROOT.TFile("outputs/Nominal_training_mu_nodeltaphi.root","RECREATE")
+    fOut = ROOT.TFile("outputs/Nominal_training_mu_met.root","RECREATE")
 if not isMuon and not data_sidebands:
     fIn_bkg = ROOT.TFile("Tree_MC_Background_ele.root")
     tree_bkg = fIn_bkg.Get("minitree_background_ele")
     fIn_sig = ROOT.TFile("Tree_MC_Signal_ele.root")
     tree_sig = fIn_sig.Get("minitree_signal_ele")
-    fOut = ROOT.TFile("outputs/Nominal_training_ele_nodeltaphi.root","RECREATE")
+    fOut = ROOT.TFile("outputs/Nominal_training_ele_met.root","RECREATE")
 
 if isMuon and data_sidebands:
     fIn_bkg_DATA = ROOT.TFile("Tree_MC_Background_mu_DATA.root")
@@ -54,6 +54,7 @@ factory.AddVariable("nBjets_25","I")
 factory.AddVariable("lep_pT","F")
 factory.AddVariable("piRelIso_05","F")
 #factory.AddVariable("ele_gamma_InvMass")
+factory.AddVariable("MET","F")
 
 #factory.AddSpectator("isMuon","I")
 
@@ -94,8 +95,8 @@ if data_sidebands:
     weightfile_mu  = "weights/TMVAClassification_BDT.weights_mu_DATA.xml"
     weightfile_ele = "weights/TMVAClassification_BDT.weights_ele_DATA.xml"
 else:
-    weightfile_mu  = "weights/TMVAClassification_BDT.weights_mu_nodeltaphi.xml"
-    weightfile_ele = "weights/TMVAClassification_BDT.weights_ele_nodeltaphi.xml"
+    weightfile_mu  = "weights/TMVAClassification_BDT.weights_mu_met.xml"
+    weightfile_ele = "weights/TMVAClassification_BDT.weights_ele_met.xml"
 
 if isMuon:
     rename_weightfile = "mv " + weightfile_dir + " " + weightfile_mu

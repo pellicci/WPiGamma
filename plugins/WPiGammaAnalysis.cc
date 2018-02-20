@@ -169,6 +169,11 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   _Nevents_processed++;
 
 
+  //Retrieve the run number
+  if(runningOnData_){
+    run_number = iEvent.id().run();
+  }
+
   //Count the number of vertices
   nPV = -1;
   if(slimmedPV->size()<=0) return;
@@ -201,7 +206,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
 
   //Examine the trigger information
-  isSingleMuTrigger = false;
+  isSingleMuTrigger_24 = false;
+  isSingleMuTrigger_50 = false;
   isSingleEleTrigger = false;
 
   const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
@@ -209,9 +215,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     if(!triggerBits->accept(i)) continue;
     std::string tmp_triggername = names.triggerName(i);
     if( tmp_triggername.find("HLT_IsoMu24_v") != std::string::npos ||
-	tmp_triggername.find("HLT_IsoTkMu24_v") != std::string::npos ||
-	tmp_triggername.find("HLT_Mu50_v") != std::string::npos){
-      isSingleMuTrigger = true;
+	tmp_triggername.find("HLT_IsoTkMu24_v") != std::string::npos){
+      isSingleMuTrigger_24 = true;
+    }
+    if( tmp_triggername.find("HLT_Mu50_v") != std::string::npos ||
+	tmp_triggername.find("HLT_TkMu50_v") != std::string::npos){
+      isSingleMuTrigger_50 = true;
     }
     if( tmp_triggername.find("HLT_Ele25_eta2p1_WPTight_Gsf_v") != std::string::npos ||
 	tmp_triggername.find("HLT_Ele27_WPTight_Gsf_v") != std::string::npos){
@@ -549,8 +558,14 @@ void WPiGammaAnalysis::create_trees()
   mytree = fs->make<TTree>("mytree", "Tree containing gen&reco");
 
   mytree->Branch("nPV",&nPV);
-  mytree->Branch("isSingleMuTrigger",&isSingleMuTrigger);
+  mytree->Branch("isSingleMuTrigger_24",&isSingleMuTrigger_24);
+  mytree->Branch("isSingleMuTrigger_50",&isSingleMuTrigger_50);
   mytree->Branch("isSingleEleTrigger",&isSingleEleTrigger);
+
+  //Save run number info when running on data
+  if(runningOnData_){
+    mytree->Branch("run_number",&run_number);
+  }
 
   mytree->Branch("lepton_pT",&lepton_pT_tree);
   mytree->Branch("lepton_eta",&lepton_eta_tree);
