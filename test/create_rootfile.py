@@ -32,7 +32,10 @@ ELE_GAMMA_INVMASS_MIN = 90.4
 ELE_GAMMA_INVMASS_MAX = 91.6
 
 #Normalize to this luminsity, in fb-1
-luminosity_norm = 36.46
+#luminosity_norm = 36.46
+luminosity_norm = 35.86
+luminosity_BtoF = 19.72
+luminosity_GH   = 16.14
 
 #Variables for the trees
 Wmass    = np.zeros(1, dtype=float)
@@ -294,9 +297,9 @@ for name_sample in samplename_list:
 
         ismuon = mytree.is_muon
 
-        run_number = mytree.run_number
-        isSingleMuTrigger24 = mytree.isSingleMuTrigger_24
-        isSingleMuTrigger50 = mytree.isSingleMuTrigger_50
+        #run_number = mytree.run_number
+        isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
+        isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
 
         lep_pT  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
@@ -348,12 +351,18 @@ for name_sample in samplename_list:
 
         deltaphi_lep_W = math.fabs(lep_phi-W_phi)
         if deltaphi_lep_W > 3.14:
-            deltaphi_lep_W = 6.28 - deltaphi_lep_W      
+            deltaphi_lep_W = 6.28 - deltaphi_lep_W  
+
+        #---------Retrieve the BDT output----------#
+
+        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,deltaphi_lep_pi,lep_pT,piRelIso_05,isMuon)    
 
         #--------Determining the event weight--------#
 
         if ismuon:
-            mu_weight = myWF.get_muon_scale(lep_pT,lep_eta,run_number,isSingleMuTrigger_24,isSingleMuTrigger_50)
+            mu_weight_BtoF = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
+            mu_weight_GH   = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
+            mu_weight_tot  = mu_weight_BtoF*luminosity_BtoF/luminosity_norm + mu_weight_GH*luminosity_GH/luminosity_norm
         else:
             ele_weight = myWF.get_ele_scale(lep_pT,lep_eta)
 
@@ -366,13 +375,14 @@ for name_sample in samplename_list:
             PU_Weight = mytree.PU_Weight
             Event_Weight = norm_factor*PU_Weight*ph_weight
             if ismuon:
-                Event_Weight = Event_Weight*mu_weight
+                Event_Weight = Event_Weight*mu_weight_tot
             else:
                 Event_Weight = Event_Weight*ele_weight
   
 
         #-------- Filling mass tree -------------
-        if select_all_but_one("all cuts"):
+        #if select_all_but_one("all cuts"):
+        if (ismuon and BDT_out >= 0.14) or (not ismuon and BDT_out >= 0.15):
             isMuon[0] = ismuon
             Wmass[0] = wmass
             if not isData:

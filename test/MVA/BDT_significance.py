@@ -6,8 +6,12 @@ import copy
 
 isMuon = True
 
-Nsig_passed = 2
-Nbkg_passed = 316791
+if isMuon:
+    Nsig_passed = 1
+    Nbkg_passed = 112774
+else:
+    Nsig_passed = 1
+    Nbkg_passed = 172296
 
 if isMuon:
     BDT_file = ROOT.TFile("outputs/Nominal_training_mu_met.root")
@@ -64,7 +68,7 @@ for entry in xrange(h_BDT_effS.GetNbinsX()):
     signif_maximizing_eff = float(format(signif_maximizing_eff, '.3f'))
     #print "effS: ", effS#, "signif_max_eff: ", signif_maximizing_eff
     #if effS == signif_maximizing_eff:
-    if effS == 0.450:
+    if effS == 0.550:
         BDT_output =  h_BDT_effS.GetBinCenter(entry)
 
 print "The BDT output to maximize the significance is :", BDT_output

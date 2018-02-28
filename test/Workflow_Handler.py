@@ -28,36 +28,36 @@ ph_pixVeto_scale_histo = ph_pixVeto_scale_file.Get("Scaling_Factors_HasPix_R9 In
 mu_ID_scale_name_BCDEF  = "scale_factors/EfficienciesAndSF_BCDEF.root"
 mu_ID_scale_file_BCDEF  = ROOT.TFile(mu_ID_scale_name_BCDEF)
 mu_ID_scale_histo_BCDEF = ROOT.TH2F()
-mu_ID_scale_histo_BCDEF = mu_ID_scale_file_BCDEF("MC_NUM_MediumID2016_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
+mu_ID_scale_histo_BCDEF = mu_ID_scale_file_BCDEF.Get("MC_NUM_MediumID2016_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
 
 mu_ID_scale_name_GH  = "scale_factors/EfficienciesAndSF_GH.root"
 mu_ID_scale_file_GH  = ROOT.TFile(mu_ID_scale_name_GH)
 mu_ID_scale_histo_GH = ROOT.TH2F()
-mu_ID_scale_histo_GH = mu_ID_scale_file_GH("MC_NUM_MediumID2016_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
+mu_ID_scale_histo_GH = mu_ID_scale_file_GH.Get("MC_NUM_MediumID2016_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
 
 mu_Iso_scale_name_BCDEF  = "scale_factors/EfficienciesAndSF_Iso_BCDEF.root"
 mu_Iso_scale_file_BCDEF  = ROOT.TFile(mu_Iso_scale_name_BCDEF)
 mu_Iso_scale_histo_BCDEF = ROOT.TH2F()
-mu_Iso_scale_histo_BCDEF = mu_Iso_scale_file_BCDEF("LooseISO_MediumID_pt_eta/abseta_pt_ratio")
+mu_Iso_scale_histo_BCDEF = mu_Iso_scale_file_BCDEF.Get("LooseISO_MediumID_pt_eta/abseta_pt_ratio")
 
 mu_Iso_scale_name_GH  = "scale_factors/EfficienciesAndSF_Iso_GH.root"
 mu_Iso_scale_file_GH  = ROOT.TFile(mu_Iso_scale_name_GH)
 mu_Iso_scale_histo_GH = ROOT.TH2F()
-mu_Iso_scale_histo_GH = mu_Iso_scale_file_GH("LooseISO_MediumID_pt_eta/abseta_pt_ratio")
+mu_Iso_scale_histo_GH = mu_Iso_scale_file_GH.Get("LooseISO_MediumID_pt_eta/abseta_pt_ratio")
 
 mu_Trigger_scale_name_BCDEF       = "scale_factors/EfficienciesAndSF_RunBtoF.root"
 mu_Trigger_scale_file_BCDEF       = ROOT.TFile(mu_Trigger_scale_name_BCDEF)
 mu_Trigger_scale_histo_BCDEF_Mu24 = ROOT.TH2F()
-mu_Trigger_scale_histo_BCDEF_Mu24 = mu_Iso_scale_file_BCDEF("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio")
+mu_Trigger_scale_histo_BCDEF_Mu24 = mu_Trigger_scale_file_BCDEF.Get("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio")
 mu_Trigger_scale_histo_BCDEF_Mu50 = ROOT.TH2F()
-mu_Trigger_scale_histo_BCDEF_Mu50 = mu_Iso_scale_file_BCDEF("Mu50_OR_TkMu50_PtEtaBins/abseta_pt_ratio")
+mu_Trigger_scale_histo_BCDEF_Mu50 = mu_Trigger_scale_file_BCDEF.Get("Mu50_OR_TkMu50_PtEtaBins/abseta_pt_ratio")
 
 mu_Trigger_scale_name_GH       = "scale_factors/EfficienciesAndSF_Period4.root"
 mu_Trigger_scale_file_GH       = ROOT.TFile(mu_Trigger_scale_name_GH)
 mu_Trigger_scale_histo_GH_Mu24 = ROOT.TH2F()
-mu_Trigger_scale_histo_GH_Mu24 = mu_Iso_scale_file_GH("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio")
+mu_Trigger_scale_histo_GH_Mu24 = mu_Trigger_scale_file_GH.Get("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio")
 mu_Trigger_scale_histo_GH_Mu50 = ROOT.TH2F()
-mu_Trigger_scale_histo_GH_Mu50 = mu_Iso_scale_file_GH("Mu50_OR_TkMu50_PtEtaBins/abseta_pt_ratio")
+mu_Trigger_scale_histo_GH_Mu50 = mu_Trigger_scale_file_GH.Get("Mu50_OR_TkMu50_PtEtaBins/abseta_pt_ratio")
 
 #mu_Tracking_scale_name_BCDEFGH  = "scale_factors/Tracking_EfficienciesAndSF_BCDEFGH.root"
 #mu_Tracking_scale_file_BCDEFGH  = ROOT.TFile(mu_Tracking_scale_name_BCDEFGH)
@@ -140,23 +140,27 @@ class Workflow_Handler:
 
         return scale_factor
 
-    def get_muon_scale(self, lep_pt, lep_eta, run_number, isSingleMuTrigger_24, isSingleMuTrigger_50):
+    def get_muon_scale_BtoF(self, lep_pt, lep_eta, isSingleMuTrigger_24, isSingleMuTrigger_50):
 
-        scale_factor = 1.
-        if run_number <= 278808:                                        
-            scale_factor = scale_factor * mu_ID_scale_histo_BCDEF.GetBinContent( mu_ID_scale_histo_BCDEF.GetXaxis().FindBin(math.fabs(lep_eta)), mu_ID_scale_histo_BCDEF.GetYaxis().FindBin(lep_pt) )
-            scale_factor = scale_factor * mu_Iso_scale_histo_BCDEF.GetBinContent( mu_Iso_scale_histo_BCDEF.GetXaxis().FindBin(math.fabs(ph_eta)), mu_Iso_scale_histo_BCDEF.GetYaxis().FindBin(lep_pt) )
-            if isSingleMuTrigger_24:
-                scale_factor = scale_factor * mu_Trigger_scale_histo_BCDEF_Mu24.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu24.GetXaxis().FindBin(math.fabs(ph_eta)), mu_Trigger_scale_histo_BCDEF_Mu24.GetYaxis().FindBin(lep_pt) )
-            if isSingleMuTrigger_50:
-                scale_factor = scale_factor * mu_Trigger_scale_histo_BCDEF_Mu50.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu50.GetXaxis().FindBin(math.fabs(ph_eta)), mu_Trigger_scale_histo_BCDEF_Mu50.GetYaxis().FindBin(lep_pt) )
-        if run_number > 278808:                                        
-            scale_factor = scale_factor * mu_ID_scale_histo_GH.GetBinContent( mu_ID_scale_histo_GH.GetXaxis().FindBin(math.fabs(lep_eta)), mu_ID_scale_histo_GH.GetYaxis().FindBin(lep_pt) )
-            scale_factor = scale_factor * mu_Iso_scale_histo_GH.GetBinContent( mu_Iso_scale_histo_GH.GetXaxis().FindBin(math.fabs(ph_eta)), mu_Iso_scale_histo_GH.GetYaxis().FindBin(lep_pt) )
-            if isSingleMuTrigger_24:
-                scale_factor = scale_factor * mu_Trigger_scale_histo_GH_Mu24.GetBinContent( mu_Trigger_scale_histo_GH_Mu24.GetXaxis().FindBin(math.fabs(ph_eta)), mu_Trigger_scale_histo_GH_Mu24.GetYaxis().FindBin(lep_pt) )
-            if isSingleMuTrigger_50:
-                scale_factor = scale_factor * mu_Trigger_scale_histo_GH_Mu50.GetBinContent( mu_Trigger_scale_histo_GH_Mu50.GetXaxis().FindBin(math.fabs(ph_eta)), mu_Trigger_scale_histo_GH_Mu50.GetYaxis().FindBin(lep_pt) )
+        scale_factor = 1.                                      
+        scale_factor = scale_factor * mu_ID_scale_histo_BCDEF.GetBinContent( mu_ID_scale_histo_BCDEF.GetXaxis().FindBin(math.fabs(lep_eta)), mu_ID_scale_histo_BCDEF.GetYaxis().FindBin(lep_pt) )
+        scale_factor = scale_factor * mu_Iso_scale_histo_BCDEF.GetBinContent( mu_Iso_scale_histo_BCDEF.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Iso_scale_histo_BCDEF.GetYaxis().FindBin(lep_pt) )
+        if isSingleMuTrigger_24:
+            scale_factor = scale_factor * mu_Trigger_scale_histo_BCDEF_Mu24.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu24.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu24.GetYaxis().FindBin(lep_pt) )
+        if isSingleMuTrigger_50:
+            scale_factor = scale_factor * mu_Trigger_scale_histo_BCDEF_Mu50.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu50.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu50.GetYaxis().FindBin(lep_pt) )
+                         
+        return scale_factor
+
+    def get_muon_scale_GH(self, lep_pt, lep_eta, isSingleMuTrigger_24, isSingleMuTrigger_50):
+
+        scale_factor = 1.                                      
+        scale_factor = scale_factor * mu_ID_scale_histo_GH.GetBinContent( mu_ID_scale_histo_GH.GetXaxis().FindBin(math.fabs(lep_eta)), mu_ID_scale_histo_GH.GetYaxis().FindBin(lep_pt) )
+        scale_factor = scale_factor * mu_Iso_scale_histo_GH.GetBinContent( mu_Iso_scale_histo_GH.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Iso_scale_histo_GH.GetYaxis().FindBin(lep_pt) )
+        if isSingleMuTrigger_24:
+            scale_factor = scale_factor * mu_Trigger_scale_histo_GH_Mu24.GetBinContent( mu_Trigger_scale_histo_GH_Mu24.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_GH_Mu24.GetYaxis().FindBin(lep_pt) )
+        if isSingleMuTrigger_50:
+            scale_factor = scale_factor * mu_Trigger_scale_histo_GH_Mu50.GetBinContent( mu_Trigger_scale_histo_GH_Mu50.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_GH_Mu50.GetYaxis().FindBin(lep_pt) )
 
         return scale_factor
     

@@ -93,8 +93,8 @@ gauss_lumi  = ROOT.RooGaussian("gauss_lumi","gauss_lumi",glb_lumi,lumi_constr,lu
 
 #Now the efficiency
 totsig = 107810.  #total number of signal events
-totmu = 1200.  #total number of signal muon events
-totel = 916.  #total number of signal electron events
+totmu = 5066.  #total number of signal muon events
+totel = 3362.  #total number of signal electron events
 
 glb_eff_mu    = ROOT.RooRealVar("glb_eff_mu","glb_eff_mu",totmu*2./totsig, 0., 1.) #For now, just the raw MC passed/generated number
 eff_mu_constr = ROOT.RooRealVar("eff_mu_constr","eff_mu_constr", totmu*2./totsig, 0., 1.)
@@ -106,7 +106,7 @@ eff_el_constr = ROOT.RooRealVar("eff_el_constr","eff_el_constr",totel*2./totsig,
 eff_el_syst  = ROOT.RooRealVar("eff_el_syst","eff_el_syst",  4*totel*(totsig-2*totel)/(totsig*totsig*totsig))
 gauss_eff_el = ROOT.RooGaussian("gauss_eff_el","gauss_eff_el",glb_eff_el,eff_el_constr,eff_el_syst) 
 
-W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.00001,0.,0.01) # The parameter of interest
+W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.0001,0.,0.01) # The parameter of interest
 
 glb_W_xsec.setConstant(1)
 glb_lumi.setConstant(1)

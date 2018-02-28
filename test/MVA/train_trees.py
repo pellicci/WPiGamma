@@ -3,7 +3,7 @@ import os
 
 #---------------------------------#
 
-isMuon = True  # Switch from muon to electron channel
+isMuon = False  # Switch from muon to electron channel
 data_sidebands = False  # Switch from data sidebands to MC for training (background)
 
 #---------------------------------#

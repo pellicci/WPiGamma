@@ -40,7 +40,6 @@ def BDT_output():
     h_BDT_bkg.Draw("SAME, hist")
     h_BDT_sig.SetMaximum(6)
     leg1.Draw("SAME")
-    #canvas1.Print("~rselvati/www/WPiGamma/MVA/06_12_2017/double_histo.pdf")
 
     if isMuon:
         canvas1.Print("plots/BDT_output_mu_met.pdf")
@@ -90,5 +89,5 @@ def rejB_vs_S():
 
 if __name__ == "__main__":
 
-    #rejB_vs_S()
-    BDT_output()
+    rejB_vs_S()
+    #BDT_output()

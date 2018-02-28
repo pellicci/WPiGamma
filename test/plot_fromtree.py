@@ -28,7 +28,10 @@ ELE_GAMMA_INVMASS_MIN = 88.5
 ELE_GAMMA_INVMASS_MAX = 91.5
 
 #Normalize to this luminsity, in fb-1
-luminosity_norm = 36.46
+#luminosity_norm = 36.46
+luminosity_norm = 35.86
+luminosity_BtoF = 19.72
+luminosity_GH   = 16.14
 
 #Make signal histos larger
 signal_magnify = 100
@@ -193,6 +196,10 @@ Sevts_processed_mu  = 0 # Counters for the number of signal events processed
 Sevts_processed_ele = 0
 Sevts_tot = 0
 Bevts_tot = 0
+Sevts_weighted_mu = 0
+Bevts_weighted_mu = 0
+Sevts_weighted_ele = 0
+Bevts_weighted_ele = 0
 
 ##Loop on samples, and then on events, and merge QCD stuff
 idx_sample = 0
@@ -236,9 +243,9 @@ for name_sample in samplename_list:
         #This is how you access the tree variables
         isMuon = mytree.is_muon
 
-        run_number = mytree.run_number
-        isSingleMuTrigger24 = mytree.isSingleMuTrigger_24
-        isSingleMuTrigger50 = mytree.isSingleMuTrigger_50
+        #run_number = mytree.run_number
+        isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
+        isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
 
         lep_pT  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
@@ -298,8 +305,10 @@ for name_sample in samplename_list:
 
         #---------Determine the total event weight---------#
         
-        if isMuon:
-            mu_weight = myWF.get_muon_scale(lep_pT,lep_eta,run_number,isSingleMuTrigger_24,isSingleMuTrigger_50)
+        if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
+            mu_weight_BtoF = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
+            mu_weight_GH   = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
+            mu_weight_tot  = mu_weight_BtoF*luminosity_BtoF/luminosity_norm + mu_weight_GH*luminosity_GH/luminosity_norm
         else:
             ele_weight = myWF.get_ele_scale(lep_pT,lep_eta)
 
@@ -309,9 +318,20 @@ for name_sample in samplename_list:
             PU_Weight = mytree.PU_Weight        
             Event_Weight = norm_factor*PU_Weight*ph_weight   #Add other event weights here if necessary
             if isMuon:
-                Event_Weight = Event_Weight*mu_weight
+                Event_Weight = Event_Weight*mu_weight_tot
             else:
                 Event_Weight = Event_Weight*ele_weight
+
+            # Obtaining the number of sig and bkg events (weighted)
+            if "Signal" in name_sample and isMuon:
+                Sevts_weighted_mu += Event_Weight
+            if not "Signal" in name_sample and isMuon:
+                Bevts_weighted_mu += Event_Weight
+            if "Signal" in name_sample and not isMuon:
+                Sevts_weighted_ele += Event_Weight
+            if not "Signal" in name_sample and not isMuon:
+                Bevts_weighted_ele += Event_Weight
+
         else:
             Event_Weight = 1
  
@@ -421,7 +441,7 @@ for name_sample in samplename_list:
         if isMuon:
             h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
         
-        if (isMuon and BDT_out >= 0.18) or (not isMuon and BDT_out >= 0.17):
+        if (isMuon and BDT_out >= 0.14) or (not isMuon and BDT_out >= 0.15):
             if (Wmass >= 50. and Wmass <= 100.):
                 if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
                     h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
@@ -755,5 +775,9 @@ print "\nAll the intresting plots have been produced..!"
 
 print "number of Signal events in muon channel: ", Sevts_processed_mu
 print "number of Signal events in electron channel: ", Sevts_processed_ele
-print "total number of S evts: ", Sevts_tot
-print "total number of B evts: ", Bevts_tot
+#print "total number of S evts: ", Sevts_tot
+#print "total number of B evts: ", Bevts_tot
+print "total number of S evts weighted -mu: ", Sevts_weighted_mu
+print "total number of B evts weighted -mu: ", Bevts_weighted_mu
+print "total number of S evts weighted -ele: ", Sevts_weighted_ele
+print "total number of B evts weighted -ele: ", Bevts_weighted_ele
