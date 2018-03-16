@@ -35,7 +35,6 @@ for entry in mytree:
 
 f.Close()
 
-
 #newfile = TFile("proof_mult.root","recreate")
 legend = ROOT.TLegend(0.6868687,0.6120093,0.9511784,0.9491917)
 legend.SetHeader(" ")

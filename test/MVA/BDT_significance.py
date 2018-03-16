@@ -4,7 +4,7 @@ import math
 import numpy as np
 import copy
 
-isMuon = True
+isMuon = False
 
 if isMuon:
     Nsig_passed = 1
@@ -68,7 +68,7 @@ for entry in xrange(h_BDT_effS.GetNbinsX()):
     signif_maximizing_eff = float(format(signif_maximizing_eff, '.3f'))
     #print "effS: ", effS#, "signif_max_eff: ", signif_maximizing_eff
     #if effS == signif_maximizing_eff:
-    if effS == 0.550:
+    if effS == 0.650:
         BDT_output =  h_BDT_effS.GetBinCenter(entry)
 
 print "The BDT output to maximize the significance is :", BDT_output

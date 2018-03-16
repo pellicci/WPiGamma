@@ -265,12 +265,12 @@ if __name__ == '__main__':
     p.start()
     p.join()
     
-    config.General.requestName = 'WPiGammaAnalysis_WGToLNuG'
-    config.Data.unitsPerJob = 5
-    config.Data.inputDataset = '/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
+    #config.General.requestName = 'WPiGammaAnalysis_WGToLNuG'
+    #config.Data.unitsPerJob = 5
+    #config.Data.inputDataset = '/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM'
+    #p = Process(target=submit, args=(config,))
+    #p.start()
+    #p.join()
 
 
 

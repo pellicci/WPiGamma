@@ -151,7 +151,7 @@ if __name__ == '__main__':
     p = Process(target=submit, args=(config,))
     p.start()
     p.join()
-    
+
     config.General.requestName = 'WPiGammaAnalysis_SingleEle_H2'
     config.Data.unitsPerJob = 50
     config.Data.inputDataset = '/SingleElectron/Run2016H-03Feb2017_ver3-v1/MINIAOD'

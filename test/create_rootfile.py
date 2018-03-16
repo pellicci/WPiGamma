@@ -360,9 +360,10 @@ for name_sample in samplename_list:
         #--------Determining the event weight--------#
 
         if ismuon:
-            mu_weight_BtoF = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
-            mu_weight_GH   = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
-            mu_weight_tot  = mu_weight_BtoF*luminosity_BtoF/luminosity_norm + mu_weight_GH*luminosity_GH/luminosity_norm
+            mu_weight_BtoF     = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
+            mu_weight_GH       = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
+            mu_weight_tracking = myWF.get_muon_scale_tracking_BtoH(lep_eta)
+            mu_weight_tot      = mu_weight_BtoF*mu_weight_tracking*(luminosity_BtoF/luminosity_norm) + mu_weight_GH*mu_weight_tracking*(luminosity_GH/luminosity_norm)
         else:
             ele_weight = myWF.get_ele_scale(lep_pT,lep_eta)
 
@@ -383,15 +384,16 @@ for name_sample in samplename_list:
         #-------- Filling mass tree -------------
         #if select_all_but_one("all cuts"):
         if (ismuon and BDT_out >= 0.14) or (not ismuon and BDT_out >= 0.15):
-            isMuon[0] = ismuon
-            Wmass[0] = wmass
-            if not isData:
-                weight[0] = Event_Weight
-                if name_sample == myWF.sig_samplename :
-                    isSignal[0] = 1
-                else :
-                    isSignal[0] = 0
-            t.Fill()
+            if (wmass >= 50. and wmass <= 100.): 
+                isMuon[0] = ismuon
+                Wmass[0] = wmass
+                if not isData:
+                    weight[0] = Event_Weight
+                    if name_sample == myWF.sig_samplename :
+                        isSignal[0] = 1
+                    else :
+                        isSignal[0] = 0
+                t.Fill()
 
         #------- Filling MVA tree ------------
 

@@ -59,10 +59,10 @@ mu_Trigger_scale_histo_GH_Mu24 = mu_Trigger_scale_file_GH.Get("IsoMu24_OR_IsoTkM
 mu_Trigger_scale_histo_GH_Mu50 = ROOT.TH2F()
 mu_Trigger_scale_histo_GH_Mu50 = mu_Trigger_scale_file_GH.Get("Mu50_OR_TkMu50_PtEtaBins/abseta_pt_ratio")
 
-#mu_Tracking_scale_name_BCDEFGH  = "scale_factors/Tracking_EfficienciesAndSF_BCDEFGH.root"
-#mu_Tracking_scale_file_BCDEFGH  = ROOT.TFile(mu_Tracking_scale_name_BCDEFGH)
-#mu_Tracking_scale_histo_BCDEFGH = ROOT.TGraphAsymmErrors()
-#mu_Tracking_scale_histo_BCDEFGH = mu_Tracking_scale_file_BCDEFGH("ratio_eff_aeta_dr030e030_corr")
+mu_Tracking_scale_name_BCDEFGH  = "scale_factors/Tracking_EfficienciesAndSF_BCDEFGH.root"
+mu_Tracking_scale_file_BCDEFGH  = ROOT.TFile(mu_Tracking_scale_name_BCDEFGH)
+mu_Tracking_scale_graph_BCDEFGH = ROOT.TGraphAsymmErrors()
+mu_Tracking_scale_graph_BCDEFGH = mu_Tracking_scale_file_BCDEFGH.Get("ratio_eff_aeta_dr030e030_corr")
 
 #----------Some arrays for the BDT----------#
 pi_pT_array           = array('f', [0.])
@@ -117,10 +117,10 @@ class Workflow_Handler:
         reader.BookMVA("BDT_ele","MVA/weights/TMVAClassification_BDT.weights_ele_met.xml")
         
     def get_ele_scale(self, ele_pt, ele_eta):
-        #This is because corrections are up to 200 GeV
+        #This is because corrections are up to 150 GeV
         local_ele_pt = ele_pt
-        if local_ele_pt >= 200.:
-            local_ele_pt = 199.
+        if local_ele_pt > 150.:
+            local_ele_pt = 150.
 
         scale_factor = 1.
         scale_factor = scale_factor * eg_reco_scale_histo.GetBinContent( eg_reco_scale_histo.GetXaxis().FindBin(ele_eta), eg_reco_scale_histo.GetYaxis().FindBin(local_ele_pt) )
@@ -129,10 +129,10 @@ class Workflow_Handler:
         return scale_factor
 
     def get_photon_scale(self, ph_pt, ph_eta):
-        #This is because corrections are up to 200 GeV
+        #This is because corrections are up to 150 GeV
         local_ph_pt = ph_pt
-        if local_ph_pt >= 200.:
-            local_ph_pt = 199.
+        if local_ph_pt > 150.:
+            local_ph_pt = 150.
 
         scale_factor = 1.
         scale_factor = scale_factor * ph_ID_scale_histo.GetBinContent( ph_ID_scale_histo.GetXaxis().FindBin(ph_eta), ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
@@ -162,6 +162,13 @@ class Workflow_Handler:
         if isSingleMuTrigger_50:
             scale_factor = scale_factor * mu_Trigger_scale_histo_GH_Mu50.GetBinContent( mu_Trigger_scale_histo_GH_Mu50.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_GH_Mu50.GetYaxis().FindBin(lep_pt) )
 
+        return scale_factor
+
+    def get_muon_scale_tracking_BtoH(self, lep_eta):
+
+        scale_factor = 1.
+        scale_factor = scale_factor * mu_Tracking_scale_graph_BCDEFGH.Eval(math.fabs(lep_eta))
+        
         return scale_factor
     
     def get_normalizations_map(self):
@@ -237,16 +244,3 @@ class Workflow_Handler:
             root_file[self.sig_samplename] = ROOT.TFile(self.sig_filename)
 
         return root_file
-
-   # to be used for data only
-   # def get_root_files_data(self):
-   #     list_dirs = os.listdir(self.dir_data_input)
-   #     root_file = dict()
-
-   #     for dirname in list_dirs:
-   #         tmp_samplename3 = dirname.split("WPiGammaAnalysis_")[1]
-   #         tmp_samplename4 = tmp_samplename3.replace(".root","")
-   #         root_file[tmp_samplename4] = ROOT.TFile(self.dir_data_input + dirname)
-
-   #     return root_file
-

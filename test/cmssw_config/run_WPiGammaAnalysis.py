@@ -7,7 +7,7 @@ process.load('Configuration.StandardSequences.Services_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(10)
 )
 
 import FWCore.ParameterSet.VarParsing as VarParsing

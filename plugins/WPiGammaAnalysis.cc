@@ -301,8 +301,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     pTmuMax = mu->pt();
     //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
 
-    mu_ID   = mu->pdgId();
     is_muon = true;
+    mu_ID   = mu->pdgId();
     mu_eta  = mu->eta();
     mu_phi  = mu->phi();
     mu_pT   = mu->pt();
@@ -334,7 +334,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     lepton_iso = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
     if(lepton_iso > 0.4) continue;
 
-    el_ID    = el->pdgId();
     is_ele   = true;
     el_ID    = el->pdgId();
     el_eta   = el->eta();
@@ -396,7 +395,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   sum_pT_05 = 0.;
 
   for(auto cand = PFCandidates->begin(); cand != PFCandidates->end(); ++cand){
-    if(cand->pdgId()*mu_ID < 0 && cand->pdgId()*el_ID < 0) continue;    
+    if(cand->pdgId()*mu_ID < 0 || cand->pdgId()*el_ID < 0) continue; // WARNING: this condition works only if paired with muon/electron veto
     if(cand->pt() < 20. || !cand->trackHighPurity() || cand->fromPV() != 3) continue;
     if(cand->pt() < pTpiMax) continue;
     //if(cand->trackIso() > 5) continue;

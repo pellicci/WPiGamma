@@ -233,7 +233,7 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu:
             continue
 
-        if "Data" in name_sample: continue  #-------------Excluding data-------------#
+        #if "Data" in name_sample: continue  #-------------Excluding data-------------#
 
         if "Signal" in name_sample:
             Sevts_tot += 1
@@ -306,9 +306,10 @@ for name_sample in samplename_list:
         #---------Determine the total event weight---------#
         
         if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
-            mu_weight_BtoF = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
-            mu_weight_GH   = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
-            mu_weight_tot  = mu_weight_BtoF*luminosity_BtoF/luminosity_norm + mu_weight_GH*luminosity_GH/luminosity_norm
+            mu_weight_BtoF     = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
+            mu_weight_GH       = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
+            mu_weight_tracking = myWF.get_muon_scale_tracking_BtoH(lep_eta)
+            mu_weight_tot      = mu_weight_BtoF*mu_weight_tracking*(luminosity_BtoF/luminosity_norm) + mu_weight_GH*mu_weight_tracking*(luminosity_GH/luminosity_norm)
         else:
             ele_weight = myWF.get_ele_scale(lep_pT,lep_eta)
 
@@ -441,7 +442,7 @@ for name_sample in samplename_list:
         if isMuon:
             h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
         
-        if (isMuon and BDT_out >= 0.14) or (not isMuon and BDT_out >= 0.15):
+        if (isMuon and BDT_out >= 0.13) or (not isMuon and BDT_out >= 0.13):
             if (Wmass >= 50. and Wmass <= 100.):
                 if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
                     h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)

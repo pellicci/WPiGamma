@@ -56,15 +56,15 @@ totSignal = workspace.pdf("totSignal")
 #Now describe the background
 
 #First the muon
-a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",0.2,-2.,2.)
-a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",0.2,-2.,2.)
-a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",0.02,-2.,2.)
+a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",0.2,0.,2.)
+a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",0.2,0.,2.)
+a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",0.02,0.,2.)
 backPDF_mu = ROOT.RooBernstein("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu))
 
 #Then the electron
-a0_el = ROOT.RooRealVar("a0_el","a0_el",0.1,-2.,2.)
-a1_el = ROOT.RooRealVar("a1_el","a1_el",0.3,-2.,2.)
-a2_el = ROOT.RooRealVar("a2_el","a2_el",0.1,-2.,2.)
+a0_el = ROOT.RooRealVar("a0_el","a0_el",0.1,0.,2.)
+a1_el = ROOT.RooRealVar("a1_el","a1_el",0.3,0.,2.)
+a2_el = ROOT.RooRealVar("a2_el","a2_el",0.1,0.,2.)
 backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el))
 
 #Gaussian distribution of W resolution width
@@ -86,27 +86,29 @@ W_xsec_syst   = ROOT.RooRealVar("W_xsec_syst","W_xsec_syst",43.*2.*0.1086)
 gauss_W_xsec  = ROOT.RooGaussian("gauss_W_xsec","gauss_W_xsec",glb_W_xsec,W_xsec_constr,W_xsec_syst)
 
 #Represent the luminosity with a modifier for systematics. For 2016, 2.5% systematics
-glb_lumi    = ROOT.RooRealVar("glb_lumi","glb_lumi",36.46 * 1000., 0., 50000.) #In pb
-lumi_constr = ROOT.RooRealVar("lumi_constr","lumi_constr", 36.46 * 1000., 0., 50000.)
-lumi_syst   = ROOT.RooRealVar("lumi_syst","lumi_syst", 36.46*0.025*1000.)
+glb_lumi    = ROOT.RooRealVar("glb_lumi","glb_lumi",35.86 * 1000., 0., 50000.) #In pb
+lumi_constr = ROOT.RooRealVar("lumi_constr","lumi_constr", 35.86 * 1000., 0., 50000.)
+lumi_syst   = ROOT.RooRealVar("lumi_syst","lumi_syst", 35.86*0.025*1000.)
 gauss_lumi  = ROOT.RooGaussian("gauss_lumi","gauss_lumi",glb_lumi,lumi_constr,lumi_syst) 
 
 #Now the efficiency
 totsig = 107810.  #total number of signal events
-totmu = 5066.  #total number of signal muon events
-totel = 3362.  #total number of signal electron events
+totmu = 5066.     #total number of signal muon events
+totel = 3362.     #total number of signal electron events
+#totmu = 5506.     #total number of signal muon events
+#totel = 4013.     #total number of signal electron events
 
 glb_eff_mu    = ROOT.RooRealVar("glb_eff_mu","glb_eff_mu",totmu*2./totsig, 0., 1.) #For now, just the raw MC passed/generated number
 eff_mu_constr = ROOT.RooRealVar("eff_mu_constr","eff_mu_constr", totmu*2./totsig, 0., 1.)
 eff_mu_syst   = ROOT.RooRealVar("eff_mu_syst","eff_mu_syst", 4*totmu*(totsig-2*totmu)/(totsig*totsig*totsig))
 gauss_eff_mu  = ROOT.RooGaussian("gauss_eff_mu","gauss_eff_mu",glb_eff_mu,eff_mu_constr,eff_mu_syst) 
 
-glb_eff_el     = ROOT.RooRealVar("glb_eff_el","glb_eff_el", totel*2./totsig, 0., 1.) #For now, just the raw MC passed/generated number
+glb_eff_el    = ROOT.RooRealVar("glb_eff_el","glb_eff_el", totel*2./totsig, 0., 1.) #For now, just the raw MC passed/generated number
 eff_el_constr = ROOT.RooRealVar("eff_el_constr","eff_el_constr",totel*2./totsig, 0., 1.)
-eff_el_syst  = ROOT.RooRealVar("eff_el_syst","eff_el_syst",  4*totel*(totsig-2*totel)/(totsig*totsig*totsig))
-gauss_eff_el = ROOT.RooGaussian("gauss_eff_el","gauss_eff_el",glb_eff_el,eff_el_constr,eff_el_syst) 
+eff_el_syst   = ROOT.RooRealVar("eff_el_syst","eff_el_syst",  4*totel*(totsig-2*totel)/(totsig*totsig*totsig))
+gauss_eff_el  = ROOT.RooGaussian("gauss_eff_el","gauss_eff_el",glb_eff_el,eff_el_constr,eff_el_syst) 
 
-W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.0001,0.,0.01) # The parameter of interest
+W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.000001,0.,0.01) # The parameter of interest
 
 glb_W_xsec.setConstant(1)
 glb_lumi.setConstant(1)
@@ -163,6 +165,7 @@ canvas.cd(1)
 xframe_mu.Draw()
 canvas.cd(2)
 xframe_el.Draw()
+
 if isData:
     canvas.SaveAs("fitData.pdf")
 else:
