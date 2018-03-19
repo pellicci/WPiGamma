@@ -2,16 +2,16 @@ import ROOT
 import os
 import subprocess
 
-isData = True ##---------switch from DATA to MC and vice versa---------##
+isData = False ##---------switch from DATA to MC and vice versa---------##
 
 if not isData:
     dir_input = "crab_projects/samples_Medium/"
-    dir_output_bkg = "rootfiles/Medium/backgrounds/"
-    dir_output_sig = "rootfiles/Medium/signals/"
+    dir_output_bkg = "rootfiles/Medium_AfterFix/backgrounds/"
+    dir_output_sig = "rootfiles/Medium_AfterFix/signals/"
 
 if isData:
     dir_input = "crab_projects/dataprocess/"
-    dir_output_data = "rootfiles/data/"
+    dir_output_data = "rootfiles/data_AfterFix/"
 
 list_dirs = os.listdir(dir_input)
 
