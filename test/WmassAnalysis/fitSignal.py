@@ -3,11 +3,26 @@
 
 import ROOT
 
+#--------some bools for scale factor systematics----------#
+
+random_mu_SF = False #--------if True, muon scale factors are sampled from a Gaussian
+random_ele_SF = False #------if True, electron scale factors are sampled from a Gaussian
+random_ph_SF = True #-------if True, photon scale factors are sampled from a Gaussian
+
+#---------------------------------------------------------#
+
 #Define the observable
 Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV/c^{2}")
 
 #Retrive the sample
-fInput = ROOT.TFile("Tree_MC.root")
+if random_mu_SF:
+    fInput = ROOT.TFile("Tree_MC_muSF.root")
+elif random_ele_SF:
+    fInput = ROOT.TFile("Tree_MC_eleSF.root")
+elif random_ph_SF:
+    fInput = ROOT.TFile("Tree_MC_phSF.root")
+else:
+    fInput = ROOT.TFile("Tree_MC.root")
 fInput.cd()
 
 mytree = fInput.Get("minitree")
@@ -59,13 +74,20 @@ totSignal.plotOn(massplot)
 canvas = ROOT.TCanvas()
 canvas.cd()
 massplot.Draw()
-canvas.SaveAs("SignalFit.pdf")
+canvas.SaveAs("plots/SignalFit.pdf")
 
 
 workspace = ROOT.RooWorkspace("myworkspace")
 getattr(workspace,'import')(totSignal)
 
-fOutput = ROOT.TFile("Signal_model.root","RECREATE")
+if random_mu_SF:
+    fOutput = ROOT.TFile("Signal_model_muSF.root","RECREATE")
+elif random_ele_SF:
+    fOutput = ROOT.TFile("Signal_model_eleSF.root","RECREATE")
+elif random_ph_SF:
+    fOutput = ROOT.TFile("Signal_model_phSF.root","RECREATE")
+else:
+    fOutput = ROOT.TFile("Signal_model.root","RECREATE")
 fOutput.cd()
 workspace.Write()
 fOutput.Close()

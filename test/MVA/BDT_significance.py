@@ -4,19 +4,19 @@ import math
 import numpy as np
 import copy
 
-isMuon = False
+isMuon = True
 
 if isMuon:
-    Nsig_passed = 1
-    Nbkg_passed = 112774
+    Nsig_passed = 1 # Number of signal and background events from the sum of the weights (before applying BDT cuts)
+    Nbkg_passed = 56116
 else:
     Nsig_passed = 1
-    Nbkg_passed = 172296
+    Nbkg_passed = 109132
 
 if isMuon:
-    BDT_file = ROOT.TFile("outputs/Nominal_training_mu_met.root")
+    BDT_file = ROOT.TFile("outputs/Nominal_training_mu.root")
 else:
-    BDT_file = ROOT.TFile("outputs/Nominal_training_ele_met.root")
+    BDT_file = ROOT.TFile("outputs/Nominal_training_ele.root")
 
 h_BDT_effB_effS = BDT_file.Get("Method_BDT/BDT/MVA_BDT_effBvsS")
 
@@ -26,6 +26,8 @@ canvas1 = ROOT.TCanvas()
 sig_eff = []
 bkg_eff = []
 signif = []
+_effS = 0
+
 #print "nbins: ", BDT_hist.GetNbinsX()
 for jbin in range(1,h_BDT_effB_effS.GetNbinsX()):
     if h_BDT_effB_effS.GetBinCenter(jbin) > 0.1:
@@ -43,17 +45,18 @@ for jbin in range(1,h_BDT_effB_effS.GetNbinsX()):
 sig_eff_array = np.array(sig_eff)
 signif_array = np.array(signif)
 sign = ROOT.TGraph(89,sig_eff_array,signif_array)
+sign.SetTitle("")
 sign.GetXaxis().SetTitle("Signal efficiency")
 sign.GetYaxis().SetTitle("Significance")
-sign.SetMaximum(0.15)
+sign.SetMaximum(0.30)
 sign.SetMarkerStyle(8)
 sign.SetMarkerColor(4)
 sign.Draw("AP")
 
 if isMuon:
-    canvas1.SaveAs("plots/signif_vs_effS_mu_met.pdf")
+    canvas1.SaveAs("plots/signif_vs_effS_mu.pdf")
 else:
-    canvas1.SaveAs("plots/signif_vs_effS_ele_met.pdf")
+    canvas1.SaveAs("plots/signif_vs_effS_ele.pdf")
 
 #----Now find the BDT output corresponding to the highest significance
 
@@ -68,7 +71,8 @@ for entry in xrange(h_BDT_effS.GetNbinsX()):
     signif_maximizing_eff = float(format(signif_maximizing_eff, '.3f'))
     #print "effS: ", effS#, "signif_max_eff: ", signif_maximizing_eff
     #if effS == signif_maximizing_eff:
-    if effS == 0.650:
+    if effS == 0.760:
         BDT_output =  h_BDT_effS.GetBinCenter(entry)
+        _effS = effS
 
-print "The BDT output to maximize the significance is :", BDT_output
+print "For a signal efficiency of ", _effS, "the BDT output is :", BDT_output

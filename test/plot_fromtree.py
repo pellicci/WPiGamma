@@ -200,6 +200,7 @@ Sevts_weighted_mu = 0
 Bevts_weighted_mu = 0
 Sevts_weighted_ele = 0
 Bevts_weighted_ele = 0
+_Nrandom_for_SF = ROOT.TRandom3()
 
 ##Loop on samples, and then on events, and merge QCD stuff
 idx_sample = 0
@@ -230,7 +231,7 @@ for name_sample in samplename_list:
         if nb <= 0:
             continue
 
-        if name_sample == "ttbar" and mytree.isttbarlnu:
+        if name_sample == "ttbar" and mytree.isttbarlnu: # Avoid double-counting of the ttbarlnu background
             continue
 
         #if "Data" in name_sample: continue  #-------------Excluding data-------------#
@@ -240,7 +241,8 @@ for name_sample in samplename_list:
         else:
             Bevts_tot += 1
 
-        #This is how you access the tree variables
+        #---------- Access the tree variables ----------#
+
         isMuon = mytree.is_muon
 
         #run_number = mytree.run_number
@@ -306,20 +308,31 @@ for name_sample in samplename_list:
         #---------Determine the total event weight---------#
         
         if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
-            mu_weight_BtoF     = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
-            mu_weight_GH       = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
-            mu_weight_tracking = myWF.get_muon_scale_tracking_BtoH(lep_eta)
-            mu_weight_tot      = mu_weight_BtoF*mu_weight_tracking*(luminosity_BtoF/luminosity_norm) + mu_weight_GH*mu_weight_tracking*(luminosity_GH/luminosity_norm)
-        else:
-            ele_weight = myWF.get_ele_scale(lep_pT,lep_eta)
+            mu_weight_BtoF, mu_weight_BtoF_err = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24)
+            mu_weight_GH, mu_weight_GH_err     = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
+            #mu_weight_tracking = myWF.get_muon_scale_tracking_BtoH(lep_eta)
 
-        ph_weight = myWF.get_photon_scale(gamma_eT,gamma_eta)
+            #print "BtoF", mu_weight_BtoF, "err: ", mu_weight_BtoF_err, "muon pT: ", lep_pT, "muon eta: ", lep_eta
+
+            # Use a random number to select which muon scale factor to use, depending on the associated lumi fraction
+            Nrandom_for_SF = _Nrandom_for_SF.Rndm()
+
+            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):
+                mu_weight = mu_weight_BtoF#*mu_weight_tracking
+            else:
+                mu_weight = mu_weight_GH#*mu_weight_tracking
+            
+        else:
+            ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,lep_eta)
+
+        ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_eta)
 
         if not "Data" in name_sample:
             PU_Weight = mytree.PU_Weight        
-            Event_Weight = norm_factor*PU_Weight*ph_weight   #Add other event weights here if necessary
+            Event_Weight = norm_factor*PU_Weight*ph_weight
+
             if isMuon:
-                Event_Weight = Event_Weight*mu_weight_tot
+                Event_Weight = Event_Weight*mu_weight
             else:
                 Event_Weight = Event_Weight*ele_weight
 
@@ -368,15 +381,15 @@ for name_sample in samplename_list:
             if not "Data" in name_sample:
                 h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
         """
-        if select_all_but_one("h_deltaphi_mu_pi") and isMuon:
-            h_base[theSampleName+"h_deltaphi_mu_pi"].Fill(deltaphi_lep_pi,Event_Weight)
+        #if select_all_but_one("h_deltaphi_mu_pi") and isMuon:
+        #    h_base[theSampleName+"h_deltaphi_mu_pi"].Fill(deltaphi_lep_pi,Event_Weight)
 
         if select_all_but_one("all cuts") and isMuon:
             h_base[theSampleName+"h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
             h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
                     
-        if select_all_but_one("h_deltaphi_ele_pi") and not isMuon:
-            h_base[theSampleName+"h_deltaphi_ele_pi"].Fill(deltaphi_lep_pi,Event_Weight)
+        #if select_all_but_one("h_deltaphi_ele_pi") and not isMuon:
+        #    h_base[theSampleName+"h_deltaphi_ele_pi"].Fill(deltaphi_lep_pi,Event_Weight)
 
         if select_all_but_one("all cuts") and not isMuon:
             h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
@@ -441,8 +454,11 @@ for name_sample in samplename_list:
 
         if isMuon:
             h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
+            h_base[theSampleName+"h_deltaphi_mu_pi"].Fill(deltaphi_lep_pi,Event_Weight)
+        else:
+            h_base[theSampleName+"h_deltaphi_ele_pi"].Fill(deltaphi_lep_pi,Event_Weight)
         
-        if (isMuon and BDT_out >= 0.13) or (not isMuon and BDT_out >= 0.13):
+        if (isMuon and BDT_out >= 0.12) or (not isMuon and BDT_out >= 0.09):
             if (Wmass >= 50. and Wmass <= 100.):
                 if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
                     h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
@@ -580,11 +596,13 @@ for hname in list_histos:
 
     hs[hname].Draw("histo")
     if "h_Wmass_flag" in hname:
-        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),50.))
+        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),55.))
     if hname == "h_Wmass":
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),100.))
     if hname == "h_piRelIso_05_ele":
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),27000.))
+    if hname == "h_piRelIso_05_mu":
+        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),7000.))
 
     down = ROOT.gPad.GetUymin()
     up   = ROOT.gPad.GetUymax()

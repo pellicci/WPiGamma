@@ -2,15 +2,18 @@ import ROOT
 import os
 import subprocess
 
-isData = False ##---------switch from DATA to MC and vice versa---------##
+isData = True ##---------switch from DATA to MC and vice versa---------##
 
 if not isData:
     dir_input = "crab_projects/samples_Medium/"
+    #dir_output_bkg = "rootfiles/Medium/backgrounds/"
     dir_output_bkg = "rootfiles/Medium_AfterFix/backgrounds/"
+    #dir_output_sig = "rootfiles/Medium/signals/"
     dir_output_sig = "rootfiles/Medium_AfterFix/signals/"
 
 if isData:
     dir_input = "crab_projects/dataprocess/"
+    #dir_output_data = "rootfiles/data/"
     dir_output_data = "rootfiles/data_AfterFix/"
 
 list_dirs = os.listdir(dir_input)
@@ -30,7 +33,7 @@ if isData and not os.path.exists(dir_output_data):
 for dirname in list_dirs:
 
     print "Processing sample dir " + dirname
-    
+
     n_jobs_command = "crab status -d " + dir_input + dirname + " | grep status: " + "| awk " + """'{split($0,array,"/") ; print array[2]}'""" + "| sed 's/.$//'"
     n_jobs = subprocess.check_output(n_jobs_command, shell=True)
 
@@ -44,14 +47,14 @@ for dirname in list_dirs:
         os.system(crab_command)
         crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-" + n_jobs
         os.system(crab_command_1)
-    else:# n_jobs > 1000:
+    else:
         crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
         os.system(crab_command)
         crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-1000"
         os.system(crab_command_1)
         crab_command_2 = "crab getoutput -d " + dir_input + dirname + " --jobids 1001-" + n_jobs
         os.system(crab_command_2)
-    
+
     samplename = dirname.split("crab_WPiGammaAnalysis_") #--which means "dirname"-"crab_WPiGammaAnalysys_"
 
     if "Signal" in dirname:

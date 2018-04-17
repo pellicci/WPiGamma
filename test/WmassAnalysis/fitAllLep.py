@@ -7,6 +7,14 @@ import math
 #Define if working on MC or DATA
 isData = False
 
+#--------some bools for scale factor systematics----------#
+
+random_mu_SF = False #-------if True, muon scale factors are sampled from a Gaussian
+random_ele_SF = False #------if True, electron scale factors are sampled from a Gaussian
+random_ph_SF = False #-------if True, photon scale factors are sampled from a Gaussian
+
+#---------------------------------------------------------#
+
 #Define the observable
 Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV/c^{2}")
 
@@ -14,7 +22,14 @@ Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV/c^{2}")
 if isData:
     fInput = ROOT.TFile("Tree_Data.root")
 else:
-    fInput = ROOT.TFile("Tree_MC.root")
+    if random_mu_SF:
+        fInput = ROOT.TFile("Tree_MC_muSF.root")
+    elif random_ele_SF:
+        fInput = ROOT.TFile("Tree_MC_eleSF.root")
+    elif random_ph_SF:
+        fInput = ROOT.TFile("Tree_MC_phSF.root")
+    else:
+        fInput = ROOT.TFile("Tree_MC.root")
 fInput.cd()
 
 mytree = fInput.Get("minitree")
@@ -37,7 +52,14 @@ else:
 print "Using ", data.numEntries(), " events to fit"
 
 #Import the signal
-fInput_sigmodel = ROOT.TFile("Signal_model.root")
+if random_mu_SF:
+    fInput_sigmodel = ROOT.TFile("Signal_model_muSF.root")
+elif random_ele_SF:
+    fInput_sigmodel = ROOT.TFile("Signal_model_eleSF.root")
+elif random_ph_SF:
+    fInput_sigmodel = ROOT.TFile("Signal_model_phSF.root")
+else:
+    fInput_sigmodel = ROOT.TFile("Signal_model.root")
 fInput_sigmodel.cd()
 
 workspace = fInput_sigmodel.Get("myworkspace")
@@ -67,7 +89,7 @@ a1_el = ROOT.RooRealVar("a1_el","a1_el",0.3,0.,2.)
 a2_el = ROOT.RooRealVar("a2_el","a2_el",0.1,0.,2.)
 backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el))
 
-#Gaussian distribution of W resolution width
+#Gaussian distribution of W resolution width for systematics
 W_resol_width = workspace.var("W_resol_width")
 W_resol_width_constr = ROOT.RooRealVar("W_resol_width_constr","W_resol_width_constr",W_resol_width.getVal())
 W_resol_width_err = ROOT.RooRealVar("W_resol_width_err","W_resol_width_err",W_resol_width.getError())
@@ -91,12 +113,12 @@ lumi_constr = ROOT.RooRealVar("lumi_constr","lumi_constr", 35.86 * 1000., 0., 50
 lumi_syst   = ROOT.RooRealVar("lumi_syst","lumi_syst", 35.86*0.025*1000.)
 gauss_lumi  = ROOT.RooGaussian("gauss_lumi","gauss_lumi",glb_lumi,lumi_constr,lumi_syst) 
 
+#Systematic connected to scale factors
+
 #Now the efficiency
 totsig = 107810.  #total number of signal events
-totmu = 5066.     #total number of signal muon events
-totel = 3362.     #total number of signal electron events
-#totmu = 5506.     #total number of signal muon events
-#totel = 4013.     #total number of signal electron events
+totmu = 7938.     #total number of signal muon events
+totel = 6469.     #total number of signal electron events
 
 glb_eff_mu    = ROOT.RooRealVar("glb_eff_mu","glb_eff_mu",totmu*2./totsig, 0., 1.) #For now, just the raw MC passed/generated number
 eff_mu_constr = ROOT.RooRealVar("eff_mu_constr","eff_mu_constr", totmu*2./totsig, 0., 1.)
@@ -167,15 +189,29 @@ canvas.cd(2)
 xframe_el.Draw()
 
 if isData:
-    canvas.SaveAs("fitData.pdf")
+    canvas.SaveAs("plots/fitData.pdf")
 else:
-    canvas.SaveAs("fitMC.pdf")
+    if random_mu_SF:
+        canvas.SaveAs("plots/fitMC_muSF.pdf")
+    elif random_ele_SF:
+        canvas.SaveAs("plots/fitMC_eleSF.pdf")
+    elif random_ph_SF:
+        canvas.SaveAs("plots/fitMC_phSF.pdf")
+    else:
+        canvas.SaveAs("plots/fitMC.pdf")
 
 #Save the fit into a root file
 if isData:
     fOutput = ROOT.TFile("fitData.root","RECREATE")
 else:
-    fOutput = ROOT.TFile("fitMC.root","RECREATE")
+    if random_mu_SF:
+        fOutput = ROOT.TFile("fitMC_muSF.root","RECREATE")
+    elif random_ele_SF:
+        fOutput = ROOT.TFile("fitMC_eleSF.root","RECREATE")
+    elif random_ph_SF:
+        fOutput = ROOT.TFile("fitMC_phSF.root","RECREATE")
+    else:
+        fOutput = ROOT.TFile("fitMC.root","RECREATE")
 fOutput.cd()
 
 workspace = ROOT.RooWorkspace("workspace")

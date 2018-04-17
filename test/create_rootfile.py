@@ -12,8 +12,11 @@ myWF = Workflow_Handler("Signal","Data",isMedium = True)
 
 #------------------------------------------------------------------------#
 
-isData = False ##---------switch from DATA to MC and vice versa---------##
-split_MC = False #-------if True, MC signal sample is split in two for the training/testing of the BDT
+isData        = False #------switch from DATA to MC and vice versa
+split_MC      = False #------if True, MC signal sample is split in two for the training/testing of the BDT
+random_mu_SF  = False #------if True, muon scale factors are sampled from a Gaussian
+random_ele_SF = False #------if True, electron scale factors are sampled from a Gaussian
+random_ph_SF  = False #-------if True, photon scale factors are sampled from a Gaussian
 
 #------------------------------------------------------------------------#
 
@@ -55,8 +58,20 @@ _piRelIso_05       = np.zeros(1, dtype=float)
 _ele_gamma_InvMass = np.zeros(1, dtype=float)
 _met               = np.zeros(1, dtype=float)
 
+_Nrandom_for_SF = ROOT.TRandom3()
+_Nrandom_for_Gaus_SF = ROOT.TRandom3()
+
 if not isData:
-    f = TFile('WmassAnalysis/Tree_MC.root','recreate')
+
+    if random_mu_SF:
+        f = TFile('WmassAnalysis/Tree_MC_muSF.root','recreate')
+    elif random_ele_SF:
+        f = TFile('WmassAnalysis/Tree_MC_eleSF.root','recreate')
+    elif random_ph_SF:
+        f = TFile('WmassAnalysis/Tree_MC_phSF_eleCh.root','recreate')
+    else:
+        f = TFile('WmassAnalysis/Tree_MC.root','recreate')
+
     t = TTree('minitree','tree with branches')
     t.Branch('Wmass',Wmass,'Wmass/D')
     t.Branch('isMuon',isMuon,'isMuon/I')
@@ -297,6 +312,9 @@ for name_sample in samplename_list:
 
         ismuon = mytree.is_muon
 
+       # if ismuon:
+       #     continue
+
         #run_number = mytree.run_number
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
         isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
@@ -359,15 +377,41 @@ for name_sample in samplename_list:
 
         #--------Determining the event weight--------#
 
-        if ismuon:
-            mu_weight_BtoF     = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
-            mu_weight_GH       = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24,isSingleMuTrigger_50)
-            mu_weight_tracking = myWF.get_muon_scale_tracking_BtoH(lep_eta)
-            mu_weight_tot      = mu_weight_BtoF*mu_weight_tracking*(luminosity_BtoF/luminosity_norm) + mu_weight_GH*mu_weight_tracking*(luminosity_GH/luminosity_norm)
-        else:
-            ele_weight = myWF.get_ele_scale(lep_pT,lep_eta)
+        Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
-        ph_weight = myWF.get_photon_scale(gamma_eT,gamma_eta)
+        if ismuon:
+            mu_weight_BtoF, mu_weight_BtoF_err = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24)
+            mu_weight_GH, mu_weight_GH_err = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
+
+            #mu_weight_tracking = myWF.get_muon_scale_tracking_BtoH(lep_eta)
+            #mu_weight_tot      = mu_weight_BtoF*mu_weight_tracking*(luminosity_BtoF/luminosity_norm) + mu_weight_GH*mu_weight_tracking*(luminosity_GH/luminosity_norm)
+            
+            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):
+                
+                if random_mu_SF:
+                    mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_BtoF,mu_weight_BtoF_err)
+                    #print "SF_A: ", mu_weight_BtoF, "SF smeared: ", mu_weight
+                else:
+                    mu_weight = mu_weight_BtoF#*mu_weight_tracking
+
+            else:
+                
+                if random_mu_SF:
+                    mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_GH,mu_weight_GH_err)
+                    #print "SF_B: ", mu_weight_BtoF, "SF smeared: ", mu_weight
+                else:
+                    mu_weight = mu_weight_GH#*mu_weight_tracking
+
+        else:
+            ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,lep_eta)
+
+            if random_ele_SF:
+                ele_weight = _Nrandom_for_Gaus_SF.Gaus(ele_weight,ele_weight_err) 
+
+        ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_eta)
+        
+        if random_ph_SF:
+            ph_weight = _Nrandom_for_Gaus_SF.Gaus(ph_weight,ph_weight_err)
 
         Event_Weight = 1.
 
@@ -376,14 +420,14 @@ for name_sample in samplename_list:
             PU_Weight = mytree.PU_Weight
             Event_Weight = norm_factor*PU_Weight*ph_weight
             if ismuon:
-                Event_Weight = Event_Weight*mu_weight_tot
+                Event_Weight = Event_Weight*mu_weight
             else:
                 Event_Weight = Event_Weight*ele_weight
   
 
         #-------- Filling mass tree -------------
         #if select_all_but_one("all cuts"):
-        if (ismuon and BDT_out >= 0.14) or (not ismuon and BDT_out >= 0.15):
+        if (ismuon and BDT_out >= 0.12) or (not ismuon and BDT_out >= 0.09):
             if (wmass >= 50. and wmass <= 100.): 
                 isMuon[0] = ismuon
                 Wmass[0] = wmass

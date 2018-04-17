@@ -5,14 +5,14 @@ import sys
 import numpy as np
 from ROOT import TH1F, TCanvas, TFile, TLegend, gStyle
 
-isMuon = False
+isMuon = True
 
 def BDT_output():
 
     if isMuon:
-        f = TFile("outputs/Nominal_training_mu_met.root")
+        f = TFile("outputs/Nominal_training_mu.root")
     else:
-        f = TFile("outputs/Nominal_training_ele_met.root")
+        f = TFile("outputs/Nominal_training_ele.root")
 
     h_BDT_sig = f.Get("Method_BDT/BDT/MVA_BDT_S")
     h_BDT_bkg = f.Get("Method_BDT/BDT/MVA_BDT_B")
@@ -30,7 +30,8 @@ def BDT_output():
     
     gStyle.SetOptStat(0)
     canvas1 = TCanvas()
-    h_BDT_sig.SetTitle("BDT Output")
+    h_BDT_sig.SetTitle("")
+    h_BDT_bkg.SetTitle("")
     h_BDT_sig.SetFillColor(38)
     #h_BDT_sig.SetLineColor(1)
     h_BDT_bkg.SetFillColor(2)
@@ -38,13 +39,13 @@ def BDT_output():
     h_BDT_bkg.SetFillStyle(3002)
     h_BDT_sig.Draw("hist")
     h_BDT_bkg.Draw("SAME, hist")
-    h_BDT_sig.SetMaximum(6)
+    h_BDT_sig.SetMaximum(6.5)
     leg1.Draw("SAME")
 
     if isMuon:
-        canvas1.Print("plots/BDT_output_mu_met.pdf")
+        canvas1.Print("plots/BDT_output_mu.pdf")
     else:
-        canvas1.Print("plots/BDT_output_ele_met.pdf")
+        canvas1.Print("plots/BDT_output_ele.pdf")
 
 def rejB_vs_S():
 
@@ -89,5 +90,5 @@ def rejB_vs_S():
 
 if __name__ == "__main__":
 
-    rejB_vs_S()
-    #BDT_output()
+    #rejB_vs_S()
+    BDT_output()

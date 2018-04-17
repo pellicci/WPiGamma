@@ -120,7 +120,8 @@ def main():
         os.makedirs("rootfiles")
         
     #output_filename = "rootfiles/Tight/Normalizations_table.txt"
-    output_filename = "rootfiles/Medium/Normalizations_table.txt"
+    #output_filename = "rootfiles/Medium/Normalizations_table.txt"
+    output_filename = "rootfiles/Medium_AfterFix/Normalizations_table.txt"
 
     out_file = open(output_filename,"w")
     signal_events_cumul = 0.

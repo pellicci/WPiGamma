@@ -90,9 +90,12 @@ class Workflow_Handler:
         
         #----Medium selection----#
         if isMedium:
-            self.norm_filename = "rootfiles/" + self.subprocess + "Medium/Normalizations_table.txt"
-            self.dir_back_input = "rootfiles/" + self.subprocess + "Medium/backgrounds/"
-            self.sig_filename = "rootfiles/" + self.subprocess + "Medium/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
+            #self.norm_filename = "rootfiles/" + self.subprocess + "Medium/Normalizations_table.txt"
+            self.norm_filename = "rootfiles/" + self.subprocess + "Medium_AfterFix/Normalizations_table.txt"
+            #self.dir_back_input = "rootfiles/" + self.subprocess + "Medium/backgrounds/"
+            self.dir_back_input = "rootfiles/" + self.subprocess + "Medium_AfterFix/backgrounds/"
+            #self.sig_filename = "rootfiles/" + self.subprocess + "Medium/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
+            self.sig_filename = "rootfiles/" + self.subprocess + "Medium_AfterFix/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
 
         #----Tight selection----#
         if not isMedium:
@@ -101,7 +104,8 @@ class Workflow_Handler:
             self.sig_filename = "rootfiles/" + self.subprocess + "Tight/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
 
         #----Data----#
-        self.dir_data_input = "rootfiles/" + self.subprocess + "data/"
+        #self.dir_data_input = "rootfiles/" + self.subprocess + "data/"
+        self.dir_data_input = "rootfiles/" + self.subprocess + "data_AfterFix/"
 
                 
         reader.AddVariable("pi_pT",pi_pT_array)
@@ -113,8 +117,8 @@ class Workflow_Handler:
         #reader.AddSpectator("isMuon",isMuon_array)
         reader.AddVariable("MET",met_array)
 
-        reader.BookMVA("BDT_mu","MVA/weights/TMVAClassification_BDT.weights_mu_met.xml")#The first argument is arbitrary. To be chosen in order to distinguish among methods
-        reader.BookMVA("BDT_ele","MVA/weights/TMVAClassification_BDT.weights_ele_met.xml")
+        reader.BookMVA("BDT_mu","MVA/weights/TMVAClassification_BDT.weights_mu.xml")#The first argument is arbitrary. To be chosen in order to distinguish among methods
+        reader.BookMVA("BDT_ele","MVA/weights/TMVAClassification_BDT.weights_ele.xml")
         
     def get_ele_scale(self, ele_pt, ele_eta):
         #This is because corrections are up to 150 GeV
@@ -122,11 +126,22 @@ class Workflow_Handler:
         if local_ele_pt > 150.:
             local_ele_pt = 150.
 
-        scale_factor = 1.
-        scale_factor = scale_factor * eg_reco_scale_histo.GetBinContent( eg_reco_scale_histo.GetXaxis().FindBin(ele_eta), eg_reco_scale_histo.GetYaxis().FindBin(local_ele_pt) )
-        scale_factor = scale_factor * eg_ID_scale_histo.GetBinContent( eg_ID_scale_histo.GetXaxis().FindBin(ele_eta), eg_ID_scale_histo.GetYaxis().FindBin(local_ele_pt) )
+        scale_factor      = 1.
+        scale_factor_reco = 1.
+        scale_factor_ID   = 1.
+        eg_reco_err       = 0.
+        eg_ID_err         = 0.
+        tot_err           = 0.
 
-        return scale_factor
+        scale_factor_reco = eg_reco_scale_histo.GetBinContent( eg_reco_scale_histo.GetXaxis().FindBin(ele_eta), eg_reco_scale_histo.GetYaxis().FindBin(local_ele_pt) )
+        eg_reco_err       = eg_reco_scale_histo.GetBinError( eg_reco_scale_histo.GetXaxis().FindBin(ele_eta), eg_reco_scale_histo.GetYaxis().FindBin(local_ele_pt) )
+        scale_factor_ID   = eg_ID_scale_histo.GetBinContent( eg_ID_scale_histo.GetXaxis().FindBin(ele_eta), eg_ID_scale_histo.GetYaxis().FindBin(local_ele_pt) )
+        eg_ID_err         = eg_ID_scale_histo.GetBinError( eg_ID_scale_histo.GetXaxis().FindBin(ele_eta), eg_ID_scale_histo.GetYaxis().FindBin(local_ele_pt) )
+
+        scale_factor = scale_factor_reco * scale_factor_ID
+        tot_err      = math.sqrt( scale_factor_reco * scale_factor_reco * eg_ID_err * eg_ID_err + scale_factor_ID * scale_factor_ID * eg_reco_err * eg_reco_err )
+
+        return scale_factor, tot_err
 
     def get_photon_scale(self, ph_pt, ph_eta):
         #This is because corrections are up to 150 GeV
@@ -134,43 +149,111 @@ class Workflow_Handler:
         if local_ph_pt > 150.:
             local_ph_pt = 150.
 
-        scale_factor = 1.
-        scale_factor = scale_factor * ph_ID_scale_histo.GetBinContent( ph_ID_scale_histo.GetXaxis().FindBin(ph_eta), ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
-        scale_factor = scale_factor * ph_pixVeto_scale_histo.GetBinContent( ph_pixVeto_scale_histo.GetXaxis().FindBin(math.fabs(ph_eta)), ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+        scale_factor         = 1.
+        scale_factor_ID      = 1.
+        scale_factor_pixVeto = 1.
+        ph_ID_err            = 0.
+        ph_pixVeto_err       = 0.
+        tot_err              = 0.
 
-        return scale_factor
+        scale_factor_ID      = ph_ID_scale_histo.GetBinContent( ph_ID_scale_histo.GetXaxis().FindBin(ph_eta), ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+        ph_ID_err            = ph_ID_scale_histo.GetBinError( ph_ID_scale_histo.GetXaxis().FindBin(ph_eta), ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+        scale_factor_pixVeto = ph_pixVeto_scale_histo.GetBinContent( ph_pixVeto_scale_histo.GetXaxis().FindBin(math.fabs(ph_eta)), ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+        ph_pixVeto_err       = ph_pixVeto_scale_histo.GetBinError( ph_pixVeto_scale_histo.GetXaxis().FindBin(ph_eta), ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
 
-    def get_muon_scale_BtoF(self, lep_pt, lep_eta, isSingleMuTrigger_24, isSingleMuTrigger_50):
+        scale_factor = scale_factor_ID * scale_factor_pixVeto
+        tot_err      = math.sqrt( scale_factor_pixVeto * scale_factor_pixVeto * ph_ID_err * ph_ID_err + scale_factor_ID * scale_factor_ID * ph_pixVeto_err * ph_pixVeto_err )
 
-        scale_factor = 1.                                      
-        scale_factor = scale_factor * mu_ID_scale_histo_BCDEF.GetBinContent( mu_ID_scale_histo_BCDEF.GetXaxis().FindBin(math.fabs(lep_eta)), mu_ID_scale_histo_BCDEF.GetYaxis().FindBin(lep_pt) )
-        scale_factor = scale_factor * mu_Iso_scale_histo_BCDEF.GetBinContent( mu_Iso_scale_histo_BCDEF.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Iso_scale_histo_BCDEF.GetYaxis().FindBin(lep_pt) )
+        return scale_factor, tot_err
+
+    def get_muon_scale_BtoF(self, lep_pt, lep_eta, isSingleMuTrigger_24):
+
+        if lep_pt > 120. : # This is because corrections go up to 120 GeV (excluded)
+            lep_pt = 119.
+
+        scale_factor            = 1.
+        scale_factor_ID         = 1.
+        scale_factor_Iso        = 1.
+        scale_factor_Tracking   = 1.
+        scale_factor_Trigger    = 1.
+        mu_ID_err               = 0.
+        mu_Iso_err              = 0.
+        mu_Trigger_err          = 0.
+        tot_err                 = 0.
+        
+
+        scale_factor_ID       = mu_ID_scale_histo_BCDEF.GetBinContent( mu_ID_scale_histo_BCDEF.GetXaxis().FindBin(math.fabs(lep_eta)), mu_ID_scale_histo_BCDEF.GetYaxis().FindBin(lep_pt) )
+        mu_ID_err             = mu_ID_scale_histo_BCDEF.GetBinError( mu_ID_scale_histo_BCDEF.GetXaxis().FindBin(math.fabs(lep_eta)), mu_ID_scale_histo_BCDEF.GetYaxis().FindBin(lep_pt) )
+        scale_factor_Iso      = mu_Iso_scale_histo_BCDEF.GetBinContent( mu_Iso_scale_histo_BCDEF.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Iso_scale_histo_BCDEF.GetYaxis().FindBin(lep_pt) )
+        mu_Iso_err            = mu_Iso_scale_histo_BCDEF.GetBinError( mu_Iso_scale_histo_BCDEF.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Iso_scale_histo_BCDEF.GetYaxis().FindBin(lep_pt) )
+        scale_factor_Tracking = mu_Tracking_scale_graph_BCDEFGH.Eval(math.fabs(lep_eta))
+
         if isSingleMuTrigger_24:
-            scale_factor = scale_factor * mu_Trigger_scale_histo_BCDEF_Mu24.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu24.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu24.GetYaxis().FindBin(lep_pt) )
-        if isSingleMuTrigger_50:
-            scale_factor = scale_factor * mu_Trigger_scale_histo_BCDEF_Mu50.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu50.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu50.GetYaxis().FindBin(lep_pt) )
-                         
-        return scale_factor
+            scale_factor_Trigger = mu_Trigger_scale_histo_BCDEF_Mu24.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu24.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu24.GetYaxis().FindBin(lep_pt) )
+            mu_Trigger_err       = mu_Trigger_scale_histo_BCDEF_Mu24.GetBinError( mu_Trigger_scale_histo_BCDEF_Mu24.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu24.GetYaxis().FindBin(lep_pt) )
 
-    def get_muon_scale_GH(self, lep_pt, lep_eta, isSingleMuTrigger_24, isSingleMuTrigger_50):
+            scale_factor         = scale_factor_ID * scale_factor_Iso * scale_factor_Tracking * scale_factor_Trigger
+            tot_err              = math.sqrt( scale_factor_Iso * scale_factor_Iso * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_ID_err * mu_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_Iso_err * mu_Iso_err + scale_factor_ID * scale_factor_ID * scale_factor_Iso * scale_factor_Iso * scale_factor_Tracking * scale_factor_Tracking * mu_Trigger_err * mu_Trigger_err )
 
-        scale_factor = 1.                                      
-        scale_factor = scale_factor * mu_ID_scale_histo_GH.GetBinContent( mu_ID_scale_histo_GH.GetXaxis().FindBin(math.fabs(lep_eta)), mu_ID_scale_histo_GH.GetYaxis().FindBin(lep_pt) )
-        scale_factor = scale_factor * mu_Iso_scale_histo_GH.GetBinContent( mu_Iso_scale_histo_GH.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Iso_scale_histo_GH.GetYaxis().FindBin(lep_pt) )
+            return scale_factor, tot_err
+
+        else: # An event can have more than one trigger
+            scale_factor_Trigger = mu_Trigger_scale_histo_BCDEF_Mu50.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu50.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu50.GetYaxis().FindBin(lep_pt) )
+            mu_Trigger_err       = mu_Trigger_scale_histo_BCDEF_Mu50.GetBinError( mu_Trigger_scale_histo_BCDEF_Mu50.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu50.GetYaxis().FindBin(lep_pt) )
+
+            scale_factor         = scale_factor_ID * scale_factor_Iso * scale_factor_Tracking * scale_factor_Trigger
+            tot_err              = math.sqrt( scale_factor_Iso * scale_factor_Iso * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_ID_err * mu_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_Iso_err * mu_Iso_err + scale_factor_ID * scale_factor_ID * scale_factor_Iso * scale_factor_Iso * scale_factor_Tracking * scale_factor_Tracking * mu_Trigger_err * mu_Trigger_err )
+
+            return scale_factor, tot_err
+
+    def get_muon_scale_GH(self, lep_pt, lep_eta, isSingleMuTrigger_24):
+
+        if lep_pt > 120.: # This is because corrections go up to 120 GeV (excluded)
+            lep_pt = 119.
+
+        scale_factor            = 1.
+        scale_factor_ID         = 1.
+        scale_factor_Iso        = 1.
+        scale_factor_Tracking   = 1.
+        scale_factor_Trigger    = 1.
+        mu_ID_err               = 0.
+        mu_Iso_err              = 0.
+        mu_Trigger_err          = 0.
+        tot_err                 = 0.
+                              
+        scale_factor_ID       = mu_ID_scale_histo_GH.GetBinContent( mu_ID_scale_histo_GH.GetXaxis().FindBin(math.fabs(lep_eta)), mu_ID_scale_histo_GH.GetYaxis().FindBin(lep_pt) )
+        mu_ID_err             = mu_ID_scale_histo_GH.GetBinError( mu_ID_scale_histo_GH.GetXaxis().FindBin(math.fabs(lep_eta)), mu_ID_scale_histo_GH.GetYaxis().FindBin(lep_pt) )
+        scale_factor_Iso      = mu_Iso_scale_histo_GH.GetBinContent( mu_Iso_scale_histo_GH.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Iso_scale_histo_GH.GetYaxis().FindBin(lep_pt) )
+        mu_Iso_err            = mu_Iso_scale_histo_GH.GetBinError( mu_Iso_scale_histo_GH.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Iso_scale_histo_GH.GetYaxis().FindBin(lep_pt) )
+        scale_factor_Tracking = mu_Tracking_scale_graph_BCDEFGH.Eval(math.fabs(lep_eta))
+
         if isSingleMuTrigger_24:
-            scale_factor = scale_factor * mu_Trigger_scale_histo_GH_Mu24.GetBinContent( mu_Trigger_scale_histo_GH_Mu24.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_GH_Mu24.GetYaxis().FindBin(lep_pt) )
-        if isSingleMuTrigger_50:
-            scale_factor = scale_factor * mu_Trigger_scale_histo_GH_Mu50.GetBinContent( mu_Trigger_scale_histo_GH_Mu50.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_GH_Mu50.GetYaxis().FindBin(lep_pt) )
+            scale_factor_Trigger = mu_Trigger_scale_histo_GH_Mu24.GetBinContent( mu_Trigger_scale_histo_GH_Mu24.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_GH_Mu24.GetYaxis().FindBin(lep_pt) )
+            mu_Trigger_err       = mu_Trigger_scale_histo_GH_Mu24.GetBinError( mu_Trigger_scale_histo_GH_Mu24.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_GH_Mu24.GetYaxis().FindBin(lep_pt) )
 
-        return scale_factor
+            scale_factor         = scale_factor_ID * scale_factor_Iso * scale_factor_Tracking * scale_factor_Trigger
+            tot_err              = math.sqrt( scale_factor_Iso * scale_factor_Iso * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_ID_err * mu_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_Iso_err * mu_Iso_err + scale_factor_ID * scale_factor_ID * scale_factor_Iso * scale_factor_Iso * scale_factor_Tracking * scale_factor_Tracking * mu_Trigger_err * mu_Trigger_err )
 
+            return scale_factor, tot_err
+
+        else: # An event can have more than one trigger
+            scale_factor_Trigger = mu_Trigger_scale_histo_GH_Mu50.GetBinContent( mu_Trigger_scale_histo_GH_Mu50.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_GH_Mu50.GetYaxis().FindBin(lep_pt) )
+            mu_Trigger_err       = mu_Trigger_scale_histo_GH_Mu50.GetBinError( mu_Trigger_scale_histo_GH_Mu50.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_GH_Mu50.GetYaxis().FindBin(lep_pt) )
+
+            scale_factor         = scale_factor_ID * scale_factor_Iso * scale_factor_Tracking * scale_factor_Trigger
+            tot_err              = math.sqrt( scale_factor_Iso * scale_factor_Iso * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_ID_err * mu_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_Iso_err * mu_Iso_err + scale_factor_ID * scale_factor_ID * scale_factor_Iso * scale_factor_Iso * scale_factor_Tracking * scale_factor_Tracking * mu_Trigger_err * mu_Trigger_err )
+
+            return scale_factor, tot_err
+    """
     def get_muon_scale_tracking_BtoH(self, lep_eta):
 
         scale_factor = 1.
-        scale_factor = scale_factor * mu_Tracking_scale_graph_BCDEFGH.Eval(math.fabs(lep_eta))
+
+
+        tot_err      = 
         
         return scale_factor
-    
+    """
     def get_normalizations_map(self):
         in_file = open(self.norm_filename,"r")
         norm_map = dict()
