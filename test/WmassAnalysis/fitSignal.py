@@ -7,7 +7,7 @@ import ROOT
 
 random_mu_SF = False #--------if True, muon scale factors are sampled from a Gaussian
 random_ele_SF = False #------if True, electron scale factors are sampled from a Gaussian
-random_ph_SF = True #-------if True, photon scale factors are sampled from a Gaussian
+random_ph_SF = False #-------if True, photon scale factors are sampled from a Gaussian
 
 #---------------------------------------------------------#
 

@@ -27,6 +27,10 @@ ELE_ISO_MAX = 0.35
 ELE_GAMMA_INVMASS_MIN = 88.5
 ELE_GAMMA_INVMASS_MAX = 91.5
 
+random_mu_SF  = False #------if True, muon scale factors are sampled from a Gaussian
+random_ele_SF = False #------if True, electron scale factors are sampled from a Gaussian
+random_ph_SF  = False #------if True, photon scale factors are sampled from a Gaussian
+
 #Normalize to this luminsity, in fb-1
 #luminosity_norm = 36.46
 luminosity_norm = 35.86
@@ -192,8 +196,8 @@ ttbar_mu = 0
 ttbar_ele = 0
 #isMuon_evt = 0
 #isNotMuon_evt = 0
-Sevts_processed_mu  = 0 # Counters for the number of signal events processed
-Sevts_processed_ele = 0
+Sevts_mu_SFvariation  = 0 # Counters for the number of signal events (weighted) when variating scale factors
+Sevts_ele_SFvariation = 0
 Sevts_tot = 0
 Bevts_tot = 0
 Sevts_weighted_mu = 0
@@ -201,6 +205,7 @@ Bevts_weighted_mu = 0
 Sevts_weighted_ele = 0
 Bevts_weighted_ele = 0
 _Nrandom_for_SF = ROOT.TRandom3()
+_Nrandom_for_Gaus_SF = ROOT.TRandom3()
 
 ##Loop on samples, and then on events, and merge QCD stuff
 idx_sample = 0
@@ -310,15 +315,37 @@ for name_sample in samplename_list:
         if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
             mu_weight_BtoF, mu_weight_BtoF_err = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24)
             mu_weight_GH, mu_weight_GH_err     = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
-            #mu_weight_tracking = myWF.get_muon_scale_tracking_BtoH(lep_eta)
-
-            #print "BtoF", mu_weight_BtoF, "err: ", mu_weight_BtoF_err, "muon pT: ", lep_pT, "muon eta: ", lep_eta
 
             # Use a random number to select which muon scale factor to use, depending on the associated lumi fraction
             Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
-            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):
-                mu_weight = mu_weight_BtoF#*mu_weight_tracking
+            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):  # Accessing muon SF, B to F
+                #mu_weight = mu_weight_BtoF#*mu_weight_tracking
+                if random_mu_SF:
+                    mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_BtoF,mu_weight_BtoF_err)
+                    #print "SF_A: ", mu_weight_BtoF, "SF smeared: ", mu_weight
+                else:
+                    mu_weight = mu_weight_BtoF#*mu_weight_tracking
+
+            else: #Accessing muon SF, G and H
+                
+                if random_mu_SF:
+                    mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_GH,mu_weight_GH_err)
+                    #print "SF_B: ", mu_weight_BtoF, "SF smeared: ", mu_weight
+                else:
+                    mu_weight = mu_weight_GH#*mu_weight_tracking
+
+        else:
+            ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,lep_eta)
+
+            if random_ele_SF:
+                ele_weight = _Nrandom_for_Gaus_SF.Gaus(ele_weight,ele_weight_err) 
+
+        ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_eta)
+        
+        if random_ph_SF:
+            ph_weight = _Nrandom_for_Gaus_SF.Gaus(ph_weight,ph_weight_err)
+        """
             else:
                 mu_weight = mu_weight_GH#*mu_weight_tracking
             
@@ -326,7 +353,7 @@ for name_sample in samplename_list:
             ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,lep_eta)
 
         ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_eta)
-
+        """
         if not "Data" in name_sample:
             PU_Weight = mytree.PU_Weight        
             Event_Weight = norm_factor*PU_Weight*ph_weight
@@ -337,6 +364,7 @@ for name_sample in samplename_list:
                 Event_Weight = Event_Weight*ele_weight
 
             # Obtaining the number of sig and bkg events (weighted)
+            
             if "Signal" in name_sample and isMuon:
                 Sevts_weighted_mu += Event_Weight
             if not "Signal" in name_sample and isMuon:
@@ -345,6 +373,7 @@ for name_sample in samplename_list:
                 Sevts_weighted_ele += Event_Weight
             if not "Signal" in name_sample and not isMuon:
                 Bevts_weighted_ele += Event_Weight
+            
 
         else:
             Event_Weight = 1
@@ -457,7 +486,10 @@ for name_sample in samplename_list:
             h_base[theSampleName+"h_deltaphi_mu_pi"].Fill(deltaphi_lep_pi,Event_Weight)
         else:
             h_base[theSampleName+"h_deltaphi_ele_pi"].Fill(deltaphi_lep_pi,Event_Weight)
-        
+
+
+        #---------------------Here's where the BDT selection starts---------------------#
+      
         if (isMuon and BDT_out >= 0.12) or (not isMuon and BDT_out >= 0.09):
             if (Wmass >= 50. and Wmass <= 100.):
                 if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
@@ -465,14 +497,15 @@ for name_sample in samplename_list:
                 if not "Data" in name_sample:
                     h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
 
+
                 if isMuon:
                     if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
                         h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
                     if not "Data" in name_sample:
                         h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
-
-                    if "Signal" in name_sample:
-                        Sevts_processed_mu += 1
+                        
+                        if "Signal" in name_sample:
+                            Sevts_mu_SFvariation += Event_Weight
 
  
                 if not isMuon and lep_iso <= 0.35:
@@ -481,8 +514,9 @@ for name_sample in samplename_list:
                     if not "Data" in name_sample:
                         h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
 
-                    if "Signal" in name_sample:
-                        Sevts_processed_ele += 1
+                        if "Signal" in name_sample:
+                            Sevts_ele_SFvariation += Event_Weight
+
         
         #Count the events
         if select_all_but_one("all cuts"):
@@ -550,8 +584,6 @@ for name_sample in samplename_list:
                     else: continue
                     if (Wmass >= WMASS_MIN and Wmass <= WMASS_MAX): ele_bkg_events_Wmass += 1
                 
-    #print "isMuon_evt: ", isMuon_evt, "||  ttbar_mu: ", ttbar_mu
-    #print "isNotMuon_evt: ", isNotMuon_evt, "||  ttbar_ele: ", ttbar_ele
 
     for idx_histo,hname in enumerate(list_histos):
 
@@ -792,8 +824,8 @@ print "Significance S/sqrt(B + deltaB^2) = ", Nsig_passed/(math.sqrt(Nbkg_passed
 print "Significance S/sqrt(S+B) = ", Nsig_passed/math.sqrt(Nsig_passed + Nbkg_passed)
 print "\nAll the intresting plots have been produced..!"
 
-print "number of Signal events in muon channel: ", Sevts_processed_mu
-print "number of Signal events in electron channel: ", Sevts_processed_ele
+print "number of Signal events in muon channel: ", Sevts_mu_SFvariation
+print "number of Signal events in electron channel: ", Sevts_ele_SFvariation
 #print "total number of S evts: ", Sevts_tot
 #print "total number of B evts: ", Bevts_tot
 print "total number of S evts weighted -mu: ", Sevts_weighted_mu

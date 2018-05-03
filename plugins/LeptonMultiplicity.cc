@@ -61,8 +61,11 @@ LeptonMultiplicity::LeptonMultiplicity(const edm::ParameterSet& iConfig) :
   bsCollection_(iConfig.getParameter<edm::InputTag>("bsCollection")),  
   PileupSrc_(iConfig.getParameter<edm::InputTag>("PileupSrc")),
   triggerBits_(consumes<edm::TriggerResults> (iConfig.getParameter<edm::InputTag>("triggerbits"))),
+  eleLooseIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleLooseIdMap"))),
   eleMediumIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleMediumIdMap"))),
   eleTightIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleTightIdMap"))),
+  mvaValuesMapToken_el_loose_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap_el_loose"))),
+  mvaCategoriesMapToken_el_loose_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap_el_loose"))),
   mvaValuesMapToken_el_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap_el"))),
   mvaCategoriesMapToken_el_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap_el"))),
   phoMediumIdBoolMapToken_(consumes<edm::ValueMap<bool> > (iConfig.getParameter<edm::InputTag>("phoMediumIdBoolMap"))),
@@ -133,14 +136,20 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   //Get the electron ID data from the event stream.
   // Note: this implies that the VID ID modules have been run upstream.
+  edm::Handle<edm::ValueMap<bool> > el_loose_id_decisions; 
   edm::Handle<edm::ValueMap<bool> > el_medium_id_decisions;
   edm::Handle<edm::ValueMap<bool> > el_tight_id_decisions; 
+  iEvent.getByToken(eleLooseIdMapToken_,el_loose_id_decisions);
   iEvent.getByToken(eleMediumIdMapToken_,el_medium_id_decisions);
   iEvent.getByToken(eleTightIdMapToken_,el_tight_id_decisions);
 
   // Get MVA values and categories (optional)
+  edm::Handle<edm::ValueMap<float> > el_loose_mvaValues;
+  edm::Handle<edm::ValueMap<int> > el_loose_mvaCategories;
   edm::Handle<edm::ValueMap<float> > el_mvaValues;
   edm::Handle<edm::ValueMap<int> > el_mvaCategories;
+  iEvent.getByToken(mvaValuesMapToken_el_loose_,el_loose_mvaValues);
+  iEvent.getByToken(mvaCategoriesMapToken_el_loose_,el_loose_mvaCategories);
   iEvent.getByToken(mvaValuesMapToken_el_,el_mvaValues);
   iEvent.getByToken(mvaCategoriesMapToken_el_,el_mvaCategories);
 
@@ -196,7 +205,7 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
   //Examine the trigger information
   isSingleMuTrigger_24 = false;
   isSingleMuTrigger_50 = false;
-  isSingleEleTrigger = false;
+  isSingleEleTrigger   = false;
 
   const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
   for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i){
@@ -216,8 +225,9 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
     }
   }
 
-  nMuons     = 0;
-  nElectrons = 0;
+  nMuons          = 0;
+  nElectrons      = 0;
+  nElectronsLoose = 0;
 
   float pTmuMax  = -1000.;
   float pTeleMax = -1000.;
@@ -256,6 +266,16 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
     //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << "iso: " << mu_iso << "number: " << nMuons << std::endl;
   }
 
+  // for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
+  //   if((mu->pt() - mu_pT) > 0.05 && (mu->eta() - mu_eta) > 0.05) continue;
+  //   if(mu->pt() < 25. || !mu->isLooseMuon()) continue;
+  //   if((mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt() > 0.3) continue;
+
+  //   nMuonsLoose++;
+
+  //   std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << "iso: " << mu_iso << "number: " << nMuons << std::endl;
+  // }
+
   //if(nMuons > 1) return;
   //_Nevents_muVeto++;
 
@@ -289,6 +309,24 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
 
     pTeleMax = el_pT;
     nElectrons++;
+    //std::cout << "el pT :" << el_pT << "Eta: " << el_eta << "phi:" << el_phi << "iso: " << el_iso << "number: " << nElectrons << std::endl;
+  }
+
+  for (size_t i = 0; i < slimmedElectrons->size(); ++i){
+    const auto el = slimmedElectrons->ptrAt(i);
+    if(el->pt() < 26.) continue;
+    //float deltaR = sqrt((el_eta-el->eta())*(el_eta-el->eta())+(el_phi-el->phi())*(el_phi-el->phi()));
+    //float deltapT = el_pT - el->pt();
+    //if (deltaR > 0.05 && deltapT > 0.05 ) continue;
+
+    bool isPassLoose = (*el_loose_id_decisions)[el];
+    if(!isPassLoose) continue;
+
+    float abseta =  abs(el->superCluster()->eta());
+    float eA = effectiveAreas_.getEffectiveArea(abseta);
+    if((el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt() > 0.3) continue;
+
+    nElectronsLoose++;
     //std::cout << "el pT :" << el_pT << "Eta: " << el_eta << "phi:" << el_phi << "iso: " << el_iso << "number: " << nElectrons << std::endl;
   }
 
@@ -365,9 +403,9 @@ void LeptonMultiplicity::create_trees()
   mytree->Branch("is_muon",&is_muon);
   mytree->Branch("mu_iso",&mu_iso);
   mytree->Branch("ele_iso",&el_iso);
-
   mytree->Branch("nMuons",&nMuons);
   mytree->Branch("nElectrons",&nElectrons);
+  mytree->Branch("nElectronsLoose",&nElectronsLoose);
 
   //Save MC info
   if(!runningOnData_){

@@ -4,16 +4,16 @@ config = Configuration()
 
 config.section_('General')
 config.General.transferOutputs = True
-config.General.workArea = 'crab_projects/samples_Medium/'
-#config.General.workArea = 'crab_projects/samples_LeptonStudy/'
+#config.General.workArea = 'crab_projects/samples_Medium/'
+config.General.workArea = 'crab_projects/samples_LeptonStudy/'
 
 config.section_('JobType')
-config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
-#config.JobType.psetName = 'cmssw_config/run_LeptonMultiplicity.py'
+#config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
+config.JobType.psetName = 'cmssw_config/run_LeptonMultiplicity.py'
 config.JobType.pluginName = 'Analysis'
 config.JobType.inputFiles = ['MCpileUp_25ns_Recent2016.root','pileUpHistogramFromjson_Nominal.root' ] #data files for PileUp reweighting
-config.JobType.outputFiles = ['WPiGammaAnalysis_output.root']
-#config.JobType.outputFiles = ['LeptonMultiplicity_output.root']
+#config.JobType.outputFiles = ['WPiGammaAnalysis_output.root']
+config.JobType.outputFiles = ['LeptonMultiplicity_output.root']
 config.JobType.pyCfgParams = ['runningOnData=False']
 
 config.section_('Data')

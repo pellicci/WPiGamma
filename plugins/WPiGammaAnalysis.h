@@ -62,14 +62,33 @@ private:
   float lepton_pT_tree;
   float lepton_eta_tree;
   float lepton_phi_tree;
+  float lepton_dxy_tree;
+  float lepton_dz_tree;
   float lepton_iso;
+
+  float mu_pT;
+  float mu_eta;
+  float mu_phi;
+  int   mu_ID ;
+  float mu_dxy;
+  float mu_dz;
+
+  float el_pT;
+  float el_eta;
+  float el_phi;
+  int   el_ID;
+  float el_dxy;
+  float el_dz;
 
   float pi_pT;
   float pi_eta;
   float pi_phi;
   float pi_energy;
+  float pi_dxy;
+  float pi_dz;
   float sum_pT_03;
   float sum_pT_05;
+  float sum_pT_05_ch;
 
   float ph_eT;
   float ph_eta;
@@ -81,11 +100,19 @@ private:
   //float ph_iso_Track;
   float ph_iso_eArho;
 
+  float pTmuMax;
+  float pTeleMax;
+  float pTpiMax;
+  float eTphMax;
+
+  float deltaphi_lep_pi;
+
   float _Wmass;
 
   float met_pT;
   
   bool is_muon;
+  bool is_ele;
   bool isSingleMuTrigger_24;
   bool isSingleMuTrigger_50;
   bool isSingleEleTrigger;

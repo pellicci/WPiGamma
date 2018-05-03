@@ -183,6 +183,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       nPV++;
     }
   } 
+  std::cout << "slimmedPV size: " << slimmedPV->size() << "   PV: " << &(slimmedPV->at(0))  << std::endl;
 
   //PileUp code for examining the Pileup information
   PU_Weight = 1.;
@@ -240,22 +241,26 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   is_photon_a_photon = false;
   is_photon_matched  = false;
 
-  float pTmuMax  = -1000.;
-  float pTeleMax = -1000.;
-  float pTpiMax  = -1000.;
-  float eTphMax  = -1000.;
+  pTmuMax  = -1000.;
+  pTeleMax = -1000.;
+  pTpiMax  = -1000.;
+  eTphMax  = -1000.;
 
-  float mu_pT = 0.;
-  float mu_eta = 0.;
-  float mu_phi = 0.;
-  int   mu_ID = 0;
+  mu_pT  = 0.;
+  mu_eta = 0.;
+  mu_phi = 0.;
+  mu_ID  = 0;
+  mu_dxy = 0.;
+  mu_dz  = 0.;
 
-  float el_pT = 0.;
-  float el_eta = 0.;
-  float el_phi = 0.;
-  int   el_ID = 0;
+  el_pT  = 0.;
+  el_eta = 0.;
+  el_phi = 0.;
+  el_ID  = 0;
+  el_dxy = 0.;
+  el_dz  = 0.;
 
-  float deltaphi_lep_pi = 0.;
+  deltaphi_lep_pi = 0.;
 
   //These variables will go in the tree
   lepton_iso = 0.;
@@ -265,15 +270,17 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //ph_iso_Track = 0.;
   ph_iso_eArho = 0.;
 
-  pi_pT = 0.;
-  pi_eta = 0.;
-  pi_phi = 0.;
+  pi_pT     = 0.;
+  pi_eta    = 0.;
+  pi_phi    = 0.;
   pi_energy = 0.;
+  pi_dxy    = 0.;
+  pi_dz     = 0.;
   LorentzVector pi_p4;
 
-  ph_eT = 0.;
-  ph_eta = 0.;
-  ph_phi = 0.;
+  ph_eT     = 0.;
+  ph_eta    = 0.;
+  ph_phi    = 0.;
   ph_energy = 0.;
   LorentzVector ph_p4;
 
@@ -282,12 +289,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   met_pT = 0.;
 
   is_muon = false;
-  bool is_ele  = false;
+  is_ele  = false;
 
-  lepton_pT_tree = 0.;
+  lepton_pT_tree  = 0.;
   lepton_eta_tree = 0.;
   lepton_phi_tree = 0.;
-
+  lepton_dxy_tree = 0.;
+  lepton_dz_tree  = 0.;
 
   for(auto met = slimmedMETs->begin(); met != slimmedMETs->end(); ++met){
     met_pT = met->pt();
@@ -298,7 +306,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     if(mu->pt() < 24. || mu->pt() < pTmuMax || !mu->isMediumMuon() || abs(mu->eta()) > 2.4) continue;
     lepton_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
     if(lepton_iso > 0.25) continue;
-    pTmuMax = mu->pt();
+
     //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
 
     is_muon = true;
@@ -306,6 +314,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     mu_eta  = mu->eta();
     mu_phi  = mu->phi();
     mu_pT   = mu->pt();
+    //mu_dxy  = mu->dxy();
+    mu_dxy  = mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position());
+    mu_dz   = mu->muonBestTrack()->dz((&slimmedPV->at(0))->position());
+    //std::cout << "mu_dxy: " << mu_dxy << "   mu_dz: " << mu_dz << std::endl;
+
+    pTmuMax = mu->pt();
     nMuons++;
   }
 
@@ -334,11 +348,17 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     lepton_iso = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
     if(lepton_iso > 0.4) continue;
 
+    // float el_mvaValue = (*el_mvaValues)[el];
+    // int el_mvaCategory = (*el_mvaCategories)[el];
+    // std::cout << "category: " << el_mvaCategory << "   value: " << el_mvaValue << std::endl;
+
     is_ele   = true;
     el_ID    = el->pdgId();
     el_eta   = el->eta();
     el_phi   = el->phi();
     el_pT    = el->pt();
+    el_dxy   = el->gsfTrack()->dxy((&slimmedPV->at(0))->position());
+    el_dz    = el->gsfTrack()->dz((&slimmedPV->at(0))->position());
 
     pTeleMax = el_pT;
     nElectrons++;
@@ -351,12 +371,16 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     lepton_pT_tree  = mu_pT;
     lepton_eta_tree = mu_eta;
     lepton_phi_tree = mu_phi;
+    //lepton_dxy_tree = mu_dxy;
+    //lepton_dz_tree  = mu_dz;
   }
 
   if(!is_muon && is_ele){
     lepton_pT_tree  = el_pT;
     lepton_eta_tree = el_eta;
     lepton_phi_tree = el_phi;
+    //lepton_dxy_tree = el_dxy;
+    //lepton_dz_tree  = el_dz;
   }
 
   //Do NOT continue if you didn't find either a muon or an electron
@@ -391,12 +415,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   
   //----------- Starting to search for pi and gamma -------------
   bool cand_pion_found = false;
-  sum_pT_03 = 0.;
-  sum_pT_05 = 0.;
+  sum_pT_03    = 0.;
+  sum_pT_05    = 0.;
+  sum_pT_05_ch = 0.;
 
   for(auto cand = PFCandidates->begin(); cand != PFCandidates->end(); ++cand){
     if(cand->pdgId()*mu_ID < 0 || cand->pdgId()*el_ID < 0) continue; // WARNING: this condition works only if paired with muon/electron veto
-    if(cand->pt() < 20. || !cand->trackHighPurity() || cand->fromPV() != 3) continue;
+    // if(cand->pt() < 20. || !cand->trackHighPurity() || cand->fromPV() != 3) continue;
+    if(cand->pt() < 20. || !cand->trackHighPurity() || fabs(cand->dxy()) >= 0.2 || fabs(cand->dz()) >= 0.5 ) continue;
     if(cand->pt() < pTpiMax) continue;
     //if(cand->trackIso() > 5) continue;
     //std::cout << cand->pfIsolationVariables().sumChargedHadronPt << std::endl;
@@ -416,11 +442,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     cand_pion_found = true;
     nPions++;
 
-    pi_pT  = cand->pt();
-    pi_eta = cand->eta();
-    pi_phi = cand->phi();
+    pi_pT     = cand->pt();
+    pi_eta    = cand->eta();
+    pi_phi    = cand->phi();
     pi_energy = cand->energy();
-    pi_p4  = cand->p4();
+    pi_p4     = cand->p4();
+    pi_dxy    = cand->dxy();
+    pi_dz     = cand->dz();
 
     is_pi_a_pi = false;
     is_pi_matched = false;
@@ -431,7 +459,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     int   gen_ID = 0;
 
     if(!runningOnData_){
-      for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){//matching candidate for W reconstruction with MC truth
+      for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){ // Matching candidate for W reconstruction with MC truth
+	// if (fabs(gen->pdgId()) == 211 && fabs(gen->mother()->pdgId()) == 24){
+	//   pi_dxy = gen->dxy();
+	//   pi_dz = gen->dz();
+	// }
+	
 	float deltaR = sqrt((pi_eta-gen->eta())*(pi_eta-gen->eta())+(pi_phi-gen->phi())*(pi_phi-gen->phi()));
 	float deltapT = fabs(pi_pT-gen->pt());
 
@@ -456,6 +489,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     float deltaR = sqrt((pi_eta-cand_iso->eta())*(pi_eta-cand_iso->eta())+(pi_phi-cand_iso->phi())*(pi_phi-cand_iso->phi()));
     if(deltaR <= 0.3 && deltaR >= 0.02) sum_pT_03 += cand_iso->pt();
     if(deltaR <= 0.5 && deltaR >= 0.02) sum_pT_05 += cand_iso->pt();
+    // std::cout << "charge: " << cand_iso->charge() << "pdgId: " << cand_iso->pdgId() << std::endl;
+    if(cand_iso->charge() != 0 && (fabs(cand_iso->dxy()) > 0.2 || fabs(cand_iso->dz()) > 0.5) ) continue; // Requesting charged particles to come from PV
+    if(deltaR <= 0.5 && deltaR >= 0.02) sum_pT_05_ch += cand_iso->pt();
   }
 
 
@@ -569,14 +605,19 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("lepton_pT",&lepton_pT_tree);
   mytree->Branch("lepton_eta",&lepton_eta_tree);
   mytree->Branch("lepton_phi",&lepton_phi_tree);
+  //mytree->Branch("lepton_dxy",&lepton_dxy_tree);
+  //mytree->Branch("lepton_dz",&lepton_dz_tree);
   mytree->Branch("lepton_iso",&lepton_iso);
   mytree->Branch("is_muon",&is_muon);
   mytree->Branch("pi_pT",&pi_pT);
   mytree->Branch("pi_eta",&pi_eta);
   mytree->Branch("pi_phi",&pi_phi);
   mytree->Branch("pi_energy",&pi_energy);
+  mytree->Branch("pi_dxy",&pi_dxy);
+  mytree->Branch("pi_dz",&pi_dz);
   mytree->Branch("sum_pT_03",&sum_pT_03);
   mytree->Branch("sum_pT_05",&sum_pT_05);
+  mytree->Branch("sum_pT_05_ch",&sum_pT_05_ch);
   mytree->Branch("photon_eT",&ph_eT);
   mytree->Branch("photon_eta",&ph_eta);
   mytree->Branch("photon_phi",&ph_phi);

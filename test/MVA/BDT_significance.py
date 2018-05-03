@@ -4,7 +4,7 @@ import math
 import numpy as np
 import copy
 
-isMuon = True
+isMuon = False
 
 if isMuon:
     Nsig_passed = 1 # Number of signal and background events from the sum of the weights (before applying BDT cuts)

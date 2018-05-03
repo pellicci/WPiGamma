@@ -14,9 +14,9 @@ myWF = Workflow_Handler("Signal","Data",isMedium = True)
 
 isData        = False #------switch from DATA to MC and vice versa
 split_MC      = False #------if True, MC signal sample is split in two for the training/testing of the BDT
-random_mu_SF  = False #------if True, muon scale factors are sampled from a Gaussian
+random_mu_SF  = True #------if True, muon scale factors are sampled from a Gaussian
 random_ele_SF = False #------if True, electron scale factors are sampled from a Gaussian
-random_ph_SF  = False #-------if True, photon scale factors are sampled from a Gaussian
+random_ph_SF  = False #------if True, photon scale factors are sampled from a Gaussian
 
 #------------------------------------------------------------------------#
 
