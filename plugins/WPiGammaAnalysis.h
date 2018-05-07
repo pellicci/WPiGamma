@@ -40,6 +40,7 @@ private:
 
   int nMuons;
   int nElectrons;
+  int nElectronsLoose;
   int nPions;
   int nPhotons;
   int nBjets;
@@ -148,9 +149,12 @@ private:
 
   //Ele ID decisions objects
   edm::EDGetToken electronsMiniAODToken_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > eleLooseIdMapToken_;
   edm::EDGetTokenT<edm::ValueMap<bool> > eleMediumIdMapToken_;
   edm::EDGetTokenT<edm::ValueMap<bool> > eleTightIdMapToken_;
   // MVA values and categories (optional)
+  edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_el_loose_;
+  edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_el_loose_;
   edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_el_;
   edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_el_;
 

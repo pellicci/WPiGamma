@@ -229,8 +229,8 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
   nElectrons      = 0;
   nElectronsLoose = 0;
 
-  float pTmuMax  = -1000.;
-  float pTeleMax = -1000.;
+  //float pTmuMax  = -1000.;
+  //float pTeleMax = -1000.;
 
   mu_pT = 0.;
   mu_eta = 0.;
@@ -251,10 +251,11 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
     //if(mu->pt() < 25. || mu->pt() < pTmuMax || !mu->isTightMuon(slimmedPV->at(0))) continue;
-    if(mu->pt() < 25. || mu->pt() < pTmuMax || !mu->isMediumMuon()) continue;
+    //if(mu->pt() < 25. || mu->pt() < pTmuMax || !mu->isMediumMuon()) continue;
+    if(mu->pt() < 25. || !mu->isMediumMuon()) continue;
     if((mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt() > 0.3) continue;
     mu_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt(); //filling tree with isolation value
-    pTmuMax = mu->pt();
+    //pTmuMax = mu->pt();
 
 
     //mu_ID    = mu->pdgId();
@@ -266,18 +267,6 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
     //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << "iso: " << mu_iso << "number: " << nMuons << std::endl;
   }
 
-  // for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
-  //   if((mu->pt() - mu_pT) > 0.05 && (mu->eta() - mu_eta) > 0.05) continue;
-  //   if(mu->pt() < 25. || !mu->isLooseMuon()) continue;
-  //   if((mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt() > 0.3) continue;
-
-  //   nMuonsLoose++;
-
-  //   std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << "iso: " << mu_iso << "number: " << nMuons << std::endl;
-  // }
-
-  //if(nMuons > 1) return;
-  //_Nevents_muVeto++;
 
   // Get rho value
   edm::Handle< double > rhoH;
@@ -287,7 +276,8 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
   //Loop over electrons
   for (size_t i = 0; i < slimmedElectrons->size(); ++i){
     const auto el = slimmedElectrons->ptrAt(i);
-    if(el->pt() < 26. || el->pt() < pTeleMax) continue;
+    // if(el->pt() < 26. || el->pt() < pTeleMax) continue;
+    if(el->pt() < 26.) continue;
 
     //bool isPassTight = (*el_tight_id_decisions)[el];
     //if(!isPassTight) continue;
@@ -307,17 +297,18 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
     el_phi      = el->phi();
     el_pT       = el->pt();
 
-    pTeleMax = el_pT;
+    //pTeleMax = el_pT;
     nElectrons++;
     //std::cout << "el pT :" << el_pT << "Eta: " << el_eta << "phi:" << el_phi << "iso: " << el_iso << "number: " << nElectrons << std::endl;
   }
 
   for (size_t i = 0; i < slimmedElectrons->size(); ++i){
     const auto el = slimmedElectrons->ptrAt(i);
+    // if(el->pt() < 26. || el->pt() < pTeleMax) continue;
     if(el->pt() < 26.) continue;
     //float deltaR = sqrt((el_eta-el->eta())*(el_eta-el->eta())+(el_phi-el->phi())*(el_phi-el->phi()));
     //float deltapT = el_pT - el->pt();
-    //if (deltaR > 0.05 && deltapT > 0.05 ) continue;
+    //if (deltaR < 0.01 && deltapT < 0.01 ) continue;
 
     bool isPassLoose = (*el_loose_id_decisions)[el];
     if(!isPassLoose) continue;
@@ -330,23 +321,6 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
     //std::cout << "el pT :" << el_pT << "Eta: " << el_eta << "phi:" << el_phi << "iso: " << el_iso << "number: " << nElectrons << std::endl;
   }
 
-  //if(nElectrons > 1) return;
-  //_Nevents_eleVeto++;
-
-  /*if(mu_pT > el_pT) is_ele = false;
-  else is_muon = false;
-
-  if(is_muon){
-    lepton_pT_tree  = mu_pT;
-    lepton_eta_tree = mu_eta;
-    lepton_phi_tree = mu_phi;
-  }
-
-  if(!is_muon && is_ele){
-    lepton_pT_tree  = el_pT;
-    lepton_eta_tree = el_eta;
-    lepton_phi_tree = el_phi;
-    }*/
 
   //Do NOT continue if you didn't find either a muon or an electron
   if(!is_muon && !is_ele) return;

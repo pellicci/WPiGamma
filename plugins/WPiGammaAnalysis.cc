@@ -63,8 +63,11 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   bsCollection_(iConfig.getParameter<edm::InputTag>("bsCollection")),  
   PileupSrc_(iConfig.getParameter<edm::InputTag>("PileupSrc")),
   triggerBits_(consumes<edm::TriggerResults> (iConfig.getParameter<edm::InputTag>("triggerbits"))),
+  eleLooseIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleLooseIdMap"))),
   eleMediumIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleMediumIdMap"))),
   eleTightIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleTightIdMap"))),
+  mvaValuesMapToken_el_loose_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap_el_loose"))),
+  mvaCategoriesMapToken_el_loose_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap_el_loose"))),
   mvaValuesMapToken_el_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap_el"))),
   mvaCategoriesMapToken_el_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap_el"))),
   phoMediumIdBoolMapToken_(consumes<edm::ValueMap<bool> > (iConfig.getParameter<edm::InputTag>("phoMediumIdBoolMap"))),
@@ -139,8 +142,10 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //Get the electron ID data from the event stream.
   // Note: this implies that the VID ID modules have been run upstream.
+  edm::Handle<edm::ValueMap<bool> > el_loose_id_decisions; 
   edm::Handle<edm::ValueMap<bool> > el_medium_id_decisions;
   edm::Handle<edm::ValueMap<bool> > el_tight_id_decisions; 
+  iEvent.getByToken(eleLooseIdMapToken_,el_loose_id_decisions);
   iEvent.getByToken(eleMediumIdMapToken_,el_medium_id_decisions);
   iEvent.getByToken(eleTightIdMapToken_,el_tight_id_decisions);
 
@@ -183,7 +188,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       nPV++;
     }
   } 
-  std::cout << "slimmedPV size: " << slimmedPV->size() << "   PV: " << &(slimmedPV->at(0))  << std::endl;
+  // std::cout << "slimmedPV size: " << slimmedPV->size() << "   PV: " << &(slimmedPV->at(0))  << std::endl;
 
   //PileUp code for examining the Pileup information
   PU_Weight = 1.;
@@ -229,12 +234,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     }
   }
 
-  nMuons     = 0;
-  nElectrons = 0;
-  nPions     = 0;
-  nPhotons   = 0;
-  nBjets     = 0;
-  nBjets_25  = 0;
+  nMuons          = 0;
+  nElectrons      = 0;
+  nElectronsLoose = 0;
+  nPions          = 0;
+  nPhotons        = 0;
+  nBjets          = 0;
+  nBjets_25       = 0;
 
   is_pi_a_pi         = false;
   is_pi_matched      = false;
@@ -303,29 +309,31 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
-    if(mu->pt() < 24. || mu->pt() < pTmuMax || !mu->isMediumMuon() || abs(mu->eta()) > 2.4) continue;
+    //    if(mu->pt() < 24. || mu->pt() < pTmuMax || !mu->isMediumMuon() || abs(mu->eta()) > 2.4) continue;
+    if(mu->pt() < 24. || !mu->isMediumMuon() || abs(mu->eta()) > 2.4) continue;
     lepton_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
     if(lepton_iso > 0.25) continue;
 
-    //std::cout << "mu pT :" << mu->pt() << "Eta: " << mu->eta() << "phi:" << mu->phi() << std::endl;
-
     is_muon = true;
-    mu_ID   = mu->pdgId();
-    mu_eta  = mu->eta();
-    mu_phi  = mu->phi();
-    mu_pT   = mu->pt();
-    //mu_dxy  = mu->dxy();
-    mu_dxy  = mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position());
-    mu_dz   = mu->muonBestTrack()->dz((&slimmedPV->at(0))->position());
-    //std::cout << "mu_dxy: " << mu_dxy << "   mu_dz: " << mu_dz << std::endl;
-
-    pTmuMax = mu->pt();
     nMuons++;
+    
+    if(mu->pt() > pTmuMax){
+
+      mu_ID   = mu->pdgId();
+      mu_eta  = mu->eta();
+      mu_phi  = mu->phi();
+      mu_pT   = mu->pt();
+      mu_dxy  = mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position());
+      mu_dz   = mu->muonBestTrack()->dz((&slimmedPV->at(0))->position());
+      
+      pTmuMax = mu_pT;
+    }
   }
 
   if(nMuons > 1) return;
   _Nevents_muVeto++;
 
+  
   // Get rho value
   edm::Handle< double > rhoH;
   iEvent.getByToken(rhoToken_,rhoH);
@@ -334,53 +342,67 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //Loop over electrons
   for (size_t i = 0; i < slimmedElectrons->size(); ++i){
     const auto el = slimmedElectrons->ptrAt(i);
-    if(el->pt() < 26. || el->pt() < pTeleMax) continue;
+    //    if(el->pt() < 26. || el->pt() < pTeleMax) continue;
+    if(el->pt() < 26.) continue;
 
-    //bool isPassTight = (*el_tight_id_decisions)[el];
-    //if(!isPassTight) continue;
+    //PflowIsolationVariables pfIso = el->pfIsolationVariables();
+    float abseta = abs(el->superCluster()->eta());
+    float eA     = effectiveAreas_.getEffectiveArea(abseta);
+    lepton_iso   = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
+
+    if(lepton_iso > 0.4) continue;
+
+    //-------------Conditions on loose/medium MVA electron ID-------------//
+
+    if(!is_muon){
+
+      bool isPassLoose = (*el_loose_id_decisions)[el];
+      if(!isPassLoose) continue;
+      nElectronsLoose++;
+    }
+
+    // If !is_muon, I want it to go inside this condition only if at least one loose electron is found. If is muon, I want it to go inside this condition anyway.
+    //    if(is_muon || nElectronsLoose < 2){
 
     bool isPassMedium = (*el_medium_id_decisions)[el];
     if(!isPassMedium) continue;
-
-    //PflowIsolationVariables pfIso = el->pfIsolationVariables();
-    float abseta =  abs(el->superCluster()->eta());
-    float eA = effectiveAreas_.getEffectiveArea(abseta);
-    lepton_iso = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
-    if(lepton_iso > 0.4) continue;
-
-    // float el_mvaValue = (*el_mvaValues)[el];
-    // int el_mvaCategory = (*el_mvaCategories)[el];
-    // std::cout << "category: " << el_mvaCategory << "   value: " << el_mvaValue << std::endl;
-
-    is_ele   = true;
-    el_ID    = el->pdgId();
-    el_eta   = el->eta();
-    el_phi   = el->phi();
-    el_pT    = el->pt();
-    el_dxy   = el->gsfTrack()->dxy((&slimmedPV->at(0))->position());
-    el_dz    = el->gsfTrack()->dz((&slimmedPV->at(0))->position());
-
-    pTeleMax = el_pT;
+    
+    is_ele = true;
     nElectrons++;
+    
+    if(el->pt() > pTeleMax){
+      
+      el_ID    = el->pdgId();
+      el_eta   = el->eta();
+      el_phi   = el->phi();
+      el_pT    = el->pt();
+      el_dxy   = el->gsfTrack()->dxy((&slimmedPV->at(0))->position());
+      el_dz    = el->gsfTrack()->dz((&slimmedPV->at(0))->position());
+      
+      pTeleMax = el_pT;
+    } 
   }
+  
+  //-------------------------------------------------------------------//
+  
 
-  if(nElectrons > 1) return;
-  _Nevents_eleVeto++;
+  if((!is_muon && nElectronsLoose > 1) || (!is_muon && nElectronsLoose==1 && nElectrons!=1)) return;
+     _Nevents_eleVeto++;
 
   if(is_muon){
     lepton_pT_tree  = mu_pT;
     lepton_eta_tree = mu_eta;
     lepton_phi_tree = mu_phi;
-    //lepton_dxy_tree = mu_dxy;
-    //lepton_dz_tree  = mu_dz;
+    lepton_dxy_tree = mu_dxy;
+    lepton_dz_tree  = mu_dz;
   }
 
   if(!is_muon && is_ele){
     lepton_pT_tree  = el_pT;
     lepton_eta_tree = el_eta;
     lepton_phi_tree = el_phi;
-    //lepton_dxy_tree = el_dxy;
-    //lepton_dz_tree  = el_dz;
+    lepton_dxy_tree = el_dxy;
+    lepton_dz_tree  = el_dz;
   }
 
   //Do NOT continue if you didn't find either a muon or an electron
@@ -391,13 +413,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   _Nevents_TwoLepton++;
 
   //In signal, identify if there's a real mu or ele from W
-  bool is_Wplus_from_t = false;
+  bool is_Wplus_from_t     = false;
   bool is_Wminus_from_tbar = false;
-  bool is_Wplus_in_lep = false;
-  bool is_Wminus_in_lep = false;
-  is_ttbar_lnu = false;
+  bool is_Wplus_in_lep     = false;
+  bool is_Wminus_in_lep    = false;
+  is_ttbar_lnu  = false;
   is_Ele_signal = false;
-  is_Mu_signal = false;
+  is_Mu_signal  = false;
+
   if(!runningOnData_){
     for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
       if(fabs(gen->pdgId() ) == 11 && fabs(gen->mother()->pdgId()) == 24) is_Ele_signal = true;
@@ -490,7 +513,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     if(deltaR <= 0.3 && deltaR >= 0.02) sum_pT_03 += cand_iso->pt();
     if(deltaR <= 0.5 && deltaR >= 0.02) sum_pT_05 += cand_iso->pt();
     // std::cout << "charge: " << cand_iso->charge() << "pdgId: " << cand_iso->pdgId() << std::endl;
-    if(cand_iso->charge() != 0 && (fabs(cand_iso->dxy()) > 0.2 || fabs(cand_iso->dz()) > 0.5) ) continue; // Requesting charged particles to come from PV
+    if(cand_iso->charge() != 0 && (fabs(cand_iso->dxy()) >= 0.2 || fabs(cand_iso->dz()) >= 0.5) ) continue; // Requesting charged particles to come from PV
     if(deltaR <= 0.5 && deltaR >= 0.02) sum_pT_05_ch += cand_iso->pt();
   }
 
@@ -605,8 +628,8 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("lepton_pT",&lepton_pT_tree);
   mytree->Branch("lepton_eta",&lepton_eta_tree);
   mytree->Branch("lepton_phi",&lepton_phi_tree);
-  //mytree->Branch("lepton_dxy",&lepton_dxy_tree);
-  //mytree->Branch("lepton_dz",&lepton_dz_tree);
+  mytree->Branch("lepton_dxy",&lepton_dxy_tree);
+  mytree->Branch("lepton_dz",&lepton_dz_tree);
   mytree->Branch("lepton_iso",&lepton_iso);
   mytree->Branch("is_muon",&is_muon);
   mytree->Branch("pi_pT",&pi_pT);
