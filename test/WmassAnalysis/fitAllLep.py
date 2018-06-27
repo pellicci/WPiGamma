@@ -9,9 +9,9 @@ isData = False
 
 #--------some bools for scale factor systematics----------#
 
-random_mu_SF = False #-------if True, muon scale factors are sampled from a Gaussian
-random_ele_SF = False #------if True, electron scale factors are sampled from a Gaussian
-random_ph_SF = False #-------if True, photon scale factors are sampled from a Gaussian
+random_mu_SF  = False #-------if True, muon scale factors are sampled from a Gaussian
+random_ele_SF = False #-------if True, electron scale factors are sampled from a Gaussian
+random_ph_SF  = False #-------if True, photon scale factors are sampled from a Gaussian
 
 #---------------------------------------------------------#
 
@@ -65,12 +65,25 @@ fInput_sigmodel.cd()
 workspace = fInput_sigmodel.Get("myworkspace")
 
 #Fix the signal parametrization
-workspace.var("W_resol_pole").setConstant(1)
-#workspace.var("W_resol_width").setConstant(1)
-workspace.var("W_resol_alpha").setConstant(1)
-workspace.var("W_resol_n").setConstant(1)
+# workspace.var("W_resol_pole").setConstant(1)
+# #workspace.var("W_resol_width").setConstant(1)
+# workspace.var("W_resol_alpha").setConstant(1)
+# workspace.var("W_resol_n").setConstant(1)
+# workspace.var("Gauss_pole").setConstant(1)
+# workspace.var("Gauss_sigma").setConstant(1)
+# workspace.var("fracSig").setConstant(1)
+
+workspace.var("dCB_pole").setConstant(1)
+#workspace.var("dCB_width").setConstant(1)
+workspace.var("dCB_aL").setConstant(1)
+workspace.var("dCB_nL").setConstant(1)
+workspace.var("dCB_aR").setConstant(1)
+workspace.var("dCB_nR").setConstant(1)
 workspace.var("Gauss_pole").setConstant(1)
 workspace.var("Gauss_sigma").setConstant(1)
+workspace.var("Gauss_pole_2").setConstant(1)
+workspace.var("Gauss_sigma_2").setConstant(1)
+workspace.var("fracSig_prime").setConstant(1)
 workspace.var("fracSig").setConstant(1)
 
 totSignal = workspace.pdf("totSignal")
@@ -78,22 +91,37 @@ totSignal = workspace.pdf("totSignal")
 #Now describe the background
 
 #First the muon
-a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",0.2,0.,2.)
-a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",0.2,0.,2.)
-a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",0.02,0.,2.)
-backPDF_mu = ROOT.RooBernstein("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu))
+a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",-0.1,-2.,2.)
+a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",-0.1,-2.,2.)
+# a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",-0.1,-2.,2.)
+
+# a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",2,0.,10.)
+# a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",2,0.,10.)
+# a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",2,0.,10.)
+backPDF_mu = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu))
 
 #Then the electron
-a0_el = ROOT.RooRealVar("a0_el","a0_el",0.1,0.,2.)
-a1_el = ROOT.RooRealVar("a1_el","a1_el",0.3,0.,2.)
-a2_el = ROOT.RooRealVar("a2_el","a2_el",0.1,0.,2.)
-backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el))
+a0_el = ROOT.RooRealVar("a0_el","a0_el",-0.1,-2.,2.)
+a1_el = ROOT.RooRealVar("a1_el","a1_el",-0.1,-2.,2.)
+# a2_el = ROOT.RooRealVar("a2_el","a2_el",-0.1,-2.,2.)
+
+# a0_el = ROOT.RooRealVar("a0_el","a0_el",2,0.,10.)
+# a1_el = ROOT.RooRealVar("a1_el","a1_el",3,0.,10.)
+# a2_el = ROOT.RooRealVar("a2_el","a2_el",2,0.,10.)
+backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el))
+
+exp_factor_mu = ROOT.RooRealVar("exp_factor_mu","exp_factor_mu", 0.5,-1.,1.)
+#backPDF_mu = ROOT.RooExponential("backPDF_mu","backPDF_mu",Wmass,exp_factor_mu)
+
+exp_factor_el = ROOT.RooRealVar("exp_factor_el","exp_factor_el", 0.5,-1.,1.)
+#backPDF_el = ROOT.RooExponential("backPDF_el","backPDF_el",Wmass,exp_factor_el)
 
 #Gaussian distribution of W resolution width for systematics
-W_resol_width = workspace.var("W_resol_width")
-W_resol_width_constr = ROOT.RooRealVar("W_resol_width_constr","W_resol_width_constr",W_resol_width.getVal())
-W_resol_width_err = ROOT.RooRealVar("W_resol_width_err","W_resol_width_err",W_resol_width.getError())
-gauss_W_resol = ROOT.RooGaussian("gauss_W_resol","gauss_W_resol",W_resol_width,W_resol_width_constr,W_resol_width_err)
+# W_resol_width = workspace.var("W_resol_width")
+dCB_width = workspace.var("dCB_width")
+dCB_width_constr = ROOT.RooRealVar("dCB_width_constr","dCB_width_constr",dCB_width.getVal())
+dCB_width_err = ROOT.RooRealVar("dCB_width_err","dCB_width_err",dCB_width.getError())
+gauss_W_resol = ROOT.RooGaussian("gauss_W_resol","gauss_W_resol",dCB_width,dCB_width_constr,dCB_width_err)
 
 #Now fit signal + background
 
@@ -102,7 +130,7 @@ gauss_W_resol = ROOT.RooGaussian("gauss_W_resol","gauss_W_resol",W_resol_width,W
 #First the cross section, with a modifier for systematics
 #CMS ttbar measurement/W->lnu BR (it is measured with both W in lnu), in pb
 #http://cms-results.web.cern.ch/cms-results/public-results/publications/TOP-16-005/index.html
-glb_W_xsec    = ROOT.RooRealVar("glb_W_xsec","glb_W_xsec", 2.*815.*0.1086, 0., 1000. )
+glb_W_xsec    = ROOT.RooRealVar("glb_W_xsec","glb_W_xsec", 2.*815.*0.1086, 0., 1000.)
 W_xsec_constr = ROOT.RooRealVar("W_xsec_constr","W_x_sec_constr", 2.*815.*0.1086, 0., 1000.)
 W_xsec_syst   = ROOT.RooRealVar("W_xsec_syst","W_xsec_syst",43.*2.*0.1086)
 gauss_W_xsec  = ROOT.RooGaussian("gauss_W_xsec","gauss_W_xsec",glb_W_xsec,W_xsec_constr,W_xsec_syst)
@@ -117,8 +145,8 @@ gauss_lumi  = ROOT.RooGaussian("gauss_lumi","gauss_lumi",glb_lumi,lumi_constr,lu
 
 #Now the efficiency
 totsig = 107810.  #total number of signal events
-totmu = 7938.     #total number of signal muon events
-totel = 6469.     #total number of signal electron events
+totmu = 7516.     #total number of signal muon events
+totel = 6141.     #total number of signal electron events
 
 glb_eff_mu    = ROOT.RooRealVar("glb_eff_mu","glb_eff_mu",totmu*2./totsig, 0., 1.) #For now, just the raw MC passed/generated number
 eff_mu_constr = ROOT.RooRealVar("eff_mu_constr","eff_mu_constr", totmu*2./totsig, 0., 1.)
@@ -136,7 +164,7 @@ glb_W_xsec.setConstant(1)
 glb_lumi.setConstant(1)
 glb_eff_mu.setConstant(1)
 glb_eff_el.setConstant(1)
-#W_resol_width_constr.setConstant(1)
+#dCB_width_constr.setConstant(1)
 
 Nsig_mu = ROOT.RooFormulaVar("Nsig_mu","@0*@1*@2*@3", ROOT.RooArgList(W_pigamma_BR, W_xsec_constr,lumi_constr,eff_mu_constr))
 Nsig_el = ROOT.RooFormulaVar("Nsig_el","@0*@1*@2*@3", ROOT.RooArgList(W_pigamma_BR, W_xsec_constr,lumi_constr,eff_el_constr))
@@ -155,7 +183,7 @@ totPDF.addPdf(totPDF_mu,"Muon")
 totPDF.addPdf(totPDF_el,"Electron")
 
 constrained_params = ROOT.RooArgSet()
-constrained_params.add(W_resol_width)
+constrained_params.add(dCB_width)
 constrained_params.add(W_xsec_constr)
 constrained_params.add(lumi_constr)
 constrained_params.add(eff_mu_constr)
@@ -221,3 +249,5 @@ getattr(workspace,'import')(totPDF)
 workspace.Write()
 
 fOutput.Close()
+
+raw_input()

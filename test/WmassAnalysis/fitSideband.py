@@ -9,7 +9,7 @@ Wmass.setRange("LowerRange",50.,65.)
 Wmass.setRange("UpperRange",90.,100.)
 
 #Retrive the sample
-fInput = ROOT.TFile("Tree_Data.root")
+fInput = ROOT.TFile("Tree_Data_sidebands.root")
 fInput.cd()
 
 mytree = fInput.Get("minitree")
@@ -18,12 +18,16 @@ mytree = fInput.Get("minitree")
 isMuon = ROOT.RooCategory("isMuon","isMuon")
 isMuon.defineType("Muon",1)
 isMuon.defineType("Electron",0)
+# isSidebands = ROOT.RooCategory("isSidebands","isSidebands")
+# isSidebands.defineType("Sidebands",1)
+# isSidebands.defineType("SignalRegion",0)
 
 #Create the RooDataSet. No need to import weight for signal only analysis
 data = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isMuon), ROOT.RooFit.Import(mytree))
 
 #Skim one lepton sample only
-data_lep = data.reduce("isMuon==1")
+data_lep = data.reduce("isMuon==0")
+#data_lep = data.reduce(ROOT.RooFit.CutRange("UpperRange"))
 #data_lep = data.reduce("isMuon==isMuon::Electron")
 
 print "Using ", data_lep.numEntries(), " events to fit the lepton shape"
@@ -48,12 +52,12 @@ sidebandPDF_c = ROOT.RooBernstein("backPDF_c","backPDF_c",Wmass,ROOT.RooArgList(
 sidebandPDF_x = ROOT.RooExponential("backPDF_x","backPDF_x",Wmass,x0)
 
 #Fit the PDFs on data
-result_j = sidebandPDF_j.fitTo(data_lep,ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save())
-result_a = sidebandPDF_a.fitTo(data_lep,ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save())
+result_j = sidebandPDF_j.fitTo(data_lep,ROOT.RooFit.Save())
+result_a = sidebandPDF_a.fitTo(data_lep,ROOT.RooFit.Save())
 result_b = sidebandPDF_b.fitTo(data_lep,ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save())
 result_c = sidebandPDF_c.fitTo(data_lep,ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save())
 result_x = sidebandPDF_x.fitTo(data_lep,ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.Save())
-
+"""
 #Get the minimum of the likelihood from RooFitResult
 minNll_j = result_j.minNll()
 minNll_a = result_a.minNll()
@@ -67,33 +71,35 @@ Npars_a = result_a.floatParsFinal().getSize()
 Npars_b = result_b.floatParsFinal().getSize()
 Npars_c = result_c.floatParsFinal().getSize()
 Npars_x = result_x.floatParsFinal().getSize()
-
+"""
 xframe = Wmass.frame(ROOT.RooFit.Bins(30))
 data_lep.plotOn(xframe,ROOT.RooFit.Name("data_lep"))
-sidebandPDF_j.plotOn(xframe,ROOT.RooFit.Name("PDF_j"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(5)) # yellow. 1 degree
-sidebandPDF_a.plotOn(xframe,ROOT.RooFit.Name("PDF_a"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(4)) # blue. 2 degree
-sidebandPDF_b.plotOn(xframe,ROOT.RooFit.Name("PDF_b"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(2)) # red. 3 degree
-sidebandPDF_c.plotOn(xframe,ROOT.RooFit.Name("PDF_c"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(3)) # green. 4 degree
-sidebandPDF_x.plotOn(xframe,ROOT.RooFit.Name("PDF_x"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(6)) # purple. exponential
+#xframe.Draw()
 
+sidebandPDF_j.plotOn(xframe,ROOT.RooFit.NormRange("LowerRange,UpperRange"),ROOT.RooFit.Name("PDF_j"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(5)) # yellow. 1 degree
+sidebandPDF_a.plotOn(xframe,ROOT.RooFit.NormRange("LowerRange,UpperRange"),ROOT.RooFit.Name("PDF_a"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(4)) # blue. 2 degree
+sidebandPDF_b.plotOn(xframe,ROOT.RooFit.NormRange("LowerRange,UpperRange"),ROOT.RooFit.Name("PDF_b"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(2)) # red. 3 degree
+sidebandPDF_c.plotOn(xframe,ROOT.RooFit.NormRange("LowerRange,UpperRange"),ROOT.RooFit.Name("PDF_c"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(3)) # green. 4 degree
+sidebandPDF_x.plotOn(xframe,ROOT.RooFit.NormRange("LowerRange,UpperRange"),ROOT.RooFit.Name("PDF_x"),ROOT.RooFit.Range("LowerRange,UpperRange"),ROOT.RooFit.LineColor(6)) # purple. exponential
+"""
 #Redisuals
 hresid_j = ROOT.TH1F()
 hresid_j = xframe.residHist("data_lep","PDF_j")
 hresid_a = xframe.residHist("data_lep","PDF_a")
 hresid_b = xframe.residHist("data_lep","PDF_b")
 hresid_c = xframe.residHist("data_lep","PDF_c")
-"""
-res_j = 0.
-res_a = 0.
-res_b = 0.
-res_c = 0.
 
-for x in range (1, 31):
-    res_j += hresid_j.getBinContent(x)
-    res_a += hresid_a.ROOT.getBinContent(x)
-    res_b += hresid_b.ROOT.getBinContent(x)
-    res_c += hresid_c.ROOT.getBinContent(x)
-"""
+# res_j = 0.
+# res_a = 0.
+# res_b = 0.
+# res_c = 0.
+
+# for x in range (1, 31):
+#     res_j += hresid_j.getBinContent(x)
+#     res_a += hresid_a.ROOT.getBinContent(x)
+#     res_b += hresid_b.ROOT.getBinContent(x)
+#     res_c += hresid_c.ROOT.getBinContent(x)
+
 #chi2 = ROOT.RooChi2Var("chi2","chi2",sidebandPDF,data_lep)
 chi_2_j = xframe.chiSquare("PDF_j","data_lep",Npars_j)
 chi_2_a = xframe.chiSquare("PDF_a","data_lep",Npars_a)
@@ -117,7 +123,7 @@ print "Deltaloglikelihood_34 = ", -2*(minNll_c-minNll_b)
 print "prob_12 = ", prob_12
 print "prob_23 = ", prob_23
 print "prob_34 = ", prob_34
-
+"""
 canvas = ROOT.TCanvas()
 canvas.cd()
 legend = ROOT.TLegend(0.1,0.7,0.48,0.9)
@@ -129,4 +135,6 @@ legend.AddEntry(0,"green: 4 degree","")
 legend.AddEntry(0,"purple: exp","")
 xframe.Draw()
 legend.Draw()
-canvas.SaveAs("fitSidebands_exp_muons.png")
+canvas.SaveAs("plots/fitSidebands_exp_muons.png")
+
+raw_input()

@@ -1,4 +1,3 @@
-
 import ROOT
 
 #Get the model and the data
@@ -30,14 +29,14 @@ model.SetWorkspace(workspace)
 model.SetPdf("totPDF")
 model.SetParametersOfInterest(poi)
 
-ROOT.RooRandom.randomGenerator().SetSeed(111)
+#ROOT.RooRandom.randomGenerator().SetSeed(111)
 
 
 print "Number of events in data = ", workspace.data("data").numEntries()
 
 #Set up the FC calculator
 fc = ROOT.RooStats.FeldmanCousins(workspace.data("data"),model)
-fc.AdditionalNToysFactor(10)
+fc.AdditionalNToysFactor(5)
 fc.SetTestSize(0.05)
 fc.UseAdaptiveSampling(1)
 fc.FluctuateNumDataEntries(1)
@@ -50,12 +49,70 @@ points_to_scan = ROOT.RooDataSet("points_to_scan","points_to_scan",scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.)
 points_to_scan.add(scan_params)
 """
+scan_params.setRealValue("W_pigamma_BR",0.000000001)   #1*10-9
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.000000002)   #2*10-9
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.000000005)   #5*10-9
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.000000008)   #8*10-9
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.000000009)   #9*10-9
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.00000001)   #1*10-8
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.00000002)   #2*10-8
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.00000003)   #3*10-8
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.00000004)   #4*10-8
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.00000005)   #5*10-8
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.00000006)   #6*10-8
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.00000007)   #7*10-8
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.00000008)   #8*10-8
+points_to_scan.add(scan_params)
+"""
+scan_params.setRealValue("W_pigamma_BR",0.00000009)   #9*10-8
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.0000001)   #1*10-7
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.0000002)   #2*10-7
+points_to_scan.add(scan_params)
+"""
+scan_params.setRealValue("W_pigamma_BR",0.0000003)   #3*10-7
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.0000004)   #4*10-7
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.0000005)   #5*10-7
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.0000006)   #6*10-7
+points_to_scan.add(scan_params)
+"""
+scan_params.setRealValue("W_pigamma_BR",0.000001)   #1*10-6
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.000002)   #2*10-6
+points_to_scan.add(scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.000003)   #3*10-6
 points_to_scan.add(scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.000004)   #4*10-6
 points_to_scan.add(scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.000005)   #5*10-6
 points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.000006)   #6*10-6
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.000007)   #7*10-6
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.000008)   #8*10-6
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.000009)   #9*10-6
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.00001)   #1*10-5
+points_to_scan.add(scan_params)
+"""
 scan_params.setRealValue("W_pigamma_BR",0.0000055)   #5.5*10-6
 points_to_scan.add(scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.0000056)   #5.6*10-6
@@ -116,7 +173,6 @@ scan_params.setRealValue("W_pigamma_BR",0.000015)    #1.5*10-5
 points_to_scan.add(scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.000016)    #1.6*10-5
 points_to_scan.add(scan_params)
-"""
 scan_params.setRealValue("W_pigamma_BR",0.000017)    #1.7*10-5
 points_to_scan.add(scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.000018)    #1.8*10-5
@@ -149,7 +205,6 @@ scan_params.setRealValue("W_pigamma_BR",0.00003)     #3.0*10-5
 points_to_scan.add(scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.000031)     #3.1*10-5
 points_to_scan.add(scan_params)
-"""
 scan_params.setRealValue("W_pigamma_BR",0.000032)     #3.2*10-5
 points_to_scan.add(scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.000033)     #3.3*10-5
@@ -158,8 +213,15 @@ scan_params.setRealValue("W_pigamma_BR",0.000034)     #3.4*10-5
 points_to_scan.add(scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.000035)    #3.5*10-5
 points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.000065)    #3.5*10-5
+points_to_scan.add(scan_params)
+scan_params.setRealValue("W_pigamma_BR",0.000095)    #3.5*10-5
+points_to_scan.add(scan_params)
+#scan_params.setRealValue("W_pigamma_BR",0.0001)    #3.5*10-5
+#points_to_scan.add(scan_params)
+#scan_params.setRealValue("W_pigamma_BR",0.001)    #3.5*10-5
+#points_to_scan.add(scan_params)
 """
-
 fc.SetPOIPointsToTest(points_to_scan)
 
 #We can use PROOF to speed things along in parallel
@@ -168,7 +230,6 @@ toymcsampler = fc.GetTestStatSampler()
 toymcsampler.SetProofConfig(pc)
 
 interval = fc.GetInterval()
-
 
 print "The interval is [", interval.LowerLimit(W_pigamma_BR), ", ", interval.UpperLimit(W_pigamma_BR), "]"
 

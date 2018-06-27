@@ -13,7 +13,7 @@ mult_if_signal_el_1 = TH1F("Electrons are red","Lepton multiplicity with tag ele
 mult_if_signal_el_2 = TH1F("Mult2 el","Lepton multiplicity with tag electron",5,-0.5,4.5)
 mult_if_signal_el_3 = TH1F("Ele ch. with loose electrons","Lepton multiplicity with tag muon",5,-0.5,4.5)
 
-f = TFile.Open("LeptonMultiplicity_output_v2.root")
+f = TFile.Open("LeptonMultiplicity_output_v4.root")
 mytree = f.Get("LeptonMultiplicity/mytree")
 
 
@@ -66,6 +66,9 @@ mult_if_signal_mu_3.SetLineStyle(10)
 mult_if_signal_mu_1.GetXaxis().SetTitle("Number of leptons")
 mult_if_signal_mu_1.GetYaxis().SetTitle("Events")
 mult_if_signal_mu_1.GetYaxis().SetTitleOffset(1.5)
+mult_if_signal_mu_1.GetYaxis().SetRangeUser(1.,40000.)
+mult_if_signal_mu_2.GetYaxis().SetRangeUser(1.,40000.)
+mult_if_signal_mu_3.GetYaxis().SetRangeUser(1.,40000.)
 mult_if_signal_mu_1.Draw()
 mult_if_signal_mu_2.Draw("SAME")
 mult_if_signal_mu_3.Draw("SAME")

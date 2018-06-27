@@ -90,12 +90,12 @@ class Workflow_Handler:
         
         #----Medium selection----#
         if isMedium:
-            #self.norm_filename = "rootfiles/" + self.subprocess + "Medium/Normalizations_table.txt"
-            self.norm_filename = "rootfiles/" + self.subprocess + "Medium_AfterFix/Normalizations_table.txt"
-            #self.dir_back_input = "rootfiles/" + self.subprocess + "Medium/backgrounds/"
-            self.dir_back_input = "rootfiles/" + self.subprocess + "Medium_AfterFix/backgrounds/"
-            #self.sig_filename = "rootfiles/" + self.subprocess + "Medium/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
-            self.sig_filename = "rootfiles/" + self.subprocess + "Medium_AfterFix/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
+            self.norm_filename = "rootfiles/" + self.subprocess + "Medium/Normalizations_table.txt"
+            #self.norm_filename = "rootfiles/" + self.subprocess + "Medium_AfterFix/Normalizations_table.txt"
+            self.dir_back_input = "rootfiles/" + self.subprocess + "Medium/backgrounds/"
+            #self.dir_back_input = "rootfiles/" + self.subprocess + "Medium_AfterFix/backgrounds/"
+            self.sig_filename = "rootfiles/" + self.subprocess + "Medium/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
+            #self.sig_filename = "rootfiles/" + self.subprocess + "Medium_AfterFix/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
 
         #----Tight selection----#
         if not isMedium:
@@ -104,16 +104,18 @@ class Workflow_Handler:
             self.sig_filename = "rootfiles/" + self.subprocess + "Tight/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
 
         #----Data----#
-        #self.dir_data_input = "rootfiles/" + self.subprocess + "data/"
-        self.dir_data_input = "rootfiles/" + self.subprocess + "data_AfterFix/"
+        self.dir_data_input = "rootfiles/" + self.subprocess + "data/"
+        #self.dir_data_input = "rootfiles/" + self.subprocess + "data_AfterFix/"
 
                 
         reader.AddVariable("pi_pT",pi_pT_array)
         reader.AddVariable("gamma_eT",gamma_eT_array)
+        #reader.AddVariable("pi_pT/Wmass",pi_pT_array)
+        #reader.AddVariable("gamma_eT/Wmass",gamma_eT_array)
         reader.AddVariable("nBjets_25",nBjets_25_array)
         #reader.AddVariable("deltaphi_lep_pi",deltaphi_lep_pi_array)
         reader.AddVariable("lep_pT",lep_pT_array)
-        reader.AddVariable("piRelIso_05",piRelIso_05_array)
+        reader.AddVariable("piRelIso_05_ch",piRelIso_05_array)
         #reader.AddSpectator("isMuon",isMuon_array)
         reader.AddVariable("MET",met_array)
 

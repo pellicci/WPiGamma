@@ -1,3 +1,4 @@
+
 import os
 
 ###All normalizations are provided to 1fb-1 of lumi in these tables
@@ -101,9 +102,9 @@ def get_xsec_fromsample(samplename):
 
     if samplename == "GammaJets_20_Inf":
         return 154500.
-
-    #if samplename == "WGToLNuG":
-    #    return 489.
+    
+    if "WGToLNuG" in samplename:
+        return 489.
     
     if "Signal" in samplename:
         #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
@@ -120,11 +121,12 @@ def main():
         os.makedirs("rootfiles")
         
     #output_filename = "rootfiles/Tight/Normalizations_table.txt"
-    #output_filename = "rootfiles/Medium/Normalizations_table.txt"
-    output_filename = "rootfiles/Medium_AfterFix/Normalizations_table.txt"
+    output_filename = "rootfiles/Medium/Normalizations_table.txt"
+    #output_filename = "rootfiles/Medium_AfterFix/Normalizations_table.txt"
 
     out_file = open(output_filename,"w")
     signal_events_cumul = 0.
+    WG_events_cumul = 0.
     
     for dirname in list_dirs:
         
@@ -141,6 +143,10 @@ def main():
         #Treat signal differently to account for different samples with same xsec
         if "Signal" in samplename:
             signal_events_cumul = signal_events_cumul + number_events
+            continue
+
+        if "WGToLNuG" in samplename:
+            WG_events_cumul = WG_events_cumul + number_events
             continue
 
         xsection = float(get_xsec_fromsample(samplename))
@@ -162,6 +168,15 @@ def main():
         write_string = "Signal" + " " + str(scale_factor) + "\n"
         print "Output Norm = ", write_string
         out_file.write(write_string)
+
+    if WG_events_cumul > 0.:
+        xsection = float(get_xsec_fromsample("WGToLNuG"))
+        scale_factor = float(xsection*1000./WG_events_cumul)
+        print "WGToLNuG scale_factor = ", scale_factor
+        write_string = "WGToLNuG" + " " + str(scale_factor) + "\n"
+        print "Output Norm = ", write_string
+        out_file.write(write_string)
+        
             
     print "All done!"
 

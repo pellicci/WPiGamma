@@ -39,7 +39,7 @@ if __name__ == '__main__':
     #############################################################################################
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
-
+    
     config.General.requestName = 'WPiGammaAnalysis_ttbar'
     config.Data.unitsPerJob = 5
     config.Data.inputDataset = '/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
@@ -265,12 +265,26 @@ if __name__ == '__main__':
     p.start()
     p.join()
     
-    #config.General.requestName = 'WPiGammaAnalysis_WGToLNuG'
-    #config.Data.unitsPerJob = 5
-    #config.Data.inputDataset = '/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM'
-    #p = Process(target=submit, args=(config,))
-    #p.start()
-    #p.join()
+    config.General.requestName = 'WPiGammaAnalysis_WGToLNuG_ext1'
+    config.Data.unitsPerJob = 5
+    config.Data.inputDataset = '/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
+    p = Process(target=submit, args=(config,))
+    p.start()
+    p.join()
+
+    config.General.requestName = 'WPiGammaAnalysis_WGToLNuG_ext2'
+    config.Data.unitsPerJob = 5
+    config.Data.inputDataset = '/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/MINIAODSIM'
+    p = Process(target=submit, args=(config,))
+    p.start()
+    p.join()
+
+    config.General.requestName = 'WPiGammaAnalysis_WGToLNuG_ext3'
+    config.Data.unitsPerJob = 5
+    config.Data.inputDataset = '/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext3-v1/MINIAODSIM'
+    p = Process(target=submit, args=(config,))
+    p.start()
+    p.join()
 
 
 

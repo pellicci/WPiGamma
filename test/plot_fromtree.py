@@ -46,15 +46,29 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 #Here's the list of histos to plot
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_Wmass", "h_nBjets", "h_mueta", "h_eleeta","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_iso","h_ele_iso","h_gamma_iso_ChHad","h_gamma_iso_NeuHad","h_gamma_iso_Ph","h_gamma_iso_eArho","h_ele_gamma_InvMass","h_mu_gamma_InvMass","h_nBjets_25","h_evts_Bjets","h_piIso_03_mu","h_piIso_05_mu","h_piRelIso_03_mu","h_piRelIso_05_mu","h_piIso_03_ele","h_piIso_05_ele","h_piRelIso_03_ele","h_piRelIso_05_ele","h_mu_pi_InvMass","h_met"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_Wmass", "h_nBjets", "h_mueta", "h_eleeta","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_iso","h_ele_iso","h_gamma_iso_ChHad","h_gamma_iso_NeuHad","h_gamma_iso_Ph","h_gamma_iso_eArho","h_ele_gamma_InvMass","h_mu_gamma_InvMass","h_nBjets_25","h_evts_Bjets","h_piIso_03_mu","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_03_ele","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_mu_pi_InvMass","h_met","h_Wmass_mu_plus","h_Wmass_ele_plus","h_Wmass_mu_minus","h_Wmass_ele_minus"]
 
-h_events_sig_mu = ROOT.TH1F("h_events_sig_mu","Progressive event loss (#mu)",5,0,5)
+h_events_sig_mu  = ROOT.TH1F("h_events_sig_mu","Progressive event loss (#mu)",5,0,5)
 h_events_sig_ele = ROOT.TH1F("h_events_sig_ele","Progressive event loss (e)",7,0,7)
-h_events_bkg_mu = ROOT.TH1F("h_events_bkg_mu","Progressive event loss (#mu)",5,0,5)
+h_events_bkg_mu  = ROOT.TH1F("h_events_bkg_mu","Progressive event loss (#mu)",5,0,5)
 h_events_bkg_ele = ROOT.TH1F("h_events_bkg_ele","Progressive event loss (e)",7,0,7)
 
+Wmass_mu        = ROOT.TH1F("Wmass_mu","Wmass mu",10,40,100)
+Wmass_ele       = ROOT.TH1F("Wmass_ele","Wmass ele",10,40,100)
+Wmass_mu_plus   = ROOT.TH1F("Wmass_mu_plus","Wmass mu plus",10,40,100)
+Wmass_mu_minus  = ROOT.TH1F("Wmass_mu_minus","Wmass mu minus",10,40,100)
+Wmass_ele_plus  = ROOT.TH1F("Wmass_ele_plus","Wmass ele plus",10,40,100)
+Wmass_ele_minus = ROOT.TH1F("Wmass_ele_minus","Wmass ele minus",10,40,100)
+
+Wmass_mu.Sumw2()
+Wmass_ele.Sumw2()
+Wmass_mu_plus.Sumw2()
+Wmass_mu_minus.Sumw2()
+Wmass_ele_plus.Sumw2()
+Wmass_ele_minus.Sumw2()
+
 #Color mask must have the same number of entries as non-QCD backgrounds
-colors_mask = [26,400,840,616,860,432,880,900,800,416,885,910,200,630,420,608,960]  #Invert 900 and 416 for previous colors 
+colors_mask = [26,400,840,616,860,432,880,900,800,416,885,910,200,630,420,608,960,ROOT.kGreen+3]
 
 def select_all_but_one(cutstring):
 
@@ -102,6 +116,7 @@ for hname in list_histos:
 
 ##Define the histos to be created
 isQCDfirst = True
+
 for sample_name in samplename_list:
 
     if "QCD" in sample_name:
@@ -126,8 +141,8 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[11]] = ROOT.TH1F(theSampleName+list_histos[11], "deltaphi ele-W", 10, 0, 3.14)
     h_base[theSampleName+list_histos[12]] = ROOT.TH1F(theSampleName+list_histos[12], "deltaeta mu-pi", 20, -5, 5)
     h_base[theSampleName+list_histos[13]] = ROOT.TH1F(theSampleName+list_histos[13], "deltaeta ele-pi", 20, -5, 5)
-    h_base[theSampleName+list_histos[14]] = ROOT.TH1F(theSampleName+list_histos[14], "W mass if flag mu", 20, 40, 100)
-    h_base[theSampleName+list_histos[15]] = ROOT.TH1F(theSampleName+list_histos[15], "W mass if flag ele", 20, 40, 100)
+    h_base[theSampleName+list_histos[14]] = ROOT.TH1F(theSampleName+list_histos[14], "W mass if flag mu", 10, 40, 100)
+    h_base[theSampleName+list_histos[15]] = ROOT.TH1F(theSampleName+list_histos[15], "W mass if flag ele", 10, 40, 100)
     h_base[theSampleName+list_histos[16]] = ROOT.TH1F(theSampleName+list_histos[16], "muon isolation", 20, 0, 0.3)
     h_base[theSampleName+list_histos[17]] = ROOT.TH1F(theSampleName+list_histos[17], "electron isolation", 20, 0, 0.3)
     h_base[theSampleName+list_histos[18]] = ROOT.TH1F(theSampleName+list_histos[18], "Photon isolation - ChargedHadron", 50, 0, 5)
@@ -140,14 +155,18 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[25]] = ROOT.TH1F(theSampleName+list_histos[25], "events with Bjets 25", 4, 0, 4)
     h_base[theSampleName+list_histos[26]] = ROOT.TH1F(theSampleName+list_histos[26], "Pion isolation 03 - mu", 75, 0, 150)
     h_base[theSampleName+list_histos[27]] = ROOT.TH1F(theSampleName+list_histos[27], "Pion isolation 05 - mu", 75, 0, 150)
-    h_base[theSampleName+list_histos[28]] = ROOT.TH1F(theSampleName+list_histos[28], "Pion rel. isolation 03 - mu", 20, 0, 1)
+    h_base[theSampleName+list_histos[28]] = ROOT.TH1F(theSampleName+list_histos[28], "Pion rel. isolation 05 - mu - ch", 50, 0, 10)
     h_base[theSampleName+list_histos[29]] = ROOT.TH1F(theSampleName+list_histos[29], "Pion rel. isolation 05 - mu", 50, 0, 10)
     h_base[theSampleName+list_histos[30]] = ROOT.TH1F(theSampleName+list_histos[30], "Pion isolation 03 - ele", 75, 0, 150)
     h_base[theSampleName+list_histos[31]] = ROOT.TH1F(theSampleName+list_histos[31], "Pion isolation 05 - ele", 75, 0, 150)
-    h_base[theSampleName+list_histos[32]] = ROOT.TH1F(theSampleName+list_histos[32], "Pion rel. isolation 03 - ele", 20, 0, 1)
+    h_base[theSampleName+list_histos[32]] = ROOT.TH1F(theSampleName+list_histos[32], "Pion rel. isolation 05 - ele - ch", 50, 0, 10)
     h_base[theSampleName+list_histos[33]] = ROOT.TH1F(theSampleName+list_histos[33], "Pion rel. isolation 05 - ele", 50, 0, 10)
     h_base[theSampleName+list_histos[34]] = ROOT.TH1F(theSampleName+list_histos[34], "mu-pi InvMass", 50, 0, 200)
-    h_base[theSampleName+list_histos[35]] = ROOT.TH1F(theSampleName+list_histos[35], "mu-pi InvMass", 150, 0, 200)
+    h_base[theSampleName+list_histos[35]] = ROOT.TH1F(theSampleName+list_histos[35], "met", 150, 0, 200)
+    h_base[theSampleName+list_histos[36]] = ROOT.TH1F(theSampleName+list_histos[36], "Wmass mu plus", 10, 40, 100)
+    h_base[theSampleName+list_histos[37]] = ROOT.TH1F(theSampleName+list_histos[37], "Wmass ele plus", 10, 40, 100)
+    h_base[theSampleName+list_histos[38]] = ROOT.TH1F(theSampleName+list_histos[38], "Wmass mu minus", 10, 40, 100)
+    h_base[theSampleName+list_histos[39]] = ROOT.TH1F(theSampleName+list_histos[39], "Wmass ele minus", 10, 40, 100)
 
 #leg1 = ROOT.TLegend(0.1,0.5,0.25,0.9) #left positioning
 leg1 = ROOT.TLegend(0.6868687,0.6120093,0.9511784,0.9491917) #right positioning
@@ -222,6 +241,7 @@ for name_sample in samplename_list:
     else:
         QCDflag = False
 
+
     if not "Data" in name_sample:
         norm_factor = Norm_Map[name_sample]*luminosity_norm
 
@@ -239,7 +259,9 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu: # Avoid double-counting of the ttbarlnu background
             continue
 
-        #if "Data" in name_sample: continue  #-------------Excluding data-------------#
+        if "Data" in name_sample: continue  #-------------Excluding data-------------#
+        #if not name_sample == "Signal":
+        #    continue
 
         if "Signal" in name_sample:
             Sevts_tot += 1
@@ -267,6 +289,7 @@ for name_sample in samplename_list:
         pi_FourMomentum.SetPtEtaPhiE(pi_pT,pi_eta,pi_phi,pi_E)
         piRelIso_03 = mytree.sum_pT_03/pi_pT
         piRelIso_05 = mytree.sum_pT_05/pi_pT
+        piRelIso_05_ch = mytree.sum_pT_05_ch/pi_pT
             
         gamma_eT = mytree.photon_eT
         gamma_eta = mytree.photon_eta
@@ -284,9 +307,6 @@ for name_sample in samplename_list:
         met = mytree.met_pT
        
         Wmass = mytree.Wmass
-
-
-        #if not "Data" in name_sample and Wmass > 65 and Wmass < 90: continue #cut on MC in the blind window
 
         lep_FourMomentum = ROOT.TLorentzVector()
         lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
@@ -363,6 +383,9 @@ for name_sample in samplename_list:
             else:
                 Event_Weight = Event_Weight*ele_weight
 
+
+
+
             # Obtaining the number of sig and bkg events (weighted)
             
             if "Signal" in name_sample and isMuon:
@@ -376,7 +399,7 @@ for name_sample in samplename_list:
             
 
         else:
-            Event_Weight = 1
+            Event_Weight = 1.
  
 
         #---------Retrieve the BDT output----------#
@@ -468,29 +491,28 @@ for name_sample in samplename_list:
             if nBjets > 3:
                 h_base[theSampleName+"h_evts_Bjets"].Fill(3.5,1)
 
-        if isMuon:# and pi_pT > 60:# and (mu_pi_InvMass < 85. or mu_pi_InvMass > 95.):
+        if isMuon:
             #h_base[theSampleName+"h_piIso_03_mu"].Fill(piIso_03,Event_Weight)
             #h_base[theSampleName+"h_piIso_05_mu"].Fill(piIso_05,Event_Weight)
-            h_base[theSampleName+"h_piRelIso_03_mu"].Fill(piRelIso_03,Event_Weight)
+            #h_base[theSampleName+"h_piRelIso_03_mu"].Fill(piRelIso_03,Event_Weight)
             h_base[theSampleName+"h_piRelIso_05_mu"].Fill(piRelIso_05,Event_Weight)
             h_base[theSampleName+"h_mu_pi_InvMass"].Fill(mu_pi_InvMass,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_05_mu_ch"].Fill(piRelIso_05_ch,Event_Weight)
+            h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
 
-        if not isMuon and (ele_gamma_InvMass < ELE_GAMMA_INVMASS_MIN or ele_gamma_InvMass > ELE_GAMMA_INVMASS_MAX):
+        #if not isMuon and (ele_gamma_InvMass < ELE_GAMMA_INVMASS_MIN or ele_gamma_InvMass > ELE_GAMMA_INVMASS_MAX):
             #h_base[theSampleName+"h_piIso_03_ele"].Fill(piIso_03,Event_Weight)
             #h_base[theSampleName+"h_piIso_05_ele"].Fill(piIso_05,Event_Weight)
-            h_base[theSampleName+"h_piRelIso_03_ele"].Fill(piRelIso_03,Event_Weight)
-            h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
+            #h_base[theSampleName+"h_piRelIso_03_ele"].Fill(piRelIso_03,Event_Weight)
 
-        if isMuon:
-            h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
-            h_base[theSampleName+"h_deltaphi_mu_pi"].Fill(deltaphi_lep_pi,Event_Weight)
-        else:
-            h_base[theSampleName+"h_deltaphi_ele_pi"].Fill(deltaphi_lep_pi,Event_Weight)
+        if not isMuon:
+            h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_05_ele_ch"].Fill(piRelIso_05_ch,Event_Weight)
 
 
         #---------------------Here's where the BDT selection starts---------------------#
       
-        if (isMuon and BDT_out >= 0.12) or (not isMuon and BDT_out >= 0.09):
+        if (isMuon and BDT_out >= 0.094) or (not isMuon and BDT_out >= 0.076):
             if (Wmass >= 50. and Wmass <= 100.):
                 if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
                     h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
@@ -516,6 +538,20 @@ for name_sample in samplename_list:
 
                         if "Signal" in name_sample:
                             Sevts_ele_SFvariation += Event_Weight
+
+
+        #-------BDT cut variation------#
+        if (isMuon and BDT_out >= 0.087) or (not isMuon and BDT_out >= 0.072): #Extra block
+            if (Wmass >= 50. and Wmass <= 100.) and isMuon:
+                h_base[theSampleName+"h_Wmass_mu_minus"].Fill(Wmass,Event_Weight)
+            if (Wmass >= 50. and Wmass <= 100.) and not isMuon and lep_iso <= 0.35:
+                h_base[theSampleName+"h_Wmass_ele_minus"].Fill(Wmass,Event_Weight)
+
+        if (isMuon and BDT_out >= 0.101) or (not isMuon and BDT_out >= 0.080): #Extra block
+            if (Wmass >= 50. and Wmass <= 100.) and isMuon:
+                h_base[theSampleName+"h_Wmass_mu_plus"].Fill(Wmass,Event_Weight)
+            if (Wmass >= 50. and Wmass <= 100.) and not isMuon and lep_iso <= 0.35:
+                h_base[theSampleName+"h_Wmass_ele_plus"].Fill(Wmass,Event_Weight)
 
         
         #Count the events
@@ -627,14 +663,14 @@ for hname in list_histos:
     canvas[hname].cd()
 
     hs[hname].Draw("histo")
-    if "h_Wmass_flag" in hname:
+    if "h_Wmass_" in hname:
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),55.))
     if hname == "h_Wmass":
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),100.))
-    if hname == "h_piRelIso_05_ele":
+    if hname == "h_piRelIso_05_ele_ch":
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),27000.))
-    if hname == "h_piRelIso_05_mu":
-        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),7000.))
+    if hname == "h_piRelIso_05_mu_ch":
+        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),12000.))
 
     down = ROOT.gPad.GetUymin()
     up   = ROOT.gPad.GetUymax()
@@ -712,6 +748,32 @@ for hname in list_histos:
     if signal_magnify != 1:
         h_base[myWF.sig_samplename+hname].Scale(signal_magnify)
 
+
+    #---Wmass ratio plots---#
+    if hname == "h_Wmass_flag_mu":
+        Wmass_mu = hs[hname].GetStack().Last()
+
+    if hname == "h_Wmass_flag_ele":
+        Wmass_ele = hs[hname].GetStack().Last()
+
+    if hname == "h_Wmass_mu_plus":
+        Wmass_mu_plus = hs[hname].GetStack().Last()
+
+    if hname == "h_Wmass_mu_minus":
+        Wmass_mu_minus = hs[hname].GetStack().Last()
+
+    if hname == "h_Wmass_ele_plus":
+        Wmass_ele_plus = hs[hname].GetStack().Last()
+
+    if hname == "h_Wmass_ele_minus":
+        Wmass_ele_minus = hs[hname].GetStack().Last()
+
+
+    # Wmass_mu_plus.Divide(Wmass_mu)
+    # Wmass_mu_minus.Divide(Wmass_mu)
+    # Wmass_ele_plus.Divide(Wmass_ele)
+    # Wmass_ele_minus.Divide(Wmass_ele)
+
     h_base[myWF.sig_samplename+hname].Draw("SAME,hist")
     h_base[myWF.data_samplename+hname].Draw("SAME,E1")
 
@@ -724,7 +786,7 @@ for hname in list_histos:
     leg1.Draw()
         
     canvas[hname].SaveAs("plots/" + hname + ".pdf")
-    #canvas[hname].SaveAs("~rselvati/www/WPiGamma/InterestingVariables/09_11_2017_blind/" + hname + ".pdf")
+
 
 #------draw progressive histo------
 canvas1 = ROOT.TCanvas()
@@ -745,7 +807,7 @@ h_events_sig_mu.GetXaxis().SetBinLabel(5,"Wmass")
 h_events_sig_mu.Draw("hist")
 ROOT.gPad.SetLogy()
 canvas1.SaveAs("plots/h_events_sig_mu.pdf")
-#canvas1.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/09_11_2017_blind/h_events_sig_mu_logscale.pdf")
+
 
 canvas2 = ROOT.TCanvas()
 h_events_sig_ele.Fill(0.5,ele_sig_events)
@@ -769,7 +831,7 @@ h_events_sig_ele.GetXaxis().SetBinLabel(7,"Wmass")
 h_events_sig_ele.Draw("hist")
 ROOT.gPad.SetLogy()
 canvas2.SaveAs("plots/h_events_sig_ele.pdf")
-#canvas2.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/09_11_2017_blind/h_events_sig_ele_logscale.pdf")
+
 
 canvas3 = ROOT.TCanvas()
 h_events_bkg_mu.Fill(0.5,mu_bkg_events)
@@ -789,7 +851,7 @@ h_events_bkg_mu.GetXaxis().SetBinLabel(5,"Wmass")
 h_events_bkg_mu.Draw("hist")
 ROOT.gPad.SetLogy()
 canvas3.SaveAs("plots/h_events_bkg_mu.pdf")
-#canvas3.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/09_11_2017_blind/h_events_bkg_mu_logscale.pdf")
+
 
 canvas4 = ROOT.TCanvas()
 h_events_bkg_ele.Fill(0.5,ele_bkg_events)
@@ -813,16 +875,50 @@ h_events_bkg_ele.GetXaxis().SetBinLabel(7,"Wmass")
 h_events_bkg_ele.Draw("hist")
 ROOT.gPad.SetLogy()
 canvas4.SaveAs("plots/h_events_bkg_ele.pdf")
-#canvas4.SaveAs("~rselvati/www/WPiGamma/InterestingVariables/09_11_2017_blind/h_events_bkg_ele_logscale.pdf")
+
+
+Wmass_mu_plus.Divide(Wmass_mu_plus,Wmass_mu,1.0,1.0,"B")
+Wmass_mu_minus.Divide(Wmass_mu_minus,Wmass_mu,1.0,1.0,"B")
+Wmass_ele_plus.Divide(Wmass_ele_plus,Wmass_ele,1.0,1.0,"B")
+Wmass_ele_minus.Divide(Wmass_ele_minus,Wmass_ele,1.0,1.0,"B")
+
+canvas5 = ROOT.TCanvas()
+#Wmass_mu_plus.SetFillColor(4)
+Wmass_mu_plus.SetMarkerStyle(21)
+Wmass_mu_plus.Draw("Pe")
+canvas5.SaveAs("plots/Wmass_mu_plus.pdf")
+
+canvas6 = ROOT.TCanvas()
+#Wmass_mu_minus.SetFillColor(4)
+Wmass_mu_minus.SetMarkerStyle(21)
+Wmass_mu_minus.Draw("Pe")
+canvas6.SaveAs("plots/Wmass_mu_minus.pdf")
+
+canvas7 = ROOT.TCanvas()
+#Wmass_ele_plus.SetFillColor(4)
+Wmass_ele_plus.SetMarkerStyle(21)
+Wmass_ele_plus.Draw("Pe")
+canvas7.SaveAs("plots/Wmass_ele_plus.pdf")
+
+canvas8 = ROOT.TCanvas()
+#Wmass_ele_minus.SetFillColor(4)
+Wmass_ele_minus.SetMarkerStyle(21)
+Wmass_ele_minus.Draw("Pe")
+canvas8.SaveAs("plots/Wmass_ele_minus.pdf")
+
+canvas9 = ROOT.TCanvas()
+Wmass_mu.SetMarkerStyle(21)
+Wmass_mu.Draw("Pe")
+canvas9.SaveAs("plots/Wmass_mu.pdf")
 
 print "Number of expected events for ", luminosity_norm, " in fb-1"
 print "Number of signal events passed = ", Nsig_passed
 print "Number of background events passed = ", Nbkg_passed
 print "Number of data events passed = ", Ndata_passed
-print "Significance S/sqrt(B) = ", Nsig_passed/math.sqrt(Nbkg_passed)
-print "Significance S/sqrt(B + deltaB^2) = ", Nsig_passed/(math.sqrt(Nbkg_passed) + 0.2*Nbkg_passed)
-print "Significance S/sqrt(S+B) = ", Nsig_passed/math.sqrt(Nsig_passed + Nbkg_passed)
-print "\nAll the intresting plots have been produced..!"
+# print "Significance S/sqrt(B) = ", Nsig_passed/math.sqrt(Nbkg_passed)
+# print "Significance S/sqrt(B + deltaB^2) = ", Nsig_passed/(math.sqrt(Nbkg_passed) + 0.2*Nbkg_passed)
+# print "Significance S/sqrt(S+B) = ", Nsig_passed/math.sqrt(Nsig_passed + Nbkg_passed)
+# print "\nAll the intresting plots have been produced..!"
 
 print "number of Signal events in muon channel: ", Sevts_mu_SFvariation
 print "number of Signal events in electron channel: ", Sevts_ele_SFvariation

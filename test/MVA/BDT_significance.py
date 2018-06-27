@@ -7,11 +7,11 @@ import copy
 isMuon = False
 
 if isMuon:
-    Nsig_passed = 1 # Number of signal and background events from the sum of the weights (before applying BDT cuts)
-    Nbkg_passed = 56116
+    Nsig_passed = 1.42 # Number of signal and background events from the sum of the weights (before applying BDT cuts)
+    Nbkg_passed = 85886.56
 else:
-    Nsig_passed = 1
-    Nbkg_passed = 109132
+    Nsig_passed = 1.07
+    Nbkg_passed = 135368.41
 
 if isMuon:
     BDT_file = ROOT.TFile("outputs/Nominal_training_mu.root")
@@ -48,7 +48,7 @@ sign = ROOT.TGraph(89,sig_eff_array,signif_array)
 sign.SetTitle("")
 sign.GetXaxis().SetTitle("Signal efficiency")
 sign.GetYaxis().SetTitle("Significance")
-sign.SetMaximum(0.30)
+sign.SetMaximum(0.20)
 sign.SetMarkerStyle(8)
 sign.SetMarkerColor(4)
 sign.Draw("AP")
@@ -71,8 +71,10 @@ for entry in xrange(h_BDT_effS.GetNbinsX()):
     signif_maximizing_eff = float(format(signif_maximizing_eff, '.3f'))
     #print "effS: ", effS#, "signif_max_eff: ", signif_maximizing_eff
     #if effS == signif_maximizing_eff:
-    if effS == 0.760:
+    if effS == 0.750:
         BDT_output =  h_BDT_effS.GetBinCenter(entry)
         _effS = effS
 
 print "For a signal efficiency of ", _effS, "the BDT output is :", BDT_output
+
+raw_input()

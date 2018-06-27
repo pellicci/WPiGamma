@@ -2,19 +2,19 @@ import ROOT
 import os
 import subprocess
 
-isData = True ##---------switch from DATA to MC and vice versa---------##
+isData = False ##---------switch from DATA to MC and vice versa---------##
 
 if not isData:
     dir_input = "crab_projects/samples_Medium/"
-    #dir_output_bkg = "rootfiles/Medium/backgrounds/"
-    dir_output_bkg = "rootfiles/Medium_AfterFix/backgrounds/"
-    #dir_output_sig = "rootfiles/Medium/signals/"
-    dir_output_sig = "rootfiles/Medium_AfterFix/signals/"
+    dir_output_bkg = "rootfiles/Medium/backgrounds/"
+    #dir_output_bkg = "rootfiles/Medium_AfterFix/backgrounds/"
+    dir_output_sig = "rootfiles/Medium/signals/"
+    #dir_output_sig = "rootfiles/Medium_AfterFix/signals/"
 
 if isData:
     dir_input = "crab_projects/dataprocess/"
-    #dir_output_data = "rootfiles/data/"
-    dir_output_data = "rootfiles/data_AfterFix/"
+    dir_output_data = "rootfiles/data/"
+    #dir_output_data = "rootfiles/data_AfterFix/"
 
 list_dirs = os.listdir(dir_input)
 
@@ -33,7 +33,7 @@ if isData and not os.path.exists(dir_output_data):
 for dirname in list_dirs:
 
     print "Processing sample dir " + dirname
-
+    
     n_jobs_command = "crab status -d " + dir_input + dirname + " | grep status: " + "| awk " + """'{split($0,array,"/") ; print array[2]}'""" + "| sed 's/.$//'"
     n_jobs = subprocess.check_output(n_jobs_command, shell=True)
 
@@ -66,6 +66,9 @@ for dirname in list_dirs:
 
     os.system(hadd_command)
 
+    if "WGToLNuG" in dirname:
+        WGToLNuG_samples += 1
+
 if not isData:
     list_signals = os.listdir(dir_output_sig)
     if len(list_signals) > 1:
@@ -74,6 +77,14 @@ if not isData:
 
         os.system(hadd_command)
         os.system(rm_command)
+
+    if WGToLNuG_samples > 1:
+        hadd_command = "hadd -f " + dir_output_bkg + "/WPiGammaAnalysis_WGToLNuG.root " + dir_output_sig + "/WPiGammaAnalysis_WGToLNuG_ext*.root "
+        rm_command = "rm -rf " + dir_output_bkg + "/WPiGammaAnalysis_WGToLNuG_ext*.root "
+
+        os.system(hadd_command)
+        os.system(rm_command)
+
 
 if isData:
     list_data = os.listdir(dir_output_data)

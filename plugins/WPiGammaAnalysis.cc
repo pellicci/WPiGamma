@@ -310,7 +310,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
     //    if(mu->pt() < 24. || mu->pt() < pTmuMax || !mu->isMediumMuon() || abs(mu->eta()) > 2.4) continue;
-    if(mu->pt() < 24. || !mu->isMediumMuon() || abs(mu->eta()) > 2.4) continue;
+    if(mu->pt() < 25. || !mu->isMediumMuon() || abs(mu->eta()) > 2.4 || fabs(mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(mu->muonBestTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
     lepton_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
     if(lepton_iso > 0.25) continue;
 
@@ -343,7 +343,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   for (size_t i = 0; i < slimmedElectrons->size(); ++i){
     const auto el = slimmedElectrons->ptrAt(i);
     //    if(el->pt() < 26. || el->pt() < pTeleMax) continue;
-    if(el->pt() < 26.) continue;
+    if(el->pt() < 26. || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
 
     //PflowIsolationVariables pfIso = el->pfIsolationVariables();
     float abseta = abs(el->superCluster()->eta());
@@ -361,8 +361,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       nElectronsLoose++;
     }
 
-    // If !is_muon, I want it to go inside this condition only if at least one loose electron is found. If is muon, I want it to go inside this condition anyway.
-    //    if(is_muon || nElectronsLoose < 2){
 
     bool isPassMedium = (*el_medium_id_decisions)[el];
     if(!isPassMedium) continue;

@@ -1,8 +1,7 @@
-
 import ROOT
 
 #Get the model and the data
-fInput = ROOT.TFile("fitData.root")
+fInput = ROOT.TFile("fitMC.root")
 fInput.cd()
 
 workspace = fInput.Get("workspace")
@@ -30,6 +29,7 @@ observables.add(isMuon)
 
 #Define nuisances
 constrained_params = ROOT.RooArgSet()
+constrained_params.add(workspace.var("dCB_width"))
 constrained_params.add(workspace.var("lumi_constr"))
 constrained_params.add(workspace.var("W_xsec_constr"))
 constrained_params.add(workspace.var("eff_mu_constr"))
@@ -37,6 +37,7 @@ constrained_params.add(workspace.var("eff_el_constr"))
 
 #Define global observables
 global_params = ROOT.RooArgSet()
+global_params.add(workspace.var("dCB_width_constr"))
 global_params.add(workspace.var("glb_W_xsec"))
 global_params.add(workspace.var("glb_lumi"))
 global_params.add(workspace.var("glb_eff_mu"))
@@ -56,7 +57,7 @@ sbModel.SetParametersOfInterest(poi)
 bModel = sbModel.Clone()
 bModel.SetObservables(observables)
 bModel.SetNuisanceParameters(constrained_params)
-sbModel.SetGlobalObservables(global_params)
+bModel.SetGlobalObservables(global_params)
 bModel.SetPdf("totPDF")
 bModel.SetName("B model")
 bModel.SetParametersOfInterest(poi)
@@ -70,26 +71,56 @@ print "Number of events in data = ", workspace.data("data").numEntries()
 #use the CLs method with the asymptotic calculator, using Asimov datasets
 #See here https://arxiv.org/pdf/1007.1727.pdf
 
-fc = ROOT.RooStats.AsymptoticCalculator(workspace.data("data"), bModel, sbModel,0)
-fc.SetOneSided(1)
-#fc.UseSameAltToys()
+#----------------------------------------------------------------------------------#
+fc = ROOT.RooStats.FrequentistCalculator(workspace.data("data"), bModel, sbModel)
+fc.SetToys(500,500)
 
-#Create hypotest inverter passing the desired calculator 
+#Create hypotest inverter passing desired calculator
 calc = ROOT.RooStats.HypoTestInverter(fc)
 
-#set confidence level (e.g. 95% upper limits)
 calc.SetConfidenceLevel(0.95)
 
-#use CLs
+#Use CLs
 calc.UseCLs(1)
 
-npoints = 20 #Number of points to scan
+calc.SetVerbose(0)
+
+#Configure ToyMC sampler
+toymc = calc.GetHypoTestCalculator().GetTestStatSampler()
+
+#Set profile likelihood test statistics
+profl = ROOT.RooStats.ProfileLikelihoodTestStat(sbModel.GetPdf())
+#For CLs (bounded intervals) use one-sided profile likelihood
+profl.SetOneSided(1)
+
+#Set the test statistic to use
+toymc.SetTestStatistic(profl)
+
+#----------------------------------------------------------------------------------#
+
+# fc = ROOT.RooStats.AsymptoticCalculator(workspace.data("data"), bModel, sbModel,0)
+# fc.SetOneSided(1)
+# #fc.UseSameAltToys()
+
+# #Create hypotest inverter passing the desired calculator 
+# calc = ROOT.RooStats.HypoTestInverter(fc)
+
+# #set confidence level (e.g. 95% upper limits)
+# calc.SetConfidenceLevel(0.95)
+
+# #use CLs
+# calc.UseCLs(1)
+
+npoints = 50 #Number of points to scan
 #x min and max for the scan (better to choose smaller intervals)
 poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
 print "Doing a fixed scan  in interval : ", poimin, " , ", poimax
-calc.SetFixedScan(npoints,poimin,0.00005);
+calc.SetFixedScan(npoints,poimin,poimax);
+
+#pc = ROOT.RooStats.ProofConfig(workspace, 0, "workers=6",0)
+#toymc.SetProofConfig(pc)
 
 result = calc.GetInterval() #This is a HypoTestInveter class object
 upperLimit = result.UpperLimit()
@@ -112,4 +143,6 @@ freq_plot = ROOT.RooStats.HypoTestInverterPlot("HTI_Result_Plot","Frequentist sc
 canvas = ROOT.TCanvas()
 canvas.cd()
 freq_plot.Draw("2CL")
-canvas.SaveAs("calculate_UL_CLs_Data.png")
+canvas.SaveAs("UL_CLs.pdf")
+
+del fc

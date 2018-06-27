@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from ROOT import TH1F, TCanvas, TFile, TLegend, gStyle
 
-isMuon = True
+isMuon = False
 
 def BDT_output():
 
@@ -50,11 +50,11 @@ def BDT_output():
 def rejB_vs_S():
 
     if isMuon:
-        f1 = TFile("outputs/Nominal_training_mu_met.root")
-        f2 = TFile("outputs/Nominal_training_mu_MC.root")
+        f1 = TFile("outputs/Nominal_training_mu_Wmass.root")
+        f2 = TFile("outputs/Nominal_training_mu.root")
     else:
-        f1 = TFile("outputs/Nominal_training_ele_met.root")
-        f2 = TFile("outputs/Nominal_training_ele_MC.root")
+        f1 = TFile("outputs/Nominal_training_ele_Wmass.root")
+        f2 = TFile("outputs/Nominal_training_ele.root")
 
     h_rejB_vs_S_1 = f1.Get("Method_BDT/BDT/MVA_BDT_rejBvsS")
     h_rejB_vs_S_2 = f2.Get("Method_BDT/BDT/MVA_BDT_rejBvsS")
@@ -68,9 +68,9 @@ def rejB_vs_S():
     leg2.SetLineWidth(1)
     leg2.SetFillStyle(0)
     #leg2.AddEntry(h_rejB_vs_S_1,"with data sidebands","l")
-    leg2.AddEntry(h_rejB_vs_S_1,"with MET","l")
+    leg2.AddEntry(h_rejB_vs_S_1,"with Wmass","l")
     #leg2.AddEntry(h_rejB_vs_S_2,"with MC","l")
-    leg2.AddEntry(h_rejB_vs_S_2,"without MET","l")
+    leg2.AddEntry(h_rejB_vs_S_2,"without Wmass","l")
 
     gStyle.SetOptStat(0)
     canvas2 = TCanvas()
@@ -84,9 +84,9 @@ def rejB_vs_S():
     leg2.Draw("SAME")
 
     if isMuon:
-        canvas2.Print("plots/rejBvsS_mu_met.pdf")
+        canvas2.Print("plots/rejBvsS_mu_Wmass.pdf")
     else:
-        canvas2.Print("plots/rejBvsS_ele_met.pdf")
+        canvas2.Print("plots/rejBvsS_ele_Wmass.pdf")
 
 if __name__ == "__main__":
 
