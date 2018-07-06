@@ -86,7 +86,8 @@ calc.UseCLs(1)
 calc.SetVerbose(0)
 
 #Configure ToyMC sampler
-toymc = calc.GetHypoTestCalculator().GetTestStatSampler()
+#toymc = calc.GetHypoTestCalculator().GetTestStatSampler()
+toymc = fc.GetTestStatSampler()
 
 #Set profile likelihood test statistics
 profl = ROOT.RooStats.ProfileLikelihoodTestStat(sbModel.GetPdf())
@@ -107,20 +108,22 @@ toymc.SetTestStatistic(profl)
 
 # #set confidence level (e.g. 95% upper limits)
 # calc.SetConfidenceLevel(0.95)
+# calc.SetVerbose(0)
 
 # #use CLs
 # calc.UseCLs(1)
 
 npoints = 50 #Number of points to scan
-#x min and max for the scan (better to choose smaller intervals)
+# min and max for the scan (better to choose smaller intervals)
 poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
 print "Doing a fixed scan  in interval : ", poimin, " , ", poimax
-calc.SetFixedScan(npoints,poimin,poimax);
+calc.SetFixedScan(npoints,poimin,0.00001)
 
-#pc = ROOT.RooStats.ProofConfig(workspace, 0, "workers=6",0)
-#toymc.SetProofConfig(pc)
+# In order to use PROOF, one should instal the test statistic on the workers
+# pc = ROOT.RooStats.ProofConfig(workspace, 0, "workers=6",0)
+# toymc.SetProofConfig(pc)
 
 result = calc.GetInterval() #This is a HypoTestInveter class object
 upperLimit = result.UpperLimit()
