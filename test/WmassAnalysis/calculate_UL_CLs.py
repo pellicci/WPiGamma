@@ -72,46 +72,46 @@ print "Number of events in data = ", workspace.data("data").numEntries()
 #See here https://arxiv.org/pdf/1007.1727.pdf
 
 #----------------------------------------------------------------------------------#
-fc = ROOT.RooStats.FrequentistCalculator(workspace.data("data"), bModel, sbModel)
-fc.SetToys(500,500)
+# fc = ROOT.RooStats.FrequentistCalculator(workspace.data("data"), bModel, sbModel)
+# fc.SetToys(500,500)
 
-#Create hypotest inverter passing desired calculator
-calc = ROOT.RooStats.HypoTestInverter(fc)
+# #Create hypotest inverter passing desired calculator
+# calc = ROOT.RooStats.HypoTestInverter(fc)
 
-calc.SetConfidenceLevel(0.95)
+# calc.SetConfidenceLevel(0.95)
 
-#Use CLs
-calc.UseCLs(1)
+# #Use CLs
+# calc.UseCLs(1)
 
-calc.SetVerbose(0)
+# calc.SetVerbose(0)
 
-#Configure ToyMC sampler
-#toymc = calc.GetHypoTestCalculator().GetTestStatSampler()
-toymc = fc.GetTestStatSampler()
+# #Configure ToyMC sampler
+# #toymc = calc.GetHypoTestCalculator().GetTestStatSampler()
+# toymc = fc.GetTestStatSampler()
 
-#Set profile likelihood test statistics
-profl = ROOT.RooStats.ProfileLikelihoodTestStat(sbModel.GetPdf())
-#For CLs (bounded intervals) use one-sided profile likelihood
-profl.SetOneSided(1)
+# #Set profile likelihood test statistics
+# profl = ROOT.RooStats.ProfileLikelihoodTestStat(sbModel.GetPdf())
+# #For CLs (bounded intervals) use one-sided profile likelihood
+# profl.SetOneSided(1)
 
-#Set the test statistic to use
-toymc.SetTestStatistic(profl)
+# #Set the test statistic to use
+# toymc.SetTestStatistic(profl)
 
 #----------------------------------------------------------------------------------#
 
-# fc = ROOT.RooStats.AsymptoticCalculator(workspace.data("data"), bModel, sbModel,0)
-# fc.SetOneSided(1)
-# #fc.UseSameAltToys()
+fc = ROOT.RooStats.AsymptoticCalculator(workspace.data("data"), bModel, sbModel,0)
+fc.SetOneSided(1)
+#fc.UseSameAltToys()
 
-# #Create hypotest inverter passing the desired calculator 
-# calc = ROOT.RooStats.HypoTestInverter(fc)
+#Create hypotest inverter passing the desired calculator 
+calc = ROOT.RooStats.HypoTestInverter(fc)
 
-# #set confidence level (e.g. 95% upper limits)
-# calc.SetConfidenceLevel(0.95)
-# calc.SetVerbose(0)
+#set confidence level (e.g. 95% upper limits)
+calc.SetConfidenceLevel(0.95)
+calc.SetVerbose(0)
 
-# #use CLs
-# calc.UseCLs(1)
+#use CLs
+calc.UseCLs(1)
 
 npoints = 50 #Number of points to scan
 # min and max for the scan (better to choose smaller intervals)

@@ -100,8 +100,8 @@ a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",-0.1,-2.,2.)
 backPDF_mu = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu))
 
 #Then the electron
-a0_el = ROOT.RooRealVar("a0_el","a0_el",-0.1,-2.,2.)
-a1_el = ROOT.RooRealVar("a1_el","a1_el",-0.1,-2.,2.)
+a0_el = ROOT.RooRealVar("a0_el","a0_el",0.3,-1.,1.)
+a1_el = ROOT.RooRealVar("a1_el","a1_el",-0.3,-1.,1.)
 # a2_el = ROOT.RooRealVar("a2_el","a2_el",-0.1,-2.,2.)
 
 # a0_el = ROOT.RooRealVar("a0_el","a0_el",2,0.,10.)
@@ -134,11 +134,6 @@ W_xsec_constr = ROOT.RooRealVar("W_xsec_constr","W_x_sec_constr", 2.*815.*0.1086
 W_xsec_syst   = ROOT.RooRealVar("W_xsec_syst","W_xsec_syst",43.*2.*0.1086)
 gauss_W_xsec  = ROOT.RooGaussian("gauss_W_xsec","gauss_W_xsec",glb_W_xsec,W_xsec_constr,W_xsec_syst)
 
-#Systematic connected to the background parametrization
-glb_bkg_param    = ROOT.RooRealVar("glb_bkg_param","glb_bkg_param", 0.00000112, 0., 0.000004)
-bkg_param_constr = ROOT.RooRealVar("bkg_param_constr","bkg_param_constr", 0.00000112, 0., 0.000004)
-bkg_param_syst   = ROOT.RooRealVar("bkg_param_syst","bkg_param_syst",0.42*0.00000112)
-gauss_bkg_param  = ROOT.RooGaussian("gauss_bkg_param","gauss_bkg_param",glb_bkg_param,bkg_param_constr,bkg_param_syst)
 
 #Represent the luminosity with a modifier for systematics. For 2016, 2.5% systematics
 glb_lumi    = ROOT.RooRealVar("glb_lumi","glb_lumi",35.86 * 1000., 0., 50000.) #In pb
@@ -163,6 +158,15 @@ eff_el_syst   = ROOT.RooRealVar("eff_el_syst","eff_el_syst",  4*totel*(totsig-2*
 gauss_eff_el  = ROOT.RooGaussian("gauss_eff_el","gauss_eff_el",glb_eff_el,eff_el_constr,eff_el_syst) 
 
 W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.000001,0.,0.01) # The parameter of interest
+
+syst_percentage = ROOT.RooRealVar("syst_percentage","syst_percentage",0.42)
+#syst_on_BR = ROOT.RooFormulaVar("syst_on_BR","@0*@1",ROOT.RooArgList(syst_percentage,W_pigamma_BR))
+
+#Systematic connected to the background parametrization
+glb_bkg_param    = ROOT.RooRealVar("glb_bkg_param","glb_bkg_param", 1., -0.00001, 1.00001)
+bkg_param_constr = ROOT.RooRealVar("bkg_param_constr","bkg_param_constr", 1., -0.00001, 1.00001)
+bkg_param_syst   = ROOT.RooFormulaVar("bkg_param_syst","@0*@1",ROOT.RooArgList(syst_percentage,W_pigamma_BR))
+gauss_bkg_param  = ROOT.RooGaussian("gauss_bkg_param","gauss_bkg_param",glb_bkg_param,bkg_param_constr,bkg_param_syst)
 
 glb_W_xsec.setConstant(1)
 glb_bkg_param.setConstant(1)

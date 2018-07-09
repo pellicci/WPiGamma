@@ -269,7 +269,8 @@ for name_sample in samplename_list:
         #---------------------Here's where the BDT selection starts---------------------#
       
         if (isMuon and BDT_out >= 0.094) or (not isMuon and BDT_out >= 0.076):
-            if (Wmass >= 65. and Wmass <= 90.):
+            # if (Wmass >= 65. and Wmass <= 90.):
+            if (Wmass >= 50. and Wmass <= 100.):
                 # if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
                 #     h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
                 # if not "Data" in name_sample:

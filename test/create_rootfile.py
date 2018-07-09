@@ -2,7 +2,7 @@ import ROOT
 import os
 import math
 import numpy as np
-from ROOT import TFile, TTree, TBranch
+from ROOT import TFile, TTree, TBranch, TCanvas, TH1F
 
 #Supress the opening of many Canvas's
 ROOT.gROOT.SetBatch(True)
@@ -62,6 +62,8 @@ _Wmass             = np.zeros(1, dtype=float)
 
 _Nrandom_for_SF = ROOT.TRandom3()
 _Nrandom_for_Gaus_SF = ROOT.TRandom3()
+
+Wmass_mu = ROOT.TH1F("Wmass_mu","Wmass mu",20,40,100)
 
 if not isData:
 
@@ -454,6 +456,8 @@ for name_sample in samplename_list:
                     else:
                         isSignal[0] = 0
                 t.Fill()
+                if ismuon:
+                    Wmass_mu.Fill(wmass,Event_Weight)
 
         #------- Filling MVA tree ------------
 
@@ -569,4 +573,9 @@ if isData:
     fMVA_background_ele_DATA.Close()
 
 print "File written"
+
+canvas = TCanvas()
+Wmass_mu.Draw("hist")
+canvas.SaveAs("Wmass_mu_create_rootfile.pdf")
+raw_input()
 
