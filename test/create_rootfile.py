@@ -46,6 +46,7 @@ isMuon   = np.zeros(1, dtype=int)
 isSignal = np.zeros(1, dtype=int)
 weight   = np.zeros(1, dtype=float)
 
+_isMuon            = np.zeros(1, dtype=int)
 _gamma_eT          = np.zeros(1, dtype=float)
 _pi_pT             = np.zeros(1, dtype=float)
 _lep_pT            = np.zeros(1, dtype=float)
@@ -57,13 +58,16 @@ _piRelIso_05       = np.zeros(1, dtype=float)
 _piRelIso_05_ch    = np.zeros(1, dtype=float)
 _pi_dxy            = np.zeros(1, dtype=float)
 _ele_gamma_InvMass = np.zeros(1, dtype=float)
+_weight            = np.zeros(1, dtype=float)
 _met               = np.zeros(1, dtype=float)
 _Wmass             = np.zeros(1, dtype=float)
 
-_Nrandom_for_SF = ROOT.TRandom3()
-_Nrandom_for_Gaus_SF = ROOT.TRandom3()
+_Nrandom_for_SF = ROOT.TRandom3(44317)
+_Nrandom_for_Gaus_SF = ROOT.TRandom3(44317)
 
 Wmass_mu = ROOT.TH1F("Wmass_mu","Wmass mu",20,40,100)
+Wmass_ele = ROOT.TH1F("Wmass_ele","Wmass ele",20,40,100)
+N_WGToLNuG_mu = 0.
 
 if not isData:
 
@@ -85,8 +89,8 @@ if not isData:
     if split_MC:
         fMVA_signal_mu_training = TFile('MVA/Tree_MC_Signal_mu_training.root','recreate')
         tMVA_signal_mu_training = TTree('minitree_signal_mu_training','tree with branches')
-        tMVA_signal_mu_training.Branch('isMuon',isMuon,'isMuon/I')
-        tMVA_signal_mu_training.Branch('weight',weight,'weight/D')
+        tMVA_signal_mu_training.Branch('isMuon',_isMuon,'isMuon/I')
+        tMVA_signal_mu_training.Branch('weight',_weight,'weight/D')
         tMVA_signal_mu_training.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
         tMVA_signal_mu_training.Branch('pi_pT',_pi_pT,'pi_pT/D')
         tMVA_signal_mu_training.Branch('lep_pT',_lep_pT,'lep_pT/D')
@@ -100,8 +104,8 @@ if not isData:
         
         fMVA_signal_ele_training = TFile('MVA/Tree_MC_Signal_ele_training.root','recreate')
         tMVA_signal_ele_training = TTree('minitree_signal_ele_training','tree with branches')
-        tMVA_signal_ele_training.Branch('isMuon',isMuon,'isMuon/I')
-        tMVA_signal_ele_training.Branch('weight',weight,'weight/D')
+        tMVA_signal_ele_training.Branch('isMuon',_isMuon,'isMuon/I')
+        tMVA_signal_ele_training.Branch('weight',_weight,'weight/D')
         tMVA_signal_ele_training.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
         tMVA_signal_ele_training.Branch('pi_pT',_pi_pT,'pi_pT/D')
         tMVA_signal_ele_training.Branch('lep_pT',_lep_pT,'lep_pT/D')
@@ -115,8 +119,8 @@ if not isData:
         
         fMVA_signal_mu_test = TFile('MVA/Tree_MC_Signal_mu_test.root','recreate')
         tMVA_signal_mu_test = TTree('minitree_signal_mu_test','tree with branches')
-        tMVA_signal_mu_test.Branch('isMuon',isMuon,'isMuon/I')
-        tMVA_signal_mu_test.Branch('weight',weight,'weight/D')
+        tMVA_signal_mu_test.Branch('isMuon',_isMuon,'isMuon/I')
+        tMVA_signal_mu_test.Branch('weight',_weight,'weight/D')
         tMVA_signal_mu_test.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
         tMVA_signal_mu_test.Branch('pi_pT',_pi_pT,'pi_pT/D')
         tMVA_signal_mu_test.Branch('lep_pT',_lep_pT,'lep_pT/D')
@@ -130,8 +134,8 @@ if not isData:
         
         fMVA_signal_ele_test = TFile('MVA/Tree_MC_Signal_ele_test.root','recreate')
         tMVA_signal_ele_test = TTree('minitree_signal_ele_test','tree with branches')
-        tMVA_signal_ele_test.Branch('isMuon',isMuon,'isMuon/I')
-        tMVA_signal_ele_test.Branch('weight',weight,'weight/D')
+        tMVA_signal_ele_test.Branch('isMuon',_isMuon,'isMuon/I')
+        tMVA_signal_ele_test.Branch('weight',_weight,'weight/D')
         tMVA_signal_ele_test.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
         tMVA_signal_ele_test.Branch('pi_pT',_pi_pT,'pi_pT/D')
         tMVA_signal_ele_test.Branch('lep_pT',_lep_pT,'lep_pT/D')
@@ -146,8 +150,8 @@ if not isData:
     else:
         fMVA_signal_mu = TFile('MVA/Tree_MC_Signal_mu.root','recreate')
         tMVA_signal_mu = TTree('minitree_signal_mu','tree with branches')
-        tMVA_signal_mu.Branch('isMuon',isMuon,'isMuon/I')
-        tMVA_signal_mu.Branch('weight',weight,'weight/D')
+        tMVA_signal_mu.Branch('isMuon',_isMuon,'isMuon/I')
+        tMVA_signal_mu.Branch('weight',_weight,'weight/D')
         tMVA_signal_mu.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
         tMVA_signal_mu.Branch('pi_pT',_pi_pT,'pi_pT/D')
         tMVA_signal_mu.Branch('lep_pT',_lep_pT,'lep_pT/D')
@@ -163,8 +167,8 @@ if not isData:
         
         fMVA_signal_ele = TFile('MVA/Tree_MC_Signal_ele.root','recreate')
         tMVA_signal_ele = TTree('minitree_signal_ele','tree with branches')
-        tMVA_signal_ele.Branch('isMuon',isMuon,'isMuon/I')
-        tMVA_signal_ele.Branch('weight',weight,'weight/D')
+        tMVA_signal_ele.Branch('isMuon',_isMuon,'isMuon/I')
+        tMVA_signal_ele.Branch('weight',_weight,'weight/D')
         tMVA_signal_ele.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
         tMVA_signal_ele.Branch('pi_pT',_pi_pT,'pi_pT/D')
         tMVA_signal_ele.Branch('lep_pT',_lep_pT,'lep_pT/D')
@@ -180,8 +184,8 @@ if not isData:
     
     fMVA_background_mu = TFile('MVA/Tree_MC_Background_mu.root','recreate')
     tMVA_background_mu = TTree('minitree_background_mu','tree with branches')
-    tMVA_background_mu.Branch('isMuon',isMuon,'isMuon/I')
-    tMVA_background_mu.Branch('weight',weight,'weight/D')
+    tMVA_background_mu.Branch('isMuon',_isMuon,'isMuon/I')
+    tMVA_background_mu.Branch('weight',_weight,'weight/D')
     tMVA_background_mu.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
     tMVA_background_mu.Branch('pi_pT',_pi_pT,'pi_pT/D')
     tMVA_background_mu.Branch('lep_pT',_lep_pT,'lep_pT/D')
@@ -197,8 +201,8 @@ if not isData:
 
     fMVA_background_ele = TFile('MVA/Tree_MC_Background_ele.root','recreate')
     tMVA_background_ele = TTree('minitree_background_ele','tree with branches')
-    tMVA_background_ele.Branch('isMuon',isMuon,'isMuon/I')
-    tMVA_background_ele.Branch('weight',weight,'weight/D')
+    tMVA_background_ele.Branch('isMuon',_isMuon,'isMuon/I')
+    tMVA_background_ele.Branch('weight',_weight,'weight/D')
     tMVA_background_ele.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
     tMVA_background_ele.Branch('pi_pT',_pi_pT,'pi_pT/D')
     tMVA_background_ele.Branch('lep_pT',_lep_pT,'lep_pT/D')
@@ -222,8 +226,8 @@ if isData:
 
     fMVA_background_mu_DATA = TFile('MVA/Tree_MC_Background_mu_DATA.root','recreate')
     tMVA_background_mu_DATA = TTree('minitree_background_mu_DATA','tree with branches')
-    tMVA_background_mu_DATA.Branch('isMuon',isMuon,'isMuon/I')
-    tMVA_background_mu_DATA.Branch('weight',weight,'weight/D')
+    tMVA_background_mu_DATA.Branch('isMuon',_isMuon,'isMuon/I')
+    tMVA_background_mu_DATA.Branch('weight',_weight,'weight/D')
     tMVA_background_mu_DATA.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
     tMVA_background_mu_DATA.Branch('pi_pT',_pi_pT,'pi_pT/D')
     tMVA_background_mu_DATA.Branch('lep_pT',_lep_pT,'lep_pT/D')
@@ -239,8 +243,8 @@ if isData:
 
     fMVA_background_ele_DATA = TFile('MVA/Tree_MC_Background_ele_DATA.root','recreate')
     tMVA_background_ele_DATA = TTree('minitree_background_ele_DATA','tree with branches')
-    tMVA_background_ele_DATA.Branch('isMuon',isMuon,'isMuon/I')
-    tMVA_background_ele_DATA.Branch('weight',weight,'weight/D')
+    tMVA_background_ele_DATA.Branch('isMuon',_isMuon,'isMuon/I')
+    tMVA_background_ele_DATA.Branch('weight',_weight,'weight/D')
     tMVA_background_ele_DATA.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
     tMVA_background_ele_DATA.Branch('pi_pT',_pi_pT,'pi_pT/D')
     tMVA_background_ele_DATA.Branch('lep_pT',_lep_pT,'lep_pT/D')
@@ -297,6 +301,9 @@ for name_sample in samplename_list:
     #i_event = 0
     is_ttbarlnu = 0
 
+    if not "Data" in name_sample:
+        norm_factor = Norm_Map[name_sample]*luminosity_norm
+
     mytree = root_file[name_sample].Get("WPiGammaAnalysis/mytree")
  
     print "Processing Sample ", name_sample
@@ -311,6 +318,9 @@ for name_sample in samplename_list:
         nb = mytree.GetEntry(jentry )
         if nb <= 0:
             continue
+
+        # if not name_sample == "WGToLNuG":
+        #     continue
 
         if isData and not "Data" in name_sample: 
             continue
@@ -328,8 +338,8 @@ for name_sample in samplename_list:
 
         ismuon = mytree.is_muon
 
-       # if ismuon:
-       #     continue
+        # if ismuon:
+        #     continue
 
         #run_number = mytree.run_number
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
@@ -390,7 +400,8 @@ for name_sample in samplename_list:
 
         #---------Retrieve the BDT output----------#
 
-        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,deltaphi_lep_pi,lep_pT,piRelIso_05,isMuon)    
+        #BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,deltaphi_lep_pi,lep_pT,piRelIso_05,isMuon)    
+        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)        
 
         #--------Determining the event weight--------#
 
@@ -399,25 +410,20 @@ for name_sample in samplename_list:
         if ismuon:
             mu_weight_BtoF, mu_weight_BtoF_err = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24)
             mu_weight_GH, mu_weight_GH_err = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
-
-            #mu_weight_tracking = myWF.get_muon_scale_tracking_BtoH(lep_eta)
-            #mu_weight_tot      = mu_weight_BtoF*mu_weight_tracking*(luminosity_BtoF/luminosity_norm) + mu_weight_GH*mu_weight_tracking*(luminosity_GH/luminosity_norm)
             
             if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):
                 
                 if random_mu_SF:
                     mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_BtoF,mu_weight_BtoF_err)
-                    #print "SF_A: ", mu_weight_BtoF, "SF smeared: ", mu_weight
                 else:
-                    mu_weight = mu_weight_BtoF#*mu_weight_tracking
+                    mu_weight = mu_weight_BtoF
 
             else:
                 
                 if random_mu_SF:
                     mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_GH,mu_weight_GH_err)
-                    #print "SF_B: ", mu_weight_BtoF, "SF smeared: ", mu_weight
                 else:
-                    mu_weight = mu_weight_GH#*mu_weight_tracking
+                    mu_weight = mu_weight_GH
 
         else:
             ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,lep_eta)
@@ -433,7 +439,7 @@ for name_sample in samplename_list:
         Event_Weight = 1.
 
         if not isData:
-            norm_factor = Norm_Map[name_sample]*luminosity_norm
+            #norm_factor = Norm_Map[name_sample]*luminosity_norm
             PU_Weight = mytree.PU_Weight
             Event_Weight = norm_factor*PU_Weight*ph_weight
             if ismuon:
@@ -443,8 +449,8 @@ for name_sample in samplename_list:
   
 
         #-------- Filling mass tree -------------
-        #if select_all_but_one("all cuts"):
-        if (ismuon and BDT_out >= 0.094) or (not ismuon and BDT_out >= 0.076):
+        #if (ismuon and BDT_out >= 0.094) or (not ismuon and BDT_out >= 0.076):
+        if (isMuon and BDT_out >= 0.150) or (not isMuon and BDT_out >= 0.130):
             if (wmass >= 50. and wmass <= 100.): 
             #if ((wmass >=50. and wmass<=65.) or (wmass>=90. and wmass<=100.)):
                 isMuon[0] = ismuon
@@ -458,6 +464,10 @@ for name_sample in samplename_list:
                 t.Fill()
                 if ismuon:
                     Wmass_mu.Fill(wmass,Event_Weight)
+                    if name_sample == "WGToLNuG":
+                        N_WGToLNuG_mu += Event_Weight
+                if not ismuon and lep_iso <= 0.35:
+                    Wmass_ele.Fill(wmass,Event_Weight)
 
         #------- Filling MVA tree ------------
 
@@ -469,9 +479,9 @@ for name_sample in samplename_list:
             _lep_iso[0]         = lep_iso
             _nBjets[0]          = nBjets
             _nBjets_25[0]       = nBjets_25
-            weight[0]           = Event_Weight
+            _weight[0]          = Event_Weight
             _deltaphi_lep_pi[0] = deltaphi_lep_pi
-            isMuon[0]           = ismuon
+            _isMuon[0]          = ismuon
             _piRelIso_05[0]     = piRelIso_05
             _piRelIso_05_ch[0]  = piRelIso_05_ch
             _pi_dxy[0]          = pi_dxy
@@ -505,9 +515,9 @@ for name_sample in samplename_list:
             _lep_iso[0]         = lep_iso
             _nBjets[0]          = nBjets
             _nBjets_25[0]       = nBjets_25
-            weight[0]           = 1
+            _weight[0]           = 1
             _deltaphi_lep_pi[0] = deltaphi_lep_pi
-            isMuon[0]           = ismuon
+            _isMuon[0]           = ismuon
             _piRelIso_05[0]     = piRelIso_05
             _piRelIso_05_ch[0]  = piRelIso_05_ch
             _pi_dxy[0]          = pi_dxy
@@ -522,60 +532,69 @@ for name_sample in samplename_list:
 
 print "Finished runnning over samples!"
 
-f.cd()
-t.Write()
-f.Close()
+print "N_WGToLNuG_mu", N_WGToLNuG_mu 
 
-if not isData :
+# f.cd()
+# t.Write()
+# f.Close()
 
-    if split_MC:
-        fMVA_signal_mu_training.cd()
-        tMVA_signal_mu_training.Write()
-        fMVA_signal_mu_training.Close()
+# if not isData :
+
+#     if split_MC:
+#         fMVA_signal_mu_training.cd()
+#         tMVA_signal_mu_training.Write()
+#         fMVA_signal_mu_training.Close()
         
-        fMVA_signal_ele_training.cd()
-        tMVA_signal_ele_training.Write()
-        fMVA_signal_ele_training.Close()
+#         fMVA_signal_ele_training.cd()
+#         tMVA_signal_ele_training.Write()
+#         fMVA_signal_ele_training.Close()
         
-        fMVA_signal_mu_test.cd()
-        tMVA_signal_mu_test.Write()
-        fMVA_signal_mu_test.Close()
+#         fMVA_signal_mu_test.cd()
+#         tMVA_signal_mu_test.Write()
+#         fMVA_signal_mu_test.Close()
         
-        fMVA_signal_ele_test.cd()
-        tMVA_signal_ele_test.Write()
-        fMVA_signal_ele_test.Close()
+#         fMVA_signal_ele_test.cd()
+#         tMVA_signal_ele_test.Write()
+#         fMVA_signal_ele_test.Close()
 
-    else:
-        fMVA_signal_mu.cd()
-        tMVA_signal_mu.Write()
-        fMVA_signal_mu.Close()
+#     else:
+#         fMVA_signal_mu.cd()
+#         tMVA_signal_mu.Write()
+#         fMVA_signal_mu.Close()
         
-        fMVA_signal_ele.cd()
-        tMVA_signal_ele.Write()
-        fMVA_signal_ele.Close()
+#         fMVA_signal_ele.cd()
+#         tMVA_signal_ele.Write()
+#         fMVA_signal_ele.Close()
 
-    fMVA_background_mu.cd()
-    tMVA_background_mu.Write()
-    fMVA_background_mu.Close()
+#     fMVA_background_mu.cd()
+#     tMVA_background_mu.Write()
+#     fMVA_background_mu.Close()
 
-    fMVA_background_ele.cd()
-    tMVA_background_ele.Write()
-    fMVA_background_ele.Close()
+#     fMVA_background_ele.cd()
+#     tMVA_background_ele.Write()
+#     fMVA_background_ele.Close()
 
-if isData:
+# if isData:
     
-    fMVA_background_mu_DATA.cd()
-    tMVA_background_mu_DATA.Write()
-    fMVA_background_mu_DATA.Close()
+#     fMVA_background_mu_DATA.cd()
+#     tMVA_background_mu_DATA.Write()
+#     fMVA_background_mu_DATA.Close()
 
-    fMVA_background_ele_DATA.cd()
-    tMVA_background_ele_DATA.Write()
-    fMVA_background_ele_DATA.Close()
+#     fMVA_background_ele_DATA.cd()
+#     tMVA_background_ele_DATA.Write()
+#     fMVA_background_ele_DATA.Close()
 
 print "File written"
 
-canvas = TCanvas()
+canvas1 = TCanvas("canvas1","canvas1",200,106,600,600)
+ROOT.gStyle.SetOptStat(0)
+Wmass_mu.SetAxisRange(0.,58.,"Y")
 Wmass_mu.Draw("hist")
-canvas.SaveAs("Wmass_mu_create_rootfile.pdf")
-raw_input()
+canvas1.SaveAs("Wmass_mu_create_rootfile.pdf")
+
+canvas2 = TCanvas("canvas2","canvas2",200,106,600,600)
+ROOT.gStyle.SetOptStat(0)
+Wmass_ele.SetAxisRange(0.,58.,"Y")
+Wmass_ele.Draw("hist")
+canvas2.SaveAs("Wmass_ele_create_rootfile.pdf")
 

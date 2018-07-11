@@ -11,22 +11,7 @@ ROOT.gROOT.SetBatch(True)
 from Workflow_Handler import Workflow_Handler
 myWF = Workflow_Handler("Signal","Data",isMedium = True)
 
-##Global constants
-MU_MIN_PT = 27.
-ELE_MIN_PT = 29.
-PI_MIN_PT = 50.
-GAMMA_MIN_ET = 60.
-N_BJETS_MIN = 2.
-WMASS_MIN = 50.
-WMASS_MAX  = 100.
-WMASS_MIN_1 = 65.
-WMASS_MAX_1 = 90.
-DELTAPHI_MU_PI_MIN = 0.
-DELTAPHI_ELE_PI_MIN = 0.
-ELE_ISO_MAX = 0.35
-ELE_GAMMA_INVMASS_MIN = 88.5
-ELE_GAMMA_INVMASS_MAX = 91.5
-
+#---Some bools for SF variation
 random_mu_SF  = False #------if True, muon scale factors are sampled from a Gaussian
 random_ele_SF = False #------if True, electron scale factors are sampled from a Gaussian
 random_ph_SF  = False #------if True, photon scale factors are sampled from a Gaussian
@@ -45,54 +30,16 @@ Norm_Map = myWF.get_normalizations_map()
 samplename_list = myWF.get_samples_names()
 root_file = myWF.get_root_files()
 
-
-Nsig_passed = 0.
-Ndata_passed = 0.
-Nbkg_passed = 0.
-mu_sig_events = 0
-ele_sig_events = 0
-mu_sig_events_deltaphi_mu_pi = 0
-mu_sig_events_pi_pT = 0
-mu_sig_events_gamma_eT = 0
-mu_sig_events_nBjets = 0
-mu_sig_events_Wmass = 0
-ele_sig_events_deltaphi_ele_pi = 0
-ele_sig_events_lep_iso = 0
-ele_sig_events_elegamma = 0
-ele_sig_events_pi_pT = 0
-ele_sig_events_gamma_eT = 0
-ele_sig_events_nBjets = 0
-ele_sig_events_Wmass = 0
-mu_bkg_events = 0
-ele_bkg_events = 0
-mu_bkg_events_deltaphi_mu_pi = 0
-mu_bkg_events_pi_pT = 0
-mu_bkg_events_gamma_eT = 0
-mu_bkg_events_nBjets = 0
-mu_bkg_events_Wmass = 0
-ele_bkg_events_deltaphi_ele_pi = 0
-ele_bkg_events_lep_iso = 0
-ele_bkg_events_elegamma = 0
-ele_bkg_events_pi_pT = 0
-ele_bkg_events_gamma_eT = 0
-ele_bkg_events_nBjets = 0
-ele_bkg_events_Wmass = 0
-piIso_03 = 0
-piIso_05 = 0
-ttbar_mu = 0
-ttbar_ele = 0
-#isMuon_evt = 0
-#isNotMuon_evt = 0
-Sevts_mu_SFvariation  = 0 # Counters for the number of signal events (weighted) when variating scale factors
-Sevts_ele_SFvariation = 0
-Sevts_tot = 0
-Bevts_tot = 0
-Sevts_weighted_mu = 0
-Bevts_weighted_mu = 0
-Sevts_weighted_ele = 0
-Bevts_weighted_ele = 0
-_Nrandom_for_SF = ROOT.TRandom3()
-_Nrandom_for_Gaus_SF = ROOT.TRandom3()
+# Sevts_mu_SFvariation  = 0 # Counters for the number of signal events (weighted) when variating scale factors
+# Sevts_ele_SFvariation = 0
+# Sevts_tot = 0
+# Bevts_tot = 0
+# Sevts_weighted_mu = 0
+# Bevts_weighted_mu = 0
+# Sevts_weighted_ele = 0
+# Bevts_weighted_ele = 0
+_Nrandom_for_SF = ROOT.TRandom3(44317)
+_Nrandom_for_Gaus_SF = ROOT.TRandom3(44317)
 
 
 event_counter_mu = dict()
@@ -109,13 +56,6 @@ for name_sample in samplename_list:
 for name_sample in samplename_list:
 
     theSampleName = name_sample
-
-    if "QCD" in name_sample:
-        QCDflag = True
-        theSampleName = "QCD_"
-    else:
-        QCDflag = False
-
 
     if not "Data" in name_sample:
         norm_factor = Norm_Map[name_sample]*luminosity_norm
@@ -247,14 +187,14 @@ for name_sample in samplename_list:
 
             # Obtaining the number of sig and bkg events (weighted)
             
-            if "Signal" in name_sample and isMuon:
-                Sevts_weighted_mu += Event_Weight
-            if not "Signal" in name_sample and isMuon:
-                Bevts_weighted_mu += Event_Weight
-            if "Signal" in name_sample and not isMuon:
-                Sevts_weighted_ele += Event_Weight
-            if not "Signal" in name_sample and not isMuon:
-                Bevts_weighted_ele += Event_Weight
+            # if "Signal" in name_sample and isMuon:
+            #     Sevts_weighted_mu += Event_Weight
+            # if not "Signal" in name_sample and isMuon:
+            #     Bevts_weighted_mu += Event_Weight
+            # if "Signal" in name_sample and not isMuon:
+            #     Sevts_weighted_ele += Event_Weight
+            # if not "Signal" in name_sample and not isMuon:
+            #     Bevts_weighted_ele += Event_Weight
             
 
         else:
@@ -263,36 +203,29 @@ for name_sample in samplename_list:
 
         #---------Retrieve the BDT output----------#
 
-        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,deltaphi_lep_pi,lep_pT,piRelIso_05,isMuon)
-
+        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)        
 
         #---------------------Here's where the BDT selection starts---------------------#
       
-        if (isMuon and BDT_out >= 0.094) or (not isMuon and BDT_out >= 0.076):
+        #if (isMuon and BDT_out >= 0.094) or (not isMuon and BDT_out >= 0.076):
+        if (isMuon and BDT_out >= 0.150) or (not isMuon and BDT_out >= 0.130):
             # if (Wmass >= 65. and Wmass <= 90.):
             if (Wmass >= 50. and Wmass <= 100.):
-                # if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
-                #     h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
-                # if not "Data" in name_sample:
-                #     h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
-
 
                 if isMuon:
                     if not "Data" in name_sample:
-                        # h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
                         event_counter_mu[theSampleName] += Event_Weight
                         
-                        if "Signal" in name_sample:
-                            Sevts_mu_SFvariation += Event_Weight
+                        # if "Signal" in name_sample:
+                        #     Sevts_mu_SFvariation += Event_Weight
 
  
                 if not isMuon and lep_iso <= 0.35:
                     if not "Data" in name_sample:
-                        # h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
                         event_counter_el[theSampleName] += Event_Weight
 
-                        if "Signal" in name_sample:
-                            Sevts_ele_SFvariation += Event_Weight
+                        # if "Signal" in name_sample:
+                        #     Sevts_ele_SFvariation += Event_Weight
 
 
         #-------BDT cut variation------#

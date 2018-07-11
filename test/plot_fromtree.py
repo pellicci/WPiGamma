@@ -223,8 +223,9 @@ Sevts_weighted_mu = 0
 Bevts_weighted_mu = 0
 Sevts_weighted_ele = 0
 Bevts_weighted_ele = 0
-_Nrandom_for_SF = ROOT.TRandom3()
-_Nrandom_for_Gaus_SF = ROOT.TRandom3()
+_Nrandom_for_SF = ROOT.TRandom3(44317)
+_Nrandom_for_Gaus_SF = ROOT.TRandom3(44317)
+N_WGToLNuG_mu = 0.
 
 ##Loop on samples, and then on events, and merge QCD stuff
 idx_sample = 0
@@ -259,9 +260,12 @@ for name_sample in samplename_list:
         if name_sample == "ttbar" and mytree.isttbarlnu: # Avoid double-counting of the ttbarlnu background
             continue
 
-        if "Data" in name_sample: continue  #-------------Excluding data-------------#
+        #if "Data" in name_sample: continue  #-------------Excluding data-------------#
         #if not name_sample == "Signal":
         #    continue
+
+        if not name_sample == "WGToLNuG":
+            continue
 
         if "Signal" in name_sample:
             Sevts_tot += 1
@@ -340,20 +344,20 @@ for name_sample in samplename_list:
             Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
             if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):  # Accessing muon SF, B to F
-                #mu_weight = mu_weight_BtoF#*mu_weight_tracking
+
                 if random_mu_SF:
                     mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_BtoF,mu_weight_BtoF_err)
-                    #print "SF_A: ", mu_weight_BtoF, "SF smeared: ", mu_weight
+
                 else:
-                    mu_weight = mu_weight_BtoF#*mu_weight_tracking
+                    mu_weight = mu_weight_BtoF
 
             else: #Accessing muon SF, G and H
                 
                 if random_mu_SF:
                     mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_GH,mu_weight_GH_err)
-                    #print "SF_B: ", mu_weight_BtoF, "SF smeared: ", mu_weight
+
                 else:
-                    mu_weight = mu_weight_GH#*mu_weight_tracking
+                    mu_weight = mu_weight_GH
 
         else:
             ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,lep_eta)
@@ -404,8 +408,8 @@ for name_sample in samplename_list:
 
         #---------Retrieve the BDT output----------#
 
-        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,deltaphi_lep_pi,lep_pT,piRelIso_05,isMuon)
-        
+        # BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,deltaphi_lep_pi,lep_pT,piRelIso_05,isMuon)
+        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)    
 
         #---------- filling histos ------------
         
@@ -512,7 +516,7 @@ for name_sample in samplename_list:
 
         #---------------------Here's where the BDT selection starts---------------------#
       
-        if (isMuon and BDT_out >= 0.094) or (not isMuon and BDT_out >= 0.076):
+        if (isMuon and BDT_out >= 0.150) or (not isMuon and BDT_out >= 0.130):
             if (Wmass >= 50. and Wmass <= 100.):
                 if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
                     h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
@@ -528,6 +532,9 @@ for name_sample in samplename_list:
                         
                         if "Signal" in name_sample:
                             Sevts_mu_SFvariation += Event_Weight
+
+                    if name_sample == "WGToLNuG":
+                        N_WGToLNuG_mu += Event_Weight
 
  
                 if not isMuon and lep_iso <= 0.35:
@@ -769,11 +776,6 @@ for hname in list_histos:
         Wmass_ele_minus = hs[hname].GetStack().Last()
 
 
-    # Wmass_mu_plus.Divide(Wmass_mu)
-    # Wmass_mu_minus.Divide(Wmass_mu)
-    # Wmass_ele_plus.Divide(Wmass_ele)
-    # Wmass_ele_minus.Divide(Wmass_ele)
-
     h_base[myWF.sig_samplename+hname].Draw("SAME,hist")
     h_base[myWF.data_samplename+hname].Draw("SAME,E1")
 
@@ -928,3 +930,5 @@ print "total number of S evts weighted -mu: ", Sevts_weighted_mu
 print "total number of B evts weighted -mu: ", Bevts_weighted_mu
 print "total number of S evts weighted -ele: ", Sevts_weighted_ele
 print "total number of B evts weighted -ele: ", Bevts_weighted_ele
+
+print "N_WGToLNuG_mu", N_WGToLNuG_mu 

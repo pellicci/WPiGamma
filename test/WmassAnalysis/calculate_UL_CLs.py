@@ -113,7 +113,7 @@ calc.SetVerbose(0)
 #use CLs
 calc.UseCLs(1)
 
-npoints = 50 #Number of points to scan
+npoints = 100 #Number of points to scan
 # min and max for the scan (better to choose smaller intervals)
 poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()

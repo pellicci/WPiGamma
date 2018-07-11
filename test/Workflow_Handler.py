@@ -68,7 +68,7 @@ mu_Tracking_scale_graph_BCDEFGH = mu_Tracking_scale_file_BCDEFGH.Get("ratio_eff_
 pi_pT_array           = array('f', [0.])
 gamma_eT_array        = array('f', [0.])
 nBjets_25_array       = array('f', [0.])
-deltaphi_lep_pi_array = array('f', [0.])
+# deltaphi_lep_pi_array = array('f', [0.])
 lep_pT_array          = array('f', [0.])
 piRelIso_05_array     = array('f', [0.])
 met_array             = array('f', [0.])
@@ -86,16 +86,12 @@ class Workflow_Handler:
 
         self.data_samplename = dataname  
         self.sig_samplename = signalname
-        #self.isMedium = isMedium
         
         #----Medium selection----#
         if isMedium:
             self.norm_filename = "rootfiles/" + self.subprocess + "Medium/Normalizations_table.txt"
-            #self.norm_filename = "rootfiles/" + self.subprocess + "Medium_AfterFix/Normalizations_table.txt"
             self.dir_back_input = "rootfiles/" + self.subprocess + "Medium/backgrounds/"
-            #self.dir_back_input = "rootfiles/" + self.subprocess + "Medium_AfterFix/backgrounds/"
             self.sig_filename = "rootfiles/" + self.subprocess + "Medium/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
-            #self.sig_filename = "rootfiles/" + self.subprocess + "Medium_AfterFix/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
 
         #----Tight selection----#
         if not isMedium:
@@ -105,7 +101,6 @@ class Workflow_Handler:
 
         #----Data----#
         self.dir_data_input = "rootfiles/" + self.subprocess + "data/"
-        #self.dir_data_input = "rootfiles/" + self.subprocess + "data_AfterFix/"
 
                 
         reader.AddVariable("pi_pT",pi_pT_array)
@@ -266,14 +261,16 @@ class Workflow_Handler:
 
         return norm_map
 
-    def get_BDT_output(self,pi_pT,gamma_eT,nBjets_25,deltaphi_lep_pi,lep_pT,piRelIso_05,isMuon):
+    #def get_BDT_output(self,pi_pT,gamma_eT,nBjets_25,deltaphi_lep_pi,lep_pT,piRelIso_05,isMuon):
+    def get_BDT_output(self,pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon):
 
         pi_pT_array[0] = pi_pT
         gamma_eT_array[0] = gamma_eT
         nBjets_25_array[0] = nBjets_25
-        deltaphi_lep_pi_array[0] = deltaphi_lep_pi
+        #deltaphi_lep_pi_array[0] = deltaphi_lep_pi
         lep_pT_array[0] = lep_pT
-        piRelIso_05_array[0] = piRelIso_05
+        piRelIso_05_array[0] = piRelIso_05_ch
+        met_array[0] = met
         isMuon_array[0] = int(isMuon)
         
         if isMuon:

@@ -9,7 +9,7 @@ workspace = fInput.Get("workspace")
 
 workspace.Print()
 
-workspace.var("W_pigamma_BR").setRange(0.,0.0001)
+#workspace.var("W_pigamma_BR").setRange(0.,0.0001)
 
 #Set a few things constant
 #workspace.var("a0_el").setConstant(1)
@@ -50,6 +50,7 @@ scan_params = poi.snapshot()
 points_to_scan = ROOT.RooDataSet("points_to_scan","points_to_scan",scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.)
 points_to_scan.add(scan_params)
+"""
 scan_params.setRealValue("W_pigamma_BR",0.000000001)   #1*10-9
 points_to_scan.add(scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.000000002)   #2*10-9
@@ -72,6 +73,7 @@ scan_params.setRealValue("W_pigamma_BR",0.00000005)   #5*10-8
 points_to_scan.add(scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.00000006)   #6*10-8
 points_to_scan.add(scan_params)
+"""
 scan_params.setRealValue("W_pigamma_BR",0.00000007)   #7*10-8
 points_to_scan.add(scan_params)
 scan_params.setRealValue("W_pigamma_BR",0.00000008)   #8*10-8
