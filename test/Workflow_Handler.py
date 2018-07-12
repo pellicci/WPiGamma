@@ -108,10 +108,8 @@ class Workflow_Handler:
         #reader.AddVariable("pi_pT/Wmass",pi_pT_array)
         #reader.AddVariable("gamma_eT/Wmass",gamma_eT_array)
         reader.AddVariable("nBjets_25",nBjets_25_array)
-        #reader.AddVariable("deltaphi_lep_pi",deltaphi_lep_pi_array)
         reader.AddVariable("lep_pT",lep_pT_array)
         reader.AddVariable("piRelIso_05_ch",piRelIso_05_array)
-        #reader.AddSpectator("isMuon",isMuon_array)
         reader.AddVariable("MET",met_array)
 
         reader.BookMVA("BDT_mu","MVA/weights/TMVAClassification_BDT.weights_mu.xml")#The first argument is arbitrary. To be chosen in order to distinguish among methods
@@ -261,13 +259,12 @@ class Workflow_Handler:
 
         return norm_map
 
-    #def get_BDT_output(self,pi_pT,gamma_eT,nBjets_25,deltaphi_lep_pi,lep_pT,piRelIso_05,isMuon):
+
     def get_BDT_output(self,pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon):
 
         pi_pT_array[0] = pi_pT
         gamma_eT_array[0] = gamma_eT
         nBjets_25_array[0] = nBjets_25
-        #deltaphi_lep_pi_array[0] = deltaphi_lep_pi
         lep_pT_array[0] = lep_pT
         piRelIso_05_array[0] = piRelIso_05_ch
         met_array[0] = met

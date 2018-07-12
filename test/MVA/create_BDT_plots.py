@@ -90,5 +90,5 @@ def rejB_vs_S():
 
 if __name__ == "__main__":
 
-    #rejB_vs_S()
-    BDT_output()
+    rejB_vs_S()
+    #BDT_output()

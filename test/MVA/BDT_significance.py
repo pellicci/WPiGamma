@@ -8,7 +8,7 @@ isMuon = True
 
 if isMuon:
     Nsig_passed = 1.42 # Number of signal and background events from the sum of the weights (before applying BDT cuts)
-    Nbkg_passed = 85886.56
+    Nbkg_passed = 85925.49
 else:
     Nsig_passed = 1.07
     Nbkg_passed = 135368.41

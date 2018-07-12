@@ -224,7 +224,7 @@ Bevts_weighted_mu = 0
 Sevts_weighted_ele = 0
 Bevts_weighted_ele = 0
 _Nrandom_for_SF = ROOT.TRandom3(44317)
-_Nrandom_for_Gaus_SF = ROOT.TRandom3(44317)
+_Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 N_WGToLNuG_mu = 0.
 
 ##Loop on samples, and then on events, and merge QCD stuff
@@ -264,8 +264,6 @@ for name_sample in samplename_list:
         #if not name_sample == "Signal":
         #    continue
 
-        if not name_sample == "WGToLNuG":
-            continue
 
         if "Signal" in name_sample:
             Sevts_tot += 1

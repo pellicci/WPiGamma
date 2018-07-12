@@ -13,13 +13,15 @@ if isMuon and not data_sidebands:
     tree_bkg = fIn_bkg.Get("minitree_background_mu")
     fIn_sig = ROOT.TFile("Tree_MC_Signal_mu.root")
     tree_sig = fIn_sig.Get("minitree_signal_mu")
-    fOut = ROOT.TFile("outputs/Nominal_training_mu_Wmass.root","RECREATE")
+    # fOut = ROOT.TFile("outputs/Nominal_training_mu_Wmass.root","RECREATE")
+    fOut = ROOT.TFile("outputs/Nominal_training_mu.root","RECREATE")
 if not isMuon and not data_sidebands:
     fIn_bkg = ROOT.TFile("Tree_MC_Background_ele.root")
     tree_bkg = fIn_bkg.Get("minitree_background_ele")
     fIn_sig = ROOT.TFile("Tree_MC_Signal_ele.root")
     tree_sig = fIn_sig.Get("minitree_signal_ele")
-    fOut = ROOT.TFile("outputs/Nominal_training_ele_Wmass.root","RECREATE")
+    # fOut = ROOT.TFile("outputs/Nominal_training_ele_Wmass.root","RECREATE")
+    fOut = ROOT.TFile("outputs/Nominal_training_ele.root","RECREATE")
 
 if isMuon and data_sidebands:
     fIn_bkg_DATA = ROOT.TFile("Tree_MC_Background_mu_DATA.root")
@@ -50,8 +52,8 @@ factory = ROOT.TMVA.Factory("TMVAClassification", fOut,":".join(["!V","Transform
 
 factory.AddVariable("pi_pT","F")
 factory.AddVariable("gamma_eT","F")
-#factory.AddVariable("pi_pT/Wmass","F")
-#factory.AddVariable("gamma_eT/Wmass","F")
+# factory.AddVariable("pi_pT/Wmass","F")
+# factory.AddVariable("gamma_eT/Wmass","F")
 factory.AddVariable("nBjets_25","I")
 # factory.AddVariable("deltaphi_lep_pi","F")
 factory.AddVariable("lep_pT","F")
@@ -99,8 +101,10 @@ if data_sidebands:
     weightfile_mu  = "weights/TMVAClassification_BDT.weights_mu_DATA.xml"
     weightfile_ele = "weights/TMVAClassification_BDT.weights_ele_DATA.xml"
 else:
-    weightfile_mu  = "weights/TMVAClassification_BDT.weights_mu_Wmass.xml"
-    weightfile_ele = "weights/TMVAClassification_BDT.weights_ele_Wmass.xml"
+    weightfile_mu  = "weights/TMVAClassification_BDT.weights_mu.xml"
+    weightfile_ele = "weights/TMVAClassification_BDT.weights_ele.xml"
+    # weightfile_mu  = "weights/TMVAClassification_BDT.weights_mu_Wmass.xml"
+    # weightfile_ele = "weights/TMVAClassification_BDT.weights_ele_Wmass.xml"
 
 if isMuon:
     rename_weightfile = "mv " + weightfile_dir + " " + weightfile_mu

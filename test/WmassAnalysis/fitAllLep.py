@@ -159,19 +159,10 @@ gauss_eff_el  = ROOT.RooGaussian("gauss_eff_el","gauss_eff_el",glb_eff_el,eff_el
 
 W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.000001,0.,0.01) # The parameter of interest
 
-# syst_percentage = ROOT.RooRealVar("syst_percentage","syst_percentage",0.42)
-# syst_on_BR = ROOT.RooFormulaVar("syst_on_BR","@0*@1",ROOT.RooArgList(syst_percentage,W_pigamma_BR))
-
-#Systematic connected to the background parametrization
-# glb_bkg_param    = ROOT.RooRealVar("glb_bkg_param","glb_bkg_param", 1., -0.00001, 1.00001)
-# bkg_param_constr = ROOT.RooRealVar("bkg_param_constr","bkg_param_constr", 1., 0., 2.)
-# bkg_param_syst   = ROOT.RooFormulaVar("bkg_param_syst","@0*@1",ROOT.RooArgList(syst_percentage,W_pigamma_BR))
-# gauss_bkg_param  = ROOT.RooGaussian("gauss_bkg_param","gauss_bkg_param",glb_bkg_param,bkg_param_constr,bkg_param_syst)
-
+#Introducing systematic on the background parametrization
 eta = ROOT.RooRealVar("eta","eta", 1.,0.0001,3.)
 
 glb_bkg_param    = ROOT.RooRealVar("glb_bkg_param","glb_bkg_param", 1., 0.0001, 3.)
-# bkg_param_constr = ROOT.RooRealVar("bkg_param_constr","bkg_param_constr", 1., 0., 2.)
 bkg_param_syst   = ROOT.RooRealVar("bkg_param_syst","bkg_param_syst",0.42)
 gauss_bkg_param  = ROOT.RooGaussian("gauss_bkg_param","gauss_bkg_param",glb_bkg_param,eta,bkg_param_syst)
 
@@ -201,7 +192,6 @@ totPDF.addPdf(totPDF_el,"Electron")
 
 constrained_params = ROOT.RooArgSet()
 constrained_params.add(dCB_width)
-# constrained_params.add(bkg_param_constr)
 constrained_params.add(eta)
 constrained_params.add(W_xsec_constr)
 constrained_params.add(lumi_constr)

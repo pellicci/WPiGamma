@@ -39,7 +39,7 @@ root_file = myWF.get_root_files()
 # Sevts_weighted_ele = 0
 # Bevts_weighted_ele = 0
 _Nrandom_for_SF = ROOT.TRandom3(44317)
-_Nrandom_for_Gaus_SF = ROOT.TRandom3(44317)
+_Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 
 
 event_counter_mu = dict()
