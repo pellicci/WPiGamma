@@ -494,7 +494,7 @@ for name_sample in samplename_list:
             if not isMuon and BDT_out < BDT_OUT_ELE:
                 _Categorization_fit[0] = 2
             if not isMuon and BDT_out >= BDT_OUT_ELE:
-                _Categorization_fit[0] = 4
+                _Categorization_fit[0] = 3
 
             if not isData:
                 _weight_fit[0] = Event_Weight
