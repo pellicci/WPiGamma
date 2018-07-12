@@ -47,6 +47,7 @@ _isSignal_fit       = np.zeros(1, dtype=int)
 _weight_fit         = np.zeros(1, dtype=float)
 _BDT_out_fit        = np.zeros(1, dtype=float)
 _isSignalRegion_fit = np.zeros(1, dtype=int)
+_Categorization_fit = np.zeros(1, dtype=int)
 
 #Variables for the MVA trees
 _isMuon             = np.zeros(1, dtype=int)
@@ -65,6 +66,10 @@ _weight             = np.zeros(1, dtype=float)
 _met                = np.zeros(1, dtype=float)
 _Wmass              = np.zeros(1, dtype=float)
 
+#BDT scores
+BDT_OUT_MU  = 0.150
+BDT_OUT_ELE = 0.130
+
 _Nrandom_for_SF = ROOT.TRandom3(44317)
 _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 
@@ -81,7 +86,7 @@ if not isData:
     elif random_ph_SF:
         f = TFile('WmassAnalysis/Tree_MC_phSF_eleCh.root','recreate')
     else:
-        f = TFile('WmassAnalysis/Tree_MC.root','recreate')
+        f = TFile('WmassAnalysis/Tree_input_massfit_MC.root','recreate')
 
     t = TTree('minitree','tree with branches')
     t.Branch('Wmass',_Wmass_fit,'Wmass/D')
@@ -90,6 +95,7 @@ if not isData:
     t.Branch('weight',_weight_fit,'weight/D')
     t.Branch('BDT_out',_BDT_out_fit,'BDT_out/D')
     t.Branch('isSignalRegion',_isSignalRegion_fit,'isSignalRegion/I')
+    t.Branch('Categorization',_Categorization_fit,'Categorization/I')
 
     if split_MC:
         fMVA_signal_mu_training = TFile('MVA/Tree_MC_Signal_mu_training.root','recreate')
@@ -475,10 +481,20 @@ for name_sample in samplename_list:
             _Wmass_fit[0]   = Wmass
             _BDT_out_fit[0] = BDT_out
 
-            if (isMuon and BDT_out >= 0.150) or (not isMuon and BDT_out >= 0.130):
+            if (isMuon and BDT_out >= BDT_OUT_MU) or (not isMuon and BDT_out >= BDT_OUT_ELE):
                 _isSignalRegion_fit[0] = 1
             else:
                 _isSignalRegion_fit[0] = 0
+
+            if isMuon and BDT_out < BDT_OUT_MU:
+                _Categorization_fit[0] = 0
+            if isMuon and BDT_out >= BDT_OUT_MU:
+                _Categorization_fit[0] = 1
+
+            if not isMuon and BDT_out < BDT_OUT_ELE:
+                _Categorization_fit[0] = 2
+            if not isMuon and BDT_out >= BDT_OUT_ELE:
+                _Categorization_fit[0] = 4
 
             if not isData:
                 _weight_fit[0] = Event_Weight

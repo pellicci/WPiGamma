@@ -24,7 +24,7 @@ elif random_ele_SF:
 elif random_ph_SF:
     fInput = ROOT.TFile("Tree_MC_phSF.root")
 else:
-    fInput = ROOT.TFile("Tree_MC.root")
+    fInput = ROOT.TFile("Tree_input_massfit_MC.root")
 fInput.cd()
 
 mytree = fInput.Get("minitree")
@@ -38,15 +38,23 @@ isSignal.defineType("Signal",1)
 isSignal.defineType("Background",0)
 
 #Define the mu/ele category
-isMuon = ROOT.RooCategory("isMuon","isMuon")
+# isMuon = ROOT.RooCategory("isMuon","isMuon")
+# isMuon.defineType("Muon",1)
+# isMuon.defineType("Electron",0)
+isMuon = ROOT.RooCategory("Categorization","Categorization")
 isMuon.defineType("Muon",1)
-isMuon.defineType("Electron",0)
+isMuon.defineType("Electron",3)
+isSignalRegion = ROOT.RooCategory("isSignalRegion","isSignalRegion")
+isSignalRegion.defineType("SignalRegion",1)
+isSignalRegion.defineType("BackgroundRegion",0)
 
 #Create the RooDataSet. No need to import weight for signal only analysis
-sample = ROOT.RooDataSet("sample","sample", ROOT.RooArgSet(Wmass,isSignal,weight), ROOT.RooFit.Import(mytree))
+sample = ROOT.RooDataSet("sample","sample", ROOT.RooArgSet(Wmass,isSignal,weight,isSignalRegion), ROOT.RooFit.Import(mytree))
 
 #Skim the signal only
-data_Signal = sample.reduce("isSignal==1")
+_data_Signal = sample.reduce("isSignal==1")
+data_Signal = _data_Signal.reduce("isSignalRegion==1")
+
 
 print "Using ", data_Signal.numEntries(), " events to fit the signal shape"
 
@@ -77,7 +85,7 @@ dCB_pole  = ROOT.RooRealVar("dCB_pole", "Double CB pole", 80.,75.,90.)
 dCB_width = ROOT.RooRealVar("dCB_width", "Double CB width",1.,0.01,10.)
 dCB_aL    = ROOT.RooRealVar("dCB_aL", "Double CB alpha left", 3., 0.1, 50.)
 dCB_aR    = ROOT.RooRealVar("dCB_aR", "Double CB alpha right", 1., 0.1, 50.)
-dCB_nL    = ROOT.RooRealVar("dCB_nL", "Double CB n left", 3., 0.1, 50.)
+dCB_nL    = ROOT.RooRealVar("dCB_nL", "Double CB n left", 3., 0., 50.)
 dCB_nR    = ROOT.RooRealVar("dCB_nR", "Double CB n right", 1., 0.1, 50.)
 dCB       = ROOT.RooDoubleCBFast("dCB", "Double Crystal Ball", Wmass, dCB_pole, dCB_width, dCB_aL, dCB_nL, dCB_aR, dCB_nR)
 
