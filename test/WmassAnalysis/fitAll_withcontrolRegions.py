@@ -54,7 +54,7 @@ if isData:
 else:
     data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,weight,BDT_out), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
 
-data = data_initial.reduce("BDT_out > 0.07")
+data = data_initial.reduce("BDT_out > 0.05")
 
 print "Using ", data.numEntries(), " events to fit"
 
@@ -97,28 +97,32 @@ totSignal = workspace.pdf("totSignal")
 #Now describe the background
 
 #First the muon
-a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",-0.1,-2.,2.)
-a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",-0.1,-2.,2.)
+a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",0.1,-2.,2.)
+a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",0.1,-2.,2.)
 a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",0.1,-2.,2.)
 a3_mu = ROOT.RooRealVar("a3_mu","a3_mu",0.1,-2.,2.)
 a4_mu = ROOT.RooRealVar("a4_mu","a4_mu",0.1,-2.,2.)
+a5_mu = ROOT.RooRealVar("a5_mu","a5_mu",0.1,-2.,2.)
+a6_mu = ROOT.RooRealVar("a6_mu","a6_mu",0.1,-2.,2.)
 
-# a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",2,0.,10.)
-# a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",2,0.,10.)
-# a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",2,0.,10.)
-backPDF_mu = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu,a3_mu,a4_mu))
+#a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",2,0.,1000.)
+#a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",2,0.,1000.)
+#a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",2,0.,1000.)
+backPDF_mu = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu,a3_mu)) #,a4_mu)) #,a5_mu,a6_mu))
 
 #Then the electron
-a0_el = ROOT.RooRealVar("a0_el","a0_el",0.3,-1.,1.)
-a1_el = ROOT.RooRealVar("a1_el","a1_el",-0.3,-1.,1.)
+a0_el = ROOT.RooRealVar("a0_el","a0_el",0.3,-2.,2.)
+a1_el = ROOT.RooRealVar("a1_el","a1_el",0.3,-2.,2.)
 a2_el = ROOT.RooRealVar("a2_el","a2_el",0.1,-2.,2.)
 a3_el = ROOT.RooRealVar("a3_el","a3_el",0.1,-2.,2.)
 a4_el = ROOT.RooRealVar("a4_el","a4_el",0.1,-2.,2.)
+a5_el = ROOT.RooRealVar("a5_el","a5_el",0.1,-2.,2.)
+a6_el = ROOT.RooRealVar("a6_el","a6_el",0.1,-2.,2.)
 
-# a0_el = ROOT.RooRealVar("a0_el","a0_el",2,0.,10.)
-# a1_el = ROOT.RooRealVar("a1_el","a1_el",3,0.,10.)
-# a2_el = ROOT.RooRealVar("a2_el","a2_el",2,0.,10.)
-backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el,a3_el,a4_el))
+#a0_el = ROOT.RooRealVar("a0_el","a0_el",2,0.,1000.)
+#a1_el = ROOT.RooRealVar("a1_el","a1_el",3,0.,1000.)
+#a2_el = ROOT.RooRealVar("a2_el","a2_el",2,0.,1000.)
+backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el,a3_el)) #,a4_el)) #,a5_el,a6_el))
 
 #exp_factor_mu = ROOT.RooRealVar("exp_factor_mu","exp_factor_mu", 0.5,-1.,1.)
 #backPDF_mu = ROOT.RooExponential("backPDF_mu","backPDF_mu",Wmass,exp_factor_mu)
@@ -226,14 +230,14 @@ else:
     totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(0), ROOT.RooFit.NumCPU(2), ROOT.RooFit.Constrain(constrained_params) )
 
 #First plot the signal region
-xframe_mu = Wmass.frame(10)
+xframe_mu = Wmass.frame(55.,95.,15)
 xframe_mu.SetTitle("Fit to m_{#pi-#gamma} for the #mu channel")
 xframe_mu.SetMaximum(30)
 xframe_mu.SetTitleOffset(1.4,"y")
 data.plotOn(xframe_mu, ROOT.RooFit.Cut("Categorization==1"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
 totPDF.plotOn(xframe_mu, ROOT.RooFit.Slice(Categorization,"MuonSignal"), ROOT.RooFit.ProjWData(data))
 
-xframe_el = Wmass.frame(10)
+xframe_el = Wmass.frame(55.,95.,15)
 xframe_el.SetTitle("Fit to m_{#pi-#gamma} for the e channel")
 xframe_el.SetMaximum(30)
 xframe_el.SetTitleOffset(1.4,"y")
@@ -260,14 +264,14 @@ else:
         canvas.SaveAs("plots/fitMC_signalR.pdf")
 
 #Now plot the CR
-xframe_mu_CR = Wmass.frame(10)
+xframe_mu_CR = Wmass.frame(55.,95.,15)
 xframe_mu_CR.SetTitle("Fit to m_{#pi-#gamma} for the #mu channel - Control Region")
 xframe_mu_CR.SetMaximum(30)
 xframe_mu_CR.SetTitleOffset(1.4,"y")
 data.plotOn(xframe_mu_CR, ROOT.RooFit.Cut("Categorization==0"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
 totPDF.plotOn(xframe_mu_CR, ROOT.RooFit.Slice(Categorization,"MuonCR"), ROOT.RooFit.ProjWData(data))
 
-xframe_el_CR = Wmass.frame(10)
+xframe_el_CR = Wmass.frame(55.,95.,15)
 xframe_el_CR.SetTitle("Fit to m_{#pi-#gamma} for the e channel - Control Region")
 xframe_el_CR.SetMaximum(30)
 xframe_el_CR.SetTitleOffset(1.4,"y")
