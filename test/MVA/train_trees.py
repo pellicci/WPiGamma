@@ -62,7 +62,6 @@ factory.AddVariable("piRelIso_05_ch","F")
 # factory.AddVariable("ele_gamma_InvMass")
 factory.AddVariable("MET","F")
 
-#factory.AddSpectator("isMuon","I")
 
 if data_sidebands:
     factory.AddSignalTree(tree_sig_training, ROOT.TMVA.Types.kTraining)
@@ -78,16 +77,13 @@ factory.SetWeightExpression("weight")
 
 mycuts = ROOT.TCut("weight > 0.")
 mycutb = ROOT.TCut("weight > 0.")
-#mycut_mu = ROOT.TCut("isMuon == 1")
-#mycut_ele = ROOT.TCut("isMuon == 0")
+
 
 factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V"]) )
 
-#method_cuts = factory.BookMethod(ROOT.TMVA.Types.kCuts,"Cuts",":".join(["H","!V","FitMethod=MC","EffSel","SampleSize=200000","VarProp=FSmart"]))
-method_btd  = factory.BookMethod(ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.5","nCuts=20"]))
-#category = factory.BookMethod(dataloader,ROOT.TMVA.Types.kCategory,"Category")
-#category.AddMethod(mycut_mu,"pi_pT:gamma_eT:nBjets_25:deltaphi_lep_pi:lep_pT:piRelIso_05",ROOT.TMVA.Types.kBDT,"Category_muon",":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.5","nCuts=20"]))
-#category.AddMethod(mycut_ele,"pi_pT:gamma_eT:nBjets_25:deltaphi_lep_pi:lep_pT:piRelIso_05",ROOT.TMVA.Types.kBDT,"Category_electron",":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.5","nCuts=20"]))
+
+method_btd  = factory.BookMethod(ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=500", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=20"]))
+
 
 factory.TrainAllMethods()
 factory.TestAllMethods()

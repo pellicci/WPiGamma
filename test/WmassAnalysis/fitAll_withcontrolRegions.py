@@ -3,7 +3,7 @@
 import ROOT
 import math
 
-#ROOT.gROOT.ProcessLineSync(".x dCB/RooDoubleCBFast.cc")
+ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
 #Define if working on MC or DATA
 isData = False
@@ -157,8 +157,8 @@ gauss_lumi  = ROOT.RooGaussian("gauss_lumi","gauss_lumi",glb_lumi,lumi_constr,lu
 
 #Now the efficiency
 totsig = 107810.  #total number of signal events
-totmu = 7516.     #total number of signal muon events
-totel = 6141.     #total number of signal electron events
+totmu = 9139.     #total number of signal muon events
+totel = 6212.     #total number of signal electron events
 
 glb_eff_mu    = ROOT.RooRealVar("glb_eff_mu","glb_eff_mu",totmu*2./totsig, 0., 1.) #For now, just the raw MC passed/generated number
 eff_mu_constr = ROOT.RooRealVar("eff_mu_constr","eff_mu_constr", totmu*2./totsig, 0., 1.)

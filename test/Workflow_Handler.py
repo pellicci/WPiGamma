@@ -68,7 +68,6 @@ mu_Tracking_scale_graph_BCDEFGH = mu_Tracking_scale_file_BCDEFGH.Get("ratio_eff_
 pi_pT_array           = array('f', [0.])
 gamma_eT_array        = array('f', [0.])
 nBjets_25_array       = array('f', [0.])
-# deltaphi_lep_pi_array = array('f', [0.])
 lep_pT_array          = array('f', [0.])
 piRelIso_05_array     = array('f', [0.])
 met_array             = array('f', [0.])
@@ -105,8 +104,8 @@ class Workflow_Handler:
                 
         reader.AddVariable("pi_pT",pi_pT_array)
         reader.AddVariable("gamma_eT",gamma_eT_array)
-        #reader.AddVariable("pi_pT/Wmass",pi_pT_array)
-        #reader.AddVariable("gamma_eT/Wmass",gamma_eT_array)
+        # reader.AddVariable("pi_pT/Wmass",pi_pT_array)
+        # reader.AddVariable("gamma_eT/Wmass",gamma_eT_array)
         reader.AddVariable("nBjets_25",nBjets_25_array)
         reader.AddVariable("lep_pT",lep_pT_array)
         reader.AddVariable("piRelIso_05_ch",piRelIso_05_array)
@@ -114,6 +113,8 @@ class Workflow_Handler:
 
         reader.BookMVA("BDT_mu","MVA/weights/TMVAClassification_BDT.weights_mu.xml")#The first argument is arbitrary. To be chosen in order to distinguish among methods
         reader.BookMVA("BDT_ele","MVA/weights/TMVAClassification_BDT.weights_ele.xml")
+        # reader.BookMVA("BDT_mu","MVA/weights/TMVAClassification_BDT.weights_mu_Wmass.xml")#The first argument is arbitrary. To be chosen in order to distinguish among methods
+        # reader.BookMVA("BDT_ele","MVA/weights/TMVAClassification_BDT.weights_ele_Wmass.xml")
         
     def get_ele_scale(self, ele_pt, ele_eta):
         #This is because corrections are up to 150 GeV

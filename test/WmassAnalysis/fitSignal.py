@@ -3,7 +3,7 @@
 
 import ROOT
 
-ROOT.gROOT.ProcessLineSync(".x dCB/RooDoubleCBFast.cc")
+ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
 #--------some bools for scale factor systematics----------#
 

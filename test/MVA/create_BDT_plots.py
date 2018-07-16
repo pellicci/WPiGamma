@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from ROOT import TH1F, TCanvas, TFile, TLegend, gStyle
 
-isMuon = False
+isMuon = True
 
 def BDT_output():
 

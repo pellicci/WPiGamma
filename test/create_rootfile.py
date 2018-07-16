@@ -67,8 +67,8 @@ _met                = np.zeros(1, dtype=float)
 _Wmass              = np.zeros(1, dtype=float)
 
 #BDT scores
-BDT_OUT_MU  = 0.150
-BDT_OUT_ELE = 0.130
+BDT_OUT_MU  = 0.255
+BDT_OUT_ELE = 0.250
 
 _Nrandom_for_SF = ROOT.TRandom3(44317)
 _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
@@ -505,7 +505,7 @@ for name_sample in samplename_list:
 
             t.Fill() #Filling the tree for FIT
 
-        if (isMuon and BDT_out >= 0.150) or (not isMuon and BDT_out >= 0.130):
+        if (isMuon and BDT_out >= BDT_OUT_MU) or (not isMuon and BDT_out >= BDT_OUT_ELE):
             if (Wmass >= 50. and Wmass <= 100.): 
                 if isMuon:
                     Wmass_mu.Fill(Wmass,Event_Weight)
