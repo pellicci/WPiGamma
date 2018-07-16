@@ -3,6 +3,8 @@
 import ROOT
 import math
 
+ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
+
 #Define if working on MC or DATA
 isData = False
 
@@ -28,7 +30,7 @@ else:
     elif random_ph_SF:
         fInput = ROOT.TFile("Tree_MC_phSF.root")
     else:
-        fInput = ROOT.TFile("Tree_MC.root")
+        fInput = ROOT.TFile("Tree_input_massfit_MC.root")
 fInput.cd()
 
 mytree = fInput.Get("minitree")
@@ -38,15 +40,22 @@ isMuon = ROOT.RooCategory("isMuon","isMuon")
 isMuon.defineType("Muon",1)
 isMuon.defineType("Electron",0)
 
+isSignalRegion = ROOT.RooCategory("isSignalRegion","isSignalRegion")
+isSignalRegion.defineType("Signal",1)
+isSignalRegion.defineType("CR",0)
+
 #Define the event weight
 weight = ROOT.RooRealVar("weight","The event weight",0.,10.)
 
 #Create the RooDataSet. No need to import weight for signal only analysis
 if isData:
-    data = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isMuon), ROOT.RooFit.Import(mytree))
+    data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isMuon), ROOT.RooFit.Import(mytree))
 else:
-    data = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isMuon,weight), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
+    data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,isMuon,weight,isSignalRegion), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
 
+data = data_initial.reduce("isSignalRegion == 1")
+
+    
 print "Using ", data.numEntries(), " events to fit"
 
 #Import the signal
