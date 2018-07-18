@@ -38,9 +38,6 @@ isSignal.defineType("Signal",1)
 isSignal.defineType("Background",0)
 
 #Define the mu/ele category
-# isMuon = ROOT.RooCategory("isMuon","isMuon")
-# isMuon.defineType("Muon",1)
-# isMuon.defineType("Electron",0)
 Categorization = ROOT.RooCategory("Categorization","Categorization")
 Categorization.defineType("MuonCR",0)
 Categorization.defineType("MuonSignal",1)
@@ -55,7 +52,6 @@ sample = ROOT.RooDataSet("sample","sample", ROOT.RooArgSet(Wmass,isSignal,weight
 
 #Skim the signal only
 data_Signal = sample.reduce(ROOT.RooFit.CutRange("SignalRegion"))
-#data_Signal = _data_Signal.reduce("isSignalRegion==1")
 
 
 print "Using ", data_Signal.numEntries(), " events to fit the signal shape"
@@ -76,13 +72,6 @@ fracSig = ROOT.RooRealVar("fracSig","Fraction",0.5,0.,1.)
 
 
 #Second the resolution part
-# W_resol_pole  = ROOT.RooRealVar("W_resol_pole","The center of the resolution",80.,75.,90.)
-# W_resol_width = ROOT.RooRealVar("W_resol_width","The width of resolution",1.,0.01,10.)
-# W_resol_alpha = ROOT.RooRealVar("W_resol_alpha","The alpha of resolution",1.,-10.,10.)
-# W_resol_n     = ROOT.RooRealVar("W_resol_n","The n of resolution",1.,-10.,10)
-# CBshape = ROOT.RooCBShape("CBshape","The resolution function",Wmass,W_resol_pole,W_resol_width,W_resol_alpha,W_resol_n)
-
-
 dCB_pole  = ROOT.RooRealVar("dCB_pole", "Double CB pole", 80.,75.,90.)
 dCB_width = ROOT.RooRealVar("dCB_width", "Double CB width",1.,0.01,10.)
 dCB_aL    = ROOT.RooRealVar("dCB_aL", "Double CB alpha left", 3., 0.1, 50.)
