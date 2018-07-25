@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from ROOT import TH1F, TCanvas, TFile, TLegend, gStyle
 
-isMuon = True
+isMuon = False
 
 def BDT_output():
 
@@ -74,7 +74,7 @@ def rejB_vs_S():
 
     gStyle.SetOptStat(0)
     canvas2 = TCanvas()
-    h_rejB_vs_S_1.SetTitle("Background rejection vs Signal efficiency")
+    h_rejB_vs_S_1.SetTitle(" ")
     h_rejB_vs_S_1.SetLineColor(2)
     h_rejB_vs_S_1.SetLineWidth(3)
     h_rejB_vs_S_2.SetLineColor(1)    

@@ -73,8 +73,8 @@ BDT_OUT_ELE = 0.250
 _Nrandom_for_SF = ROOT.TRandom3(44317)
 _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 
-Wmass_mu = ROOT.TH1F("Wmass_mu","Wmass mu",20,40,100)
-Wmass_ele = ROOT.TH1F("Wmass_ele","Wmass ele",20,40,100)
+Wmass_mu = ROOT.TH1F("Wmass_mu","Wmass mu",15,50,100)
+Wmass_ele = ROOT.TH1F("Wmass_ele","Wmass ele",15,50,100)
 N_WGToLNuG_mu = 0.
 
 if not isData:
@@ -86,7 +86,7 @@ if not isData:
     elif random_ph_SF:
         f = TFile('WmassAnalysis/Tree_MC_phSF_eleCh.root','recreate')
     else:
-        f = TFile('WmassAnalysis/Tree_input_massfit_MC.root','recreate')
+        f = TFile('WmassAnalysis/Tree_input_massfit_MC_prova.root','recreate')
 
     t = TTree('minitree','tree with branches')
     t.Branch('Wmass',_Wmass_fit,'Wmass/D')
@@ -230,13 +230,17 @@ if not isData:
 
 if isData:
 
-    f = TFile('WmassAnalysis/Tree_Data_sidebands.root','recreate')
+    f = TFile('WmassAnalysis/Tree_input_massfit_Data_prova.root','recreate')
     t = TTree('minitree','tree with branches')
     t.Branch('Wmass',_Wmass_fit,'Wmass/D')
     t.Branch('isMuon',_isMuon_fit,'isMuon/I')
+    t.Branch('BDT_out',_BDT_out_fit,'BDT_out/D')
+    t.Branch('Categorization',_Categorization_fit,'Categorization/I')
 
-    fMVA_background_mu_DATA = TFile('MVA/Tree_MC_Background_mu_DATA.root','recreate')
+    fMVA_background_mu_DATA = TFile('MVA/Tree_Background_mu_DATA.root','recreate')
+    #fMVA_background_mu_DATA = TFile('MVA/Tree_mu_DATA.root','recreate')
     tMVA_background_mu_DATA = TTree('minitree_background_mu_DATA','tree with branches')
+    #tMVA_background_mu_DATA = TTree('minitree_mu_DATA','tree with branches')
     tMVA_background_mu_DATA.Branch('isMuon',_isMuon,'isMuon/I')
     tMVA_background_mu_DATA.Branch('weight',_weight,'weight/D')
     tMVA_background_mu_DATA.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
@@ -252,8 +256,10 @@ if isData:
     tMVA_background_mu_DATA.Branch('MET',_met,'met/D')
     tMVA_background_mu_DATA.Branch('Wmass',_Wmass,'Wmass/D')
 
-    fMVA_background_ele_DATA = TFile('MVA/Tree_MC_Background_ele_DATA.root','recreate')
+    fMVA_background_ele_DATA = TFile('MVA/Tree_Background_ele_DATA.root','recreate')
+    #fMVA_background_ele_DATA = TFile('MVA/Tree_ele_DATA.root','recreate')
     tMVA_background_ele_DATA = TTree('minitree_background_ele_DATA','tree with branches')
+    #tMVA_background_ele_DATA = TTree('minitree_ele_DATA','tree with branches')
     tMVA_background_ele_DATA.Branch('isMuon',_isMuon,'isMuon/I')
     tMVA_background_ele_DATA.Branch('weight',_weight,'weight/D')
     tMVA_background_ele_DATA.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
@@ -459,21 +465,6 @@ for name_sample in samplename_list:
   
 
         #-------- Filling mass tree -------------
-        # if (isMuon and BDT_out >= 0.150) or (not isMuon and BDT_out >= 0.130):
-        #     if (Wmass >= 50. and Wmass <= 100.): 
-        #     #if ((Wmass >=50. and Wmass<=65.) or (Wmass>=90. and Wmass<=100.)):
-        #         _isMuon_fit[0] = isMuon
-        #         _Wmass_fit[0]  = Wmass
-
-        #         if not isData:
-        #             _weight_fit[0] = Event_Weight
-        #             if name_sample == myWF.sig_samplename :
-        #                 _isSignal_fit[0] = 1
-        #             else:
-        #                 _isSignal_fit[0] = 0
-
-        #         t.Fill() #Filling the tree for FIT
-
 
         #if ((Wmass >=50. and Wmass<=65.) or (Wmass>=90. and Wmass<=100.)):
         if (Wmass >= 50. and Wmass <= 100.): 
@@ -481,7 +472,7 @@ for name_sample in samplename_list:
             _Wmass_fit[0]   = Wmass
             _BDT_out_fit[0] = BDT_out
 
-            if (isMuon and BDT_out >= BDT_OUT_MU) or (not isMuon and BDT_out >= BDT_OUT_ELE):
+            if (isMuon and BDT_out >= BDT_OUT_MU) or ( (not isMuon) and BDT_out >= BDT_OUT_ELE):
                 _isSignalRegion_fit[0] = 1
             else:
                 _isSignalRegion_fit[0] = 0
@@ -490,11 +481,15 @@ for name_sample in samplename_list:
                 _Categorization_fit[0] = 0
             if isMuon and BDT_out >= BDT_OUT_MU:
                 _Categorization_fit[0] = 1
+                if not name_sample=="Signal":
+                    Wmass_mu.Fill(Wmass,Event_Weight)
 
-            if not isMuon and BDT_out < BDT_OUT_ELE:
+            if (not isMuon) and BDT_out < BDT_OUT_ELE and lep_iso <= 0.35:
                 _Categorization_fit[0] = 2
-            if not isMuon and BDT_out >= BDT_OUT_ELE:
+            if (not isMuon) and BDT_out >= BDT_OUT_ELE and lep_iso <= 0.35:
                 _Categorization_fit[0] = 3
+                if not name_sample=="Signal":
+                    Wmass_ele.Fill(Wmass,Event_Weight)
 
             if not isData:
                 _weight_fit[0] = Event_Weight
@@ -505,14 +500,14 @@ for name_sample in samplename_list:
 
             t.Fill() #Filling the tree for FIT
 
-        if (isMuon and BDT_out >= BDT_OUT_MU) or (not isMuon and BDT_out >= BDT_OUT_ELE):
-            if (Wmass >= 50. and Wmass <= 100.): 
-                if isMuon:
-                    Wmass_mu.Fill(Wmass,Event_Weight)
-                    if name_sample == "WGToLNuG":
-                        N_WGToLNuG_mu += Event_Weight
-                if not isMuon and lep_iso <= 0.35:
-                    Wmass_ele.Fill(Wmass,Event_Weight)
+        # if (isMuon and BDT_out >= BDT_OUT_MU) or (not isMuon and BDT_out >= BDT_OUT_ELE):
+        #     if (Wmass >= 50. and Wmass <= 100.): 
+        #         if isMuon:
+        #             Wmass_mu.Fill(Wmass,Event_Weight)
+        #             if name_sample == "WGToLNuG":
+        #                 N_WGToLNuG_mu += Event_Weight
+        #         if not isMuon and lep_iso <= 0.35:
+        #             Wmass_ele.Fill(Wmass,Event_Weight)
 
         #------- Filling MVA tree ------------
 
@@ -575,6 +570,7 @@ for name_sample in samplename_list:
             tMVA_background_ele_DATA.Fill()
 
 
+
 print "Finished runnning over samples!"
 
 print "N_WGToLNuG_mu", N_WGToLNuG_mu 
@@ -633,13 +629,13 @@ print "File written"
 
 canvas1 = TCanvas("canvas1","canvas1",200,106,600,600)
 ROOT.gStyle.SetOptStat(0)
-Wmass_mu.SetAxisRange(0.,58.,"Y")
+Wmass_mu.SetAxisRange(0.,65.,"Y")
 Wmass_mu.Draw("hist")
 canvas1.SaveAs("Wmass_mu_create_rootfile.pdf")
 
 canvas2 = TCanvas("canvas2","canvas2",200,106,600,600)
 ROOT.gStyle.SetOptStat(0)
-Wmass_ele.SetAxisRange(0.,58.,"Y")
+Wmass_ele.SetAxisRange(0.,65.,"Y")
 Wmass_ele.Draw("hist")
 canvas2.SaveAs("Wmass_ele_create_rootfile.pdf")
 

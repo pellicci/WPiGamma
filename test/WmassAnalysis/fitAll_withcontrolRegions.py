@@ -21,7 +21,7 @@ Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV/c^{2}")
 
 #Retrive the sample
 if isData:
-    fInput = ROOT.TFile("Tree_Data.root")
+    fInput = ROOT.TFile("Tree_input_massfit_Data.root")
 else:
     if random_mu_SF:
         fInput = ROOT.TFile("Tree_MC_muSF.root")
@@ -53,6 +53,7 @@ weight = ROOT.RooRealVar("weight","The event weight",0.,10.)
 BDT_out = ROOT.RooRealVar("BDT_out","Output of BDT",-1.,1.)
 
 #Create the RooDataSet. No need to import weight for signal only analysis
+
 if isData:
     data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,BDT_out), ROOT.RooFit.Import(mytree))
 else:
@@ -60,9 +61,9 @@ else:
 
 data = data_initial.reduce("BDT_out > -0.1")
 
-#prova = ROOT.TFile("prova.root")
-#prova.cd()
-#data = prova.Get("totPDFData")
+# prova = ROOT.TFile("prova.root")
+# prova.cd()
+# data = prova.Get("totPDFData")
 
 print "Using ", data.numEntries(), " events to fit"
 
@@ -80,13 +81,6 @@ fInput_sigmodel.cd()
 workspace = fInput_sigmodel.Get("myworkspace")
 
 #Fix the signal parametrization
-# workspace.var("W_resol_pole").setConstant(1)
-# #workspace.var("W_resol_width").setConstant(1)
-# workspace.var("W_resol_alpha").setConstant(1)
-# workspace.var("W_resol_n").setConstant(1)
-# workspace.var("Gauss_pole").setConstant(1)
-# workspace.var("Gauss_sigma").setConstant(1)
-# workspace.var("fracSig").setConstant(1)
 workspace.var("dCB_pole").setConstant(1)
 #workspace.var("dCB_width").setConstant(1)
 workspace.var("dCB_aL").setConstant(1)
@@ -131,7 +125,7 @@ a6_el = ROOT.RooRealVar("a6_el","a6_el",0.1,-5.,5.)
 #a0_el = ROOT.RooRealVar("a0_el","a0_el",0.5,0.,1.)
 #a1_el = ROOT.RooRealVar("a1_el","a1_el",0.9,0.,1.)
 #a2_el = ROOT.RooRealVar("a2_el","a2_el",0.7,0.,1.)
-backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el,a3_el,a4_el)) #,a5_el,a6_el))
+backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el))#,a3_el))#a4_el)) #,a5_el,a6_el))
 #backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el)) #,a3_el)) #,a4_el)) #,a5_el,a6_el))
 
 #exp_factor_mu = ROOT.RooRealVar("exp_factor_mu","exp_factor_mu", 0.5,-1.,1.)
@@ -227,10 +221,14 @@ totPDF_el_CR = ROOT.RooExtendPdf("totPDF_el_CR","Background PDF for the CR for e
 
 #Create the global simultaneous PDF
 totPDF = ROOT.RooSimultaneous("totPDF","The total PDF",Categorization)
-totPDF.addPdf(totPDF_mu_CR,"MuonCR")
-totPDF.addPdf(totPDF_mu,"MuonSignal")
-totPDF.addPdf(totPDF_el_CR,"ElectronCR")
-totPDF.addPdf(totPDF_el,"ElectronSignal")
+if not isData:
+    totPDF.addPdf(totPDF_mu_CR,"MuonCR")
+    totPDF.addPdf(totPDF_mu,"MuonSignal")
+    totPDF.addPdf(totPDF_el_CR,"ElectronCR")
+    totPDF.addPdf(totPDF_el,"ElectronSignal")
+else: #Only fit the CR in case of data (before unblinding)
+    totPDF.addPdf(totPDF_mu_CR,"MuonCR")
+    totPDF.addPdf(totPDF_el_CR,"ElectronCR")
 
 constrained_params = ROOT.RooArgSet()
 constrained_params.add(dCB_width)
@@ -246,30 +244,33 @@ else:
     totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(0), ROOT.RooFit.NumCPU(2), ROOT.RooFit.Constrain(constrained_params) )
 
 #First plot the signal region
-xframe_mu = Wmass.frame(55.,95.,15)
-xframe_mu.SetTitle("Fit to m_{#pi-#gamma} for the #mu channel")
-xframe_mu.SetMaximum(30)
-xframe_mu.SetTitleOffset(1.4,"y")
-data.plotOn(xframe_mu, ROOT.RooFit.Cut("Categorization==1"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-totPDF.plotOn(xframe_mu, ROOT.RooFit.Slice(Categorization,"MuonSignal"), ROOT.RooFit.ProjWData(data))
+if not isData:
+    xframe_mu = Wmass.frame(55.,95.,15)
+    #xframe_mu.SetTitle("Fit to m_{#pi-#gamma} for the #mu channel")
+    xframe_mu.SetTitle(" ")
+    xframe_mu.SetMaximum(30)
+    xframe_mu.SetTitleOffset(1.4,"y")
+    data.plotOn(xframe_mu, ROOT.RooFit.Cut("Categorization==1"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
+    totPDF.plotOn(xframe_mu, ROOT.RooFit.Slice(Categorization,"MuonSignal"), ROOT.RooFit.ProjWData(data))
+    
+    xframe_el = Wmass.frame(55.,95.,15)
+    #xframe_el.SetTitle("Fit to m_{#pi-#gamma} for the e channel")
+    xframe_el.SetTitle(" ")
+    xframe_el.SetMaximum(30)
+    xframe_el.SetTitleOffset(1.4,"y")
+    data.plotOn(xframe_el, ROOT.RooFit.Cut("Categorization==3"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
+    totPDF.plotOn(xframe_el, ROOT.RooFit.Slice(Categorization,"ElectronSignal"), ROOT.RooFit.ProjWData(data))
+    
+    canvas = ROOT.TCanvas()
+    canvas.Divide(2,1)
+    canvas.cd(1)
+    xframe_mu.Draw()
+    canvas.cd(2)
+    xframe_el.Draw()
 
-xframe_el = Wmass.frame(55.,95.,15)
-xframe_el.SetTitle("Fit to m_{#pi-#gamma} for the e channel")
-xframe_el.SetMaximum(30)
-xframe_el.SetTitleOffset(1.4,"y")
-data.plotOn(xframe_el, ROOT.RooFit.Cut("Categorization==3"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-totPDF.plotOn(xframe_el, ROOT.RooFit.Slice(Categorization,"ElectronSignal"), ROOT.RooFit.ProjWData(data))
-
-canvas = ROOT.TCanvas()
-canvas.Divide(2,1)
-canvas.cd(1)
-xframe_mu.Draw()
-canvas.cd(2)
-xframe_el.Draw()
-
-if isData:
-    canvas.SaveAs("plots/fitData_signalR.pdf")
-else:
+# if isData:
+#     canvas.SaveAs("plots/fitData_signalR.pdf")
+if not isData:
     if random_mu_SF:
         canvas.SaveAs("plots/fitMC_muSF.pdf")
     elif random_ele_SF:
@@ -281,14 +282,16 @@ else:
 
 #Now plot the CR
 xframe_mu_CR = Wmass.frame(55.,95.,15)
-xframe_mu_CR.SetTitle("Fit to m_{#pi-#gamma} for the #mu channel - Control Region")
+#xframe_mu_CR.SetTitle("Fit to m_{#pi-#gamma} for the #mu channel - Control Region")
+xframe_mu_CR.SetTitle(" ")
 xframe_mu_CR.SetMaximum(30)
 xframe_mu_CR.SetTitleOffset(1.4,"y")
 data.plotOn(xframe_mu_CR, ROOT.RooFit.Cut("Categorization==0"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
 totPDF.plotOn(xframe_mu_CR, ROOT.RooFit.Slice(Categorization,"MuonCR"), ROOT.RooFit.ProjWData(data))
 
 xframe_el_CR = Wmass.frame(55.,95.,15)
-xframe_el_CR.SetTitle("Fit to m_{#pi-#gamma} for the e channel - Control Region")
+#xframe_el_CR.SetTitle("Fit to m_{#pi-#gamma} for the e channel - Control Region")
+xframe_el_CR.SetTitle(" ")
 xframe_el_CR.SetMaximum(30)
 xframe_el_CR.SetTitleOffset(1.4,"y")
 data.plotOn(xframe_el_CR, ROOT.RooFit.Cut("Categorization==2"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
@@ -329,7 +332,7 @@ workspace.Write()
 fOutput.Close()
 
 # W_pigamma_BR.setVal(0.)
-# newdata = totPDF.generate(ROOT.RooArgSet(Wmass,Categorization),7921,ROOT.RooFit.ProtoData(data))
+# newdata = totPDF.generate(ROOT.RooArgSet(Categorization),7921,ROOT.RooFit.ProtoData(data))
 # prova = ROOT.TFile("prova.root","RECREATE")
 # prova.cd()
 # newdata.Write()

@@ -46,11 +46,17 @@ event_counter_mu = dict()
 event_counter_el = dict()
 QCD_sum_mu = 0.
 QCD_sum_el = 0.
+event_counter_mu_noBDT = dict()
+event_counter_el_noBDT = dict()
+QCD_sum_mu_noBDT = 0.
+QCD_sum_el_noBDT = 0.
 
 # Initializing all the event counters
 for name_sample in samplename_list:
     event_counter_mu[name_sample] = 0.
     event_counter_el[name_sample] = 0.
+    event_counter_mu_noBDT[name_sample] = 0.
+    event_counter_el_noBDT[name_sample] = 0.
 
 
 for name_sample in samplename_list:
@@ -200,15 +206,20 @@ for name_sample in samplename_list:
         else:
             Event_Weight = 1.
  
+        if isMuon and not "Data" in name_sample:
+            event_counter_mu_noBDT[theSampleName] += Event_Weight
+
+        if not isMuon and not "Data" in name_sample:
+            event_counter_el_noBDT[theSampleName] += Event_Weight
+
 
         #---------Retrieve the BDT output----------#
 
-        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)        
+        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)          
 
         #---------------------Here's where the BDT selection starts---------------------#
       
-        #if (isMuon and BDT_out >= 0.094) or (not isMuon and BDT_out >= 0.076):
-        if (isMuon and BDT_out >= 0.150) or (not isMuon and BDT_out >= 0.130):
+        if (isMuon and BDT_out >= 0.255) or (not isMuon and BDT_out >= 0.250):
             # if (Wmass >= 65. and Wmass <= 90.):
             if (Wmass >= 50. and Wmass <= 100.):
 
@@ -249,12 +260,19 @@ for name_sample in samplename_list:
     if "QCD" in name_sample:
         QCD_sum_mu += event_counter_mu[name_sample]
         QCD_sum_el += event_counter_el[name_sample]
+        QCD_sum_mu_noBDT += event_counter_mu_noBDT[name_sample]
+        QCD_sum_el_noBDT += event_counter_el_noBDT[name_sample]
 
 print " ##################################### "
 
 for name_sample in samplename_list:
     
     print "N of events in " , name_sample , " in muon channel: ", event_counter_mu[name_sample], " and in electron channel: ", event_counter_el[name_sample]
+    print "N of events before BDT in " , name_sample , " in muon channel: ", event_counter_mu_noBDT[name_sample], " and in electron channel: ", event_counter_el_noBDT[name_sample]
+    print
+    print "######################"
+    print
 
-print "N of events in QCD in muon channel: ", QCD_sum_mu
-print "N of events in QCD in electron channel: ", QCD_sum_el
+print "N of events in QCD in muon channel: ", QCD_sum_mu, "N of events in QCD in electron channel: ", QCD_sum_el
+print "N of events in QCD in muon channel before BDT: ", QCD_sum_mu_noBDT, "N of events in QCD in electron channel before BDT: ", QCD_sum_el_noBDT
+

@@ -1,5 +1,7 @@
 import ROOT
 
+ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
+
 #Get the model and the data
 fInput = ROOT.TFile("fitMC.root")
 fInput.cd()
@@ -22,14 +24,19 @@ poi = ROOT.RooArgSet(W_pigamma_BR)
 
 #Define observables
 Wmass = workspace.var("Wmass")
-isMuon = workspace.cat("isMuon")
+#weight = workspace.var("weight")
+#isMuon = workspace.cat("isMuon")
+Categorization = workspace.cat("Categorization")
 observables = ROOT.RooArgSet()
 observables.add(Wmass)
-observables.add(isMuon)
+observables.add(Categorization)
+#observables.add(weight)
+#observables.add(isSignal)
 
 #Define nuisances
 constrained_params = ROOT.RooArgSet()
 constrained_params.add(workspace.var("dCB_width"))
+constrained_params.add(workspace.var("eta"))
 constrained_params.add(workspace.var("lumi_constr"))
 constrained_params.add(workspace.var("W_xsec_constr"))
 constrained_params.add(workspace.var("eff_mu_constr"))
@@ -99,7 +106,12 @@ print "Number of events in data = ", workspace.data("data").numEntries()
 
 #----------------------------------------------------------------------------------#
 
-fc = ROOT.RooStats.AsymptoticCalculator(workspace.data("data"), bModel, sbModel,0)
+_data = workspace.data("data")
+isSignal = ROOT.workspace.cat("isSignal")
+data = _data.reduce("isSignal==0")
+
+#fc = ROOT.RooStats.AsymptoticCalculator(workspace.data("data"), bModel, sbModel,0)
+fc = ROOT.RooStats.AsymptoticCalculator(data, bModel, sbModel,0)
 fc.SetOneSided(1)
 #fc.UseSameAltToys()
 
@@ -119,7 +131,7 @@ poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
 print "Doing a fixed scan  in interval : ", poimin, " , ", poimax
-calc.SetFixedScan(npoints,poimin,0.00001)
+calc.SetFixedScan(npoints,poimin,0.0001)
 
 # In order to use PROOF, one should instal the test statistic on the workers
 # pc = ROOT.RooStats.ProofConfig(workspace, 0, "workers=6",0)

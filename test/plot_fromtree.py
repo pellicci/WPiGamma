@@ -38,7 +38,7 @@ luminosity_BtoF = 19.72
 luminosity_GH   = 16.14
 
 #Make signal histos larger
-signal_magnify = 100
+signal_magnify = 10000
 
 output_dir = "plots"
 
@@ -131,7 +131,7 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[1]]  = ROOT.TH1F(theSampleName+list_histos[1], "p_{T} of the electron", 15, 20, 100.)
     h_base[theSampleName+list_histos[2]]  = ROOT.TH1F(theSampleName+list_histos[2], "p_{T} of the pion", 15, 20, 100.)
     h_base[theSampleName+list_histos[3]]  = ROOT.TH1F(theSampleName+list_histos[3], "E_{T} of the gamma", 15, 20, 100.)
-    h_base[theSampleName+list_histos[4]]  = ROOT.TH1F(theSampleName+list_histos[4], "W mass", 20, 40, 100)
+    h_base[theSampleName+list_histos[4]]  = ROOT.TH1F(theSampleName+list_histos[4], "W mass", 15, 50, 100)
     h_base[theSampleName+list_histos[5]]  = ROOT.TH1F(theSampleName+list_histos[5], "n Bjets", 6, 0, 6.)
     h_base[theSampleName+list_histos[6]]  = ROOT.TH1F(theSampleName+list_histos[6], "eta of the muon", 20, -3, 3)
     h_base[theSampleName+list_histos[7]]  = ROOT.TH1F(theSampleName+list_histos[7], "eta of the electron", 20, -3, 3)
@@ -141,8 +141,8 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[11]] = ROOT.TH1F(theSampleName+list_histos[11], "deltaphi ele-W", 10, 0, 3.14)
     h_base[theSampleName+list_histos[12]] = ROOT.TH1F(theSampleName+list_histos[12], "deltaeta mu-pi", 20, -5, 5)
     h_base[theSampleName+list_histos[13]] = ROOT.TH1F(theSampleName+list_histos[13], "deltaeta ele-pi", 20, -5, 5)
-    h_base[theSampleName+list_histos[14]] = ROOT.TH1F(theSampleName+list_histos[14], "W mass if flag mu", 10, 40, 100)
-    h_base[theSampleName+list_histos[15]] = ROOT.TH1F(theSampleName+list_histos[15], "W mass if flag ele", 10, 40, 100)
+    h_base[theSampleName+list_histos[14]] = ROOT.TH1F(theSampleName+list_histos[14], "W mass if flag mu", 15, 50, 100)
+    h_base[theSampleName+list_histos[15]] = ROOT.TH1F(theSampleName+list_histos[15], "W mass if flag ele", 15, 50, 100)
     h_base[theSampleName+list_histos[16]] = ROOT.TH1F(theSampleName+list_histos[16], "muon isolation", 20, 0, 0.3)
     h_base[theSampleName+list_histos[17]] = ROOT.TH1F(theSampleName+list_histos[17], "electron isolation", 20, 0, 0.3)
     h_base[theSampleName+list_histos[18]] = ROOT.TH1F(theSampleName+list_histos[18], "Photon isolation - ChargedHadron", 50, 0, 5)
@@ -181,7 +181,7 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[51]] = ROOT.TH1F(theSampleName+list_histos[51], "eta of the gamma -sig", 20, -3, 3)
 
 
-#leg1 = ROOT.TLegend(0.1,0.5,0.25,0.9) #left positioning
+#leg1 = ROOT.TLegend(0.15,0.6120093,0.34,0.9491917) #left positioning
 leg1 = ROOT.TLegend(0.6868687,0.6120093,0.9511784,0.9491917) #right positioning
 leg1.SetHeader(" ")
 leg1.SetFillColor(0)
@@ -508,14 +508,14 @@ for name_sample in samplename_list:
             if nBjets > 3:
                 h_base[theSampleName+"h_evts_Bjets"].Fill(3.5,1)
 
-        if isMuon:
+        if isMuon and not "Data" in name_sample:
             h_base[theSampleName+"h_piRelIso_05_mu"].Fill(piRelIso_05,Event_Weight)
             h_base[theSampleName+"h_mu_pi_InvMass"].Fill(mu_pi_InvMass,Event_Weight)
             h_base[theSampleName+"h_piRelIso_05_mu_ch"].Fill(piRelIso_05_ch,Event_Weight)
             h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
 
 
-        if not isMuon:
+        if not isMuon and not "Data" in name_sample:
             h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
             h_base[theSampleName+"h_piRelIso_05_ele_ch"].Fill(piRelIso_05_ch,Event_Weight)
 
@@ -683,10 +683,10 @@ for name_sample in samplename_list:
             elif name_sample == myWF.sig_samplename:
                 sample_legend_name = str(signal_magnify) + " x " + name_sample
                 leg1.AddEntry(h_base[name_sample+hname], sample_legend_name,"f")  #To comment when signal has to be excluded.
-                leg2.AddEntry(h_base[name_sample+hname], sample_legend_name,"f")
+                #leg2.AddEntry(h_base[name_sample+hname], sample_legend_name,"f")
             elif name_sample == myWF.data_samplename:
                 leg1.AddEntry(h_base[name_sample+hname], name_sample,"lep") # lep shows on the TLegend a point with errors to indicate data
-            elif not QCDflag:
+            elif not QCDflag and not name_sample == myWF.data_samplename:
                 leg1.AddEntry(h_base[theSampleName+hname],theSampleName,"f")
 
         if not QCDflag and not name_sample == myWF.sig_samplename and not name_sample == myWF.data_samplename:
@@ -706,7 +706,7 @@ for hname in list_histos:
 
     hs[hname].Draw("histo")
     if "h_Wmass_" in hname:
-        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),55.))
+        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),65.))
     if hname == "h_Wmass":
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),100.))
     if hname == "h_piRelIso_05_ele_ch":
@@ -717,14 +717,17 @@ for hname in list_histos:
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),130.))
     if hname == "h_piRelIso_05_ele_ch_AfterCut":
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),130.))
-    if "eta" in hname:
-        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),90.))
-    if "pt" in hname:
-        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),90.))
-    if hname == "h_gammaet":
-        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),100.))
-    if hname == "h_gammaet_sig":
-        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),90.))
+    # if "eta" in hname:
+    #     hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),90.))
+    # if "pt" in hname:
+    #     hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),90.))
+    # if hname == "h_gammaet":
+    #     hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),100.))
+    if hname == "h_pieta_sig" or hname == "h_pipt_sig" or hname == "h_gammaeta_sig" or hname == "h_gammaet_sig":
+        hs[hname].SetMaximum(30.)
+    if hname == "h_mueta_sig" or hname == "h_mupt_sig" or hname == "h_eleeta_sig" or hname == "h_elept_sig":
+        hs[hname].SetMaximum(20.)
+
 
     down = ROOT.gPad.GetUymin()
     up   = ROOT.gPad.GetUymax()
@@ -840,8 +843,7 @@ for hname in list_histos:
     
     if not "_sig" in hname:
         leg1.Draw()
-    else:
-        leg2.Draw()
+ 
         
     canvas[hname].SaveAs("plots/" + hname + ".pdf")
 
