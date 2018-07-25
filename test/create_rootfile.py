@@ -483,6 +483,9 @@ for name_sample in samplename_list:
                 _Categorization_fit[0] = 1
                 if not name_sample=="Signal":
                     Wmass_mu.Fill(Wmass,Event_Weight)
+                    #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]
+                    if not Wmass == _Wmass_fit[0]:
+                        print "WARNING!!! mu channel"
 
             if (not isMuon) and BDT_out < BDT_OUT_ELE and lep_iso <= 0.35:
                 _Categorization_fit[0] = 2
@@ -490,6 +493,9 @@ for name_sample in samplename_list:
                 _Categorization_fit[0] = 3
                 if not name_sample=="Signal":
                     Wmass_ele.Fill(Wmass,Event_Weight)
+                    #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]
+                    if not Wmass == _Wmass_fit[0]:
+                        print "WARNING!!! ele channel"
 
             if not isData:
                 _weight_fit[0] = Event_Weight
