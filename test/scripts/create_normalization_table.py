@@ -8,7 +8,7 @@ import os
 def get_xsec_fromsample(samplename):
     
     if samplename == "ttbar":
-        return 831.76
+        return 831.76 - 87.31
 
     if samplename == "ttbarlnu":
         return 87.31
@@ -95,13 +95,13 @@ def get_xsec_fromsample(samplename):
         return 47.13
 
     if samplename == "GammaJets_20_40":
-        return 137751.
+        return 219.2
 
     if samplename == "GammaJets_40_Inf":
-        return 16792.
+        return 862.4
 
     if samplename == "GammaJets_20_Inf":
-        return 154500.
+        return 3255.0
     
     if "WGToLNuG" in samplename:
         return 489.
