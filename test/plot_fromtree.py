@@ -531,51 +531,58 @@ for name_sample in samplename_list:
                 h_base[theSampleName+"h_eleeta_sig"].Fill(lep_eta,Event_Weight)
                 h_base[theSampleName+"h_elept_sig"].Fill(lep_pT,Event_Weight)
 
+        if isMuon:
+            h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+        if (not isMuon) and lep_iso <= 0.35:
+            h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+
+        h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
+
 
         #---------------------Here's where the BDT selection starts---------------------#
       
-        if (isMuon and BDT_out >= 0.255) or (not isMuon and BDT_out >= 0.250):
-        # if (isMuon and BDT_out >= 0.223) or (not isMuon and BDT_out >= 0.238): #Wmass
-            if (Wmass >= 50. and Wmass <= 100.):
-                if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
-                    h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
-                if not "Data" in name_sample:
-                    h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
+        # if (isMuon and BDT_out >= 0.255) or (not isMuon and BDT_out >= 0.250):
+        # # if (isMuon and BDT_out >= 0.223) or (not isMuon and BDT_out >= 0.238): #Wmass
+        #     if (Wmass >= 50. and Wmass <= 100.):
+        #         if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
+        #             h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
+        #         if not "Data" in name_sample:
+        #             h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
 
-                h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
-                h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
-                h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
-                h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
+        #         h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
+        #         h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
+        #         h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
+        #         h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
 
-                if isMuon:
-                    if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
-                        h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
-                    if not "Data" in name_sample:
-                        h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+        #         if isMuon:
+        #             if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
+        #                 h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+        #             if not "Data" in name_sample:
+        #                 h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
                         
-                        if "Signal" in name_sample:
-                            Sevts_mu_SFvariation += Event_Weight
+        #                 if "Signal" in name_sample:
+        #                     Sevts_mu_SFvariation += Event_Weight
 
-                    h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
-                    h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
-                    h_base[theSampleName+"h_piRelIso_05_mu_ch_AfterCut"].Fill(piRelIso_05_ch,Event_Weight)
+        #             h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
+        #             h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
+        #             h_base[theSampleName+"h_piRelIso_05_mu_ch_AfterCut"].Fill(piRelIso_05_ch,Event_Weight)
 
-                    if name_sample == "WGToLNuG":
-                        N_WGToLNuG_mu += Event_Weight
+        #             if name_sample == "WGToLNuG":
+        #                 N_WGToLNuG_mu += Event_Weight
 
  
-                if not isMuon and lep_iso <= 0.35:
-                    if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
-                        h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
-                    if not "Data" in name_sample:
-                        h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+        #         if (not isMuon) and lep_iso <= 0.35:
+        #             if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
+        #                 h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+        #             if not "Data" in name_sample:
+        #                 h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
 
-                        if "Signal" in name_sample:
-                            Sevts_ele_SFvariation += Event_Weight
+        #                 if "Signal" in name_sample:
+        #                     Sevts_ele_SFvariation += Event_Weight
                 
-                    h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
-                    h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
-                    h_base[theSampleName+"h_piRelIso_05_ele_ch_AfterCut"].Fill(piRelIso_05_ch,Event_Weight)
+        #             h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
+        #             h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
+        #             h_base[theSampleName+"h_piRelIso_05_ele_ch_AfterCut"].Fill(piRelIso_05_ch,Event_Weight)
 
 
         #-------BDT cut variation------#
@@ -705,10 +712,10 @@ for hname in list_histos:
     canvas[hname].cd()
 
     hs[hname].Draw("histo")
-    if "h_Wmass_" in hname:
-        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),65.))
-    if hname == "h_Wmass":
-        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),100.))
+    # if "h_Wmass_" in hname:
+    #     hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),65.))
+    # if hname == "h_Wmass":
+    #     hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),100.))
     if hname == "h_piRelIso_05_ele_ch":
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),27000.))
     if hname == "h_piRelIso_05_mu_ch":

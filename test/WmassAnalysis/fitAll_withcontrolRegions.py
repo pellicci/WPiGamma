@@ -6,7 +6,7 @@ import math
 ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
 #Define if working on MC or DATA
-isData = False
+isData = True
 
 #--------some bools for scale factor systematics----------#
 
@@ -21,7 +21,7 @@ Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV/c^{2}")
 
 #Retrive the sample
 if isData:
-    fInput = ROOT.TFile("Tree_input_massfit_Data.root")
+    fInput = ROOT.TFile("Tree_input_massfit_Data_prova.root")
 else:
     if random_mu_SF:
         fInput = ROOT.TFile("Tree_MC_muSF.root")
@@ -30,7 +30,7 @@ else:
     elif random_ph_SF:
         fInput = ROOT.TFile("Tree_MC_phSF.root")
     else:
-        fInput = ROOT.TFile("Tree_input_massfit_MC.root")
+        fInput = ROOT.TFile("Tree_input_massfit_MC_prova.root")
 fInput.cd()
 
 mytree = fInput.Get("minitree")
@@ -47,7 +47,7 @@ isSignal.defineType("Signal",1)
 isSignal.defineType("Background",0)
 
 #Define the event weight
-weight = ROOT.RooRealVar("weight","The event weight",0.,10.)
+weight = ROOT.RooRealVar("weight","The event weight",0.,100.)
 
 #Support variables
 BDT_out = ROOT.RooRealVar("BDT_out","Output of BDT",-1.,1.)
@@ -125,7 +125,7 @@ a6_el = ROOT.RooRealVar("a6_el","a6_el",0.1,-5.,5.)
 #a0_el = ROOT.RooRealVar("a0_el","a0_el",0.5,0.,1.)
 #a1_el = ROOT.RooRealVar("a1_el","a1_el",0.9,0.,1.)
 #a2_el = ROOT.RooRealVar("a2_el","a2_el",0.7,0.,1.)
-backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el))#,a3_el))#a4_el)) #,a5_el,a6_el))
+backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el,a3_el))#a4_el)) #,a5_el,a6_el))
 #backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el)) #,a3_el)) #,a4_el)) #,a5_el,a6_el))
 
 #exp_factor_mu = ROOT.RooRealVar("exp_factor_mu","exp_factor_mu", 0.5,-1.,1.)
@@ -165,7 +165,7 @@ gauss_lumi  = ROOT.RooGaussian("gauss_lumi","gauss_lumi",glb_lumi,lumi_constr,lu
 
 totsig = 107810.  #total number of signal events
 totmu = 9139.     #total number of signal muon events
-totel = 6212.     #total number of signal electron events
+totel = 5740.     #total number of signal electron events
 
 glb_eff_mu    = ROOT.RooRealVar("glb_eff_mu","glb_eff_mu",totmu*2./totsig, 0., 1.) #For now, just the raw MC passed/generated number
 eff_mu_constr = ROOT.RooRealVar("eff_mu_constr","eff_mu_constr", totmu*2./totsig, 0., 1.)

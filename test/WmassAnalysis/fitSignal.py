@@ -14,7 +14,7 @@ random_ph_SF = False #-------if True, photon scale factors are sampled from a Ga
 #---------------------------------------------------------#
 
 #Define the observable
-Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV/c^{2}")
+Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV")
 
 #Retrive the sample
 if random_mu_SF:
@@ -24,7 +24,7 @@ elif random_ele_SF:
 elif random_ph_SF:
     fInput = ROOT.TFile("Tree_MC_phSF.root")
 else:
-    fInput = ROOT.TFile("Tree_input_massfit_MC.root")
+    fInput = ROOT.TFile("Tree_input_massfit_MC_prova.root")
 fInput.cd()
 
 mytree = fInput.Get("minitree")
@@ -88,6 +88,8 @@ totSignal.fitTo(data_Signal)
 
 #Make the plots
 massplot = Wmass.frame()
+massplot.SetTitle(" ")
+massplot.SetTitleOffset(1.5,"y")
 data_Signal.plotOn(massplot)
 totSignal.plotOn(massplot)
 
