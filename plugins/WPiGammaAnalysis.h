@@ -18,6 +18,7 @@ private:
   const edm::InputTag slimmedElectrons_;
   const edm::InputTag slimmedJets_;
   const edm::InputTag slimmedMETs_;
+  const edm::InputTag slimmedMETsPuppi_;
   bool runningOnData_;
   const edm::InputTag pvCollection_;  
   const edm::InputTag bsCollection_;  
@@ -111,6 +112,7 @@ private:
   float _Wmass;
 
   float met_pT;
+  float metpuppi_pT;
   
   bool is_muon;
   bool is_ele;
@@ -142,6 +144,7 @@ private:
   edm::EDGetTokenT<std::vector<reco::GenParticle> > prunedGenParticlestoken_; 
   edm::EDGetTokenT<std::vector<pat::Jet> > slimmedJetstoken_;
   edm::EDGetTokenT<std::vector<pat::MET> > slimmedMETstoken_;
+  edm::EDGetTokenT<std::vector<pat::MET> > slimmedMETsPuppitoken_;
   edm::EDGetTokenT<std::vector<reco::Vertex> > tok_Vertex_; 
   edm::EDGetTokenT<reco::BeamSpot> tok_beamspot_;
   edm::EDGetTokenT<std::vector<PileupSummaryInfo> > pileupSummaryToken_;

@@ -58,6 +58,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   slimmedElectrons_(iConfig.getParameter<edm::InputTag>("slimmedElectrons")),
   slimmedJets_(iConfig.getParameter<edm::InputTag>("slimmedJets")),
   slimmedMETs_(iConfig.getParameter<edm::InputTag>("slimmedMETs")),
+  slimmedMETsPuppi_(iConfig.getParameter<edm::InputTag>("slimmedMETsPuppi")),
   runningOnData_(iConfig.getParameter<bool>("runningOnData")),
   pvCollection_(iConfig.getParameter<edm::InputTag>("pvCollection")),   
   bsCollection_(iConfig.getParameter<edm::InputTag>("bsCollection")),  
@@ -85,6 +86,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   electronsMiniAODToken_    = mayConsume<edm::View<reco::GsfElectron> > (slimmedElectrons_);
   slimmedJetstoken_         = consumes<std::vector<pat::Jet> >(slimmedJets_);
   slimmedMETstoken_         = consumes<std::vector<pat::MET> >(slimmedMETs_);
+  slimmedMETsPuppitoken_    = consumes<std::vector<pat::MET> >(slimmedMETsPuppi_);
   tok_Vertex_               = consumes<std::vector<reco::Vertex> > (pvCollection_);  
   tok_beamspot_             = consumes<reco::BeamSpot> (edm::InputTag(bsCollection_));
   pileupSummaryToken_       = consumes<std::vector<PileupSummaryInfo> >(edm::InputTag(PileupSrc_));
@@ -133,6 +135,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   edm::Handle<std::vector<pat::MET > > slimmedMETs;
   iEvent.getByLabel(slimmedMETs_, slimmedMETs);
+
+  edm::Handle<std::vector<pat::MET > > slimmedMETsPuppi;
+  iEvent.getByLabel(slimmedMETsPuppi_, slimmedMETsPuppi);
 
   edm::Handle<std::vector<reco::Vertex > > slimmedPV;
   iEvent.getByLabel(pvCollection_, slimmedPV);
@@ -249,7 +254,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   pTmuMax  = -1000.;
   pTeleMax = -1000.;
-  pTpiMax  = -1000.;
   eTphMax  = -1000.;
 
   mu_pT  = 0.;
@@ -307,9 +311,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     met_pT = met->pt();
   }
 
+  for(auto metpuppi = slimmedMETsPuppi->begin(); metpuppi != slimmedMETsPuppi->end(); ++metpuppi){
+    metpuppi_pT = metpuppi->pt();
+  }
+
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
-    //    if(mu->pt() < 24. || mu->pt() < pTmuMax || !mu->isMediumMuon() || abs(mu->eta()) > 2.4) continue;
     if(mu->pt() < 25. || !mu->isMediumMuon() || abs(mu->eta()) > 2.4 || fabs(mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(mu->muonBestTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
     lepton_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
     if(lepton_iso > 0.25) continue;
@@ -332,7 +339,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   if(nMuons > 1) return;
   _Nevents_muVeto++;
-
   
   // Get rho value
   edm::Handle< double > rhoH;
@@ -342,7 +348,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //Loop over electrons
   for (size_t i = 0; i < slimmedElectrons->size(); ++i){
     const auto el = slimmedElectrons->ptrAt(i);
-    //    if(el->pt() < 26. || el->pt() < pTeleMax) continue;
     if(el->pt() < 26. || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
 
     //PflowIsolationVariables pfIso = el->pfIsolationVariables();
@@ -350,17 +355,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     float eA     = effectiveAreas_.getEffectiveArea(abseta);
     lepton_iso   = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
 
-    if(lepton_iso > 0.4) continue;
+    if(lepton_iso > 0.35) continue;
 
     //-------------Conditions on loose/medium MVA electron ID-------------//
-
     if(!is_muon){
-
       bool isPassLoose = (*el_loose_id_decisions)[el];
       if(!isPassLoose) continue;
       nElectronsLoose++;
     }
-
 
     bool isPassMedium = (*el_medium_id_decisions)[el];
     if(!isPassMedium) continue;
@@ -387,6 +389,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   if((!is_muon && nElectronsLoose > 1) || (!is_muon && nElectronsLoose==1 && nElectrons!=1)) return;
      _Nevents_eleVeto++;
 
+  //Do NOT continue if you didn't find either a muon or an electron
+  if(!is_muon && !is_ele) return;
+  _Nevents_isLepton++;
+
+  if(is_muon && is_ele) return;
+  _Nevents_TwoLepton++;
+
   if(is_muon){
     lepton_pT_tree  = mu_pT;
     lepton_eta_tree = mu_eta;
@@ -402,13 +411,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     lepton_dxy_tree = el_dxy;
     lepton_dz_tree  = el_dz;
   }
-
-  //Do NOT continue if you didn't find either a muon or an electron
-  if(!is_muon && !is_ele) return;
-  _Nevents_isLepton++;
-
-  if(is_muon && is_ele) return;
-  _Nevents_TwoLepton++;
 
   //In signal, identify if there's a real mu or ele from W
   bool is_Wplus_from_t     = false;
@@ -439,6 +441,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   sum_pT_03    = 0.;
   sum_pT_05    = 0.;
   sum_pT_05_ch = 0.;
+
+  pTpiMax  = -1000.;
 
   for(auto cand = PFCandidates->begin(); cand != PFCandidates->end(); ++cand){
     if(cand->pdgId()*mu_ID < 0 || cand->pdgId()*el_ID < 0) continue; // WARNING: this condition works only if paired with muon/electron veto
@@ -516,6 +520,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
 
 
+  //Now look for the photon
   bool cand_photon_found = false;
 
   for (size_t i = 0; i < slimmedPhotons->size(); ++i){
@@ -658,6 +663,7 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("nBjets",&nBjets);
   mytree->Branch("nBjets_25",&nBjets_25);
   mytree->Branch("met_pT",&met_pT);
+  mytree->Branch("metpuppi_pT",&metpuppi_pT);
 
   //Save MC info
   if(!runningOnData_){
