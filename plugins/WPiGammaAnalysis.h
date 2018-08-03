@@ -67,7 +67,7 @@ private:
   float lepton_phi_tree;
   float lepton_dxy_tree;
   float lepton_dz_tree;
-  float lepton_iso;
+  float lepton_iso_tree;
 
   float mu_pT;
   float mu_eta;
@@ -76,6 +76,7 @@ private:
   float mu_dxy;
   float mu_dz;
   float mu_iso;
+  float best_mu_iso;
 
   float el_pT;
   float el_eta;
@@ -84,6 +85,7 @@ private:
   float el_dxy;
   float el_dz;
   float el_iso;
+  float best_el_iso;
 
   float pi_pT;
   float pi_eta;

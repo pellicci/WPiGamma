@@ -286,7 +286,7 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
     float abseta =  abs(el->superCluster()->eta());
     float eA = effectiveAreas_.getEffectiveArea(abseta);
     el_iso = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
-    if(el_iso > 0.4) continue;
+    if(el_iso > 0.35) continue;
 
     //el_ID       = el->pdgId();
     is_ele      = true;

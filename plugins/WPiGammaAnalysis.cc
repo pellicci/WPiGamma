@@ -264,6 +264,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   mu_dxy = 0.;
   mu_dz  = 0.;
   mu_iso = 0.;
+  best_mu_iso = 0.;
 
   el_pT  = 0.;
   el_eta = 0.;
@@ -272,11 +273,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   el_dxy = 0.;
   el_dz  = 0.;
   el_iso = 0.;
+  best_el_iso = 0.;
 
   deltaphi_lep_pi = 0.;
 
   //These variables will go in the tree
-  lepton_iso = 0.;
+  lepton_iso_tree = 0.;
   ph_iso_ChargedHadron = 0.;
   ph_iso_NeutralHadron = 0.;
   ph_iso_Photon = 0.;
@@ -323,7 +325,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     if(mu->pt() < 25. || !mu->isMediumMuon() || abs(mu->eta()) > 2.4 || fabs(mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(mu->muonBestTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
     mu_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
     if(mu_iso > 0.25) continue;
-    //    (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
 
     is_muon = true;
     nMuons++;
@@ -336,7 +337,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       mu_pT   = mu->pt();
       mu_dxy  = mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position());
       mu_dz   = mu->muonBestTrack()->dz((&slimmedPV->at(0))->position());
-      lepton_iso = mu_iso;
+      best_mu_iso = mu_iso; //Save the value of mu_iso of the best candidate (highest pT) muon passing the selection
       
       pTmuMax = mu_pT;
     }
@@ -383,8 +384,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       el_pT    = el->pt();
       el_dxy   = el->gsfTrack()->dxy((&slimmedPV->at(0))->position());
       el_dz    = el->gsfTrack()->dz((&slimmedPV->at(0))->position());
-      lepton_iso = el_iso;
-
+      best_el_iso = el_iso; //Save the value of el_iso of the best candidate (highest pT) electron passing the selection
       pTeleMax = el_pT;
     } 
   }
@@ -408,6 +408,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     lepton_phi_tree = mu_phi;
     lepton_dxy_tree = mu_dxy;
     lepton_dz_tree  = mu_dz;
+    lepton_iso_tree = best_mu_iso;
   }
 
   if(!is_muon && is_ele){
@@ -416,6 +417,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     lepton_phi_tree = el_phi;
     lepton_dxy_tree = el_dxy;
     lepton_dz_tree  = el_dz;
+    lepton_iso_tree = best_el_iso;
   }
 
   //In signal, identify if there's a real mu or ele from W
@@ -639,7 +641,7 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("lepton_phi",&lepton_phi_tree);
   mytree->Branch("lepton_dxy",&lepton_dxy_tree);
   mytree->Branch("lepton_dz",&lepton_dz_tree);
-  mytree->Branch("lepton_iso",&lepton_iso);
+  mytree->Branch("lepton_iso",&lepton_iso_tree);
   mytree->Branch("is_muon",&is_muon);
   mytree->Branch("pi_pT",&pi_pT);
   mytree->Branch("pi_eta",&pi_eta);

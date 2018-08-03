@@ -286,6 +286,27 @@ if __name__ == '__main__':
     p.start()
     p.join()
 
+    config.General.requestName = 'WPiGammaAnalysis_QCD_DoubleEMEnriched_30to40'
+    config.Data.unitsPerJob = 5
+    config.Data.inputDataset = '/QCD_Pt-30to40_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
+    p = Process(target=submit, args=(config,))
+    p.start()
+    p.join()
+
+    config.General.requestName = 'WPiGammaAnalysis_QCD_DoubleEMEnriched_30toInf'
+    config.Data.unitsPerJob = 5
+    config.Data.inputDataset = '/QCD_Pt-30toInf_DoubleEMEnriched_MGG-40to80_TuneCUETP8M1_13TeV_Pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
+    p = Process(target=submit, args=(config,))
+    p.start()
+    p.join()
+
+    config.General.requestName = 'WPiGammaAnalysis_QCD_DoubleEMEnriched_40toInf'
+    config.Data.unitsPerJob = 5
+    config.Data.inputDataset = '/QCD_Pt-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
+    p = Process(target=submit, args=(config,))
+    p.start()
+    p.join()
+
 
 
     
