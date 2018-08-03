@@ -76,7 +76,8 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   mvaValuesMapToken_ph_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap_ph"))),
   mvaCategoriesMapToken_ph_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap_ph"))),
   verboseIdFlag_(iConfig.getParameter<bool>("phoIdVerbose")),
-  effectiveAreas_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile")).fullPath() )
+  effectiveAreas_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile")).fullPath() ),
+  Bjets_WP_(iConfig.getParameter<double>("Bjets_WP"))
 
 {
   packedPFCandidatestoken_  = consumes<std::vector<pat::PackedCandidate> >(packedPFCandidates_); 
@@ -262,6 +263,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   mu_ID  = 0;
   mu_dxy = 0.;
   mu_dz  = 0.;
+  mu_iso = 0.;
 
   el_pT  = 0.;
   el_eta = 0.;
@@ -269,6 +271,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   el_ID  = 0;
   el_dxy = 0.;
   el_dz  = 0.;
+  el_iso = 0.;
 
   deltaphi_lep_pi = 0.;
 
@@ -318,8 +321,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
     if(mu->pt() < 25. || !mu->isMediumMuon() || abs(mu->eta()) > 2.4 || fabs(mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(mu->muonBestTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
-    lepton_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
-    if(lepton_iso > 0.25) continue;
+    mu_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
+    if(mu_iso > 0.25) continue;
+    //    (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
 
     is_muon = true;
     nMuons++;
@@ -332,6 +336,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       mu_pT   = mu->pt();
       mu_dxy  = mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position());
       mu_dz   = mu->muonBestTrack()->dz((&slimmedPV->at(0))->position());
+      lepton_iso = mu_iso;
       
       pTmuMax = mu_pT;
     }
@@ -353,9 +358,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     //PflowIsolationVariables pfIso = el->pfIsolationVariables();
     float abseta = abs(el->superCluster()->eta());
     float eA     = effectiveAreas_.getEffectiveArea(abseta);
-    lepton_iso   = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
+    el_iso   = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
 
-    if(lepton_iso > 0.35) continue;
+    if(el_iso > 0.35) continue;
 
     //-------------Conditions on loose/medium MVA electron ID-------------//
     if(!is_muon){
@@ -378,7 +383,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       el_pT    = el->pt();
       el_dxy   = el->gsfTrack()->dxy((&slimmedPV->at(0))->position());
       el_dz    = el->gsfTrack()->dz((&slimmedPV->at(0))->position());
-      
+      lepton_iso = el_iso;
+
       pTeleMax = el_pT;
     } 
   }
@@ -603,7 +609,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   nBjets = 0;
   for (auto jet = slimmedJets->begin(); jet != slimmedJets->end(); ++jet){
-    if(jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") < 0.46) continue;   //0.46 = loose
+    if(jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") < Bjets_WP_) continue;   //0.46 = loose
     if(jet->pt() < 25.) continue;
     nBjets_25++;
     if(jet->pt() < 30.) continue;

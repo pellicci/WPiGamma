@@ -508,14 +508,15 @@ for name_sample in samplename_list:
             if nBjets > 3:
                 h_base[theSampleName+"h_evts_Bjets"].Fill(3.5,1)
 
-        if isMuon and not "Data" in name_sample:
+        if isMuon:
             h_base[theSampleName+"h_piRelIso_05_mu"].Fill(piRelIso_05,Event_Weight)
             h_base[theSampleName+"h_mu_pi_InvMass"].Fill(mu_pi_InvMass,Event_Weight)
             h_base[theSampleName+"h_piRelIso_05_mu_ch"].Fill(piRelIso_05_ch,Event_Weight)
-            h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
+
+        h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
 
 
-        if not isMuon and not "Data" in name_sample:
+        if not isMuon:
             h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
             h_base[theSampleName+"h_piRelIso_05_ele_ch"].Fill(piRelIso_05_ch,Event_Weight)
 
@@ -533,10 +534,19 @@ for name_sample in samplename_list:
 
         if isMuon:
             h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
-        if (not isMuon) and lep_iso <= 0.35:
+            h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
+            h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
+
+        if not isMuon:
             h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+            h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
+            h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
 
         h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
+        h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
+        h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
+        h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
+        h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
 
 
         #---------------------Here's where the BDT selection starts---------------------#

@@ -24,6 +24,7 @@ private:
   const edm::InputTag bsCollection_;  
   const edm::InputTag PileupSrc_;
 
+
   edm::LumiReWeighting Lumiweights_;
 
   edm::Service<TFileService> fs;
@@ -74,6 +75,7 @@ private:
   int   mu_ID ;
   float mu_dxy;
   float mu_dz;
+  float mu_iso;
 
   float el_pT;
   float el_eta;
@@ -81,6 +83,7 @@ private:
   int   el_ID;
   float el_dxy;
   float el_dz;
+  float el_iso;
 
   float pi_pT;
   float pi_eta;
@@ -176,5 +179,6 @@ private:
 
   //Effective areas for isolation
   EffectiveAreas   effectiveAreas_;
+  double Bjets_WP_;
 
 };

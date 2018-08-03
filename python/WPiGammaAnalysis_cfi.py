@@ -10,11 +10,12 @@ WPiGammaAnalysis = cms.EDAnalyzer('WPiGammaAnalysis',
                                   slimmedMETs        = cms.InputTag("slimmedMETs"),
                                   slimmedMETsPuppi   = cms.InputTag("slimmedMETsPuppi"),
                                   runningOnData      = cms.bool(False),
-                                  pvCollection       = cms.InputTag("offlineSlimmedPrimaryVertices"), #New Stuff 
+                                  pvCollection       = cms.InputTag("offlineSlimmedPrimaryVertices"),
                                   bsCollection       = cms.InputTag("offlineBeamSpot"),
                                   PileupSrc          = cms.InputTag("slimmedAddPileupInfo"),
                                   triggerbits        = cms.InputTag("TriggerResults","","HLT"),
                                   rho                = cms.InputTag("fixedGridRhoFastjetAll"),
+                                  Bjets_WP           = cms.double(0.46), # Working point for the Bjet discriminator (0.46 is loose)
 
                                   # ELE ID decisions (common to all formats)
                                   eleLooseIdMap  = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring16-HZZ-V1-wpLoose"),

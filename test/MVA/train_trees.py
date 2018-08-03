@@ -3,7 +3,7 @@ import os
 
 #---------------------------------#
 
-isMuon = False  # Switch from muon to electron channel
+isMuon = True  # Switch from muon to electron channel
 data_sidebands = False  # Switch from data sidebands to MC for training (background)
 
 #---------------------------------#
@@ -15,6 +15,7 @@ if isMuon and not data_sidebands:
     tree_sig = fIn_sig.Get("minitree_signal_mu")
     # fOut = ROOT.TFile("outputs/Nominal_training_mu_Wmass.root","RECREATE")
     fOut = ROOT.TFile("outputs/Nominal_training_mu.root","RECREATE")
+    # fOut = ROOT.TFile("outputs/Nominal_training_mu_puppi.root","RECREATE")
 if not isMuon and not data_sidebands:
     fIn_bkg = ROOT.TFile("Tree_MC_Background_ele.root")
     tree_bkg = fIn_bkg.Get("minitree_background_ele")
@@ -22,6 +23,7 @@ if not isMuon and not data_sidebands:
     tree_sig = fIn_sig.Get("minitree_signal_ele")
     # fOut = ROOT.TFile("outputs/Nominal_training_ele_Wmass.root","RECREATE")
     fOut = ROOT.TFile("outputs/Nominal_training_ele.root","RECREATE")
+    # fOut = ROOT.TFile("outputs/Nominal_training_ele_puppi.root","RECREATE")
 
 if isMuon and data_sidebands:
     fIn_bkg_DATA = ROOT.TFile("Tree_MC_Background_mu_DATA.root")
@@ -61,6 +63,7 @@ factory.AddVariable("piRelIso_05_ch","F")
 #factory.AddVariable("pi_dxy","F")
 # factory.AddVariable("ele_gamma_InvMass")
 factory.AddVariable("MET","F")
+#factory.AddVariable("MET_puppi","F")
 
 
 if data_sidebands:
@@ -78,11 +81,15 @@ factory.SetWeightExpression("weight")
 mycuts = ROOT.TCut("weight > 0.")
 mycutb = ROOT.TCut("weight > 0.")
 
+if isMuon:
+    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=7905:nTrain_Background=88204:nTest_Signal=0:nTest_Background=0"]) )
+else:
+    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=6350:nTrain_Background=77225:nTest_Signal=0:nTest_Background=0"]) )
 
-factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V"]) )
-
-
-method_btd  = factory.BookMethod(ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=500", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=20"]))
+if isMuon:
+    method_btd  = factory.BookMethod(ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=20"]))
+else:
+    method_btd  = factory.BookMethod(ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=1100", "MinNodeSize=2.5%","MaxDepth=2","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=40"]))
 
 
 factory.TrainAllMethods()
@@ -99,6 +106,8 @@ if data_sidebands:
 else:
     weightfile_mu  = "weights/TMVAClassification_BDT.weights_mu.xml"
     weightfile_ele = "weights/TMVAClassification_BDT.weights_ele.xml"
+    # weightfile_mu  = "weights/TMVAClassification_BDT.weights_mu_puppi.xml"
+    # weightfile_ele = "weights/TMVAClassification_BDT.weights_ele_puppi.xml"
     # weightfile_mu  = "weights/TMVAClassification_BDT.weights_mu_Wmass.xml"
     # weightfile_ele = "weights/TMVAClassification_BDT.weights_ele_Wmass.xml"
 
