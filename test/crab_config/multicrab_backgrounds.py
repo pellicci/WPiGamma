@@ -307,6 +307,20 @@ if __name__ == '__main__':
     p.start()
     p.join()
 
+    config.General.requestName = 'WPiGammaAnalysis_TTGJets_1'
+    config.Data.unitsPerJob = 5
+    config.Data.inputDataset = '/TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
+    p = Process(target=submit, args=(config,))
+    p.start()
+    p.join()
+
+    config.General.requestName = 'WPiGammaAnalysis_TTGJets_2'
+    config.Data.unitsPerJob = 5
+    config.Data.inputDataset = '/TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
+    p = Process(target=submit, args=(config,))
+    p.start()
+    p.join()
+
 
 
     

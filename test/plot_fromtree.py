@@ -68,7 +68,7 @@ Wmass_ele_plus.Sumw2()
 Wmass_ele_minus.Sumw2()
 
 #Color mask must have the same number of entries as non-QCD backgrounds
-colors_mask = [26,400,840,616,860,432,880,900,800,416,885,910,200,630,420,608,960,ROOT.kGreen+3]
+colors_mask = [26,400,840,616,860,432,880,900,800,416,885,910,200,630,420,608,960,ROOT.kGreen+3,ROOT.kOrange+8]
 
 def select_all_but_one(cutstring):
 

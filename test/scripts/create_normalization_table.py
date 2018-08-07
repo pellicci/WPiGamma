@@ -102,6 +102,18 @@ def get_xsec_fromsample(samplename):
 
     if samplename == "GammaJets_20_Inf":
         return 3255.0
+
+    if samplename == "QCD_DoubleEMEnriched_30to40":
+        return 22180.0
+
+    if samplename == "QCD_DoubleEMEnriched_30toInf":
+        return 247000.0
+
+    if samplename == "QCD_DoubleEMEnriched_40toInf":
+        return 113100.0
+
+    if "TTGJets" in samplename:
+        return 3.795
     
     if "WGToLNuG" in samplename:
         return 489.
@@ -127,6 +139,7 @@ def main():
     out_file = open(output_filename,"w")
     signal_events_cumul = 0.
     WG_events_cumul = 0.
+    TTGJets_events_cumul = 0.
     
     for dirname in list_dirs:
         
@@ -149,6 +162,10 @@ def main():
             WG_events_cumul = WG_events_cumul + number_events
             continue
 
+        if "TTGJets" in samplename:
+            TTGJets_events_cumul = TTGJets_events_cumul + number_events
+            continue
+
         xsection = float(get_xsec_fromsample(samplename))
         print "crossection = ", xsection
         if number_events == 0:
@@ -164,7 +181,7 @@ def main():
     if signal_events_cumul > 0.:
         xsection = float(get_xsec_fromsample("Signal"))
         scale_factor = float(xsection*1000./signal_events_cumul)
-        print "Signal scale_factor = ", scale_factor
+        print "Signal scale factor = ", scale_factor
         write_string = "Signal" + " " + str(scale_factor) + "\n"
         print "Output Norm = ", write_string
         out_file.write(write_string)
@@ -172,8 +189,16 @@ def main():
     if WG_events_cumul > 0.:
         xsection = float(get_xsec_fromsample("WGToLNuG"))
         scale_factor = float(xsection*1000./WG_events_cumul)
-        print "WGToLNuG scale_factor = ", scale_factor
+        print "WGToLNuG scale factor = ", scale_factor
         write_string = "WGToLNuG" + " " + str(scale_factor) + "\n"
+        print "Output Norm = ", write_string
+        out_file.write(write_string)
+
+    if TTGJets_events_cumul > 0.:
+        xsection = float(get_xsec_fromsample("TTGJets"))
+        scale_factor = float(xsection*1000./TTGJets_events_cumul)
+        print "TTGJets scale factor = ", scale_factor
+        write_string = "TTGJets" + " " + str(scale_factor) + "\n"
         print "Output Norm = ", write_string
         out_file.write(write_string)
         

@@ -3,7 +3,7 @@ import os
 
 #---------------------------------#
 
-isMuon = True  # Switch from muon to electron channel
+isMuon = False  # Switch from muon to electron channel
 data_sidebands = False  # Switch from data sidebands to MC for training (background)
 
 #---------------------------------#
@@ -82,9 +82,9 @@ mycuts = ROOT.TCut("weight > 0.")
 mycutb = ROOT.TCut("weight > 0.")
 
 if isMuon:
-    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=7905:nTrain_Background=88204:nTest_Signal=0:nTest_Background=0"]) )
+    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=9227:nTrain_Background=279045:nTest_Signal=0:nTest_Background=0"]) )
 else:
-    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=6350:nTrain_Background=77225:nTest_Signal=0:nTest_Background=0"]) )
+    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=6962:nTrain_Background=212707:nTest_Signal=0:nTest_Background=0"]) )
 
 if isMuon:
     method_btd  = factory.BookMethod(ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=20"]))

@@ -473,11 +473,6 @@ for name_sample in samplename_list:
             _Wmass_fit[0]   = Wmass
             _BDT_out_fit[0] = BDT_out
             
-            if not isMuon and lep_iso > 0.35:
-                continue
-                #print "The incriminated sample is ", name_sample
-            if isMuon and lep_iso > 0.25:
-                continue
 
             if (isMuon and BDT_out >= BDT_OUT_MU) or ( (not isMuon) and BDT_out >= BDT_OUT_ELE):
                 _isSignalRegion_fit[0] = 1
@@ -519,12 +514,6 @@ for name_sample in samplename_list:
         #------- Filling MVA tree ------------
 
         if not isData:
-            
-            if not isMuon and lep_iso > 0.35:
-                continue
-                #print "The incriminated sample is ", name_sample
-            if isMuon and lep_iso >0.25:
-                continue
 
             _gamma_eT[0]        = gamma_eT
             _pi_pT[0]           = pi_pT
