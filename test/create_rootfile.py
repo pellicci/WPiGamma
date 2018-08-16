@@ -65,13 +65,16 @@ _met_puppi          = np.zeros(1, dtype=float)
 _Wmass              = np.zeros(1, dtype=float)
 
 #BDT scores
-BDT_OUT_MU  = 0.255
-BDT_OUT_ELE = 0.250
+BDT_OUT_MU  = 0.210
+BDT_OUT_ELE = 0.210
 
 _Nrandom_for_SF = ROOT.TRandom3(44317)
 
-Wmass_mu = ROOT.TH1F("Wmass_mu","Wmass mu",15,50,100)
-Wmass_ele = ROOT.TH1F("Wmass_ele","Wmass ele",15,50,100)
+Wmass_mu   = ROOT.TH1F("Wmass_mu","Wmass mu",15,50,100)
+Wmass_ele  = ROOT.TH1F("Wmass_ele","Wmass ele",15,50,100)
+lep_pt_mu  = ROOT.TH1F("lep_pt_mu","lep pt mu",30,0,400)
+lep_pt_ele = ROOT.TH1F("lep_pt_ele","lep pt ele",30,20,340)
+
 N_WGToLNuG_mu = 0.
 
 nSig_mu = 0.
@@ -548,9 +551,11 @@ for name_sample in samplename_list:
                 tMVA_signal_ele.Fill()
             if (not name_sample == myWF.sig_samplename) and isMuon:
                 nBkg_mu += Event_Weight
+                lep_pt_mu.Fill(lep_pT,Event_Weight)
                 tMVA_background_mu.Fill()
             if (not name_sample == myWF.sig_samplename) and (not isMuon):
                 nBkg_ele += Event_Weight
+                lep_pt_ele.Fill(lep_pT,Event_Weight)
                 tMVA_background_ele.Fill()
 
         if isData and (Wmass < 65. or Wmass > 90.):
@@ -648,3 +653,13 @@ ROOT.gStyle.SetOptStat(0)
 Wmass_ele.SetAxisRange(0.,65.,"Y")
 Wmass_ele.Draw("hist")
 canvas2.SaveAs("Wmass_ele_create_rootfile.pdf")
+
+canvas3 = TCanvas("canvas3","canvas3",200,106,600,600)
+ROOT.gStyle.SetOptStat(0)
+lep_pt_mu.Draw("hist")
+canvas3.SaveAs("lep_pt_mu_create_rootfile.pdf")
+
+canvas4 = TCanvas("canvas4","canvas4",200,106,600,600)
+ROOT.gStyle.SetOptStat(0)
+lep_pt_ele.Draw("hist")
+canvas4.SaveAs("lep_pt_ele_create_rootfile.pdf")

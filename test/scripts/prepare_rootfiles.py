@@ -7,19 +7,17 @@ isData = False ##---------switch from DATA to MC and vice versa---------##
 if not isData:
     dir_input = "crab_projects/samples_Medium/"
     dir_output_bkg = "rootfiles/Medium/backgrounds/"
-    #dir_output_bkg = "rootfiles/Medium_AfterFix/backgrounds/"
     dir_output_sig = "rootfiles/Medium/signals/"
-    #dir_output_sig = "rootfiles/Medium_AfterFix/signals/"
 
 if isData:
     dir_input = "crab_projects/dataprocess/"
     dir_output_data = "rootfiles/data/"
-    #dir_output_data = "rootfiles/data_AfterFix/"
+
 
 list_dirs = os.listdir(dir_input)
 
-WGToLNuG_samples = 0
-TTGJets_samples = 0
+complementary_samples_list = ["ttbarWlnu","ttbarZlnu","DY_10_50","DY_50","QCD_HT200to300","QCD_HT300to500","QCD_HT500to700","QCD_HT700to1000","QCD_HT1000to1500","QCD_HT1500to2000","QCD_HT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG"]
+
 
 if not os.path.exists("rootfiles"):
     os.makedirs("rootfiles")
@@ -69,12 +67,8 @@ for dirname in list_dirs:
 
     os.system(hadd_command)
 
-    if "WGToLNuG" in dirname:
-        WGToLNuG_samples += 1
 
-    if "TTGJets" in dirname:
-        TTGJets_samples += 1
-
+# Now add samples with different names but same xsec
 if not isData:
     list_signals = os.listdir(dir_output_sig)
     if len(list_signals) > 1:
@@ -84,19 +78,12 @@ if not isData:
         os.system(hadd_command)
         os.system(rm_command)
 
-    if WGToLNuG_samples > 1:
-        hadd_command = "hadd -f " + dir_output_bkg + "/WPiGammaAnalysis_WGToLNuG.root " + dir_output_bkg + "/WPiGammaAnalysis_WGToLNuG_ext*.root "
-        rm_command = "rm -rf " + dir_output_bkg + "/WPiGammaAnalysis_WGToLNuG_ext*.root "
+    for sample in complementary_samples_list:
+        hadd_command = "hadd -f " + dir_output_bkg + "/WPiGammaAnalysis_" + sample + ".root " + dir_output_bkg + "/WPiGammaAnalysis_" + sample + "_*.root "
+        rm_command = "rm -rf " + dir_output_bkg + "/WPiGammaAnalysis_" + sample + "_*.root "
 
         os.system(hadd_command)
-        os.system(rm_command)
-
-    if TTGJets_samples > 1:
-        hadd_command = "hadd -f " + dir_output_bkg + "/WPiGammaAnalysis_TTGJets.root " + dir_output_bkg + "/WPiGammaAnalysis_TTGJets_*.root "
-        rm_command = "rm -rf " + dir_output_bkg + "/WPiGammaAnalysis_WGToLNuG_*.root "
-
-        os.system(hadd_command)
-        os.system(rm_command)
+        os.system(rm_command)        
 
 
 if isData:

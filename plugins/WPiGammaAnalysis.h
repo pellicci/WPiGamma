@@ -62,6 +62,7 @@ private:
 
   int run_number;
 
+  bool is_opposite_charge;
   float lepton_pT_tree;
   float lepton_eta_tree;
   float lepton_phi_tree;

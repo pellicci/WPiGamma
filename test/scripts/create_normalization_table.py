@@ -1,4 +1,3 @@
-
 import os
 
 ###All normalizations are provided to 1fb-1 of lumi in these tables
@@ -16,13 +15,13 @@ def get_xsec_fromsample(samplename):
     if samplename == "ttbarWQQ":
         return 0.4062
 
-    if samplename == "ttbarWlnu":
+    if "ttbarWlnu" in samplename:
         return 0.2043
                   
     if samplename == "ttbarZQQ":
         return 0.5297 
 
-    if samplename == "ttbarZlnu":
+    if "ttbarZlnu" in samplename:
         return 0.2529 
 
     if samplename == "SingleTop_tW":
@@ -34,55 +33,34 @@ def get_xsec_fromsample(samplename):
     if samplename == "WJetsToLNu":
         return 20508.9*3.
 
-    if samplename == "DY_10_50":
+    if "DY_10_50" in samplename:
         return 18610.0
 
-    if samplename == "DY_50":
+    if "DY_50" in samplename:
         return 1921.8*3.
 
     if samplename == "QCD_HT100to200":
         return 27540000.0 
 
-    if samplename == "QCD_HT200to300_1":
+    if "QCD_HT200to300" in samplename:
         return 1717000.0
 
-    if samplename == "QCD_HT200to300_2":
-        return 1717000.0
-
-    if samplename == "QCD_HT300to500_1":
+    if "QCD_HT300to500" in samplename:
         return 351300.0
 
-    if samplename == "QCD_HT300to500_2":
-        return 351300.0
-
-    if samplename == "QCD_HT500to700_1":
+    if "QCD_HT500to700" in samplename:
         return 31630.0
 
-    if samplename == "QCD_HT500to700_2":
-        return 31630.0
-
-    if samplename == "QCD_HT700to1000_1":
+    if "QCD_HT700to1000" in samplename:
         return 6802.0
 
-    if samplename == "QCD_HT700to1000_2":
-        return 6802.0
-
-    if samplename == "QCD_HT1000to1500_1":
+    if "QCD_HT1000to1500" in samplename:
         return 1206.0
 
-    if samplename == "QCD_HT1000to1500_2":
-        return 1206.0
-
-    if samplename == "QCD_HT1500to2000_1":
+    if "QCD_HT1500to2000" in samplename:
         return 120.4 
 
-    if samplename == "QCD_HT1500to2000_2":
-        return 120.4
-
-    if samplename == "QCD_HT2000toInf_1":
-        return 25.25
-
-    if samplename == "QCD_HT2000toInf_2":
+    if "QCD_HT2000toInf" in samplename:
         return 25.25
 
     if samplename == "ZZ":
@@ -91,7 +69,7 @@ def get_xsec_fromsample(samplename):
     if samplename == "WW":
         return 51.723
 
-    if samplename == "WZ":
+    if "WZ" in samplename:
         return 47.13
 
     if samplename == "GammaJets_20_40":
@@ -117,6 +95,9 @@ def get_xsec_fromsample(samplename):
     
     if "WGToLNuG" in samplename:
         return 489.
+
+    if "ZGTo2LG" in samplename:
+        return 117.864
     
     if "Signal" in samplename:
         #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
@@ -132,14 +113,21 @@ def main():
     if not os.path.exists("rootfiles"):
         os.makedirs("rootfiles")
         
-    #output_filename = "rootfiles/Tight/Normalizations_table.txt"
-    #output_filename = "rootfiles/Norm_Table_prova/Normalizations_table.txt"
+
     output_filename = "rootfiles/Medium/Normalizations_table.txt"
 
     out_file = open(output_filename,"w")
+
+    complementary_samples_list = ["ttbarWlnu","ttbarZlnu","DY_10_50","DY_50","QCD_HT200to300","QCD_HT300to500","QCD_HT500to700","QCD_HT700to1000","QCD_HT1000to1500","QCD_HT1500to2000","QCD_HT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG"]
+
+    events_cumul = dict()
+
+    for sample in complementary_samples_list:
+        events_cumul[sample] = 0.
+
+    #Counter to treat signal differently: 2 samples, same xsec
     signal_events_cumul = 0.
-    WG_events_cumul = 0.
-    TTGJets_events_cumul = 0.
+
     
     for dirname in list_dirs:
         
@@ -153,18 +141,77 @@ def main():
         number_events = float((event_string.split())[4])
         print "No. of events processed = " + str (number_events) + "\n"
         
+        #Treat differently different samples with same xsec
+
+        if "ttbarWlnu" in samplename:
+            events_cumul["ttbarWlnu"] = events_cumul["ttbarWlnu"] + number_events
+            print "events_cumul: ", events_cumul["ttbarWlnu"]
+            continue
+
+        if "ttbarZlnu" in samplename:
+            events_cumul["ttbarZlnu"] = events_cumul["ttbarZlnu"] + number_events
+            print "events_cumul: ", events_cumul["ttbarZlnu"]
+            continue
+
+        if "DY_10_50" in samplename:
+            events_cumul["DY_10_50"] = events_cumul["DY_10_50"] + number_events
+            print "events_cumul: ", events_cumul["DY_10_50"]
+            continue
+
+        if "DY_50" in samplename:
+            events_cumul["DY_50"] = events_cumul["DY_50"] + number_events
+            print "events_cumul: ", events_cumul["DY_50"]
+            continue
+
+        if "QCD_HT200to300" in samplename:
+            events_cumul["QCD_HT200to300"] = events_cumul["QCD_HT200to300"] + number_events
+            continue
+
+        if "QCD_HT300to500" in samplename:
+            events_cumul["QCD_HT300to500"] = events_cumul["QCD_HT300to500"] + number_events
+            continue
+
+        if "QCD_HT500to700" in samplename:
+            events_cumul["QCD_HT500to700"] = events_cumul["QCD_HT500to700"] + number_events
+            continue
+
+        if "QCD_HT700to1000" in samplename:
+            events_cumul["QCD_HT700to1000"] = events_cumul["QCD_HT700to1000"] + number_events
+            continue
+
+        if "QCD_HT1000to1500" in samplename:
+            events_cumul["QCD_HT1000to1500"] = events_cumul["QCD_HT1000to1500"] + number_events
+            continue
+
+        if "QCD_HT1500to2000" in samplename:
+            events_cumul["QCD_HT1500to2000"] = events_cumul["QCD_HT1500to2000"] + number_events
+            continue
+
+        if "QCD_HT2000toInf" in samplename:
+            events_cumul["QCD_HT2000toInf"] = events_cumul["QCD_HT2000toInf"] + number_events
+            continue
+
+        if "WZ" in samplename:
+            events_cumul["WZ"] = events_cumul["WZ"] + number_events
+            continue
+
+        if "WGToLNuG" in samplename:
+            events_cumul["WGToLNuG"] = events_cumul["WGToLNuG"] + number_events
+            continue
+
+        if "TTGJets" in samplename:
+            events_cumul["TTGJets"] = events_cumul["TTGJets"] + number_events
+            continue
+
+        if "ZGTo2LG" in samplename:
+            events_cumul["ZGTo2LG"] = events_cumul["ZGTo2LG"] + number_events
+            continue
+
         #Treat signal differently to account for different samples with same xsec
         if "Signal" in samplename:
             signal_events_cumul = signal_events_cumul + number_events
             continue
 
-        if "WGToLNuG" in samplename:
-            WG_events_cumul = WG_events_cumul + number_events
-            continue
-
-        if "TTGJets" in samplename:
-            TTGJets_events_cumul = TTGJets_events_cumul + number_events
-            continue
 
         xsection = float(get_xsec_fromsample(samplename))
         print "crossection = ", xsection
@@ -186,22 +233,14 @@ def main():
         print "Output Norm = ", write_string
         out_file.write(write_string)
 
-    if WG_events_cumul > 0.:
-        xsection = float(get_xsec_fromsample("WGToLNuG"))
-        scale_factor = float(xsection*1000./WG_events_cumul)
-        print "WGToLNuG scale factor = ", scale_factor
-        write_string = "WGToLNuG" + " " + str(scale_factor) + "\n"
+    for sample in complementary_samples_list:
+        xsection = float(get_xsec_fromsample(sample))
+        scale_factor = float(xsection*1000./events_cumul[sample])
+        print sample + " scale factor = ", scale_factor
+        write_string = sample + " " + str(scale_factor) + "\n"
         print "Output Norm = ", write_string
-        out_file.write(write_string)
+        out_file.write(write_string)        
 
-    if TTGJets_events_cumul > 0.:
-        xsection = float(get_xsec_fromsample("TTGJets"))
-        scale_factor = float(xsection*1000./TTGJets_events_cumul)
-        print "TTGJets scale factor = ", scale_factor
-        write_string = "TTGJets" + " " + str(scale_factor) + "\n"
-        print "Output Norm = ", write_string
-        out_file.write(write_string)
-        
             
     print "All done!"
 

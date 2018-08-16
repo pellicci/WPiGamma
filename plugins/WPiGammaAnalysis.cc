@@ -446,6 +446,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   
   //----------- Starting to search for pi and gamma -------------
   bool cand_pion_found = false;
+  is_opposite_charge = false;
   sum_pT_03    = 0.;
   sum_pT_05    = 0.;
   sum_pT_05_ch = 0.;
@@ -453,10 +454,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   pTpiMax  = -1000.;
 
   for(auto cand = PFCandidates->begin(); cand != PFCandidates->end(); ++cand){
-    if(cand->pdgId()*mu_ID < 0 || cand->pdgId()*el_ID < 0) continue; // WARNING: this condition works only if paired with muon/electron veto
+    //if(cand->pdgId()*mu_ID < 0 || cand->pdgId()*el_ID < 0) continue; // WARNING: this condition works only if paired with muon/electron veto
+    
     // if(cand->pt() < 20. || !cand->trackHighPurity() || cand->fromPV() != 3) continue;
     if(cand->pt() < 20. || !cand->trackHighPurity() || fabs(cand->dxy()) >= 0.2 || fabs(cand->dz()) >= 0.5 ) continue;
     if(cand->pt() < pTpiMax) continue;
+    if(cand->pdgId()*mu_ID > 0 || cand->pdgId()*el_ID > 0){is_opposite_charge = true;}
     //if(cand->trackIso() > 5) continue;
     //std::cout << cand->pfIsolationVariables().sumChargedHadronPt << std::endl;
     
@@ -635,7 +638,8 @@ void WPiGammaAnalysis::create_trees()
   if(runningOnData_){
     mytree->Branch("run_number",&run_number);
   }
-
+  
+  mytree->Branch("isOppositeCharge",&is_opposite_charge);
   mytree->Branch("lepton_pT",&lepton_pT_tree);
   mytree->Branch("lepton_eta",&lepton_eta_tree);
   mytree->Branch("lepton_phi",&lepton_phi_tree);
