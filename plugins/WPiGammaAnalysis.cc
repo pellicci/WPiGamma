@@ -322,7 +322,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
-    if(mu->pt() < 25. || !mu->isMediumMuon() || abs(mu->eta()) > 2.4 || fabs(mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(mu->muonBestTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
+    if(mu->pt() < 25. || !mu->isMediumMuon() || fabs(mu->eta()) > 2.4 || fabs(mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(mu->muonBestTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
     mu_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
     if(mu_iso > 0.25) continue;
 
@@ -354,10 +354,10 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //Loop over electrons
   for (size_t i = 0; i < slimmedElectrons->size(); ++i){
     const auto el = slimmedElectrons->ptrAt(i);
-    if(el->pt() < 26. || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
+    if(el->pt() < 26. || fabs(el->eta()) > 2.5 || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
 
     //PflowIsolationVariables pfIso = el->pfIsolationVariables();
-    float abseta = abs(el->superCluster()->eta());
+    float abseta = fabs(el->superCluster()->eta());
     float eA     = effectiveAreas_.getEffectiveArea(abseta);
     el_iso   = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
 
@@ -446,7 +446,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   
   //----------- Starting to search for pi and gamma -------------
   bool cand_pion_found = false;
-  is_opposite_charge = false;
+  are_lep_pi_opposite_charge = false;
   sum_pT_03    = 0.;
   sum_pT_05    = 0.;
   sum_pT_05_ch = 0.;
@@ -459,9 +459,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     // if(cand->pt() < 20. || !cand->trackHighPurity() || cand->fromPV() != 3) continue;
     if(cand->pt() < 20. || !cand->trackHighPurity() || fabs(cand->dxy()) >= 0.2 || fabs(cand->dz()) >= 0.5 ) continue;
     if(cand->pt() < pTpiMax) continue;
-    if(cand->pdgId()*mu_ID > 0 || cand->pdgId()*el_ID > 0){is_opposite_charge = true;}
-    //if(cand->trackIso() > 5) continue;
-    //std::cout << cand->pfIsolationVariables().sumChargedHadronPt << std::endl;
+    if(cand->pdgId()*mu_ID > 0 || cand->pdgId()*el_ID > 0){are_lep_pi_opposite_charge = true;}
+
     
     if(is_muon){
       deltaphi_lep_pi = fabs(mu_phi-cand->phi());
@@ -537,14 +536,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   for (size_t i = 0; i < slimmedPhotons->size(); ++i){
     const auto photon = slimmedPhotons->ptrAt(i);
 
-    if(photon->et() < 20. || abs(photon->eta()) > 2.5 || photon->et() < eTphMax) continue;
+    if(photon->et() < 20. || fabs(photon->eta()) > 2.5 || photon->et() < eTphMax) continue;
     if(photon->hasPixelSeed()) continue;   //electron veto
 
     // The minimal info
     bool isPassMedium = (*ph_medium_id_decisions)[photon];
     if(!isPassMedium) continue;
 
-    float abseta = abs(photon->superCluster()->eta());
+    float abseta = fabs(photon->superCluster()->eta());
     float eA = effectiveAreas_.getEffectiveArea(abseta);
     //photon_iso = (pfIso.sumChargedHadronPt + std::max( 0.0f, pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - eA*rho_))/photon->et();
     if(photon->chargedHadronIso()/photon->et() > 0.3 || photon->photonIso() > 4.) continue; //|| photon->trackIso() > 6
@@ -639,7 +638,7 @@ void WPiGammaAnalysis::create_trees()
     mytree->Branch("run_number",&run_number);
   }
   
-  mytree->Branch("isOppositeCharge",&is_opposite_charge);
+  mytree->Branch("LepPiOppositeCharge",&are_lep_pi_opposite_charge);
   mytree->Branch("lepton_pT",&lepton_pT_tree);
   mytree->Branch("lepton_eta",&lepton_eta_tree);
   mytree->Branch("lepton_phi",&lepton_phi_tree);

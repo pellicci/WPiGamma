@@ -40,9 +40,9 @@ process.source = cms.Source ("PoolSource",
 
 # Output file
 process.TFileService = cms.Service("TFileService",
-   fileName = cms.string("WPiGammaAnalysis_output_noChargeVeto.root")
+   fileName = cms.string("WPiGammaAnalysis_output.root")
 )
-   # fileName = cms.string("WPiGammaAnalysis_output_noChargeVeto.root")
+
 
 #EGAMMA ID
 #Upload the ele/gamma ID information

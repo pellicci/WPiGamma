@@ -5,7 +5,8 @@ config = Configuration()
 config.section_('General')
 config.General.transferOutputs = True
 
-config.General.workArea = 'crab_projects/dataprocess/'
+# config.General.workArea = 'crab_projects/dataprocess/'
+config.General.workArea = 'crab_provvisorio/dataprocess/'
 
 config.section_('JobType')
 config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
@@ -101,7 +102,7 @@ if __name__ == '__main__':
     p.start()
     p.join()
 
-    #Now the electron datasets
+    # #Now the electron datasets
 
     config.General.requestName = 'WPiGammaAnalysis_SingleEle_B'
     config.Data.unitsPerJob = 50

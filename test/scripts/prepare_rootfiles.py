@@ -2,7 +2,7 @@ import ROOT
 import os
 import subprocess
 
-isData = False ##---------switch from DATA to MC and vice versa---------##
+isData = True ##---------switch from DATA to MC and vice versa---------##
 
 if not isData:
     dir_input = "crab_projects/samples_Medium/"
