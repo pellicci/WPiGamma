@@ -69,6 +69,8 @@ private:
   float lepton_dxy_tree;
   float lepton_dz_tree;
   float lepton_iso_tree;
+  float Wplus_pT;
+  float Wminus_pT;
 
   float mu_pT;
   float mu_eta;
@@ -129,6 +131,12 @@ private:
   //MC truth
   float PU_Weight;
 
+  bool is_signal_Wplus ;
+  bool is_signal_Wminus;
+  bool is_Wplus_from_t;
+  bool is_Wminus_from_tbar;
+  bool is_Wplus_in_lep;
+  bool is_Wminus_in_lep;
   bool is_Mu_signal;
   bool is_Ele_signal;
 

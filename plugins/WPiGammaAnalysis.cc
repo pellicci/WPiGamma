@@ -320,6 +320,29 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     metpuppi_pT = metpuppi->pt();
   }
 
+  //Looking for Ws from ttbar and saving their pT
+  // Wplus_pT = 0;
+  // Wminus_pT = 0;
+  // is_signal_Wplus = false;
+  // is_signal_Wminus = false;
+
+  // if(!runningOnData_){
+  //   for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
+  //     if(gen->pdgId() == 24 && gen->mother()->pdgId() == 6 && gen->numberOfDaughters() == 2){// && gen->daughter()->pdgId() != 24){
+  // 	Wplus_pT = gen->pt();
+  // 	for (int i=0; i<2; i++){
+  // 	  if(gen->daughter(i)->pdgId() == 22) is_signal_Wplus = true;
+  // 	}
+  //     }
+  //     if(gen->pdgId() == -24 && gen->mother()->pdgId() == -6 && gen->numberOfDaughters() == 2){// && gen->daughter()->pdgId() != -24){
+  // 	Wminus_pT = gen->pt();
+  // 	for (int i=0; i<2; i++){
+  // 	  if(gen->daughter(i)->pdgId() == 22) is_signal_Wminus = true;
+  // 	}
+  //     }
+  //   }
+  // }
+
   //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
     if(mu->pt() < 25. || !mu->isMediumMuon() || fabs(mu->eta()) > 2.4 || fabs(mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(mu->muonBestTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
@@ -421,24 +444,37 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
 
   //In signal, identify if there's a real mu or ele from W
-  bool is_Wplus_from_t     = false;
-  bool is_Wminus_from_tbar = false;
-  bool is_Wplus_in_lep     = false;
-  bool is_Wminus_in_lep    = false;
-  is_ttbar_lnu  = false;
-  is_Ele_signal = false;
-  is_Mu_signal  = false;
+  is_Ele_signal       = false;
+  is_Mu_signal        = false;
+  is_Wplus_from_t     = false;
+  is_Wminus_from_tbar = false;
+  is_Wminus_in_lep    = false;
+  is_Wplus_in_lep     = false;
+  is_signal_Wplus     = false;
+  is_signal_Wminus    = false;
+  is_ttbar_lnu        = false;
+  Wplus_pT = -999.;
+  Wminus_pT = -999.;
 
   if(!runningOnData_){
-    for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
+    for(auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
       if(fabs(gen->pdgId() ) == 11 && fabs(gen->mother()->pdgId()) == 24) is_Ele_signal = true;
       if(fabs(gen->pdgId() ) == 13 && fabs(gen->mother()->pdgId()) == 24) is_Mu_signal = true;
-      if(gen->pdgId() == 24 && gen->mother()->pdgId() == 6) is_Wplus_from_t = true;
-      if(gen->pdgId() == -24 && gen->mother()->pdgId() == -6) is_Wminus_from_tbar = true;
-      if(fabs(gen->pdgId() != 24) || gen->numberOfDaughters() != 2) continue;
+      if(gen->numberOfDaughters() != 2) continue; //Avoid Ws <<decaying>> in another W (especially in Signal)
+      if(gen->pdgId() == 24){// && gen->mother()->pdgId() == 6){
+	is_Wplus_from_t = true;
+	Wplus_pT = gen->pt();
+      }
+      if(gen->pdgId() == -24){// && gen->mother()->pdgId() == -6){
+	is_Wminus_from_tbar = true;
+	Wminus_pT = gen->pt();
+      }
+      //if(fabs(gen->pdgId() != 24) || gen->numberOfDaughters() != 2) continue;
       for (int i=0; i<2; i++){
-	if(gen->daughter(i)->pdgId() == 11 || gen->daughter(i)->pdgId() == 13 || gen->daughter(i)->pdgId() == 15) is_Wminus_in_lep = true;
-	if(gen->daughter(i)->pdgId() == -11 || gen->daughter(i)->pdgId() == -13 || gen->daughter(i)->pdgId() == -15) is_Wplus_in_lep = true;
+      	if(gen->daughter(i)->pdgId() == 11 || gen->daughter(i)->pdgId() == 13 || gen->daughter(i)->pdgId() == 15) is_Wminus_in_lep = true;
+      	if(gen->daughter(i)->pdgId() == -11 || gen->daughter(i)->pdgId() == -13 || gen->daughter(i)->pdgId() == -15) is_Wplus_in_lep = true;
+      	if(gen->daughter(i)->pdgId() == 22 && is_Wplus_from_t && !is_signal_Wminus) is_signal_Wplus = true;
+      	if(gen->daughter(i)->pdgId() == 22 && is_Wminus_from_tbar && !is_signal_Wplus) is_signal_Wminus = true;
       }
     }
     if(is_Wplus_from_t && is_Wminus_from_tbar && is_Wminus_in_lep && is_Wplus_in_lep) is_ttbar_lnu = true;
@@ -456,12 +492,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   for(auto cand = PFCandidates->begin(); cand != PFCandidates->end(); ++cand){
     //if(cand->pdgId()*mu_ID < 0 || cand->pdgId()*el_ID < 0) continue; // WARNING: this condition works only if paired with muon/electron veto
     
-    // if(cand->pt() < 20. || !cand->trackHighPurity() || cand->fromPV() != 3) continue;
     if(cand->pt() < 20. || !cand->trackHighPurity() || fabs(cand->dxy()) >= 0.2 || fabs(cand->dz()) >= 0.5 ) continue;
-    if(cand->pt() < pTpiMax) continue;
-    if(cand->pdgId()*mu_ID > 0 || cand->pdgId()*el_ID > 0){are_lep_pi_opposite_charge = true;}
 
-    
     if(is_muon){
       deltaphi_lep_pi = fabs(mu_phi-cand->phi());
       if(deltaphi_lep_pi > 3.14) deltaphi_lep_pi = 6.28-deltaphi_lep_pi;
@@ -472,6 +504,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     } 
 
     if(deltaphi_lep_pi < 0.00005) continue;
+
+    if(cand->pt() < pTpiMax) continue;
 
     pTpiMax = cand->pt();
     cand_pion_found = true;
@@ -485,6 +519,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     pi_dxy    = cand->dxy();
     pi_dz     = cand->dz();
 
+    if(cand->pdgId()*mu_ID > 0 || cand->pdgId()*el_ID > 0){are_lep_pi_opposite_charge = true;}
+
     is_pi_a_pi = false;
     is_pi_matched = false;
 
@@ -495,10 +531,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     if(!runningOnData_){
       for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){ // Matching candidate for W reconstruction with MC truth
-	// if (fabs(gen->pdgId()) == 211 && fabs(gen->mother()->pdgId()) == 24){
-	//   pi_dxy = gen->dxy();
-	//   pi_dz = gen->dz();
-	// }
 	
 	float deltaR = sqrt((pi_eta-gen->eta())*(pi_eta-gen->eta())+(pi_phi-gen->phi())*(pi_phi-gen->phi()));
 	float deltapT = fabs(pi_pT-gen->pt());
@@ -524,7 +556,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     float deltaR = sqrt((pi_eta-cand_iso->eta())*(pi_eta-cand_iso->eta())+(pi_phi-cand_iso->phi())*(pi_phi-cand_iso->phi()));
     if(deltaR <= 0.3 && deltaR >= 0.02) sum_pT_03 += cand_iso->pt();
     if(deltaR <= 0.5 && deltaR >= 0.02) sum_pT_05 += cand_iso->pt();
-    // std::cout << "charge: " << cand_iso->charge() << "pdgId: " << cand_iso->pdgId() << std::endl;
     if(cand_iso->charge() != 0 && (fabs(cand_iso->dxy()) >= 0.2 || fabs(cand_iso->dz()) >= 0.5) ) continue; // Requesting charged particles to come from PV
     if(deltaR <= 0.5 && deltaR >= 0.02) sum_pT_05_ch += cand_iso->pt();
   }
@@ -687,6 +718,10 @@ void WPiGammaAnalysis::create_trees()
     mytree->Branch("isPhotonTrue",&is_photon_a_photon);
     mytree->Branch("isPhotonMatched",&is_photon_matched);
     mytree->Branch("isttbarlnu",&is_ttbar_lnu);
+    mytree->Branch("Wplus_pT",&Wplus_pT);
+    mytree->Branch("Wminus_pT",&Wminus_pT);
+    mytree->Branch("is_signal_Wplus",&is_signal_Wplus);
+    mytree->Branch("is_signal_Wminus",&is_signal_Wminus);
   }
 
 }

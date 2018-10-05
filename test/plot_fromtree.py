@@ -9,7 +9,7 @@ from array import array
 ROOT.gROOT.SetBatch(True)   
 
 from Workflow_Handler import Workflow_Handler
-myWF = Workflow_Handler("Signal","Data",isMedium = True)
+myWF = Workflow_Handler("Signal","Data",isBDT_with_Wmass = False)
 
 ##Global constants
 MU_MIN_PT = 27.
