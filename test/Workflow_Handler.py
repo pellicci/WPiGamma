@@ -15,6 +15,11 @@ eg_reco_scale_file  = ROOT.TFile(eg_reco_scale_name)
 eg_reco_scale_histo = ROOT.TH2F()
 eg_reco_scale_histo = eg_reco_scale_file.Get("EGamma_SF2D")
 
+# eg_reco_scale_histo_minX
+# eg_reco_scale_histo_maxX
+# eg_reco_scale_histo_minY
+# eg_reco_scale_histo_maxY
+
 eg_ID_scale_name  = "scale_factors/Electron_ID_2D.root"
 eg_ID_scale_file  = ROOT.TFile(eg_ID_scale_name)
 eg_ID_scale_histo = ROOT.TH2F()
@@ -204,6 +209,17 @@ class Workflow_Handler:
         return norm_map
 
     ###############################################################################################################################################
+
+    def post_preselection_cuts(self, lep_eta, lep_pT, isMuon, LepPiOppositeCharge):
+
+        cut = False
+
+        if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 26.) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge:
+            cut = True
+
+        return cut
+
+    ###############################################################################################################################################
         
     def get_ele_scale(self, lep_pt, lep_eta):
         
@@ -270,8 +286,10 @@ class Workflow_Handler:
     def get_muon_scale_BtoF(self, lep_pt, lep_eta, isSingleMuTrigger_24):
 
         local_lep_pt = lep_pt
-        if lep_pt >= 120.:  # This is because corrections go up to 120 GeV (excluded)
+        if local_lep_pt >= 120.:  # This is because corrections go up to 120 GeV (excluded)
             local_lep_pt = 119.
+        if local_lep_pt < 20.:
+            local_lep_pt = 20.
 
         local_lep_eta = lep_eta
         if local_lep_eta >= 2.4:
@@ -298,8 +316,13 @@ class Workflow_Handler:
         scale_factor_Tracking = mu_Tracking_scale_graph_BCDEFGH.Eval(math.fabs(lep_eta)) # For this SF, corrections go also beyond eta = 2.4
 
         if isSingleMuTrigger_24: # Trigger SF go up to higher energies than 120 GeV, so no local_lep_pt is used for those
-            scale_factor_Trigger = mu_Trigger_scale_histo_BCDEF_Mu24.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu24.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu24.GetYaxis().FindBin(lep_pt) )
-            mu_Trigger_err       = mu_Trigger_scale_histo_BCDEF_Mu24.GetBinError( mu_Trigger_scale_histo_BCDEF_Mu24.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu24.GetYaxis().FindBin(lep_pt) )
+
+            local_lep_pt_forTrigger = lep_pt # Corrections related to this trigger start from 26 GeV
+            if local_lep_pt_forTrigger < 26.:
+                local_lep_pt_forTrigger = 26.
+
+            scale_factor_Trigger = mu_Trigger_scale_histo_BCDEF_Mu24.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu24.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu24.GetYaxis().FindBin(local_lep_pt_forTrigger) )
+            mu_Trigger_err       = mu_Trigger_scale_histo_BCDEF_Mu24.GetBinError( mu_Trigger_scale_histo_BCDEF_Mu24.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu24.GetYaxis().FindBin(local_lep_pt_forTrigger) )
 
             scale_factor         = scale_factor_ID * scale_factor_Iso * scale_factor_Tracking * scale_factor_Trigger
             tot_err              = math.sqrt( scale_factor_Iso * scale_factor_Iso * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_ID_err * mu_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_Iso_err * mu_Iso_err + scale_factor_ID * scale_factor_ID * scale_factor_Iso * scale_factor_Iso * scale_factor_Tracking * scale_factor_Tracking * mu_Trigger_err * mu_Trigger_err )
@@ -307,8 +330,13 @@ class Workflow_Handler:
             return scale_factor, tot_err
 
         else: # An event can have more than one trigger
-            scale_factor_Trigger = mu_Trigger_scale_histo_BCDEF_Mu50.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu50.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu50.GetYaxis().FindBin(lep_pt) )
-            mu_Trigger_err       = mu_Trigger_scale_histo_BCDEF_Mu50.GetBinError( mu_Trigger_scale_histo_BCDEF_Mu50.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu50.GetYaxis().FindBin(lep_pt) )
+
+            local_lep_pt_forTrigger = lep_pt # Corrections related to this trigger start from 52 GeV
+            if local_lep_pt_forTrigger < 52.:
+                local_lep_pt_forTrigger = 52.
+
+            scale_factor_Trigger = mu_Trigger_scale_histo_BCDEF_Mu50.GetBinContent( mu_Trigger_scale_histo_BCDEF_Mu50.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu50.GetYaxis().FindBin(local_lep_pt_forTrigger) )
+            mu_Trigger_err       = mu_Trigger_scale_histo_BCDEF_Mu50.GetBinError( mu_Trigger_scale_histo_BCDEF_Mu50.GetXaxis().FindBin(math.fabs(lep_eta)), mu_Trigger_scale_histo_BCDEF_Mu50.GetYaxis().FindBin(local_lep_pt_forTrigger) )
 
             scale_factor         = scale_factor_ID * scale_factor_Iso * scale_factor_Tracking * scale_factor_Trigger
             tot_err              = math.sqrt( scale_factor_Iso * scale_factor_Iso * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_ID_err * mu_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_Iso_err * mu_Iso_err + scale_factor_ID * scale_factor_ID * scale_factor_Iso * scale_factor_Iso * scale_factor_Tracking * scale_factor_Tracking * mu_Trigger_err * mu_Trigger_err )
@@ -320,8 +348,10 @@ class Workflow_Handler:
     def get_muon_scale_GH(self, lep_pt, lep_eta, isSingleMuTrigger_24):
 
         local_lep_pt = lep_pt
-        if lep_pt >= 120.:  # This is because corrections go up to 120 GeV (excluded)
+        if local_lep_pt >= 120.:  # This is because corrections go up to 120 GeV (excluded)
             local_lep_pt = 119.
+        if local_lep_pt < 20.:
+            local_lep_pt = 20.
 
         local_lep_eta = lep_eta
         if local_lep_eta >= 2.4:
@@ -347,8 +377,13 @@ class Workflow_Handler:
         scale_factor_Tracking = mu_Tracking_scale_graph_BCDEFGH.Eval(math.fabs(lep_eta)) # For this SF, corrections go also beyond eta = 2.4
 
         if isSingleMuTrigger_24: # Trigger SF go up to higher energies than 120 GeV, so no local_lep_pt is used for those
-            scale_factor_Trigger = mu_Trigger_scale_histo_GH_Mu24.GetBinContent( mu_Trigger_scale_histo_GH_Mu24.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_GH_Mu24.GetYaxis().FindBin(lep_pt) )
-            mu_Trigger_err       = mu_Trigger_scale_histo_GH_Mu24.GetBinError( mu_Trigger_scale_histo_GH_Mu24.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_GH_Mu24.GetYaxis().FindBin(lep_pt) )
+
+            local_lep_pt_forTrigger = lep_pt 
+            if local_lep_pt_forTrigger < 26.:
+                local_lep_pt_forTrigger = 26.
+
+            scale_factor_Trigger = mu_Trigger_scale_histo_GH_Mu24.GetBinContent( mu_Trigger_scale_histo_GH_Mu24.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_GH_Mu24.GetYaxis().FindBin(local_lep_pt_forTrigger) )
+            mu_Trigger_err       = mu_Trigger_scale_histo_GH_Mu24.GetBinError( mu_Trigger_scale_histo_GH_Mu24.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_GH_Mu24.GetYaxis().FindBin(local_lep_pt_forTrigger) )
 
             scale_factor         = scale_factor_ID * scale_factor_Iso * scale_factor_Tracking * scale_factor_Trigger
             tot_err              = math.sqrt( scale_factor_Iso * scale_factor_Iso * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_ID_err * mu_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_Iso_err * mu_Iso_err + scale_factor_ID * scale_factor_ID * scale_factor_Iso * scale_factor_Iso * scale_factor_Tracking * scale_factor_Tracking * mu_Trigger_err * mu_Trigger_err )
@@ -356,8 +391,13 @@ class Workflow_Handler:
             return scale_factor, tot_err
 
         else: # An event can have more than one trigger
-            scale_factor_Trigger = mu_Trigger_scale_histo_GH_Mu50.GetBinContent( mu_Trigger_scale_histo_GH_Mu50.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_GH_Mu50.GetYaxis().FindBin(lep_pt) )
-            mu_Trigger_err       = mu_Trigger_scale_histo_GH_Mu50.GetBinError( mu_Trigger_scale_histo_GH_Mu50.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_GH_Mu50.GetYaxis().FindBin(lep_pt) )
+
+            local_lep_pt_forTrigger = lep_pt 
+            if local_lep_pt_forTrigger < 52.:
+                local_lep_pt_forTrigger = 52.
+
+            scale_factor_Trigger = mu_Trigger_scale_histo_GH_Mu50.GetBinContent( mu_Trigger_scale_histo_GH_Mu50.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_GH_Mu50.GetYaxis().FindBin(local_lep_pt_forTrigger) )
+            mu_Trigger_err       = mu_Trigger_scale_histo_GH_Mu50.GetBinError( mu_Trigger_scale_histo_GH_Mu50.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_GH_Mu50.GetYaxis().FindBin(local_lep_pt_forTrigger) )
 
             scale_factor         = scale_factor_ID * scale_factor_Iso * scale_factor_Tracking * scale_factor_Trigger
             tot_err              = math.sqrt( scale_factor_Iso * scale_factor_Iso * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_ID_err * mu_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_Trigger * scale_factor_Trigger * scale_factor_Tracking * scale_factor_Tracking * mu_Iso_err * mu_Iso_err + scale_factor_ID * scale_factor_ID * scale_factor_Iso * scale_factor_Iso * scale_factor_Tracking * scale_factor_Tracking * mu_Trigger_err * mu_Trigger_err )

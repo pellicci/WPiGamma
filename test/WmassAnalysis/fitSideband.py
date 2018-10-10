@@ -51,8 +51,8 @@ a6_alt_mu = ROOT.RooRealVar("a6_alt_mu","a6_alt_mu",0.1,-5.,5.)
 #a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",0.5,0.,1.)
 #a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",0.7,0.,1.)
 #a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",0.7,0.,1.)
-backPDF_mu     = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu,a3_mu)) #,a4_mu)) #,a5_mu,a6_mu))
-backPDF_alt_mu = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_alt_mu,a1_alt_mu,a2_alt_mu,a3_alt_mu,a4_alt_mu,a5_mu))#,a6_mu))
+backPDF_mu     = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu,a3_mu,a4_mu,a5_mu))#,a6_mu))
+backPDF_alt_mu = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_alt_mu,a1_alt_mu,a2_alt_mu,a3_alt_mu,a4_alt_mu,a5_alt_mu,a6_alt_mu))
 #backPDF_mu = ROOT.RooBernstein("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu)) #,a3_mu)) #,a4_mu)) #,a5_mu,a6_mu))
 
 #Then the electron
@@ -75,8 +75,8 @@ a6_alt_el = ROOT.RooRealVar("a6_alt_el","a6_alt_el",0.1,-5.,5.)
 #a0_el = ROOT.RooRealVar("a0_el","a0_el",0.5,0.,1.)
 #a1_el = ROOT.RooRealVar("a1_el","a1_el",0.9,0.,1.)
 #a2_el = ROOT.RooRealVar("a2_el","a2_el",0.7,0.,1.)
-backPDF_el     = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el,a3_el))#a4_el)) #,a5_el,a6_el))
-backPDF_alt_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_alt_el,a1_alt_el,a2_alt_el,a3_alt_el,a4_alt_el,a5_el))#,a6_el))
+backPDF_el     = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el,a3_el,a4_el,a5_el))#,a6_el))
+backPDF_alt_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_alt_el,a1_alt_el,a2_alt_el,a3_alt_el,a4_alt_el,a5_alt_el,a6_alt_el))
 #backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el)) #,a3_el)) #,a4_el)) #,a5_el,a6_el))
 
 ###########################################################
@@ -102,8 +102,12 @@ result     = totPDF.fitTo(data, ROOT.RooFit.NumCPU(4),ROOT.RooFit.Save())#,ROOT.
 result_alt = totPDF_alt.fitTo(data, ROOT.RooFit.NumCPU(4),ROOT.RooFit.Save())#,ROOT.RooFit.Constrain(constrained_params))
 
 #Get the minimum of the likelihood from RooFitResult
-# minNll_j = result_j.minNll()
-# minNll_a = result_a.minNll()
+minNll     = result.minNll()
+minNll_alt = result_alt.minNll()
+
+print "chi2 = ", ROOT.TMath.Prob(2*(minNll-minNll_alt),1)
+
+print "2*(NllN - NllN+1) = ", 2*(minNll-minNll_alt) 
 # minNll_b = result_b.minNll()
 # minNll_c = result_c.minNll()
 # minNll_x = result_x.minNll()
@@ -140,38 +144,38 @@ xframe_el_CR.Draw()
 
 
 #Redisuals
-h_resid_mu     = ROOT.TH1F()
-h_resid_mu_alt = ROOT.TH1F()
-h_resid_el     = ROOT.TH1F()
-h_resid_el_alt = ROOT.TH1F()
+# h_resid_mu     = ROOT.TH1F()
+# h_resid_mu_alt = ROOT.TH1F()
+# h_resid_el     = ROOT.TH1F()
+# h_resid_el_alt = ROOT.TH1F()
 
-h_resid_mu     = xframe_mu_CR.residHist("data_mu","PDF_mu")
-h_resid_mu_alt = xframe_mu_CR.residHist("data_mu","PDF_mu_alt")
-h_resid_el     = xframe_el_CR.residHist("data_el","PDF_el")
-h_resid_el_alt = xframe_el_CR.residHist("data_el","PDF_el_alt")
+# h_resid_mu     = xframe_mu_CR.residHist("data_mu","PDF_mu")
+# h_resid_mu_alt = xframe_mu_CR.residHist("data_mu","PDF_mu_alt")
+# h_resid_el     = xframe_el_CR.residHist("data_el","PDF_el")
+# h_resid_el_alt = xframe_el_CR.residHist("data_el","PDF_el_alt")
 
-file_resid = ROOT.TFile("residuals.root","RECREATE")
-h_resid_mu.Write("resid_mu")
-h_resid_mu_alt.Write("resid_mu_alt")
-h_resid_el.Write("resid_el")
-h_resid_el_alt.Write("resid_el_alt")
-
-
-res_mu     = 0.
-res_mu_alt = 0.
-res_el     = 0.
-res_el_alt = 0.
-
-# for x in range (1, Nbins+1):
-res_mu     = h_resid_mu.GetPoint(3,ROOT.Double(x),ROOT.Double(y))
-res_mu_alt = h_resid_mu_alt.getFitRangeNEvt()
-res_el     = h_resid_el.getFitRangeNEvt()
-res_el_alt = h_resid_el_alt.getFitRangeNEvt()
+# file_resid = ROOT.TFile("residuals.root","RECREATE")
+# h_resid_mu.Write("resid_mu")
+# h_resid_mu_alt.Write("resid_mu_alt")
+# h_resid_el.Write("resid_el")
+# h_resid_el_alt.Write("resid_el_alt")
 
 
-print "Npars: ", Npars, "Npars_alt: ", Npars_alt
-print "res_mu: ", res_mu, "res_mu_alt: ", res_mu_alt
-print "res_el: ", res_el, "res_el_alt: ", res_el_alt
+# res_mu     = 0.
+# res_mu_alt = 0.
+# res_el     = 0.
+# res_el_alt = 0.
+
+# # for x in range (1, Nbins+1):
+# res_mu     = h_resid_mu.GetPoint(3,ROOT.Double(x),ROOT.Double(y))
+# res_mu_alt = h_resid_mu_alt.getFitRangeNEvt()
+# res_el     = h_resid_el.getFitRangeNEvt()
+# res_el_alt = h_resid_el_alt.getFitRangeNEvt()
+
+
+# print "Npars: ", Npars, "Npars_alt: ", Npars_alt
+# print "res_mu: ", res_mu, "res_mu_alt: ", res_mu_alt
+# print "res_el: ", res_el, "res_el_alt: ", res_el_alt
 
 # #chi2 = ROOT.RooChi2Var("chi2","chi2",sidebandPDF,data_lep)
 # chi_2_j = xframe.chiSquare("PDF_j","data_lep",Npars_j)

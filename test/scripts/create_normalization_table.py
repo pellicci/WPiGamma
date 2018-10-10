@@ -93,11 +93,11 @@ def get_xsec_fromsample(samplename):
     if "TTGJets" in samplename:
         return 3.795
     
-    if "WGToLNuG" in samplename:
-        return 489.
+    # if "WGToLNuG" in samplename:
+    #     return 489.
 
-    if "ZGTo2LG" in samplename:
-        return 117.864
+    # if "ZGTo2LG" in samplename:
+    #     return 117.864
     
     if "Signal" in samplename:
         #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
@@ -118,7 +118,8 @@ def main():
 
     out_file = open(output_filename,"w")
 
-    complementary_samples_list = ["ttbarWlnu","ttbarZlnu","DY_10_50","DY_50","QCD_HT200to300","QCD_HT300to500","QCD_HT500to700","QCD_HT700to1000","QCD_HT1000to1500","QCD_HT1500to2000","QCD_HT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG"]
+
+    complementary_samples_list = ["ttbarWlnu","ttbarZlnu","DY_10_50","DY_50","QCD_HT200to300","QCD_HT300to500","QCD_HT500to700","QCD_HT700to1000","QCD_HT1000to1500","QCD_HT1500to2000","QCD_HT2000toInf","WZ","TTGJets"]#"WGToLNuG","ZGTo2LG"
 
     events_cumul = dict()
 

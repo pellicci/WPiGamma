@@ -17,11 +17,11 @@ if args.isMuon_option == "electron":
 #---------------------------------#
 
 if isMuon:
-    Nsig_passed = 1.36 # Number of signal and background events from the sum of the weights (before applying BDT cuts)
-    Nbkg_passed = 58883.45
+    Nsig_passed = 1.39 # Number of signal and background events from the sum of the weights (before applying BDT cuts)
+    Nbkg_passed = 52836.97
 else:
     Nsig_passed = 1.04
-    Nbkg_passed = 74656.92
+    Nbkg_passed = 60392.70
 
 if isMuon:
     BDT_file = ROOT.TFile("outputs/Nominal_training_mu.root")
@@ -83,7 +83,7 @@ for entry in xrange(h_BDT_effS.GetNbinsX()):
     signif_maximizing_eff = float(format(signif_maximizing_eff, '.3f'))
     #print "effS: ", effS#, "signif_max_eff: ", signif_maximizing_eff
     #if effS == signif_maximizing_eff:
-    if effS == 0.640:
+    if effS == 0.600:
         BDT_output =  h_BDT_effS.GetBinCenter(entry)
         _effS = effS
 

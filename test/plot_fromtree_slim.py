@@ -41,8 +41,8 @@ Wmass_mu_minus  = ROOT.TH1F("Wmass_mu_minus","Wmass mu minus",10,40,100)
 Wmass_ele_plus  = ROOT.TH1F("Wmass_ele_plus","Wmass ele plus",10,40,100)
 Wmass_ele_minus = ROOT.TH1F("Wmass_ele_minus","Wmass ele minus",10,40,100)
 
-W_signal_hist = ROOT.TH1F("W_signal"," W signal",14,0,500)
-W_ttbar_hist  = ROOT.TH1F("W_ttbar"," W ttbar",14,0,500)
+W_signal_hist = ROOT.TH1F("W_signal"," W signal",8,0,300)
+W_ttbar_hist  = ROOT.TH1F("W_ttbar"," W ttbar",8,0,300)
 
 Wmass_mu.Sumw2()
 Wmass_ele.Sumw2()
@@ -132,8 +132,8 @@ for sample_name in samplename_list:
 
 
 
-leg1 = ROOT.TLegend(0.15,0.6120093,0.34,0.9491917) #left positioning
-#leg1 = ROOT.TLegend(0.6868687,0.6120093,0.9511784,0.9491917) #right positioning
+# leg1 = ROOT.TLegend(0.15,0.6120093,0.34,0.9491917) #left positioning
+leg1 = ROOT.TLegend(0.6868687,0.6120093,0.9511784,0.9491917) #right positioning
 leg1.SetHeader(" ")
 leg1.SetFillColor(0)
 leg1.SetBorderSize(0)
@@ -261,11 +261,6 @@ for name_sample in samplename_list:
         isMuon = mytree.is_muon
         LepPiOppositeCharge = mytree.LepPiOppositeCharge
 
-        ###########************ Skip events where leptons and pions have same charge ************###########
-        if not LepPiOppositeCharge:
-            continue
-
-        #run_number = mytree.run_number
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
         isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
 
@@ -333,6 +328,15 @@ for name_sample in samplename_list:
             deltaphi_lep_W = 6.28 - deltaphi_lep_W
 
 
+        ############################################################################
+        #                                                                          #
+        #----------------------- Some post-preselection cuts ----------------------#
+        #                                                                          #
+        ############################################################################
+
+        if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge):
+            continue
+
 
         ############################################################################
         #                                                                          #
@@ -344,10 +348,10 @@ for name_sample in samplename_list:
             mu_weight_BtoF, mu_weight_BtoF_err = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24)
             mu_weight_GH, mu_weight_GH_err     = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
 
-            # Use a random number to select which muon scale factor to use, depending on the associated lumi fraction
-            Nrandom_for_SF = _Nrandom_for_SF.Rndm()
+            # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction
+            Nrandom_for_SF = _Nrandom_for_SF.Rndm(50334)
 
-            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):  # Accessing muon SF, B to F
+            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):  # Access muon SF: B to F
 
                 if random_mu_SF:
                     mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_BtoF,mu_weight_BtoF_err)
@@ -355,7 +359,7 @@ for name_sample in samplename_list:
                 else:
                     mu_weight = mu_weight_BtoF
 
-            else: #Accessing muon SF, G and H
+            else: # Access muon SF: G and H
                 
                 if random_mu_SF:
                     mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_GH,mu_weight_GH_err)
@@ -372,8 +376,6 @@ for name_sample in samplename_list:
 
         ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_eta)
 
-        # if math.fabs(gamma_eta) >= 2.49 and not ph_weight==0.:
-        #     print "gamma_SF: ", ph_weight
         
         if random_ph_SF:
             ph_weight = _Nrandom_for_Gaus_SF.Gaus(ph_weight,ph_weight_err)
@@ -395,7 +397,7 @@ for name_sample in samplename_list:
                     local_Wplus_pT = 300.
 
                 Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wplus_pT))
-                # print "Wplus - ",ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wplus_pT))
+
 
             if name_sample == "Signal" and is_signal_Wminus:
                 local_Wminus_pT = Wminus_pT
@@ -403,7 +405,6 @@ for name_sample in samplename_list:
                     local_Wminus_pT = 300.
 
                 Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wminus_pT))
-                # print "Wminus - ", ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wminus_pT))
 
 
             # Obtain the number of sig and bkg events (weighted)
@@ -424,10 +425,6 @@ for name_sample in samplename_list:
 
         Nevts_per_sample += Event_Weight # Increment the number of events survived in the analyzed sample
 
-        # Skip events where leptons and pions have same charge
-        # if not LepPiOppositeCharge:
-        #     continue
-
    
         ############################################################################
         #                                                                          #
@@ -436,78 +433,96 @@ for name_sample in samplename_list:
         ############################################################################
             
 
-        h_base[theSampleName+"h_nBjets_25"].Fill(nBjets_25,Event_Weight)
+        # h_base[theSampleName+"h_nBjets_25"].Fill(nBjets_25,Event_Weight)
 
 
-        h_base[theSampleName+"h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
+        # h_base[theSampleName+"h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
 
 
-        h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
+        # h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
 
 
-        if not isMuon:
-            h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
+        # if not isMuon:
+        #     h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
         
         
-        h_base[theSampleName+"h_deltaphi_mu_W"].Fill(deltaphi_lep_W,Event_Weight)
-        h_base[theSampleName+"h_mu_gamma_InvMass"].Fill(mu_gamma_InvMass,Event_Weight)   
+        # h_base[theSampleName+"h_deltaphi_mu_W"].Fill(deltaphi_lep_W,Event_Weight)
+        # h_base[theSampleName+"h_mu_gamma_InvMass"].Fill(mu_gamma_InvMass,Event_Weight)   
 
-        h_base[theSampleName+"h_deltaphi_ele_W"].Fill(deltaphi_lep_W,Event_Weight)
+        # h_base[theSampleName+"h_deltaphi_ele_W"].Fill(deltaphi_lep_W,Event_Weight)
 
  
-        if isMuon:
-            h_base[theSampleName+"h_piRelIso_05_mu"].Fill(piRelIso_05,Event_Weight)
-            h_base[theSampleName+"h_piRelIso_05_mu_ch"].Fill(piRelIso_05_ch,Event_Weight)
+        # if isMuon:
+        #     h_base[theSampleName+"h_piRelIso_05_mu"].Fill(piRelIso_05,Event_Weight)
+        #     h_base[theSampleName+"h_piRelIso_05_mu_ch"].Fill(piRelIso_05_ch,Event_Weight)
 
-        h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
-        h_base[theSampleName+"h_met_puppi"].Fill(met_puppi,Event_Weight)
+        # h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
+        # h_base[theSampleName+"h_met_puppi"].Fill(met_puppi,Event_Weight)
         
 
-        if not isMuon:
-            h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
-            h_base[theSampleName+"h_piRelIso_05_ele_ch"].Fill(piRelIso_05_ch,Event_Weight)
+        # if not isMuon:
+        #     h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
+        #     h_base[theSampleName+"h_piRelIso_05_ele_ch"].Fill(piRelIso_05_ch,Event_Weight)
 
-        if name_sample == "Signal":
-            h_base[theSampleName+"h_pipt_sig"].Fill(pi_pT,Event_Weight)
-            h_base[theSampleName+"h_pieta_sig"].Fill(pi_eta,Event_Weight)
-            h_base[theSampleName+"h_gammaet_sig"].Fill(gamma_eT,Event_Weight)
-            h_base[theSampleName+"h_gammaeta_sig"].Fill(gamma_eta,Event_Weight)
-            if isMuon:
-                h_base[theSampleName+"h_mueta_sig"].Fill(lep_eta,Event_Weight)
-                h_base[theSampleName+"h_mupt_sig"].Fill(lep_pT,Event_Weight)
-            else:
-                h_base[theSampleName+"h_eleeta_sig"].Fill(lep_eta,Event_Weight)
-                h_base[theSampleName+"h_elept_sig"].Fill(lep_pT,Event_Weight)
+        # if name_sample == "Signal":
+        #     h_base[theSampleName+"h_pipt_sig"].Fill(pi_pT,Event_Weight)
+        #     h_base[theSampleName+"h_pieta_sig"].Fill(pi_eta,Event_Weight)
+        #     h_base[theSampleName+"h_gammaet_sig"].Fill(gamma_eT,Event_Weight)
+        #     h_base[theSampleName+"h_gammaeta_sig"].Fill(gamma_eta,Event_Weight)
+        #     if isMuon:
+        #         h_base[theSampleName+"h_mueta_sig"].Fill(lep_eta,Event_Weight)
+        #         h_base[theSampleName+"h_mupt_sig"].Fill(lep_pT,Event_Weight)
+        #     else:
+        #         h_base[theSampleName+"h_eleeta_sig"].Fill(lep_eta,Event_Weight)
+        #         h_base[theSampleName+"h_elept_sig"].Fill(lep_pT,Event_Weight)
 
-        if isMuon:
-            h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
-            h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
-            h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
+        # if isMuon:
+        #     h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+        #     h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
+        #     h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
 
-        if not isMuon:
-            h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
-            h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
-            h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
+        # if not isMuon:
+        #     h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+        #     h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
+        #     h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
 
-        h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
-        h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
-        h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
-        h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
-        h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
+        # h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
+        # h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
+        # h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
+        # h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
+        # h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
+
+
+        ############################################################################
+        #                                                                          #
+        #------------------- Fill Signal-ttbar comparison histos ------------------#
+        #                                                                          #
+        ############################################################################
 
 
         if name_sample == "Signal" and is_signal_Wplus:
-            W_signal_hist.Fill(Wplus_pT,Event_Weight)
+            if Wplus_pT > 300.:
+                W_signal_hist.Fill(300.,Event_Weight)
+            else:
+                W_signal_hist.Fill(Wplus_pT,Event_Weight)
 
         if name_sample == "Signal" and is_signal_Wminus:
-            W_signal_hist.Fill(Wminus_pT,Event_Weight)
+            if Wminus_pT > 300.:
+                W_signal_hist.Fill(300.,Event_Weight)
+            else:
+                W_signal_hist.Fill(Wminus_pT,Event_Weight)
 
         if name_sample == "ttbar":
-            W_ttbar_hist.Fill(Wplus_pT,Event_Weight)
-            W_ttbar_hist.Fill(Wminus_pT,Event_Weight)
+            if Wplus_pT > 300.:
+                W_ttbar_hist.Fill(300.,Event_Weight)
+            else:
+                W_ttbar_hist.Fill(Wplus_pT,Event_Weight)
 
-        # if name_sample == "ttbar" and not Wminus_pT==0:
-        #     W_ttbar_hist.Fill(Wminus_pT,Event_Weight)
+            if Wminus_pT > 300.:
+                W_ttbar_hist.Fill(300.,Event_Weight)
+            else:
+                W_ttbar_hist.Fill(Wminus_pT,Event_Weight)
+
 
 
         ############################################################################
@@ -523,46 +538,46 @@ for name_sample in samplename_list:
 
         #---------------------Here's where the BDT selection starts----------------#
       
-        # if (isMuon and BDT_out >= 0.260) or (not isMuon and BDT_out >= 0.210):
-        # # if (isMuon and BDT_out >= 0.223) or (not isMuon and BDT_out >= 0.238): #Wmass
-        #     if (Wmass >= 50. and Wmass <= 100.):
-        #         if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
-        #             h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
-        #         if not "Data" in name_sample:
-        #             h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
+        if (isMuon and BDT_out >= 0.160) or (not isMuon and BDT_out >= 0.195):
+        # if (isMuon and BDT_out >= 0.223) or (not isMuon and BDT_out >= 0.238): #Wmass
+            if (Wmass >= 50. and Wmass <= 100.):
+                if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
+                    h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
+                if not "Data" in name_sample:
+                    h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
 
-        #         h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
-        #         h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
-        #         h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
-        #         h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
+                h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
+                h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
+                h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
+                h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
 
-        #         if isMuon:
-        #             if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
-        #                 h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
-        #             if not "Data" in name_sample:
-        #                 h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+                if isMuon:
+                    if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
+                        h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+                    if not "Data" in name_sample:
+                        h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
                         
-        #                 if "Signal" in name_sample:
-        #                     Sevts_mu_SFvariation += Event_Weight
+                        if "Signal" in name_sample:
+                            Sevts_mu_SFvariation += Event_Weight
 
-        #             h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
-        #             h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
+                    h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
+                    h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
 
-        #             if name_sample == "WGToLNuG":
-        #                 N_WGToLNuG_mu += Event_Weight
+                    if name_sample == "WGToLNuG":
+                        N_WGToLNuG_mu += Event_Weight
 
  
-        #         if not isMuon:
-        #             if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
-        #                 h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
-        #             if not "Data" in name_sample:
-        #                 h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+                if not isMuon:
+                    if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
+                        h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+                    if not "Data" in name_sample:
+                        h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
 
-        #                 if "Signal" in name_sample:
-        #                     Sevts_ele_SFvariation += Event_Weight
+                        if "Signal" in name_sample:
+                            Sevts_ele_SFvariation += Event_Weight
                 
-        #             h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
-        #             h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
+                    h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
+                    h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
 
 
 
@@ -827,15 +842,15 @@ canvas7.SaveAs("plots/ttbar_signal.pdf")
 W_ttbar_hist.Divide(W_signal_hist)
 
 canvas8 = ROOT.TCanvas()
-#ttbar_sig_file = ROOT.TFile("ttbar_signal_ratio.root","RECREATE")
+# ttbar_sig_file = ROOT.TFile("ttbar_signal_ratio.root","RECREATE")
 ROOT.gStyle.SetOptStat(0)
 W_ttbar_hist.SetMarkerStyle(21)
 W_ttbar_hist.SetTitle(" ")
 W_ttbar_hist.GetXaxis().SetTitle("p_{T}^{W} (GeV)")
 W_ttbar_hist.Draw("Pe")
 canvas8.SaveAs("plots/ttbar_signal_ratio.pdf")
-#W_ttbar_hist.Write("ttbar_signal_ratio")
-#ttbar_sig_file.Close()
+# W_ttbar_hist.Write("ttbar_signal_ratio")
+# ttbar_sig_file.Close()
 
 print "Number of expected events for ", luminosity_norm, " in fb-1"
 print "Number of signal events passed = ", Nsig_passed

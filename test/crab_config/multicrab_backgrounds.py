@@ -307,26 +307,26 @@ if __name__ == '__main__':
     p.start()
     p.join()
     
-    config.General.requestName = 'WPiGammaAnalysis_WGToLNuG_1'
-    config.Data.unitsPerJob = 5
-    config.Data.inputDataset = '/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
+    # config.General.requestName = 'WPiGammaAnalysis_WGToLNuG_1'
+    # config.Data.unitsPerJob = 5
+    # config.Data.inputDataset = '/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
+    # p = Process(target=submit, args=(config,))
+    # p.start()
+    # p.join()
 
-    config.General.requestName = 'WPiGammaAnalysis_WGToLNuG_2'
-    config.Data.unitsPerJob = 5
-    config.Data.inputDataset = '/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/MINIAODSIM'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
+    # config.General.requestName = 'WPiGammaAnalysis_WGToLNuG_2'
+    # config.Data.unitsPerJob = 5
+    # config.Data.inputDataset = '/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/MINIAODSIM'
+    # p = Process(target=submit, args=(config,))
+    # p.start()
+    # p.join()
 
-    config.General.requestName = 'WPiGammaAnalysis_WGToLNuG_3'
-    config.Data.unitsPerJob = 5
-    config.Data.inputDataset = '/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext3-v1/MINIAODSIM'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
+    # config.General.requestName = 'WPiGammaAnalysis_WGToLNuG_3'
+    # config.Data.unitsPerJob = 5
+    # config.Data.inputDataset = '/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext3-v1/MINIAODSIM'
+    # p = Process(target=submit, args=(config,))
+    # p.start()
+    # p.join()
 
     config.General.requestName = 'WPiGammaAnalysis_QCD_DoubleEMEnriched_30to40'
     config.Data.unitsPerJob = 5
@@ -363,19 +363,19 @@ if __name__ == '__main__':
     p.start()
     p.join()
 
-    config.General.requestName = 'WPiGammaAnalysis_ZGTo2LG_1' ####################### NEW
-    config.Data.unitsPerJob = 5
-    config.Data.inputDataset = '/ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
+    # config.General.requestName = 'WPiGammaAnalysis_ZGTo2LG_1' ####################### NEW
+    # config.Data.unitsPerJob = 5
+    # config.Data.inputDataset = '/ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
+    # p = Process(target=submit, args=(config,))
+    # p.start()
+    # p.join()
 
-    config.General.requestName = 'WPiGammaAnalysis_ZGTo2LG_2' ####################### NEW
-    config.Data.unitsPerJob = 5
-    config.Data.inputDataset = '/ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
+    # config.General.requestName = 'WPiGammaAnalysis_ZGTo2LG_2' ####################### NEW
+    # config.Data.unitsPerJob = 5
+    # config.Data.inputDataset = '/ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
+    # p = Process(target=submit, args=(config,))
+    # p.start()
+    # p.join()
 
 
 

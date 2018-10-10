@@ -8,29 +8,15 @@ ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 #Define if working on MC or DATA
 isData = True
 
-#--------some bools for scale factor systematics----------#
-
-random_mu_SF  = False #-------if True, muon scale factors are sampled from a Gaussian
-random_ele_SF = False #-------if True, electron scale factors are sampled from a Gaussian
-random_ph_SF  = False #-------if True, photon scale factors are sampled from a Gaussian
-
-#---------------------------------------------------------#
-
 #Define the observable
 Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV/c^{2}")
 
 #Retrive the sample
 if isData:
-    fInput = ROOT.TFile("Tree_input_massfit_Data_prova.root")
+    fInput = ROOT.TFile("Tree_input_massfit_Data.root")
 else:
-    if random_mu_SF:
-        fInput = ROOT.TFile("Tree_MC_muSF.root")
-    elif random_ele_SF:
-        fInput = ROOT.TFile("Tree_MC_eleSF.root")
-    elif random_ph_SF:
-        fInput = ROOT.TFile("Tree_MC_phSF.root")
-    else:
-        fInput = ROOT.TFile("Tree_input_massfit_MC_prova.root")
+    fInput = ROOT.TFile("Tree_input_massfit_MC.root")
+
 fInput.cd()
 
 mytree = fInput.Get("minitree")
@@ -68,14 +54,7 @@ data = data_initial.reduce("BDT_out > -0.1")
 print "Using ", data.numEntries(), " events to fit"
 
 #Import the signal
-if random_mu_SF:
-    fInput_sigmodel = ROOT.TFile("Signal_model_muSF.root")
-elif random_ele_SF:
-    fInput_sigmodel = ROOT.TFile("Signal_model_eleSF.root")
-elif random_ph_SF:
-    fInput_sigmodel = ROOT.TFile("Signal_model_phSF.root")
-else:
-    fInput_sigmodel = ROOT.TFile("Signal_model.root")
+fInput_sigmodel = ROOT.TFile("Signal_model.root")
 fInput_sigmodel.cd()
 
 workspace = fInput_sigmodel.Get("myworkspace")
@@ -103,14 +82,16 @@ a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",0.15,-5.,5.)
 a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",-0.7,-5.,5.)
 a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",-0.2,-5.,5.)
 a3_mu = ROOT.RooRealVar("a3_mu","a3_mu",-0.15,-5.,5.)
-a4_mu = ROOT.RooRealVar("a4_mu","a4_mu",-0.15,-5.,5.)
+a4_mu = ROOT.RooRealVar("a4_mu","a4_mu",0.,-5.,5.)
 a5_mu = ROOT.RooRealVar("a5_mu","a5_mu",0.1,-5.,5.)
 a6_mu = ROOT.RooRealVar("a6_mu","a6_mu",0.1,-5.,5.)
+
+backPDF_mu = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu,a3_mu,a4_mu)) #,a5_mu,a6_mu))
 
 #a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",0.5,0.,1.)
 #a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",0.7,0.,1.)
 #a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",0.7,0.,1.)
-backPDF_mu = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu,a3_mu)) #,a4_mu)) #,a5_mu,a6_mu))
+
 #backPDF_mu = ROOT.RooBernstein("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu)) #,a3_mu)) #,a4_mu)) #,a5_mu,a6_mu))
 
 #Then the electron
@@ -118,14 +99,16 @@ a0_el = ROOT.RooRealVar("a0_el","a0_el",0.1,-5.,5.)
 a1_el = ROOT.RooRealVar("a1_el","a1_el",-0.6,-5.,5.)
 a2_el = ROOT.RooRealVar("a2_el","a2_el",-0.05,-5.,5.)
 a3_el = ROOT.RooRealVar("a3_el","a3_el",-0.2,-5.,5.)
-a4_el = ROOT.RooRealVar("a4_el","a4_el",0.1,-5.,5.)
+a4_el = ROOT.RooRealVar("a4_el","a4_el",0.,-5.,5.)
 a5_el = ROOT.RooRealVar("a5_el","a5_el",0.1,-5.,5.)
 a6_el = ROOT.RooRealVar("a6_el","a6_el",0.1,-5.,5.)
+
+backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el,a3_el,a4_el)) #,a5_el,a6_el))
+
 
 #a0_el = ROOT.RooRealVar("a0_el","a0_el",0.5,0.,1.)
 #a1_el = ROOT.RooRealVar("a1_el","a1_el",0.9,0.,1.)
 #a2_el = ROOT.RooRealVar("a2_el","a2_el",0.7,0.,1.)
-backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el,a3_el))#a4_el)) #,a5_el,a6_el))
 #backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el)) #,a3_el)) #,a4_el)) #,a5_el,a6_el))
 
 #exp_factor_mu = ROOT.RooRealVar("exp_factor_mu","exp_factor_mu", 0.5,-1.,1.)
@@ -213,6 +196,7 @@ Nbkg_el_CR = ROOT.RooRealVar("Nbkg_el_CR","Nbkg_el_CR",100.,1.,40000.)
 totPDF_mu_CR = ROOT.RooExtendPdf("totPDF_mu_CR","Background PDF for the CR for mu",backPDF_mu,Nbkg_mu_CR)
 totPDF_el_CR = ROOT.RooExtendPdf("totPDF_el_CR","Background PDF for the CR for el",backPDF_el,Nbkg_el_CR)
 
+
 #totPDF_mu_unconstr_CR = ROOT.RooExtendPdf("totPDF_mu_unconstr_CR","Background PDF for the CR for mu",backPDF_mu,Nbkg_mu_CR)
 #totPDF_el_unconstr_CR = ROOT.RooExtendPdf("totPDF_el_unconstr_CR","Background PDF for the CR for el",backPDF_el,Nbkg_el_CR)
 
@@ -239,7 +223,8 @@ constrained_params.add(eff_mu_constr)
 constrained_params.add(eff_el_constr)
 
 if isData:
-    totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
+    result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )
+    print "minNll = ", 2*(-89244.5141128-result_dataFit.minNll())
 else:
     totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(0), ROOT.RooFit.NumCPU(2), ROOT.RooFit.Constrain(constrained_params) )
 
@@ -268,17 +253,8 @@ if not isData:
     canvas.cd(2)
     xframe_el.Draw()
 
-# if isData:
-#     canvas.SaveAs("plots/fitData_signalR.pdf")
-if not isData:
-    if random_mu_SF:
-        canvas.SaveAs("plots/fitMC_muSF.pdf")
-    elif random_ele_SF:
-        canvas.SaveAs("plots/fitMC_eleSF.pdf")
-    elif random_ph_SF:
-        canvas.SaveAs("plots/fitMC_phSF.pdf")
-    else:
-        canvas.SaveAs("plots/fitMC_signalR.pdf")
+    # Save the plot
+    canvas.SaveAs("plots/fitMC_signalR.pdf")
 
 #Now plot the CR
 xframe_mu_CR = Wmass.frame(55.,95.,15)
@@ -313,14 +289,8 @@ else:
 if isData:
     fOutput = ROOT.TFile("fitData.root","RECREATE")
 else:
-    if random_mu_SF:
-        fOutput = ROOT.TFile("fitMC_muSF.root","RECREATE")
-    elif random_ele_SF:
-        fOutput = ROOT.TFile("fitMC_eleSF.root","RECREATE")
-    elif random_ph_SF:
-        fOutput = ROOT.TFile("fitMC_phSF.root","RECREATE")
-    else:
-        fOutput = ROOT.TFile("fitMC.root","RECREATE")
+    fOutput = ROOT.TFile("fitMC.root","RECREATE")
+
 fOutput.cd()
 
 workspace = ROOT.RooWorkspace("workspace")

@@ -185,6 +185,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     run_number = iEvent.id().run();
   }
 
+  //*************************************************************//
+  //                                                             //
+  //-------------------------- Vertices -------------------------//
+  //                                                             //
+  //*************************************************************//
+
   //Count the number of vertices
   nPV = -1;
   if(slimmedPV->size()<=0) return;
@@ -196,7 +202,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   } 
   // std::cout << "slimmedPV size: " << slimmedPV->size() << "   PV: " << &(slimmedPV->at(0))  << std::endl;
 
-  //PileUp code for examining the Pileup information
+  //*************************************************************//
+  //                                                             //
+  //--------------------------- Pile Up -------------------------//
+  //                                                             //
+  //*************************************************************//
+
   PU_Weight = 1.;
   float npT = -1.;
 
@@ -216,6 +227,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     // calculate weight using above code
     PU_Weight = Lumiweights_.weight(npT);
   }
+
+  //*************************************************************//
+  //                                                             //
+  //--------------------------- Trigger -------------------------//
+  //                                                             //
+  //*************************************************************//
 
   //Examine the trigger information
   isSingleMuTrigger_24 = false;
@@ -239,6 +256,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       isSingleEleTrigger = true;
     }
   }
+
+
+  //*************************************************************//
+  //                                                             //
+  //------------------ Variable initialization ------------------//
+  //                                                             //
+  //*************************************************************//
 
   nMuons          = 0;
   nElectrons      = 0;
@@ -312,6 +336,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   lepton_dxy_tree = 0.;
   lepton_dz_tree  = 0.;
 
+
+  //*************************************************************//
+  //                                                             //
+  //----------------------------- MET ---------------------------//
+  //                                                             //
+  //*************************************************************//
+
   for(auto met = slimmedMETs->begin(); met != slimmedMETs->end(); ++met){
     met_pT = met->pt();
   }
@@ -320,32 +351,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     metpuppi_pT = metpuppi->pt();
   }
 
-  //Looking for Ws from ttbar and saving their pT
-  // Wplus_pT = 0;
-  // Wminus_pT = 0;
-  // is_signal_Wplus = false;
-  // is_signal_Wminus = false;
+  //*************************************************************//
+  //                                                             //
+  //---------------------------- Muons --------------------------//
+  //                                                             //
+  //*************************************************************//
 
-  // if(!runningOnData_){
-  //   for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
-  //     if(gen->pdgId() == 24 && gen->mother()->pdgId() == 6 && gen->numberOfDaughters() == 2){// && gen->daughter()->pdgId() != 24){
-  // 	Wplus_pT = gen->pt();
-  // 	for (int i=0; i<2; i++){
-  // 	  if(gen->daughter(i)->pdgId() == 22) is_signal_Wplus = true;
-  // 	}
-  //     }
-  //     if(gen->pdgId() == -24 && gen->mother()->pdgId() == -6 && gen->numberOfDaughters() == 2){// && gen->daughter()->pdgId() != -24){
-  // 	Wminus_pT = gen->pt();
-  // 	for (int i=0; i<2; i++){
-  // 	  if(gen->daughter(i)->pdgId() == 22) is_signal_Wminus = true;
-  // 	}
-  //     }
-  //   }
-  // }
-
-  //Loop over muons
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
-    if(mu->pt() < 25. || !mu->isMediumMuon() || fabs(mu->eta()) > 2.4 || fabs(mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(mu->muonBestTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
+    if(mu->pt() < 20. || !mu->isMediumMuon() || fabs(mu->eta()) > 2.4 || fabs(mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(mu->muonBestTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
     mu_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
     if(mu_iso > 0.25) continue;
 
@@ -374,10 +387,16 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   iEvent.getByToken(rhoToken_,rhoH);
   rho_ = *rhoH;
 
-  //Loop over electrons
+
+  //*************************************************************//
+  //                                                             //
+  //-------------------------- Electrons ------------------------//
+  //                                                             //
+  //*************************************************************//
+
   for (size_t i = 0; i < slimmedElectrons->size(); ++i){
     const auto el = slimmedElectrons->ptrAt(i);
-    if(el->pt() < 26. || fabs(el->eta()) > 2.5 || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
+    if(el->pt() < 20. || fabs(el->eta()) > 2.5 || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
 
     //PflowIsolationVariables pfIso = el->pfIsolationVariables();
     float abseta = fabs(el->superCluster()->eta());
@@ -411,8 +430,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       pTeleMax = el_pT;
     } 
   }
-  
-  //-------------------------------------------------------------------//
+
+
+  //*************************************************************//
+  //                                                             //
+  //------------------------- Lepton VETO -----------------------//
+  //                                                             //
+  //*************************************************************//
   
 
   if((!is_muon && nElectronsLoose > 1) || (!is_muon && nElectronsLoose==1 && nElectrons!=1)) return;
@@ -442,6 +466,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     lepton_dz_tree  = el_dz;
     lepton_iso_tree = best_el_iso;
   }
+
+
+  //*************************************************************//
+  //                                                             //
+  //----------------------- Access MC Truth ---------------------//
+  //                                                             //
+  //*************************************************************//
 
   //In signal, identify if there's a real mu or ele from W
   is_Ele_signal       = false;
@@ -480,7 +511,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     if(is_Wplus_from_t && is_Wminus_from_tbar && is_Wminus_in_lep && is_Wplus_in_lep) is_ttbar_lnu = true;
   }
   
-  //----------- Starting to search for pi and gamma -------------
+
+  //*************************************************************//
+  //                                                             //
+  //---------------------------- Pions --------------------------//
+  //                                                             //
+  //*************************************************************//
+
   bool cand_pion_found = false;
   are_lep_pi_opposite_charge = false;
   sum_pT_03    = 0.;
@@ -551,7 +588,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   if(!cand_pion_found) return;
   _Nevents_isPion++;
 
-  //Computing pion isolation
+
+  //*************************************************************//
+  //                                                             //
+  //----------------------- Pion isolation ----------------------//
+  //                                                             //
+  //*************************************************************//
+
   for(auto cand_iso = PFCandidates->begin(); cand_iso != PFCandidates->end(); ++cand_iso){
     float deltaR = sqrt((pi_eta-cand_iso->eta())*(pi_eta-cand_iso->eta())+(pi_phi-cand_iso->phi())*(pi_phi-cand_iso->phi()));
     if(deltaR <= 0.3 && deltaR >= 0.02) sum_pT_03 += cand_iso->pt();
@@ -561,7 +604,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
 
 
-  //Now look for the photon
+  //*************************************************************//
+  //                                                             //
+  //--------------------------- Photons -------------------------//
+  //                                                             //
+  //*************************************************************//
+
   bool cand_photon_found = false;
 
   for (size_t i = 0; i < slimmedPhotons->size(); ++i){
@@ -642,6 +690,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     inv_mass_2->Fill(_Wmass);
   }
 
+
+  //*************************************************************//
+  //                                                             //
+  //--------------------------- b-jets --------------------------//
+  //                                                             //
+  //*************************************************************//
+
   nBjets = 0;
   for (auto jet = slimmedJets->begin(); jet != slimmedJets->end(); ++jet){
     if(jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") < Bjets_WP_) continue;   //0.46 = loose
@@ -654,6 +709,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   mytree->Fill();
 
 }
+
+
+//*************************************************************//
+//                                                             //
+//---------------------- Create the tree ----------------------//
+//                                                             //
+//*************************************************************//
 
 void WPiGammaAnalysis::create_trees()
 {
@@ -734,6 +796,12 @@ void WPiGammaAnalysis::beginJob()
   }
 }
 
+
+//*************************************************************//
+//                                                             //
+//------------------- Fill event loss histos ------------------//
+//                                                             //
+//*************************************************************//
 
 void WPiGammaAnalysis::endJob() 
 {

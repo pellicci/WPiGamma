@@ -79,15 +79,15 @@ _met_puppi          = np.zeros(1, dtype=float)
 _Wmass              = np.zeros(1, dtype=float)
 
 #BDT scores
-BDT_OUT_MU  = 0.260
-BDT_OUT_ELE = 0.210
+BDT_OUT_MU  = 0.160
+BDT_OUT_ELE = 0.195
 
 _Nrandom_for_SF = ROOT.TRandom3(44317)
 
 Wmass_mu   = ROOT.TH1F("Wmass_mu","Wmass mu",15,50,100)
 Wmass_ele  = ROOT.TH1F("Wmass_ele","Wmass ele",15,50,100)
-lep_pt_mu  = ROOT.TH1F("lep_pt_mu","lep pt mu",30,0,400)
-lep_pt_ele = ROOT.TH1F("lep_pt_ele","lep pt ele",30,20,340)
+lep_pt_mu  = ROOT.TH1F("lep_pt_mu","lep pt mu",15,20,100)
+lep_pt_ele = ROOT.TH1F("lep_pt_ele","lep pt ele",15,20,100)
 
 N_WGToLNuG_mu = 0.
 
@@ -105,7 +105,7 @@ nBkg_ele = 0.
 if not isData:
 
     if create_mass_tree:
-        f = TFile('WmassAnalysis/Tree_input_massfit_MC.root','recreate')
+        f = TFile('WmassAnalysis/Tree_input_massfit_MC_prova.root','recreate')
         
         t = TTree('minitree','tree with branches')
         t.Branch('Wmass',_Wmass_fit,'Wmass/D')
@@ -260,7 +260,7 @@ if not isData:
 if isData:
 
     if create_mass_tree:
-        f = TFile('WmassAnalysis/Tree_input_massfit_Data.root','recreate')
+        f = TFile('WmassAnalysis/Tree_input_massfit_Data_prova.root','recreate')
         t = TTree('minitree','tree with branches')
         t.Branch('Wmass',_Wmass_fit,'Wmass/D')
         t.Branch('isMuon',_isMuon_fit,'isMuon/I')
@@ -371,9 +371,6 @@ for name_sample in samplename_list:
         if nb <= 0:
             continue
 
-        # if not name_sample == "WGToLNuG":
-        #     continue
-
         if isData and not "Data" in name_sample: 
             continue
         
@@ -398,11 +395,6 @@ for name_sample in samplename_list:
         isMuon = mytree.is_muon
         LepPiOppositeCharge = mytree.LepPiOppositeCharge
 
-        ###########************ Skip events where leptons and pions have same charge ************###########
-        if not LepPiOppositeCharge:
-            continue
-
-        #run_number = mytree.run_number
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
         isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
 
@@ -467,6 +459,16 @@ for name_sample in samplename_list:
         deltaphi_lep_W = math.fabs(lep_phi-W_phi)
         if deltaphi_lep_W > 3.14:
             deltaphi_lep_W = 6.28 - deltaphi_lep_W  
+
+
+        ############################################################################
+        #                                                                          #
+        #----------------------- Some post-preselection cuts ----------------------#
+        #                                                                          #
+        ############################################################################
+
+        if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge):
+            continue
         
 
         ############################################################################
@@ -475,12 +477,12 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
-        Nrandom_for_SF = _Nrandom_for_SF.Rndm()
-
         if isMuon:
             mu_weight_BtoF, mu_weight_BtoF_err = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24)
-            mu_weight_GH, mu_weight_GH_err = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
+            mu_weight_GH, mu_weight_GH_err     = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
             
+            Nrandom_for_SF = _Nrandom_for_SF.Rndm(50334)
+
             if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):
                 mu_weight = mu_weight_BtoF
             else:
@@ -492,7 +494,6 @@ for name_sample in samplename_list:
 
         ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_eta)
         
-        Event_Weight = 1.
 
         if not isData:
             #norm_factor = Norm_Map[name_sample]*luminosity_norm
@@ -503,7 +504,7 @@ for name_sample in samplename_list:
             else:
                 Event_Weight = Event_Weight*ele_weight
 
-            # Correct for the difference in pT of the generated W in Pythia and Madgraph samples
+            # Correct for the difference in pT of the generated W between Pythia and Madgraph samples
             if name_sample == "Signal" and is_signal_Wplus:
                 local_Wplus_pT = Wplus_pT
                 if Wplus_pT > 300.:
@@ -527,6 +528,9 @@ for name_sample in samplename_list:
                 nSig_ele += Event_Weight
             if not "Signal" in name_sample and not isMuon:
                 nBkg_ele += Event_Weight
+
+        else:
+            Event_Weight = 1.
 
 
         ############################################################################
@@ -595,10 +599,6 @@ for name_sample in samplename_list:
             ############################################################################
 
         else:
-
-            #Skipping events where leptons and pions have same charge
-            # if not LepPiOppositeCharge:
-            #     continue
 
             if not isData:
                 

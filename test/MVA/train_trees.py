@@ -22,16 +22,16 @@ if isMuon and not data_sidebands:
     tree_bkg = fIn_bkg.Get("minitree_background_mu")
     fIn_sig = ROOT.TFile("Tree_MC_Signal_mu.root")
     tree_sig = fIn_sig.Get("minitree_signal_mu")
-    # fOut = ROOT.TFile("outputs/Nominal_training_mu_Wmass.root","RECREATE")
     fOut = ROOT.TFile("outputs/Nominal_training_mu.root","RECREATE")
+    # fOut = ROOT.TFile("outputs/Nominal_training_mu_Wmass.root","RECREATE")
 
 if not isMuon and not data_sidebands:
     fIn_bkg = ROOT.TFile("Tree_MC_Background_ele.root")
     tree_bkg = fIn_bkg.Get("minitree_background_ele")
     fIn_sig = ROOT.TFile("Tree_MC_Signal_ele.root")
     tree_sig = fIn_sig.Get("minitree_signal_ele")
-    # fOut = ROOT.TFile("outputs/Nominal_training_ele_Wmass.root","RECREATE")
     fOut = ROOT.TFile("outputs/Nominal_training_ele.root","RECREATE")
+    # fOut = ROOT.TFile("outputs/Nominal_training_ele_Wmass.root","RECREATE")
 
 if isMuon and data_sidebands:
     fIn_bkg_DATA = ROOT.TFile("Tree_MC_Background_mu_DATA.root")
@@ -60,14 +60,14 @@ ROOT.TMVA.Tools.Instance()
 factory = ROOT.TMVA.Factory("TMVAClassification", fOut,":".join(["!V","Transformations=I;D;P;G,D","AnalysisType=Classification"]))
 
 
-factory.AddVariable("pi_pT","F")
-factory.AddVariable("gamma_eT","F")
-# factory.AddVariable("pi_pT/Wmass","F")
-# factory.AddVariable("gamma_eT/Wmass","F")
+factory.AddVariable("pi_pT","D")
+factory.AddVariable("gamma_eT","D")
+# factory.AddVariable("pi_pT/Wmass","D")
+# factory.AddVariable("gamma_eT/Wmass","D")
 factory.AddVariable("nBjets_25","I")
-factory.AddVariable("lep_pT","F")
-factory.AddVariable("piRelIso_05_ch","F")
-factory.AddVariable("MET","F")
+factory.AddVariable("lep_pT","D")
+factory.AddVariable("piRelIso_05_ch","D")
+factory.AddVariable("MET","D")
 
 
 if data_sidebands:
@@ -86,9 +86,9 @@ mycuts = ROOT.TCut("weight > 0.")
 mycutb = ROOT.TCut("weight > 0.")
 
 if isMuon:
-    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=8855:nTrain_Background=222353:nTest_Signal=0:nTest_Background=0"]) ) # To be set with 75/25 ratio of training and testing events
+    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=8994:nTrain_Background=171434:nTest_Signal=0:nTest_Background=0"]) ) # To be set with 75/25 ratio of training and testing events
 else:
-    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=6715:nTrain_Background=175100:nTest_Signal=0:nTest_Background=0"]) ) # To be set with 75/25 ratio of training and testing events
+    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=6649:nTrain_Background=132738:nTest_Signal=0:nTest_Background=0"]) ) # To be set with 75/25 ratio of training and testing events
 
 if isMuon:
     method_btd  = factory.BookMethod(ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=20"]))
