@@ -32,7 +32,7 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 #Here's the list of histos to plot
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet","h_mupt_sig","h_elept_sig","h_pipt_sig","h_gammaet_sig", "h_mueta", "h_eleeta","h_pieta","h_gammaeta","h_mueta_sig","h_eleeta_sig","h_pieta_sig","h_gammaeta_sig", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met","h_met_puppi","h_Wmass_mu_plus","h_Wmass_ele_plus","h_Wmass_mu_minus","h_Wmass_ele_minus"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet","h_mupt_sig","h_elept_sig","h_pipt_sig","h_gammaet_sig", "h_mueta", "h_eleeta","h_pieta","h_gammaeta","h_mueta_sig","h_eleeta_sig","h_pieta_sig","h_gammaeta_sig", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met","h_met_puppi","h_Wmass_mu_plus","h_Wmass_ele_plus","h_Wmass_mu_minus","h_Wmass_ele_minus","h_nPV"]
 
 Wmass_mu        = ROOT.TH1F("Wmass_mu","Wmass mu",10,40,100)
 Wmass_ele       = ROOT.TH1F("Wmass_ele","Wmass ele",10,40,100)
@@ -129,6 +129,7 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[37]] = ROOT.TH1F(theSampleName+list_histos[37], "Wmass ele plus", 10, 40, 100)
     h_base[theSampleName+list_histos[38]] = ROOT.TH1F(theSampleName+list_histos[38], "Wmass mu minus", 10, 40, 100)
     h_base[theSampleName+list_histos[39]] = ROOT.TH1F(theSampleName+list_histos[39], "Wmass ele minus", 10, 40, 100)
+    h_base[theSampleName+list_histos[40]] = ROOT.TH1F(theSampleName+list_histos[40], "nPV", 10, 1, 10)
 
 
 
@@ -261,6 +262,8 @@ for name_sample in samplename_list:
         isMuon = mytree.is_muon
         LepPiOppositeCharge = mytree.LepPiOppositeCharge
 
+        nPV = mytree.nPV
+
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
         isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
 
@@ -289,6 +292,9 @@ for name_sample in samplename_list:
         gamma_iso_NeuHad = mytree.photon_iso_NeutralHadron
         gamma_iso_Ph = mytree.photon_iso_Photon
         gamma_iso_eArho = mytree.photon_iso_eArho
+
+        if "WJetsToLNu" in name_sample or "DY" in name_sample:
+            is_gen_ph = mytree.is_gen_ph
 
         W_phi = (pi_FourMomentum + gamma_FourMomentum).Phi()
 
@@ -334,9 +340,13 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
+        # if myWF.post_preselection_cuts(name_sample,lep_eta,lep_pT,isMuon,LepPiOppositeCharge,is_gen_ph):
+        #     continue
         if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge):
             continue
 
+        if ("WJetsToLNu" in name_sample or "DY" in name_sample) and is_gen_ph:
+            continue
 
         ############################################################################
         #                                                                          #
@@ -425,6 +435,9 @@ for name_sample in samplename_list:
 
         Nevts_per_sample += Event_Weight # Increment the number of events survived in the analyzed sample
 
+        # if Event_Weight < 0.:
+        #     print "EVENT WEIGHT < 0"
+
    
         ############################################################################
         #                                                                          #
@@ -433,64 +446,65 @@ for name_sample in samplename_list:
         ############################################################################
             
 
-        # h_base[theSampleName+"h_nBjets_25"].Fill(nBjets_25,Event_Weight)
+        h_base[theSampleName+"h_nBjets_25"].Fill(nBjets_25,Event_Weight)
+
+        h_base[theSampleName+"h_nPV"].Fill(nPV,Event_Weight)
+
+        h_base[theSampleName+"h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
 
 
-        # h_base[theSampleName+"h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
+        h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
 
 
-        # h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
-
-
-        # if not isMuon:
-        #     h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
+        if not isMuon:
+            h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
         
         
-        # h_base[theSampleName+"h_deltaphi_mu_W"].Fill(deltaphi_lep_W,Event_Weight)
-        # h_base[theSampleName+"h_mu_gamma_InvMass"].Fill(mu_gamma_InvMass,Event_Weight)   
+        h_base[theSampleName+"h_deltaphi_mu_W"].Fill(deltaphi_lep_W,Event_Weight)
+        h_base[theSampleName+"h_mu_gamma_InvMass"].Fill(mu_gamma_InvMass,Event_Weight)   
 
-        # h_base[theSampleName+"h_deltaphi_ele_W"].Fill(deltaphi_lep_W,Event_Weight)
+        h_base[theSampleName+"h_deltaphi_ele_W"].Fill(deltaphi_lep_W,Event_Weight)
 
  
-        # if isMuon:
-        #     h_base[theSampleName+"h_piRelIso_05_mu"].Fill(piRelIso_05,Event_Weight)
-        #     h_base[theSampleName+"h_piRelIso_05_mu_ch"].Fill(piRelIso_05_ch,Event_Weight)
+        if isMuon:
+            h_base[theSampleName+"h_piRelIso_05_mu"].Fill(piRelIso_05,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_05_mu_ch"].Fill(piRelIso_05_ch,Event_Weight)
 
-        # h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
-        # h_base[theSampleName+"h_met_puppi"].Fill(met_puppi,Event_Weight)
+        h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
+        h_base[theSampleName+"h_met_puppi"].Fill(met_puppi,Event_Weight)
         
 
-        # if not isMuon:
-        #     h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
-        #     h_base[theSampleName+"h_piRelIso_05_ele_ch"].Fill(piRelIso_05_ch,Event_Weight)
+        if not isMuon:
+            h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_05_ele_ch"].Fill(piRelIso_05_ch,Event_Weight)
 
-        # if name_sample == "Signal":
-        #     h_base[theSampleName+"h_pipt_sig"].Fill(pi_pT,Event_Weight)
-        #     h_base[theSampleName+"h_pieta_sig"].Fill(pi_eta,Event_Weight)
-        #     h_base[theSampleName+"h_gammaet_sig"].Fill(gamma_eT,Event_Weight)
-        #     h_base[theSampleName+"h_gammaeta_sig"].Fill(gamma_eta,Event_Weight)
-        #     if isMuon:
-        #         h_base[theSampleName+"h_mueta_sig"].Fill(lep_eta,Event_Weight)
-        #         h_base[theSampleName+"h_mupt_sig"].Fill(lep_pT,Event_Weight)
-        #     else:
-        #         h_base[theSampleName+"h_eleeta_sig"].Fill(lep_eta,Event_Weight)
-        #         h_base[theSampleName+"h_elept_sig"].Fill(lep_pT,Event_Weight)
+        if name_sample == "Signal":
+            h_base[theSampleName+"h_pipt_sig"].Fill(pi_pT,Event_Weight)
+            h_base[theSampleName+"h_pieta_sig"].Fill(pi_eta,Event_Weight)
+            h_base[theSampleName+"h_gammaet_sig"].Fill(gamma_eT,Event_Weight)
+            h_base[theSampleName+"h_gammaeta_sig"].Fill(gamma_eta,Event_Weight)
+            if isMuon:
+                h_base[theSampleName+"h_mueta_sig"].Fill(lep_eta,Event_Weight)
+                h_base[theSampleName+"h_mupt_sig"].Fill(lep_pT,Event_Weight)
+            else:
+                h_base[theSampleName+"h_eleeta_sig"].Fill(lep_eta,Event_Weight)
+                h_base[theSampleName+"h_elept_sig"].Fill(lep_pT,Event_Weight)
 
-        # if isMuon:
-        #     h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
-        #     h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
-        #     h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
+        if isMuon:
+            h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+            h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
+            h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
 
-        # if not isMuon:
-        #     h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
-        #     h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
-        #     h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
+        if not isMuon:
+            h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+            h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
+            h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
 
-        # h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
-        # h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
-        # h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
-        # h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
-        # h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
+        h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
+        h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
+        h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
+        h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
+        h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
 
 
         ############################################################################
@@ -538,46 +552,46 @@ for name_sample in samplename_list:
 
         #---------------------Here's where the BDT selection starts----------------#
       
-        if (isMuon and BDT_out >= 0.160) or (not isMuon and BDT_out >= 0.195):
-        # if (isMuon and BDT_out >= 0.223) or (not isMuon and BDT_out >= 0.238): #Wmass
-            if (Wmass >= 50. and Wmass <= 100.):
-                if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
-                    h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
-                if not "Data" in name_sample:
-                    h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
+        # if (isMuon and BDT_out >= 0.160) or (not isMuon and BDT_out >= 0.195):
+        # # if (isMuon and BDT_out >= 0.223) or (not isMuon and BDT_out >= 0.238): #Wmass
+        #     if (Wmass >= 50. and Wmass <= 100.):
+        #         if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
+        #             h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
+        #         if not "Data" in name_sample:
+        #             h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
 
-                h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
-                h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
-                h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
-                h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
+        #         h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
+        #         h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
+        #         h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
+        #         h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
 
-                if isMuon:
-                    if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
-                        h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
-                    if not "Data" in name_sample:
-                        h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+        #         if isMuon:
+        #             if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
+        #                 h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+        #             if not "Data" in name_sample:
+        #                 h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
                         
-                        if "Signal" in name_sample:
-                            Sevts_mu_SFvariation += Event_Weight
+        #                 if "Signal" in name_sample:
+        #                     Sevts_mu_SFvariation += Event_Weight
 
-                    h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
-                    h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
+        #             h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
+        #             h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
 
-                    if name_sample == "WGToLNuG":
-                        N_WGToLNuG_mu += Event_Weight
+        #             if name_sample == "WGToLNuG":
+        #                 N_WGToLNuG_mu += Event_Weight
 
  
-                if not isMuon:
-                    if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
-                        h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
-                    if not "Data" in name_sample:
-                        h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+        #         if not isMuon:
+        #             if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
+        #                 h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+        #             if not "Data" in name_sample:
+        #                 h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
 
-                        if "Signal" in name_sample:
-                            Sevts_ele_SFvariation += Event_Weight
+        #                 if "Signal" in name_sample:
+        #                     Sevts_ele_SFvariation += Event_Weight
                 
-                    h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
-                    h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
+        #             h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
+        #             h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
 
 
 

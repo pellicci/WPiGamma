@@ -336,6 +336,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   lepton_dxy_tree = 0.;
   lepton_dz_tree  = 0.;
 
+  gen_ph_pT_tree     = 0.;
+  gen_ph_mother_tree = 0;
+
 
   //*************************************************************//
   //                                                             //
@@ -693,6 +696,34 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //*************************************************************//
   //                                                             //
+  //--------------------- Photons in MC Truth -------------------//
+  //                                                             //
+  //*************************************************************//
+
+  float gen_ph_pT_min = -9999.;
+  float gen_ph_pT = 0.;
+  int gen_ph_mother = 0;
+  is_gen_ph = false;
+
+  if(!runningOnData_){
+    for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
+      if(gen->pdgId() != 22 || gen->pt() < 20. || fabs(gen->mother()->pdgId()) == 11) continue;
+      if(gen->pt() < gen_ph_pT_min) continue;
+      gen_ph_pT_min = gen->pt();
+      gen_ph_pT = gen->pt();
+      gen_ph_mother = gen->mother()->pdgId();
+      is_gen_ph = true;
+    }
+  }
+
+  if(is_gen_ph){
+    gen_ph_pT_tree = gen_ph_pT;
+    gen_ph_mother_tree = gen_ph_mother;
+  }
+
+
+  //*************************************************************//
+  //                                                             //
   //--------------------------- b-jets --------------------------//
   //                                                             //
   //*************************************************************//
@@ -784,6 +815,9 @@ void WPiGammaAnalysis::create_trees()
     mytree->Branch("Wminus_pT",&Wminus_pT);
     mytree->Branch("is_signal_Wplus",&is_signal_Wplus);
     mytree->Branch("is_signal_Wminus",&is_signal_Wminus);
+    mytree->Branch("is_gen_ph",&is_gen_ph);
+    mytree->Branch("gen_ph_pT",&gen_ph_pT_tree);
+    mytree->Branch("gen_ph_mother",&gen_ph_mother_tree);
   }
 
 }

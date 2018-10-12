@@ -214,6 +214,7 @@ class Workflow_Handler:
 
         cut = False
 
+        #if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 26.) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge or ((name_sample == "WJetsToLNu" or "DY" in name_sample) and is_gen_ph):
         if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 26.) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge:
             cut = True
 

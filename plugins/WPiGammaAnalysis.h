@@ -145,6 +145,9 @@ private:
 
   bool is_photon_a_photon;
   bool is_photon_matched;
+  bool is_gen_ph;
+  float gen_ph_pT_tree;
+  int gen_ph_mother_tree;
 
   bool is_ttbar_lnu;
 
