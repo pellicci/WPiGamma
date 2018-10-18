@@ -214,6 +214,7 @@ _Nrandom_for_SF = ROOT.TRandom3(44317)
 _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 N_WGToLNuG_mu = 0.
 Nevts_per_sample = 0.
+N_DoubleEMEnriched = 0.
 
 ##Loop on samples, and then on events, and merge QCD stuff
 idx_sample = 0
@@ -256,8 +257,8 @@ for name_sample in samplename_list:
         # if not (name_sample == "ttbar" or name_sample == "Signal"):
         #     continue
 
-        if name_sample == "ZGTo2LG" or name_sample == "WGToLNuG":#name_sample == "TTGJets":
-            continue
+        #if name_sample == "ZGTo2LG" or name_sample == "WGToLNuG":#name_sample == "TTGJets":
+        #    continue
 
         if "Signal" in name_sample:
             Sevts_tot += 1
@@ -511,6 +512,9 @@ for name_sample in samplename_list:
         h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
         h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
 
+
+        if "DoubleEMEnriched" in name_sample:
+            N_DoubleEMEnriched += Event_Weight
 
         if "WGToLNuG" in name_sample and is_gen_ph and gen_ph_pT > 30.:# and isMuon:
             motherID[gen_ph_mother] += Event_Weight 
@@ -891,7 +895,8 @@ print "total number of B evts weighted -mu: ", Bevts_weighted_mu
 print "total number of S evts weighted -ele: ", Sevts_weighted_ele
 print "total number of B evts weighted -ele: ", Bevts_weighted_ele
 
-print "N_WGToLNuG_mu", N_WGToLNuG_mu 
+print "N_WGToLNuG_mu", N_WGToLNuG_mu
+print "N_DoubleEMEnriched", N_DoubleEMEnriched
 
 for mother in mother_list:
     print mother, " --- ", motherID[mother] 

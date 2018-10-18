@@ -384,11 +384,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   if(nMuons > 1) return;
   _Nevents_muVeto++;
-  
-  // Get rho value
-  edm::Handle< double > rhoH;
-  iEvent.getByToken(rhoToken_,rhoH);
-  rho_ = *rhoH;
 
 
   //*************************************************************//
@@ -396,6 +391,11 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //-------------------------- Electrons ------------------------//
   //                                                             //
   //*************************************************************//
+
+  // Get rho value
+  edm::Handle< double > rhoH;
+  iEvent.getByToken(rhoToken_,rhoH);
+  rho_ = *rhoH;
 
   for (size_t i = 0; i < slimmedElectrons->size(); ++i){
     const auto el = slimmedElectrons->ptrAt(i);
