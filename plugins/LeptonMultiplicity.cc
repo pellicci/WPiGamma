@@ -393,7 +393,7 @@ void LeptonMultiplicity::beginJob()
 {
   //Flag for PileUp reweighting
   if (!runningOnData_){
-   Lumiweights_ = edm::LumiReWeighting("pileUpHistogramFromjson_Nominal.root","MCpileUp_25ns_Recent2016.root", "pileup", "pileup");
+   Lumiweights_ = edm::LumiReWeighting("MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root", "MyDataPileupHistogram.root", "pileup", "pileup");
   }
 }
 

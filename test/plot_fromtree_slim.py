@@ -24,7 +24,7 @@ luminosity_BtoF = 19.72
 luminosity_GH   = 16.14
 
 #Make signal histos larger
-signal_magnify = 100
+signal_magnify = 10000
 
 output_dir = "plots"
 
@@ -32,7 +32,7 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 #Here's the list of histos to plot
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet","h_mupt_sig","h_elept_sig","h_pipt_sig","h_gammaet_sig", "h_mueta", "h_eleeta","h_pieta","h_gammaeta","h_mueta_sig","h_eleeta_sig","h_pieta_sig","h_gammaeta_sig", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met","h_met_puppi","h_Wmass_mu_plus","h_Wmass_ele_plus","h_Wmass_mu_minus","h_Wmass_ele_minus","h_nPV"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet","h_mupt_sig","h_elept_sig","h_pipt_sig","h_gammaet_sig", "h_mueta", "h_eleeta","h_pieta","h_gammaeta","h_mueta_sig","h_eleeta_sig","h_pieta_sig","h_gammaeta_sig", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_mu_plus","h_Wmass_ele_plus","h_Wmass_mu_minus","h_Wmass_ele_minus","h_nPV_mu","h_nPV_ele","h_motherID_mu","h_motherID_ele"]
 
 Wmass_mu        = ROOT.TH1F("Wmass_mu","Wmass mu",10,40,100)
 Wmass_ele       = ROOT.TH1F("Wmass_ele","Wmass ele",10,40,100)
@@ -55,7 +55,7 @@ W_signal_hist.Sumw2()
 W_ttbar_hist.Sumw2()
 
 # Color mask must have the same number of entries as non-QCD backgrounds
-colors_mask = [26,400,840,616,860,432,880,900,800,416,885,910,200,630,420,608,960,ROOT.kGreen+3,ROOT.kOrange+8,ROOT.kRed-7]
+colors_mask = [ROOT.kYellow-8,ROOT.kAzure+7,ROOT.kOrange-3,ROOT.kTeal-5,ROOT.kViolet-6,ROOT.kSpring-1,ROOT.kOrange+6+1,ROOT.kMagenta+1,ROOT.kYellow-2,ROOT.kGreen+2,ROOT.kBlue-7,ROOT.kRed-7,ROOT.kOrange-2,ROOT.kYellow+3,ROOT.kBlue-4,ROOT.kGreen+3,ROOT.kCyan-7,ROOT.kPink+10,ROOT.kOrange+8,ROOT.kRed-7]
 
 # Get the files and the names of the samples
 samplename_list = myWF.get_samples_names()
@@ -70,6 +70,15 @@ ttbar_sig_calib = ttbar_sig_calib_file.Get("ttbar_signal_ratio")
 hs      = dict()
 h_base  = dict()
 canvas  = dict()
+
+#####################################################################
+motherID = dict()
+mother_list = ["1","2","3","4","5","13","15","21","22","24","111","213","221","223","313","323","331","333","423","2212","3214"]
+
+for mother in mother_list:
+    motherID[mother] = 0.
+
+#####################################################################
 
 for hname in list_histos:
     hs[hname] = ROOT.THStack("hs_" + hname,"")
@@ -89,8 +98,8 @@ for sample_name in samplename_list:
     else:
         theSampleName = sample_name
 
-    h_base[theSampleName+list_histos[0]]  = ROOT.TH1F(theSampleName+list_histos[0], "p_{T} of the muon", 15, 20, 100.)
-    h_base[theSampleName+list_histos[1]]  = ROOT.TH1F(theSampleName+list_histos[1], "p_{T} of the electron", 15, 20, 100.)
+    h_base[theSampleName+list_histos[0]]  = ROOT.TH1F(theSampleName+list_histos[0], "p_{T} of the muon", 15, 25, 100.)
+    h_base[theSampleName+list_histos[1]]  = ROOT.TH1F(theSampleName+list_histos[1], "p_{T} of the electron", 15, 26, 100.)
     h_base[theSampleName+list_histos[2]]  = ROOT.TH1F(theSampleName+list_histos[2], "p_{T} of the pion", 15, 20, 100.)
     h_base[theSampleName+list_histos[3]]  = ROOT.TH1F(theSampleName+list_histos[3], "E_{T} of the gamma", 15, 20, 100.)
     h_base[theSampleName+list_histos[4]]  = ROOT.TH1F(theSampleName+list_histos[4], "p_{T} of the muon - sig", 15, 20, 100.)
@@ -123,13 +132,17 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[31]] = ROOT.TH1F(theSampleName+list_histos[31], "Pion isolation 05 - ele", 75, 0, 150)
     h_base[theSampleName+list_histos[32]] = ROOT.TH1F(theSampleName+list_histos[32], "Pion rel. isolation 05 - ele - ch", 50, 0, 10)
     h_base[theSampleName+list_histos[33]] = ROOT.TH1F(theSampleName+list_histos[33], "Pion rel. isolation 05 - ele", 50, 0, 10)
-    h_base[theSampleName+list_histos[34]] = ROOT.TH1F(theSampleName+list_histos[34], "met", 40, 0, 200)
-    h_base[theSampleName+list_histos[35]] = ROOT.TH1F(theSampleName+list_histos[35], "met puppi", 45, 0, 300)
-    h_base[theSampleName+list_histos[36]] = ROOT.TH1F(theSampleName+list_histos[36], "Wmass mu plus", 10, 40, 100)
-    h_base[theSampleName+list_histos[37]] = ROOT.TH1F(theSampleName+list_histos[37], "Wmass ele plus", 10, 40, 100)
-    h_base[theSampleName+list_histos[38]] = ROOT.TH1F(theSampleName+list_histos[38], "Wmass mu minus", 10, 40, 100)
-    h_base[theSampleName+list_histos[39]] = ROOT.TH1F(theSampleName+list_histos[39], "Wmass ele minus", 10, 40, 100)
-    h_base[theSampleName+list_histos[40]] = ROOT.TH1F(theSampleName+list_histos[40], "nPV", 10, 1, 10)
+    h_base[theSampleName+list_histos[34]] = ROOT.TH1F(theSampleName+list_histos[34], "met mu", 40, 0, 200)
+    h_base[theSampleName+list_histos[35]] = ROOT.TH1F(theSampleName+list_histos[35], "met ele", 40, 0, 200)
+    h_base[theSampleName+list_histos[36]] = ROOT.TH1F(theSampleName+list_histos[36], "met puppi", 45, 0, 300)
+    h_base[theSampleName+list_histos[37]] = ROOT.TH1F(theSampleName+list_histos[37], "Wmass mu plus", 10, 40, 100)
+    h_base[theSampleName+list_histos[38]] = ROOT.TH1F(theSampleName+list_histos[38], "Wmass ele plus", 10, 40, 100)
+    h_base[theSampleName+list_histos[39]] = ROOT.TH1F(theSampleName+list_histos[39], "Wmass mu minus", 10, 40, 100)
+    h_base[theSampleName+list_histos[40]] = ROOT.TH1F(theSampleName+list_histos[40], "Wmass ele minus", 10, 40, 100)
+    h_base[theSampleName+list_histos[41]] = ROOT.TH1F(theSampleName+list_histos[41], "nPV - mu", 50, 0, 50)
+    h_base[theSampleName+list_histos[42]] = ROOT.TH1F(theSampleName+list_histos[42], "nPV - ele", 50, 0, 50)
+    h_base[theSampleName+list_histos[43]] = ROOT.TH1F(theSampleName+list_histos[43], "mother ID - mu", 1000, 0, 1000)
+    h_base[theSampleName+list_histos[44]] = ROOT.TH1F(theSampleName+list_histos[44], "mother ID - ele", 1000, 0, 1000)
 
 
 
@@ -239,14 +252,12 @@ for name_sample in samplename_list:
             continue
 
         #if "Data" in name_sample: continue  #-------------Excluding data-------------#
-        #if not name_sample == "Signal":
-        #    continue
 
         # if not (name_sample == "ttbar" or name_sample == "Signal"):
         #     continue
 
-        # if "QCD" in name_sample:
-        #     continue
+        if name_sample == "ZGTo2LG" or name_sample == "WGToLNuG":#name_sample == "TTGJets":
+            continue
 
         if "Signal" in name_sample:
             Sevts_tot += 1
@@ -293,14 +304,15 @@ for name_sample in samplename_list:
         gamma_iso_Ph = mytree.photon_iso_Photon
         gamma_iso_eArho = mytree.photon_iso_eArho
 
-        if "WJetsToLNu" in name_sample or "DY" in name_sample:
-            is_gen_ph = mytree.is_gen_ph
-
         W_phi = (pi_FourMomentum + gamma_FourMomentum).Phi()
 
         if not "Data" in name_sample:
             Wplus_pT = mytree.Wplus_pT
             Wminus_pT = mytree.Wminus_pT
+            is_gen_ph = mytree.is_gen_ph
+            gen_ph_pT = mytree.gen_ph_pT
+            gen_ph_mother = str(math.fabs(mytree.gen_ph_mother))
+            gen_ph_mother = gen_ph_mother.replace('.0','')
 
         if name_sample == "Signal":
             is_signal_Wplus = mytree.is_signal_Wplus
@@ -340,13 +352,14 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
-        # if myWF.post_preselection_cuts(name_sample,lep_eta,lep_pT,isMuon,LepPiOppositeCharge,is_gen_ph):
-        #     continue
         if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge):
             continue
 
-        if ("WJetsToLNu" in name_sample or "DY" in name_sample) and is_gen_ph:
-            continue
+        #if ("WJetsToLNu" in name_sample or "DY" in name_sample) and is_gen_ph:# and not gen_ph_mother == "13":
+        #    continue
+        # if "WGToLNuG" in name_sample and not gen_ph_mother == "22":
+        #     continue
+            
 
         ############################################################################
         #                                                                          #
@@ -393,7 +406,7 @@ for name_sample in samplename_list:
 
         if not "Data" in name_sample:
             PU_Weight = mytree.PU_Weight        
-            Event_Weight = norm_factor*PU_Weight*ph_weight
+            Event_Weight = norm_factor*ph_weight*PU_Weight
 
             if isMuon:
                 Event_Weight = Event_Weight*mu_weight
@@ -406,7 +419,7 @@ for name_sample in samplename_list:
                 if Wplus_pT > 300.:
                     local_Wplus_pT = 300.
 
-                Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wplus_pT))
+                Event_Weight = Event_Weight#*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wplus_pT))
 
 
             if name_sample == "Signal" and is_signal_Wminus:
@@ -414,7 +427,7 @@ for name_sample in samplename_list:
                 if Wminus_pT > 300.:
                     local_Wminus_pT = 300.
 
-                Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wminus_pT))
+                Event_Weight = Event_Weight#*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wminus_pT))
 
 
             # Obtain the number of sig and bkg events (weighted)
@@ -435,9 +448,6 @@ for name_sample in samplename_list:
 
         Nevts_per_sample += Event_Weight # Increment the number of events survived in the analyzed sample
 
-        # if Event_Weight < 0.:
-        #     print "EVENT WEIGHT < 0"
-
    
         ############################################################################
         #                                                                          #
@@ -448,16 +458,11 @@ for name_sample in samplename_list:
 
         h_base[theSampleName+"h_nBjets_25"].Fill(nBjets_25,Event_Weight)
 
-        h_base[theSampleName+"h_nPV"].Fill(nPV,Event_Weight)
 
         h_base[theSampleName+"h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
 
 
         h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
-
-
-        if not isMuon:
-            h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
         
         
         h_base[theSampleName+"h_deltaphi_mu_W"].Fill(deltaphi_lep_W,Event_Weight)
@@ -465,18 +470,9 @@ for name_sample in samplename_list:
 
         h_base[theSampleName+"h_deltaphi_ele_W"].Fill(deltaphi_lep_W,Event_Weight)
 
- 
-        if isMuon:
-            h_base[theSampleName+"h_piRelIso_05_mu"].Fill(piRelIso_05,Event_Weight)
-            h_base[theSampleName+"h_piRelIso_05_mu_ch"].Fill(piRelIso_05_ch,Event_Weight)
 
-        h_base[theSampleName+"h_met"].Fill(met,Event_Weight)
         h_base[theSampleName+"h_met_puppi"].Fill(met_puppi,Event_Weight)
         
-
-        if not isMuon:
-            h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
-            h_base[theSampleName+"h_piRelIso_05_ele_ch"].Fill(piRelIso_05_ch,Event_Weight)
 
         if name_sample == "Signal":
             h_base[theSampleName+"h_pipt_sig"].Fill(pi_pT,Event_Weight)
@@ -494,17 +490,30 @@ for name_sample in samplename_list:
             h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
             h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
             h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
+            h_base[theSampleName+"h_nPV_mu"].Fill(nPV,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_05_mu"].Fill(piRelIso_05,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_05_mu_ch"].Fill(piRelIso_05_ch,Event_Weight)
+            h_base[theSampleName+"h_met_mu"].Fill(met,Event_Weight)
 
         if not isMuon:
             h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
             h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
             h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
+            h_base[theSampleName+"h_nPV_ele"].Fill(nPV,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
+            h_base[theSampleName+"h_piRelIso_05_ele_ch"].Fill(piRelIso_05_ch,Event_Weight)
+            h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
+            h_base[theSampleName+"h_met_ele"].Fill(met,Event_Weight)
 
         h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
         h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
         h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
         h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
         h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
+
+
+        if "WGToLNuG" in name_sample and is_gen_ph and gen_ph_pT > 30.:# and isMuon:
+            motherID[gen_ph_mother] += Event_Weight 
 
 
         ############################################################################
@@ -643,7 +652,7 @@ for name_sample in samplename_list:
             h_base[theSampleName+hname].SetFillColor(colors_mask[idx_sample])
 
 
-        if idx_histo == 0 and (Nevts_per_sample > 1000 or name_sample == myWF.sig_samplename):
+        if idx_histo == 0 and (Nevts_per_sample > 800 or name_sample == myWF.sig_samplename):
             if QCDflag and isFirstQCDlegend:
                 leg1.AddEntry(h_base[theSampleName+hname],"QCD","f")
                 isFirstQCDlegend = False
@@ -677,9 +686,9 @@ for hname in list_histos:
     if hname == "h_Wmass":
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),100.))
     if hname == "h_piRelIso_05_ele_ch":
-        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),27000.))
+        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),10000.))
     if hname == "h_piRelIso_05_mu_ch":
-        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),12000.))
+        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),10000.))
     if hname == "h_piRelIso_05_mu_ch_AfterCut":
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),130.))
     if hname == "h_piRelIso_05_ele_ch_AfterCut":
@@ -883,3 +892,6 @@ print "total number of S evts weighted -ele: ", Sevts_weighted_ele
 print "total number of B evts weighted -ele: ", Bevts_weighted_ele
 
 print "N_WGToLNuG_mu", N_WGToLNuG_mu 
+
+for mother in mother_list:
+    print mother, " --- ", motherID[mother] 
