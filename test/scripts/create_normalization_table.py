@@ -57,6 +57,8 @@ def main():
         events_cumul[sample] = 0.
 
     for dirname in list_dirs:
+
+        is_in_complementary_sample_list = False
         
         samplename = dirname.split("crab_WPiGammaAnalysis_")[1]
         print "Processing sample dir " + dirname
@@ -73,9 +75,10 @@ def main():
             if name_complement in samplename :
                 events_cumul[name_complement] = events_cumul[name_complement] + number_events
                 print "events_cumul: ", events_cumul[name_complement]
+                is_in_complementary_sample_list = True
                 continue
-
-        events_cumul[samplename] = number_events
+        if not is_in_complementary_sample_list:
+            events_cumul[samplename] = number_events
 
     for sample,event_count in events_cumul.iteritems():
         if event_count == 0:
