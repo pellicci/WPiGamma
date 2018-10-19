@@ -15,7 +15,7 @@ ROOT.gROOT.SetBatch(True)
 #                                                                          #
 ############################################################################
 
-isBDT = False # If true, the plots after BDT cut are produced. Otherwise, plots after pre-selection are produced
+isBDT = True # If true, the plots after BDT cut are produced. Otherwise, plots after pre-selection are produced
 isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
 myWF = Workflow_Handler("Signal","Data",isBDT_with_Wmass)
 
@@ -53,20 +53,20 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 #Here's the list of histos to plot
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet","h_mupt_sig","h_elept_sig","h_pipt_sig","h_gammaet_sig", "h_mueta", "h_eleeta","h_pieta","h_gammaeta","h_mueta_sig","h_eleeta_sig","h_pieta_sig","h_gammaeta_sig", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_mu_minus","h_Wmass_ele_minus","h_nPV_mu","h_nPV_ele","h_motherID_mu","h_motherID_ele"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet","h_mupt_sig","h_elept_sig","h_pipt_sig","h_gammaet_sig", "h_mueta", "h_eleeta","h_pieta","h_gammaeta","h_mueta_sig","h_eleeta_sig","h_pieta_sig","h_gammaeta_sig", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_ratio_mu","h_Wmass_ratio_ele","h_nPV_mu","h_nPV_ele","h_motherID_mu","h_motherID_ele"]
 
 Wmass_mu        = ROOT.TH1F("Wmass_mu","Wmass mu",10,40,100)
 Wmass_ele       = ROOT.TH1F("Wmass_ele","Wmass ele",10,40,100)
-Wmass_mu_minus  = ROOT.TH1F("Wmass_mu_minus","Wmass mu minus",10,40,100)
-Wmass_ele_minus = ROOT.TH1F("Wmass_ele_minus","Wmass ele minus",10,40,100)
+Wmass_ratio_mu  = ROOT.TH1F("Wmass_ratio_mu","Wmass ratio mu",10,40,100)
+Wmass_ratio_ele = ROOT.TH1F("Wmass_ratio_ele","Wmass ratio ele",10,40,100)
 
 W_signal_hist = ROOT.TH1F("W_signal"," W signal",8,0,300)
 W_ttbar_hist  = ROOT.TH1F("W_ttbar"," W ttbar",8,0,300)
 
 Wmass_mu.Sumw2()
 Wmass_ele.Sumw2()
-Wmass_mu_minus.Sumw2()
-Wmass_ele_minus.Sumw2()
+Wmass_ratio_mu.Sumw2()
+Wmass_ratio_ele.Sumw2()
 
 W_signal_hist.Sumw2()
 W_ttbar_hist.Sumw2()
@@ -153,8 +153,8 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[34]] = ROOT.TH1F(theSampleName+list_histos[34], "met mu", 40, 0, 200)
     h_base[theSampleName+list_histos[35]] = ROOT.TH1F(theSampleName+list_histos[35], "met ele", 40, 0, 200)
     h_base[theSampleName+list_histos[36]] = ROOT.TH1F(theSampleName+list_histos[36], "met puppi", 45, 0, 300)
-    h_base[theSampleName+list_histos[37]] = ROOT.TH1F(theSampleName+list_histos[37], "Wmass mu minus", 10, 40, 100)
-    h_base[theSampleName+list_histos[38]] = ROOT.TH1F(theSampleName+list_histos[38], "Wmass ele minus", 10, 40, 100)
+    h_base[theSampleName+list_histos[37]] = ROOT.TH1F(theSampleName+list_histos[37], "Wmass ratio mu", 10, 40, 100)
+    h_base[theSampleName+list_histos[38]] = ROOT.TH1F(theSampleName+list_histos[38], "Wmass ratio ele", 10, 40, 100)
     h_base[theSampleName+list_histos[39]] = ROOT.TH1F(theSampleName+list_histos[39], "nPV - mu", 50, 0, 50)
     h_base[theSampleName+list_histos[40]] = ROOT.TH1F(theSampleName+list_histos[40], "nPV - ele", 50, 0, 50)
     h_base[theSampleName+list_histos[41]] = ROOT.TH1F(theSampleName+list_histos[41], "mother ID - mu", 1000, 0, 1000)
@@ -195,6 +195,13 @@ _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 N_WGToLNuG_mu = 0.
 Nevts_per_sample = 0.
 N_DoubleEMEnriched = 0.
+
+#############---------------- BDT score cut values ----------------#############
+
+BDT_OUT_MU = 0.190
+BDT_OUT_ELE = 0.210
+
+################################################################################
 
 ##Loop on samples, and then on events, and merge QCD stuff
 idx_sample = 0
@@ -444,15 +451,22 @@ for name_sample in samplename_list:
    
         ############################################################################
         #                                                                          #
-        #----------------------------- Filling histos -----------------------------#
+        #------------------------------- Fill histos ------------------------------#
         #                                                                          #
         ############################################################################
+
+        #if (isMuon and BDT_out >= -0.1 and BDT_out < BDT_OUT_MU) or (not isMuon and BDT_out >= -0.1 and BDT_out < BDT_OUT_ELE):
+        if (Wmass >= 50. and Wmass <= 100.) and isMuon:
+            h_base[theSampleName+"h_Wmass_ratio_mu"].Fill(Wmass,Event_Weight)
+        if (Wmass >= 50. and Wmass <= 100.) and not isMuon:
+            h_base[theSampleName+"h_Wmass_ratio_ele"].Fill(Wmass,Event_Weight)
+
             
-        if (isBDT and isMuon and BDT_out < 0.160) or (isBDT and not isMuon and BDT_out < 0.195):
+        if (isBDT and isMuon and BDT_out < BDT_OUT_MU) or (isBDT and not isMuon and BDT_out < BDT_OUT_ELE): # Cut on BDT output
             continue
-        if isBDT and (Wmass < 50. or Wmass > 100.):
+        if isBDT and (Wmass < 50. or Wmass > 100.): # General Wmass condition
             continue
-        if isBDT and "Data" in name_sample and (Wmass >= 65. or Wmass <= 90):
+        if isBDT and name_sample=="Data" and (Wmass >= 65. and Wmass <= 90.): # Exclude data in the Blind Window
             continue
 
         h_base[theSampleName+"h_nBjets_25"].Fill(nBjets_25,Event_Weight)
@@ -544,72 +558,6 @@ for name_sample in samplename_list:
                 W_ttbar_hist.Fill(300.,Event_Weight)
             else:
                 W_ttbar_hist.Fill(Wminus_pT,Event_Weight)
-
-
-
-        ############################################################################
-        #                                                                          #
-        #------------------------ BDT output and selection ------------------------#
-        #                                                                          #
-        ############################################################################
-
-        # if isBDT_with_Wmass:
-        #     BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)  
-        # else:
-        #     BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)
-
-        # #---------------------Here's where the BDT selection starts----------------#
-      
-        # if (isMuon and BDT_out >= 0.160) or (not isMuon and BDT_out >= 0.195):
-        #     if (Wmass >= 50. and Wmass <= 100.):
-        #         if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
-        #             h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
-        #         if not "Data" in name_sample:
-        #             h_base[theSampleName+"h_Wmass"].Fill(Wmass,Event_Weight)
-
-        #         h_base[theSampleName+"h_pipt"].Fill(pi_pT,Event_Weight)
-        #         h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
-        #         h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
-        #         h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
-
-        #         if isMuon:
-        #             if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
-        #                 h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
-        #             if not "Data" in name_sample:
-        #                 h_base[theSampleName+"h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
-                        
-        #                 if "Signal" in name_sample:
-        #                     Sevts_mu_SFvariation += Event_Weight
-
-        #             h_base[theSampleName+"h_mupt"].Fill(lep_pT,Event_Weight)
-        #             h_base[theSampleName+"h_mueta"].Fill(lep_eta,Event_Weight)
-
-        #             if name_sample == "WGToLNuG":
-        #                 N_WGToLNuG_mu += Event_Weight
-
- 
-        #         if not isMuon:
-        #             if "Data" in name_sample and (Wmass < 65. or Wmass > 90):
-        #                 h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
-        #             if not "Data" in name_sample:
-        #                 h_base[theSampleName+"h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
-
-                    #     if "Signal" in name_sample:
-                    #         Sevts_ele_SFvariation += Event_Weight
-                
-                    # h_base[theSampleName+"h_elept"].Fill(lep_pT,Event_Weight)
-                    # h_base[theSampleName+"h_eleeta"].Fill(lep_eta,Event_Weight)
-
-
-
-        #-------BDT cut variation------#
-
-        # if (isMuon and BDT_out >= -0.1 and BDT_out < 0.255) or (not isMuon and BDT_out >= -0.1 and BDT_out < 0.250):
-        #     if (Wmass >= 50. and Wmass <= 100.) and isMuon:
-        #         h_base[theSampleName+"h_Wmass_mu_minus"].Fill(Wmass,Event_Weight)
-        #     if (Wmass >= 50. and Wmass <= 100.) and not isMuon:
-        #         h_base[theSampleName+"h_Wmass_ele_minus"].Fill(Wmass,Event_Weight)
-
 
 
         ############################################################################
@@ -750,17 +698,17 @@ for hname in list_histos:
 
 
     #---Wmass ratio plots---#
-    # if hname == "h_Wmass_flag_mu":
-    #     Wmass_mu = hs[hname].GetStack().Last()
+    if hname == "h_Wmass_flag_mu":
+        Wmass_mu = hs[hname].GetStack().Last()
 
-    # if hname == "h_Wmass_flag_ele":
-    #     Wmass_ele = hs[hname].GetStack().Last()
+    if hname == "h_Wmass_flag_ele":
+        Wmass_ele = hs[hname].GetStack().Last()
 
-    # if hname == "h_Wmass_mu_minus":
-    #     Wmass_mu_minus = hs[hname].GetStack().Last()
+    if hname == "h_Wmass_ratio_mu":
+        Wmass_ratio_mu = hs[hname].GetStack().Last()
 
-    # if hname == "h_Wmass_ele_minus":
-    #     Wmass_ele_minus = hs[hname].GetStack().Last()
+    if hname == "h_Wmass_ratio_ele":
+        Wmass_ratio_ele = hs[hname].GetStack().Last()
 
 
     h_base[myWF.sig_samplename+hname].Draw("SAME,hist")
@@ -779,29 +727,29 @@ for hname in list_histos:
     canvas[hname].SaveAs("plots/" + hname + ".pdf")
 
 
-# Wmass_mu.Scale(1/Wmass_mu.Integral())
-# Wmass_mu_minus.Scale(1/Wmass_mu_minus.Integral())
-# Wmass_ele.Scale(1/Wmass_ele.Integral())
-# Wmass_ele_minus.Scale(1/Wmass_ele_minus.Integral())
+Wmass_mu.Scale(1/Wmass_mu.Integral())
+Wmass_ratio_mu.Scale(1/Wmass_ratio_mu.Integral())
+Wmass_ele.Scale(1/Wmass_ele.Integral())
+Wmass_ratio_ele.Scale(1/Wmass_ratio_ele.Integral())
 
-# Wmass_mu_minus.Divide(Wmass_mu_minus,Wmass_mu,1.0,1.0,"B")
-# Wmass_ele_minus.Divide(Wmass_ele_minus,Wmass_ele,1.0,1.0,"B")
-
-
-# canvas5 = ROOT.TCanvas()
-# Wmass_mu_minus.SetMarkerStyle(21)
-# Wmass_mu_minus.SetTitle(" ")
-# Wmass_mu_minus.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
-# Wmass_mu_minus.Draw("Pe")
-# canvas5.SaveAs("plots/Wmass_mu_minus.pdf")
+Wmass_ratio_mu.Divide(Wmass_ratio_mu,Wmass_mu,1.0,1.0,"B")
+Wmass_ratio_ele.Divide(Wmass_ratio_ele,Wmass_ele,1.0,1.0,"B")
 
 
-# canvas6 = ROOT.TCanvas()
-# Wmass_ele_minus.SetMarkerStyle(21)
-# Wmass_ele_minus.SetTitle(" ")
-# Wmass_ele_minus.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
-# Wmass_ele_minus.Draw("Pe")
-# canvas6.SaveAs("plots/Wmass_ele_minus.pdf")
+canvas5 = ROOT.TCanvas()
+Wmass_ratio_mu.SetMarkerStyle(21)
+Wmass_ratio_mu.SetTitle(" ")
+Wmass_ratio_mu.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
+Wmass_ratio_mu.Draw("Pe")
+canvas5.SaveAs("plots/Wmass_ratio_mu.pdf")
+
+
+canvas6 = ROOT.TCanvas()
+Wmass_ratio_ele.SetMarkerStyle(21)
+Wmass_ratio_ele.SetTitle(" ")
+Wmass_ratio_ele.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
+Wmass_ratio_ele.Draw("Pe")
+canvas6.SaveAs("plots/Wmass_ratio_ele.pdf")
 
 
 #---------- Signal-ttbar comparison ----------#
