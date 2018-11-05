@@ -51,8 +51,8 @@ a6_alt_mu = ROOT.RooRealVar("a6_alt_mu","a6_alt_mu",0.1,-5.,5.)
 #a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",0.5,0.,1.)
 #a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",0.7,0.,1.)
 #a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",0.7,0.,1.)
-backPDF_mu     = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu,a3_mu,a4_mu,a5_mu))#,a6_mu))
-backPDF_alt_mu = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_alt_mu,a1_alt_mu,a2_alt_mu,a3_alt_mu,a4_alt_mu,a5_alt_mu,a6_alt_mu))
+backPDF_mu     = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu,a3_mu))#,a4_mu,a5_mu))#,a6_mu))
+backPDF_alt_mu = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_alt_mu,a1_alt_mu,a2_alt_mu,a3_alt_mu,a4_alt_mu))#,a5_alt_mu,a6_alt_mu))
 #backPDF_mu = ROOT.RooBernstein("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu)) #,a3_mu)) #,a4_mu)) #,a5_mu,a6_mu))
 
 #Then the electron
@@ -75,8 +75,8 @@ a6_alt_el = ROOT.RooRealVar("a6_alt_el","a6_alt_el",0.1,-5.,5.)
 #a0_el = ROOT.RooRealVar("a0_el","a0_el",0.5,0.,1.)
 #a1_el = ROOT.RooRealVar("a1_el","a1_el",0.9,0.,1.)
 #a2_el = ROOT.RooRealVar("a2_el","a2_el",0.7,0.,1.)
-backPDF_el     = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el,a3_el,a4_el,a5_el))#,a6_el))
-backPDF_alt_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_alt_el,a1_alt_el,a2_alt_el,a3_alt_el,a4_alt_el,a5_alt_el,a6_alt_el))
+backPDF_el     = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el))#,a3_el,a4_el,a5_el))#,a6_el))
+backPDF_alt_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_alt_el,a1_alt_el,a2_alt_el,a3_alt_el))#,a4_alt_el,a5_alt_el,a6_alt_el))
 #backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el)) #,a3_el)) #,a4_el)) #,a5_el,a6_el))
 
 ###########################################################

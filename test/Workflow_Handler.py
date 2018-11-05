@@ -15,11 +15,6 @@ eg_reco_scale_file  = ROOT.TFile(eg_reco_scale_name)
 eg_reco_scale_histo = ROOT.TH2F()
 eg_reco_scale_histo = eg_reco_scale_file.Get("EGamma_SF2D")
 
-# eg_reco_scale_histo_minX
-# eg_reco_scale_histo_maxX
-# eg_reco_scale_histo_minY
-# eg_reco_scale_histo_maxY
-
 eg_ID_scale_name  = "scale_factors/Electron_ID_2D.root"
 eg_ID_scale_file  = ROOT.TFile(eg_ID_scale_name)
 eg_ID_scale_histo = ROOT.TH2F()

@@ -2,11 +2,21 @@
 
 import ROOT
 import math
+import argparse
 
 ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
-#Define if working on MC or DATA
-isData = True
+#---------------------------------#
+p = argparse.ArgumentParser(description='Select whether to fit data or MC')
+p.add_argument('isData_option', help='Type <<data>> or <<MC>>')
+args = p.parse_args()
+
+# Switch from muon to electron channel
+if args.isData_option == "data":
+    isData = True
+if args.isData_option == "MC":
+    isData = False
+#---------------------------------#
 
 #Define the observable
 Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV/c^{2}")
@@ -39,7 +49,6 @@ weight = ROOT.RooRealVar("weight","The event weight",0.,100.)
 BDT_out = ROOT.RooRealVar("BDT_out","Output of BDT",-1.,1.)
 
 #Create the RooDataSet. No need to import weight for signal only analysis
-
 if isData:
     data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,BDT_out), ROOT.RooFit.Import(mytree))
 else:
@@ -66,11 +75,11 @@ workspace.var("dCB_aL").setConstant(1)
 workspace.var("dCB_nL").setConstant(1)
 workspace.var("dCB_aR").setConstant(1)
 workspace.var("dCB_nR").setConstant(1)
-workspace.var("Gauss_pole").setConstant(1)
-workspace.var("Gauss_sigma").setConstant(1)
+#workspace.var("Gauss_pole").setConstant(1)
+#workspace.var("Gauss_sigma").setConstant(1)
 workspace.var("Gauss_pole_2").setConstant(1)
 workspace.var("Gauss_sigma_2").setConstant(1)
-workspace.var("fracSig_prime").setConstant(1)
+#workspace.var("fracSig_prime").setConstant(1)
 workspace.var("fracSig").setConstant(1)
 
 totSignal = workspace.pdf("totSignal")
@@ -86,13 +95,13 @@ a4_mu = ROOT.RooRealVar("a4_mu","a4_mu",0.,-5.,5.)
 a5_mu = ROOT.RooRealVar("a5_mu","a5_mu",0.1,-5.,5.)
 a6_mu = ROOT.RooRealVar("a6_mu","a6_mu",0.1,-5.,5.)
 
-backPDF_mu = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu,a3_mu,a4_mu)) #,a5_mu,a6_mu))
+backPDF_mu = ROOT.RooChebychev("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu,a3_mu))#,a4_mu,a5_mu,a6_mu))
 
-#a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",0.5,0.,1.)
-#a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",0.7,0.,1.)
-#a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",0.7,0.,1.)
+# a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",0.5,0.,5.)
+# a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",0.7,0.,5.)
+# a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",0.7,0.,5.)
 
-#backPDF_mu = ROOT.RooBernstein("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu)) #,a3_mu)) #,a4_mu)) #,a5_mu,a6_mu))
+# backPDF_mu = ROOT.RooBernstein("backPDF_mu","backPDF_mu",Wmass,ROOT.RooArgList(a0_mu,a1_mu,a2_mu)) #,a3_mu)) #,a4_mu)) #,a5_mu,a6_mu))
 
 #Then the electron
 a0_el = ROOT.RooRealVar("a0_el","a0_el",0.1,-5.,5.)
@@ -106,16 +115,13 @@ a6_el = ROOT.RooRealVar("a6_el","a6_el",0.1,-5.,5.)
 backPDF_el = ROOT.RooChebychev("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el,a3_el,a4_el)) #,a5_el,a6_el))
 
 
-#a0_el = ROOT.RooRealVar("a0_el","a0_el",0.5,0.,1.)
-#a1_el = ROOT.RooRealVar("a1_el","a1_el",0.9,0.,1.)
-#a2_el = ROOT.RooRealVar("a2_el","a2_el",0.7,0.,1.)
-#backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el)) #,a3_el)) #,a4_el)) #,a5_el,a6_el))
+# a0_el = ROOT.RooRealVar("a0_el","a0_el",0.5,0.,5.)
+# a1_el = ROOT.RooRealVar("a1_el","a1_el",0.9,0.,5.)
+# a2_el = ROOT.RooRealVar("a2_el","a2_el",0.7,0.,5.)
+# a3_el = ROOT.RooRealVar("a3_el","a3_el",0.5,0.,1.)
+# a3_el = ROOT.RooRealVar("a3_el","a3_el",0.5,0.,1.)
+# backPDF_el = ROOT.RooBernstein("backPDF_el","backPDF_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el))#,a3_el,a4_el)) #,a5_el,a6_el))
 
-#exp_factor_mu = ROOT.RooRealVar("exp_factor_mu","exp_factor_mu", 0.5,-1.,1.)
-#backPDF_mu = ROOT.RooExponential("backPDF_mu","backPDF_mu",Wmass,exp_factor_mu)
-
-#exp_factor_el = ROOT.RooRealVar("exp_factor_el","exp_factor_el", 0.5,-1.,1.)
-#backPDF_el = ROOT.RooExponential("backPDF_el","backPDF_el",Wmass,exp_factor_el)
 
 #Gaussian distribution of W resolution width for systematics
 # W_resol_width = workspace.var("W_resol_width")
@@ -147,8 +153,8 @@ gauss_lumi  = ROOT.RooGaussian("gauss_lumi","gauss_lumi",glb_lumi,lumi_constr,lu
 #totel = 6293.     #total number of signal electron events
 
 totsig = 107810.  #total number of signal events
-totmu = 9139.     #total number of signal muon events
-totel = 5740.     #total number of signal electron events
+totmu = 9389.     #total number of signal muon events
+totel = 6018.     #total number of signal electron events
 
 glb_eff_mu    = ROOT.RooRealVar("glb_eff_mu","glb_eff_mu",totmu*2./totsig, 0., 1.) #For now, just the raw MC passed/generated number
 eff_mu_constr = ROOT.RooRealVar("eff_mu_constr","eff_mu_constr", totmu*2./totsig, 0., 1.)
@@ -224,7 +230,8 @@ constrained_params.add(eff_el_constr)
 
 if isData:
     result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )
-    print "minNll = ", 2*(-89244.5141128-result_dataFit.minNll())
+    print "minNll = ", result_dataFit.minNll()
+    print "2Delta_minNll = ", 2*(-49581.3988125-result_dataFit.minNll())
 else:
     totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(0), ROOT.RooFit.NumCPU(2), ROOT.RooFit.Constrain(constrained_params) )
 
@@ -302,7 +309,7 @@ workspace.Write()
 fOutput.Close()
 
 # W_pigamma_BR.setVal(0.)
-# newdata = totPDF.generate(ROOT.RooArgSet(Categorization),7921,ROOT.RooFit.ProtoData(data))
+# newdata = totPDF.generate(ROOT.RooArgSet(Categorization),13200,ROOT.RooFit.ProtoData(data))
 # prova = ROOT.TFile("prova.root","RECREATE")
 # prova.cd()
 # newdata.Write()

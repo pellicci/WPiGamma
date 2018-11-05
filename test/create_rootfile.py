@@ -79,8 +79,8 @@ _met_puppi          = np.zeros(1, dtype=float)
 _Wmass              = np.zeros(1, dtype=float)
 
 #BDT scores
-BDT_OUT_MU  = 0.160
-BDT_OUT_ELE = 0.195
+BDT_OUT_MU  = 0.190
+BDT_OUT_ELE = 0.210
 
 _Nrandom_for_SF = ROOT.TRandom3(44317)
 
@@ -88,6 +88,9 @@ Wmass_mu   = ROOT.TH1F("Wmass_mu","Wmass mu",15,50,100)
 Wmass_ele  = ROOT.TH1F("Wmass_ele","Wmass ele",15,50,100)
 lep_pt_mu  = ROOT.TH1F("lep_pt_mu","lep pt mu",15,20,100)
 lep_pt_ele = ROOT.TH1F("lep_pt_ele","lep pt ele",15,20,100)
+
+Wmass_mu_WJets  = ROOT.TH1F("Wmass_mu_WJets","Wmass mu WJets",15,50,100)
+Wmass_ele_WJets = ROOT.TH1F("Wmass_ele_WJets","Wmass ele WJets",15,50,100)
 
 N_WGToLNuG_mu = 0.
 
@@ -105,7 +108,7 @@ nBkg_ele = 0.
 if not isData:
 
     if create_mass_tree:
-        f = TFile('WmassAnalysis/Tree_input_massfit_MC_prova.root','recreate')
+        f = TFile('WmassAnalysis/Tree_input_massfit_MC.root','recreate')
         
         t = TTree('minitree','tree with branches')
         t.Branch('Wmass',_Wmass_fit,'Wmass/D')
@@ -260,7 +263,7 @@ if not isData:
 if isData:
 
     if create_mass_tree:
-        f = TFile('WmassAnalysis/Tree_input_massfit_Data_prova.root','recreate')
+        f = TFile('WmassAnalysis/Tree_input_massfit_Data.root','recreate')
         t = TTree('minitree','tree with branches')
         t.Branch('Wmass',_Wmass_fit,'Wmass/D')
         t.Branch('isMuon',_isMuon_fit,'isMuon/I')
@@ -371,6 +374,13 @@ for name_sample in samplename_list:
         if nb <= 0:
             continue
 
+
+        ############################################################################
+        #                                                                          #
+        #-------------------------- Samples to be excluded ------------------------#
+        #                                                                          #
+        ############################################################################
+
         if isData and not "Data" in name_sample: 
             continue
         
@@ -381,9 +391,11 @@ for name_sample in samplename_list:
             is_ttbarlnu += 1
             continue
 
-        if name_sample == "Signal":
-            SignalTree_entries = mytree.GetEntriesFast()
-            entry_index += 1
+        if name_sample == "ZGTo2LG" or name_sample == "WGToLNuG":#name_sample == "TTGJets":
+            continue
+
+        #if not "Signal" in name_sample:
+        #    continue
 
 
         ############################################################################
@@ -391,6 +403,10 @@ for name_sample in samplename_list:
         #------------------------ Access the tree variables -----------------------#
         #                                                                          #
         ############################################################################
+
+        if name_sample == "Signal":
+            SignalTree_entries = mytree.GetEntriesFast()
+            entry_index += 1
 
         isMuon = mytree.is_muon
         LepPiOppositeCharge = mytree.LepPiOppositeCharge
@@ -524,10 +540,14 @@ for name_sample in samplename_list:
                 nSig_mu += Event_Weight
             if not "Signal" in name_sample and isMuon:
                 nBkg_mu += Event_Weight
+                # if "WJetsToLNu" in name_sample:
+                #     Wmass_mu_WJets.Fill(Wmass,Event_Weight)
             if "Signal" in name_sample and not isMuon:
                 nSig_ele += Event_Weight
             if not "Signal" in name_sample and not isMuon:
                 nBkg_ele += Event_Weight
+                # if "WJetsToLNu" in name_sample:
+                #     Wmass_ele_WJets.Fill(Wmass,Event_Weight)
 
         else:
             Event_Weight = 1.
@@ -751,3 +771,17 @@ canvas4 = TCanvas("canvas4","canvas4",200,106,600,600)
 ROOT.gStyle.SetOptStat(0)
 lep_pt_ele.Draw("hist")
 canvas4.SaveAs("lep_pt_ele_create_rootfile.pdf")
+
+# canvas5 = TCanvas("canvas5","canvas5",200,106,600,600)
+# ROOT.gStyle.SetOptStat(0)
+# Wmass_mu_WJets.SetAxisRange(0.,7000.,"Y")
+# Wmass_mu_WJets.Draw("hist")
+# print "mu integral: ", Wmass_mu_WJets.Integral()
+# canvas5.SaveAs("Wmass_mu_WJets_create_rootfile.pdf")
+
+# canvas6= TCanvas("canvas6","canvas6",200,106,600,600)
+# ROOT.gStyle.SetOptStat(0)
+# Wmass_ele_WJets.SetAxisRange(0.,5000.,"Y")
+# Wmass_ele_WJets.Draw("hist")
+# print "ele integral: ", Wmass_ele_WJets.Integral()
+# canvas6.SaveAs("Wmass_ele_WJets_create_rootfile.pdf")

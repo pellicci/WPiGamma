@@ -13,7 +13,7 @@ mult_if_signal_el_1 = TH1F("Electrons are red","Lepton multiplicity with tag ele
 mult_if_signal_el_2 = TH1F("Mult2 el","Lepton multiplicity with tag electron",5,-0.5,4.5)
 mult_if_signal_el_3 = TH1F("Ele ch. with loose electrons","Lepton multiplicity with tag muon",5,-0.5,4.5)
 
-f = TFile.Open("LeptonMultiplicity_output_v4.root")
+f = TFile.Open("LeptonMultiplicity_output.root")
 mytree = f.Get("LeptonMultiplicity/mytree")
 
 
@@ -96,4 +96,6 @@ mult_if_signal_el_3.Draw("SAME")
 gPad.SetLogy()
 legend.Draw("SAME")
 canvas2.Print("Electron_signal_logscale.pdf")
+
+raw_input()
 

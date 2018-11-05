@@ -86,9 +86,9 @@ mycuts = ROOT.TCut("weight > 0.")
 mycutb = ROOT.TCut("weight > 0.")
 
 if isMuon:
-    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=8994:nTrain_Background=171434:nTest_Signal=0:nTest_Background=0"]) ) # To be set with 75/25 ratio of training and testing events
+    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=9758:nTrain_Background=230843:nTest_Signal=0:nTest_Background=0"]) ) # To be set with 75/25 ratio of training and testing events
 else:
-    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=6649:nTrain_Background=132738:nTest_Signal=0:nTest_Background=0"]) ) # To be set with 75/25 ratio of training and testing events
+    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=7145:nTrain_Background=174851:nTest_Signal=0:nTest_Background=0"]) ) # To be set with 75/25 ratio of training and testing events
 
 if isMuon:
     method_btd  = factory.BookMethod(ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=20"]))

@@ -3,6 +3,7 @@ import os
 import math
 import numpy as np
 import copy
+import argparse
 from array import array
 from Workflow_Handler import Workflow_Handler
 
@@ -15,7 +16,18 @@ ROOT.gROOT.SetBatch(True)
 #                                                                          #
 ############################################################################
 
-isBDT = True # If true, the plots after BDT cut are produced. Otherwise, plots after pre-selection are produced
+#---------------------------------#
+p = argparse.ArgumentParser(description='Select whether to fill the histograms after pre-selection or after BDT')
+p.add_argument('isBDT_option', help='Type <<preselection>> or <<BDT>>')
+args = p.parse_args()
+
+# Switch from muon to electron channel
+if args.isBDT_option == "preselection":
+    isBDT = False
+if args.isBDT_option == "BDT":
+    isBDT = True
+#---------------------------------#
+
 isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
 myWF = Workflow_Handler("Signal","Data",isBDT_with_Wmass)
 
@@ -45,7 +57,10 @@ luminosity_GH   = 16.14
 ############################################################################
 
 #Make signal histos larger
-signal_magnify = 10000
+if isBDT:
+    signal_magnify = 100
+else:
+    signal_magnify = 10000
 
 output_dir = "plots"
 
@@ -239,20 +254,20 @@ for name_sample in samplename_list:
 
         ############################################################################
         #                                                                          #
-        #---------------------------- Samples to be cut ---------------------------#
+        #-------------------------- Samples to be excluded ------------------------#
         #                                                                          #
         ############################################################################
 
         if name_sample == "ttbar" and mytree.isttbarlnu: # Avoid double-counting of the ttbarlnu background
             continue
 
-        #if "Data" in name_sample: continue  #-------------Excluding data-------------#
+        # if "Data" in name_sample: continue  #-------------Excluding data-------------#
 
-        # if not (name_sample == "ttbar" or name_sample == "Signal"):
-        #     continue
+        if not (name_sample == "ttbar" or name_sample == "Signal"):
+            continue
 
-        #if name_sample == "ZGTo2LG" or name_sample == "WGToLNuG":#name_sample == "TTGJets":
-        #    continue
+        if name_sample == "ZGTo2LG" or name_sample == "WGToLNuG":#name_sample == "TTGJets":
+            continue
 
 
         ############################################################################
@@ -348,6 +363,10 @@ for name_sample in samplename_list:
         #if ("WJetsToLNu" in name_sample or "DY" in name_sample) and is_gen_ph:# and not gen_ph_mother == "13":
         #    continue
             
+        if "Signal" in name_sample:
+            Nsig_passed += 1
+        if not "Signal" in name_sample:
+            Nbkg_passed += 1
 
         ############################################################################
         #                                                                          #
@@ -366,7 +385,6 @@ for name_sample in samplename_list:
 
                 if random_mu_SF:
                     mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_BtoF,mu_weight_BtoF_err)
-
                 else:
                     mu_weight = mu_weight_BtoF
 
@@ -374,7 +392,6 @@ for name_sample in samplename_list:
                 
                 if random_mu_SF:
                     mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_GH,mu_weight_GH_err)
-
                 else:
                     mu_weight = mu_weight_GH
 
@@ -417,19 +434,6 @@ for name_sample in samplename_list:
 
                 Event_Weight = Event_Weight#*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wminus_pT))
 
-
-            # Obtain the number of sig and bkg events (weighted)
-            
-            if "Signal" in name_sample and isMuon:
-                Sevts_weighted_mu += Event_Weight
-            if not "Signal" in name_sample and isMuon:
-                Bevts_weighted_mu += Event_Weight
-            if "Signal" in name_sample and not isMuon:
-                Sevts_weighted_ele += Event_Weight
-            if not "Signal" in name_sample and not isMuon:
-                Bevts_weighted_ele += Event_Weight
-            
-
         else:
             Event_Weight = 1.
 
@@ -455,11 +459,11 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
-        #if (isMuon and BDT_out >= -0.1 and BDT_out < BDT_OUT_MU) or (not isMuon and BDT_out >= -0.1 and BDT_out < BDT_OUT_ELE):
-        if (Wmass >= 50. and Wmass <= 100.) and isMuon:
-            h_base[theSampleName+"h_Wmass_ratio_mu"].Fill(Wmass,Event_Weight)
-        if (Wmass >= 50. and Wmass <= 100.) and not isMuon:
-            h_base[theSampleName+"h_Wmass_ratio_ele"].Fill(Wmass,Event_Weight)
+        if (isMuon and BDT_out >= -0.1 and BDT_out < BDT_OUT_MU) or (not isMuon and BDT_out >= -0.1 and BDT_out < BDT_OUT_ELE): # Alternative cut on BDT score. Two histos will be filled. Eventually, they will be the ratio of Wmass distributions: one with pi_pT and gamma_ET normalized to Wmass, one not
+            if (Wmass >= 50. and Wmass <= 100.) and isMuon:
+                h_base[theSampleName+"h_Wmass_ratio_mu"].Fill(Wmass,Event_Weight)
+            if (Wmass >= 50. and Wmass <= 100.) and not isMuon:
+                h_base[theSampleName+"h_Wmass_ratio_ele"].Fill(Wmass,Event_Weight)
 
             
         if (isBDT and isMuon and BDT_out < BDT_OUT_MU) or (isBDT and not isMuon and BDT_out < BDT_OUT_ELE): # Cut on BDT output
@@ -522,6 +526,20 @@ for name_sample in samplename_list:
                 h_base[theSampleName+"h_elept_sig"].Fill(lep_pT,Event_Weight)
 
 
+        # Obtain the number of sig and bkg events (weighted)
+        if not "Data" in name_sample:
+            if "Signal" in name_sample and isMuon:
+                Sevts_weighted_mu += Event_Weight
+            #if "WJetsToLNu" in name_sample and isMuon:
+            if not "Signal" in name_sample and isMuon:
+                Bevts_weighted_mu += Event_Weight
+            if "Signal" in name_sample and not isMuon:
+                Sevts_weighted_ele += Event_Weight
+            #if "WJetsToLNu" in name_sample and not isMuon:
+            if not "Signal" in name_sample and not isMuon:
+                Bevts_weighted_ele += Event_Weight
+
+
         if "DoubleEMEnriched" in name_sample:
             N_DoubleEMEnriched += Event_Weight
 
@@ -535,7 +553,7 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
-
+        ########----------- To be filled in "preselection" mode! -----------########
         if name_sample == "Signal" and is_signal_Wplus:
             if Wplus_pT > 300.:
                 W_signal_hist.Fill(300.,Event_Weight)
@@ -726,7 +744,8 @@ for hname in list_histos:
         
     canvas[hname].SaveAs("plots/" + hname + ".pdf")
 
-
+#print "Wmass_mu: ", Wmass_mu.Integral()
+#print "Wmass_ele: ", Wmass_ele.Integral()
 Wmass_mu.Scale(1/Wmass_mu.Integral())
 Wmass_ratio_mu.Scale(1/Wmass_ratio_mu.Integral())
 Wmass_ele.Scale(1/Wmass_ele.Integral())

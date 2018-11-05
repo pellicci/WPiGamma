@@ -5,26 +5,11 @@ import ROOT
 
 ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
-#--------some bools for scale factor systematics----------#
-
-random_mu_SF = False #--------if True, muon scale factors are sampled from a Gaussian
-random_ele_SF = False #------if True, electron scale factors are sampled from a Gaussian
-random_ph_SF = False #-------if True, photon scale factors are sampled from a Gaussian
-
-#---------------------------------------------------------#
-
 #Define the observable
 Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV")
 
 #Retrive the sample
-if random_mu_SF:
-    fInput = ROOT.TFile("Tree_MC_muSF.root")
-elif random_ele_SF:
-    fInput = ROOT.TFile("Tree_MC_eleSF.root")
-elif random_ph_SF:
-    fInput = ROOT.TFile("Tree_MC_phSF.root")
-else:
-    fInput = ROOT.TFile("Tree_input_massfit_MC_prova.root")
+fInput = ROOT.TFile("Tree_input_massfit_MC.root")
 fInput.cd()
 
 mytree = fInput.Get("minitree")
@@ -80,8 +65,9 @@ dCB_nL    = ROOT.RooRealVar("dCB_nL", "Double CB n left", 3., 0.1, 50.)
 dCB_nR    = ROOT.RooRealVar("dCB_nR", "Double CB n right", 1., 0.1, 50.)
 dCB       = ROOT.RooDoubleCBFast("dCB", "Double Crystal Ball", Wmass, dCB_pole, dCB_width, dCB_aL, dCB_nL, dCB_aR, dCB_nR)
 
-totSignal_prime = ROOT.RooAddPdf("totSignal_prime","Partial signal PDF",ROOT.RooArgList(dCB,Gauss_W),ROOT.RooArgList(fracSig_prime))
-totSignal = ROOT.RooAddPdf("totSignal","Total signal PDF",ROOT.RooArgList(totSignal_prime,Gauss_W_2),ROOT.RooArgList(fracSig))
+#totSignal_prime = ROOT.RooAddPdf("totSignal_prime","Partial signal PDF",ROOT.RooArgList(dCB,Gauss_W),ROOT.RooArgList(fracSig_prime))
+#totSignal = ROOT.RooAddPdf("totSignal","Total signal PDF",ROOT.RooArgList(totSignal_prime,Gauss_W_2),ROOT.RooArgList(fracSig))
+totSignal = ROOT.RooAddPdf("totSignal","Total signal PDF",ROOT.RooArgList(dCB,Gauss_W_2),ROOT.RooArgList(fracSig))
 
 
 totSignal.fitTo(data_Signal)
@@ -106,14 +92,8 @@ canvas.SaveAs("plots/SignalFit.pdf")
 workspace = ROOT.RooWorkspace("myworkspace")
 getattr(workspace,'import')(totSignal)
 
-if random_mu_SF:
-    fOutput = ROOT.TFile("Signal_model_muSF.root","RECREATE")
-elif random_ele_SF:
-    fOutput = ROOT.TFile("Signal_model_eleSF.root","RECREATE")
-elif random_ph_SF:
-    fOutput = ROOT.TFile("Signal_model_phSF.root","RECREATE")
-else:
-    fOutput = ROOT.TFile("Signal_model.root","RECREATE")
+
+fOutput = ROOT.TFile("Signal_model.root","RECREATE")
 fOutput.cd()
 workspace.Write()
 fOutput.Close()

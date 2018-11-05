@@ -252,7 +252,7 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
     //if(mu->pt() < 25. || mu->pt() < pTmuMax || !mu->isTightMuon(slimmedPV->at(0))) continue;
     //if(mu->pt() < 25. || mu->pt() < pTmuMax || !mu->isMediumMuon()) continue;
-    if(mu->pt() < 25. || !mu->isMediumMuon() || abs(mu->eta()) > 2.4 || fabs(mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(mu->muonBestTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
+    if(mu->pt() < 20. || !mu->isMediumMuon() || abs(mu->eta()) > 2.4 || fabs(mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(mu->muonBestTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
     mu_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
     if(mu_iso > 0.25) continue;
     //pTmuMax = mu->pt();
@@ -277,7 +277,7 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
   for (size_t i = 0; i < slimmedElectrons->size(); ++i){
     const auto el = slimmedElectrons->ptrAt(i);
 
-    if(el->pt() < 26. || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
+    if(el->pt() < 20. || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
 
     bool isPassMedium = (*el_medium_id_decisions)[el];
     if(!isPassMedium) continue;
@@ -302,7 +302,7 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
   for (size_t i = 0; i < slimmedElectrons->size(); ++i){
     const auto el = slimmedElectrons->ptrAt(i);
     // if(el->pt() < 26. || el->pt() < pTeleMax) continue;
-    if(el->pt() < 26. || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
+    if(el->pt() < 20. || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
     //float deltaR = sqrt((el_eta-el->eta())*(el_eta-el->eta())+(el_phi-el->phi())*(el_phi-el->phi()));
     //float deltapT = el_pT - el->pt();
     //if (deltaR < 0.01 && deltapT < 0.01 ) continue;
@@ -312,7 +312,7 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
 
     float abseta =  abs(el->superCluster()->eta());
     float eA = effectiveAreas_.getEffectiveArea(abseta);
-    if((el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt() > 0.4) continue;
+    if((el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt() > 0.35) continue;
 
     nElectronsLoose++;
     //std::cout << "el pT :" << el_pT << "Eta: " << el_eta << "phi:" << el_phi << "iso: " << el_iso << "number: " << nElectrons << std::endl;

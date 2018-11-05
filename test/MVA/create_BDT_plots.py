@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from ROOT import TH1F, TCanvas, TFile, TLegend, gStyle
 
-isMuon = True
+isMuon = False
 
 def BDT_output():
 
@@ -39,7 +39,7 @@ def BDT_output():
     h_BDT_bkg.SetFillStyle(3002)
     h_BDT_sig.Draw("hist")
     h_BDT_bkg.Draw("SAME, hist")
-    h_BDT_sig.SetMaximum(6.5)
+    h_BDT_sig.SetMaximum(4.5)
     leg1.Draw("SAME")
 
     if isMuon:

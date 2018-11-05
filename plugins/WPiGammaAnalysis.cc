@@ -290,13 +290,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   mu_iso = 0.;
   best_mu_iso = 0.;
 
-  el_pT  = 0.;
-  el_eta = 0.;
-  el_phi = 0.;
-  el_ID  = 0;
-  el_dxy = 0.;
-  el_dz  = 0.;
-  el_iso = 0.;
+  el_pT    = 0.;
+  el_eta   = 0.;
+  el_etaSC = 0.;
+  el_phi   = 0.;
+  el_ID    = 0;
+  el_dxy   = 0.;
+  el_dz    = 0.;
+  el_iso   = 0.;
   best_el_iso = 0.;
 
   deltaphi_lep_pi = 0.;
@@ -319,6 +320,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   ph_eT     = 0.;
   ph_eta    = 0.;
+  ph_etaSC  = 0.;
   ph_phi    = 0.;
   ph_energy = 0.;
   LorentzVector ph_p4;
@@ -332,6 +334,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   lepton_pT_tree  = 0.;
   lepton_eta_tree = 0.;
+  lepton_etaSC_tree = 0.;
   lepton_phi_tree = 0.;
   lepton_dxy_tree = 0.;
   lepton_dz_tree  = 0.;
@@ -425,6 +428,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       
       el_ID    = el->pdgId();
       el_eta   = el->eta();
+      el_etaSC = el->superCluster()->eta();
       el_phi   = el->phi();
       el_pT    = el->pt();
       el_dxy   = el->gsfTrack()->dxy((&slimmedPV->at(0))->position());
@@ -462,12 +466,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
 
   if(!is_muon && is_ele){
-    lepton_pT_tree  = el_pT;
-    lepton_eta_tree = el_eta;
-    lepton_phi_tree = el_phi;
-    lepton_dxy_tree = el_dxy;
-    lepton_dz_tree  = el_dz;
-    lepton_iso_tree = best_el_iso;
+    lepton_pT_tree    = el_pT;
+    lepton_eta_tree   = el_eta;
+    lepton_etaSC_tree = el_etaSC;
+    lepton_phi_tree   = el_phi;
+    lepton_dxy_tree   = el_dxy;
+    lepton_dz_tree    = el_dz;
+    lepton_iso_tree   = best_el_iso;
   }
 
 
@@ -639,6 +644,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     ph_eT     = photon->et();
     ph_eta    = photon->eta();
+    ph_etaSC  = photon->superCluster()->eta();
     ph_phi    = photon->phi();
     ph_energy = photon->energy();
     ph_p4     = photon->p4();
@@ -765,6 +771,7 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("LepPiOppositeCharge",&are_lep_pi_opposite_charge);
   mytree->Branch("lepton_pT",&lepton_pT_tree);
   mytree->Branch("lepton_eta",&lepton_eta_tree);
+  mytree->Branch("lepton_etaSC",&lepton_etaSC_tree);
   mytree->Branch("lepton_phi",&lepton_phi_tree);
   mytree->Branch("lepton_dxy",&lepton_dxy_tree);
   mytree->Branch("lepton_dz",&lepton_dz_tree);
@@ -781,6 +788,7 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("sum_pT_05_ch",&sum_pT_05_ch);
   mytree->Branch("photon_eT",&ph_eT);
   mytree->Branch("photon_eta",&ph_eta);
+  mytree->Branch("photon_etaSC",&ph_etaSC);
   mytree->Branch("photon_phi",&ph_phi);
   mytree->Branch("photon_energy",&ph_energy);
   mytree->Branch("photon_iso_ChargedHadron",&ph_iso_ChargedHadron);

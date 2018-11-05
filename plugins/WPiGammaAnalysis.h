@@ -65,6 +65,7 @@ private:
   bool are_lep_pi_opposite_charge;
   float lepton_pT_tree;
   float lepton_eta_tree;
+  float lepton_etaSC_tree;
   float lepton_phi_tree;
   float lepton_dxy_tree;
   float lepton_dz_tree;
@@ -83,6 +84,7 @@ private:
 
   float el_pT;
   float el_eta;
+  float el_etaSC;
   float el_phi;
   int   el_ID;
   float el_dxy;
@@ -102,6 +104,7 @@ private:
 
   float ph_eT;
   float ph_eta;
+  float ph_etaSC;
   float ph_phi;
   float ph_energy;
   float ph_iso_ChargedHadron;
