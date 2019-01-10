@@ -21,11 +21,11 @@ options.parseArguments()
 
 #Input source
 if options.runningOnData: 
-   process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_2016SeptRepro_v7') #which conditions to use
+   process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v10') #which conditions to use
    print "Data Sample will be taken as input for check up of the code working "
    inputFiles = "root://cms-xrd-global.cern.ch//store/data/Run2016C/BTagCSV/MINIAOD/23Sep2016-v1/70000/00B6A0EA-A783-E611-8973-02163E0165C4.root"
 else:
-   process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc')
+   process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mcRun2_asymptotic_v3')
    print "MC Sample will be taken as input for check up of the code working "
    inputFiles = {"root://cms-xrd-global.cern.ch//store/user/pellicci/WPiGamma_GENSIM_80XV1/WPiGamma_MINIAODSIM_80XV1/161214_125251/0000/WPiGamma_pythia8_MINIAOD_1.root",
                "root://cms-xrd-global.cern.ch//store/user/pellicci/WPiGamma_GENSIM_80XV1/WPiGamma_MINIAODSIM_80XV1/161214_125251/0000/WPiGamma_pythia8_MINIAOD_2.root",

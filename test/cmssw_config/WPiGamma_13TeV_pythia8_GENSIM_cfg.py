@@ -19,7 +19,7 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.Geometry.GeometrySimDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
-process.load('IOMC.EventVertexGenerators.VtxSmearedRealistic50ns13TeVCollision_cfi')
+process.load('IOMC.EventVertexGenerators.VtxSmearedRealistic25ns13TeV2016Collision_cfi.py')
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
 process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load('Configuration.StandardSequences.Digi_cff')
@@ -68,7 +68,7 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
 # Other statements
 process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc_GRun', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mcRun2_asymptotic_v3', '')
 
 from Configuration.Generator.Pythia8CommonSettings_cfi import *
 from Configuration.Generator.Pythia8CUEP8M1Settings_cfi import *
@@ -80,7 +80,7 @@ process.generator = cms.EDFilter("Pythia8GeneratorFilter",
         processParameters = cms.vstring('Top:gg2ttbar = on',
             'Top:qqbar2ttbar = on ',
             '6:m0 = 175',
-	    '24:addChannel 1 0.000001 100 211 22',
+	    '24:addChannel = 1 0.000001 100 211 22',
             '24:onMode = off', 
             '24:onNegIfMatch = 11 12',
             '24:onNegIfMatch = 13 14',

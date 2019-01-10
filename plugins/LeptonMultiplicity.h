@@ -94,28 +94,28 @@ private:
 
   //Ele ID decisions objects
   edm::EDGetToken electronsMiniAODToken_;
-  edm::EDGetTokenT<edm::ValueMap<bool> > eleLooseIdMapToken_;
-  edm::EDGetTokenT<edm::ValueMap<bool> > eleMediumIdMapToken_;
-  edm::EDGetTokenT<edm::ValueMap<bool> > eleTightIdMapToken_;
+  // edm::EDGetTokenT<edm::ValueMap<bool> > eleLooseIdMapToken_;
+  // edm::EDGetTokenT<edm::ValueMap<bool> > eleMediumIdMapToken_;
+  // edm::EDGetTokenT<edm::ValueMap<bool> > eleTightIdMapToken_;
   // MVA values and categories (optional)
-  edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_el_loose_;
-  edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_el_loose_;
-  edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_el_;
-  edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_el_;
+  // edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_el_loose_;
+  // edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_el_loose_;
+  // edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_el_;
+  // edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_el_;
 
   //Photon ID decisions
   edm::EDGetToken photonsMiniAODToken_;
-  edm::EDGetTokenT<edm::ValueMap<bool> > phoMediumIdBoolMapToken_;
-  edm::EDGetTokenT<edm::ValueMap<vid::CutFlowResult> > phoMediumIdFullInfoMapToken_;
+  // edm::EDGetTokenT<edm::ValueMap<bool> > phoMediumIdBoolMapToken_;
+  // edm::EDGetTokenT<edm::ValueMap<vid::CutFlowResult> > phoMediumIdFullInfoMapToken_;
 
   //rho (PU energy density)
   edm::EDGetTokenT<double> rhoToken_;
 
   // MVA values and categories (optional)
-  edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_ph_;
-  edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_ph_;
+  // edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_ph_;
+  // edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_ph_;
   bool verboseIdFlag_;
 
   //Effective areas for isolation
-  EffectiveAreas   effectiveAreas_;
+  EffectiveAreas   effectiveAreas_el_;
 };

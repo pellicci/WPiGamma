@@ -44,6 +44,7 @@
 #include "DataFormats/EgammaCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/VIDCutFlowResult.h"
+//#include "RecoEgamma/PhotonIdentification/interface/PhotonMVAEstimator.h"
 
 typedef math::XYZTLorentzVector LorentzVector;
  
@@ -64,27 +65,17 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   bsCollection_(iConfig.getParameter<edm::InputTag>("bsCollection")),  
   PileupSrc_(iConfig.getParameter<edm::InputTag>("PileupSrc")),
   triggerBits_(consumes<edm::TriggerResults> (iConfig.getParameter<edm::InputTag>("triggerbits"))),
-  eleLooseIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleLooseIdMap"))),
-  eleMediumIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleMediumIdMap"))),
-  eleTightIdMapToken_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("eleTightIdMap"))),
-  mvaValuesMapToken_el_loose_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap_el_loose"))),
-  mvaCategoriesMapToken_el_loose_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap_el_loose"))),
-  mvaValuesMapToken_el_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap_el"))),
-  mvaCategoriesMapToken_el_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap_el"))),
-  phoMediumIdBoolMapToken_(consumes<edm::ValueMap<bool> > (iConfig.getParameter<edm::InputTag>("phoMediumIdBoolMap"))),
-  phoMediumIdFullInfoMapToken_(consumes<edm::ValueMap<vid::CutFlowResult> > (iConfig.getParameter<edm::InputTag>("phoMediumIdFullInfoMap"))),
-  mvaValuesMapToken_ph_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaValuesMap_ph"))),
-  mvaCategoriesMapToken_ph_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaCategoriesMap_ph"))),
   verboseIdFlag_(iConfig.getParameter<bool>("phoIdVerbose")),
-  effectiveAreas_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile")).fullPath() ),
+  effectiveAreas_el_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile_el")).fullPath() ),
+  effectiveAreas_ph_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile_ph")).fullPath() ),
   Bjets_WP_(iConfig.getParameter<double>("Bjets_WP"))
 
 {
   packedPFCandidatestoken_  = consumes<std::vector<pat::PackedCandidate> >(packedPFCandidates_); 
   slimmedMuonstoken_        = consumes<std::vector<pat::Muon> >(slimmedMuons_);
   prunedGenParticlestoken_  = consumes<std::vector<reco::GenParticle> >(prunedGenParticles_);
-  photonsMiniAODToken_      = mayConsume<edm::View<reco::Photon> > (slimmedPhotons_);
-  electronsMiniAODToken_    = mayConsume<edm::View<reco::GsfElectron> > (slimmedElectrons_);
+  photonsMiniAODToken_      = consumes<std::vector<pat::Photon> > (slimmedPhotons_);
+  electronsMiniAODToken_    = consumes<std::vector<pat::Electron> > (slimmedElectrons_);
   slimmedJetstoken_         = consumes<std::vector<pat::Jet> >(slimmedJets_);
   slimmedMETstoken_         = consumes<std::vector<pat::MET> >(slimmedMETs_);
   slimmedMETsPuppitoken_    = consumes<std::vector<pat::MET> >(slimmedMETsPuppi_);
@@ -125,10 +116,10 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   edm::Handle<std::vector<reco::GenParticle>  > genParticles;
   if(!runningOnData_)iEvent.getByLabel(prunedGenParticles_, genParticles);
 
-  edm::Handle<edm::View<reco::Photon> > slimmedPhotons;
+  edm::Handle<std::vector<pat::Photon> > slimmedPhotons;
   iEvent.getByToken(photonsMiniAODToken_,slimmedPhotons);
 
-  edm::Handle<edm::View<reco::GsfElectron> > slimmedElectrons;
+  edm::Handle<std::vector<pat::Electron> > slimmedElectrons;
   iEvent.getByToken(electronsMiniAODToken_,slimmedElectrons);
 
   edm::Handle<std::vector<pat::Jet > > slimmedJets;
@@ -146,36 +137,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   edm::Handle<edm::TriggerResults> triggerBits;
   iEvent.getByToken(triggerBits_, triggerBits);
 
-  //Get the electron ID data from the event stream.
-  // Note: this implies that the VID ID modules have been run upstream.
-  edm::Handle<edm::ValueMap<bool> > el_loose_id_decisions; 
-  edm::Handle<edm::ValueMap<bool> > el_medium_id_decisions;
-  edm::Handle<edm::ValueMap<bool> > el_tight_id_decisions; 
-  iEvent.getByToken(eleLooseIdMapToken_,el_loose_id_decisions);
-  iEvent.getByToken(eleMediumIdMapToken_,el_medium_id_decisions);
-  iEvent.getByToken(eleTightIdMapToken_,el_tight_id_decisions);
-
-  // Get MVA values and categories (optional)
-  edm::Handle<edm::ValueMap<float> > el_mvaValues;
-  edm::Handle<edm::ValueMap<int> > el_mvaCategories;
-  iEvent.getByToken(mvaValuesMapToken_el_,el_mvaValues);
-  iEvent.getByToken(mvaCategoriesMapToken_el_,el_mvaCategories);
-
-  // Get the photon ID data from the event stream.
-  // Note: this implies that the VID ID modules have been run upstream.
-  // The first map simply has pass/fail for each particle
-  edm::Handle<edm::ValueMap<bool> > ph_medium_id_decisions;
-  iEvent.getByToken(phoMediumIdBoolMapToken_,ph_medium_id_decisions);
-  //
-  // The second map has the full info about the cut flow
-  edm::Handle<edm::ValueMap<vid::CutFlowResult> > ph_medium_id_cutflow_data;
-  iEvent.getByToken(phoMediumIdFullInfoMapToken_,ph_medium_id_cutflow_data);
-
-  // Get MVA values and categories (optional)
-  edm::Handle<edm::ValueMap<float> > ph_mvaValues;
-  edm::Handle<edm::ValueMap<int> > ph_mvaCategories;
-  iEvent.getByToken(mvaValuesMapToken_ph_,ph_mvaValues);
-  iEvent.getByToken(mvaCategoriesMapToken_ph_,ph_mvaCategories);
 
   _Nevents_processed++;
 
@@ -400,26 +361,29 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   iEvent.getByToken(rhoToken_,rhoH);
   rho_ = *rhoH;
 
-  for (size_t i = 0; i < slimmedElectrons->size(); ++i){
-    const auto el = slimmedElectrons->ptrAt(i);
+  for(auto el = slimmedElectrons->begin(); el != slimmedElectrons->end(); ++el){
+    //for (size_t i = 0; i < slimmedElectrons->size(); ++i){
+    //const auto el = slimmedElectrons->ptrAt(i);
     if(el->pt() < 20. || fabs(el->eta()) > 2.5 || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
 
     //PflowIsolationVariables pfIso = el->pfIsolationVariables();
     float abseta = fabs(el->superCluster()->eta());
-    float eA     = effectiveAreas_.getEffectiveArea(abseta);
+    float eA     = effectiveAreas_el_.getEffectiveArea(abseta);
     el_iso   = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
 
     if(el_iso > 0.35) continue;
 
     //-------------Conditions on loose/medium MVA electron ID-------------//
     if(!is_muon){
-      bool isPassLoose = (*el_loose_id_decisions)[el];
-      if(!isPassLoose) continue;
+      // bool isPassLoose = (*el_loose_id_decisions)[el];
+      // if(!isPassLoose) continue;
+      if(el->electronID("mvaEleID-Fall17-iso-V2-wpLoose") == 0) continue;
       nElectronsLoose++;
     }
 
-    bool isPassMedium = (*el_medium_id_decisions)[el];
-    if(!isPassMedium) continue;
+    // bool isPassMedium = (*el_medium_id_decisions)[el];
+    // if(!isPassMedium) continue;
+    if(el->electronID("mvaEleID-Fall17-iso-V2-wp90") == 0) continue;
     
     is_ele = true;
     nElectrons++;
@@ -619,35 +583,46 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //*************************************************************//
 
   bool cand_photon_found = false;
+  float corr_et = 0.;
 
-  for (size_t i = 0; i < slimmedPhotons->size(); ++i){
-    const auto photon = slimmedPhotons->ptrAt(i);
+  for(auto photon = slimmedPhotons->begin(); photon != slimmedPhotons->end(); ++photon){
 
-    if(photon->et() < 20. || fabs(photon->eta()) > 2.5 || photon->et() < eTphMax) continue;
+    corr_et = photon->et();
+
+    // Apply energy scale corrections to MC (not available for 2016)
+    // if(!runningOnData_){
+    //   corr_et = photon->et() * photon->userFloat("ecalEnergyPostCorr")/photon->energy();
+    // }
+
+    if(corr_et < 20. || fabs(photon->eta()) > 2.5 || corr_et < eTphMax) continue;
     if(photon->hasPixelSeed()) continue;   //electron veto
 
-    // The minimal info
-    bool isPassMedium = (*ph_medium_id_decisions)[photon];
-    if(!isPassMedium) continue;
+    if(photon->photonID("mvaPhoID-RunIIFall17-v2-wp90") == 0) continue;
 
     float abseta = fabs(photon->superCluster()->eta());
-    float eA = effectiveAreas_.getEffectiveArea(abseta);
+    float eA = effectiveAreas_ph_.getEffectiveArea(abseta);
     //photon_iso = (pfIso.sumChargedHadronPt + std::max( 0.0f, pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - eA*rho_))/photon->et();
-    if(photon->chargedHadronIso()/photon->et() > 0.3 || photon->photonIso() > 4.) continue; //|| photon->trackIso() > 6
+    if(photon->chargedHadronIso()/corr_et > 0.3 || photon->photonIso() > 4.) continue; //|| photon->trackIso() > 6
     ph_iso_ChargedHadron = photon->chargedHadronIso();
     ph_iso_NeutralHadron = photon->neutralHadronIso();
     ph_iso_Photon        = photon->photonIso();
     //ph_iso_Track         = photon->trackIso();
     ph_iso_eArho         = eA*rho_;
 
-    eTphMax = photon->et();
+    eTphMax = corr_et;
 
-    ph_eT     = photon->et();
+    ph_eT     = corr_et;
     ph_eta    = photon->eta();
     ph_etaSC  = photon->superCluster()->eta();
     ph_phi    = photon->phi();
     ph_energy = photon->energy();
     ph_p4     = photon->p4();
+
+    // Apply energy scale corrections to MC
+    // if(!runningOnData_){
+    //   ph_energy = photon->userFloat("ecalEnergyPostCorr");
+    //   ph_p4     = photon->p4() * photon->userFloat("ecalEnergyPostCorr")/photon->energy();
+    // }
 
     cand_photon_found = true;
     nPhotons++;
