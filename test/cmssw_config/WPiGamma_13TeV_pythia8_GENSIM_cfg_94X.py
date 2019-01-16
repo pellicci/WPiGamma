@@ -2,7 +2,7 @@
 # using: 
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: Pythia8CardFragment.py --fileout file:WPiGamma_pythia8_GENSIM.root --mc --eventcontent RAWSIM --datatier GEN-SIM --conditions auto:run2_mc --step GEN,SIM,DIGI,L1,DIGI2RAW,HLT --python_filename WPiGamma_13TeV_pythia8_GENSIM_cfg_94X.py --no_exec --era Run2_2016 -n 10 --pileup=2016_25ns_Moriond17MC_PoissonOOTPU
+# with command line options: Pythia8CardFragment.py --fileout file:WPiGamma_pythia8_GENSIM.root --mc --eventcontent RAWSIM --datatier GEN-SIM --conditions auto:run2_mc_GRun --step GEN,SIM,DIGI,L1,DIGI2RAW,HLT --python_filename WPiGamma_13TeV_pythia8_GENSIM_cfg_94X.py --no_exec --era Run2_2016 -n 10 --pileup=2016_25ns_Moriond17MC_PoissonOOTPU
 import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
@@ -19,7 +19,8 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.Geometry.GeometrySimDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
-process.load('IOMC.EventVertexGenerators.VtxSmearedRealistic50ns13TeVCollision_cfi')
+#process.load('IOMC.EventVertexGenerators.VtxSmearedRealistic50ns13TeVCollision_cfi')
+process.load('IOMC.EventVertexGenerators.VtxSmearedRealistic25ns13TeV2016Collision_cfi')
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
 process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load('Configuration.StandardSequences.Digi_cff')
@@ -70,7 +71,8 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
 # Other statements
 process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc_GRun', '')
+
 
 process.generator = cms.EDFilter("Pythia8GeneratorFilter",
     PythiaParameters = cms.PSet(
@@ -145,3 +147,4 @@ process = customizeHLTforMC(process)
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
 # End adding early deletion
+
