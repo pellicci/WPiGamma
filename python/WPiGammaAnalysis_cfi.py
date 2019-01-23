@@ -36,6 +36,7 @@ WPiGammaAnalysis = cms.EDAnalyzer('WPiGammaAnalysis',
                                   # ValueMaps with MVA results
                                   mvaValuesMap_ph     = cms.InputTag("photonMVAValueMapProducer:PhotonMVAEstimatorRun2Spring16NonTrigV1Values"),
                                   mvaCategoriesMap_ph = cms.InputTag("photonMVAValueMapProducer:PhotonMVAEstimatorRun2Spring16NonTrigV1Categories"),
+
                                   # Effective areas for computing PU correction for isolations
                                   effAreasConfigFile = cms.FileInPath("RecoEgamma/ElectronIdentification/data/Spring15/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_25ns.txt")
                                  )

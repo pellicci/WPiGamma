@@ -192,6 +192,7 @@ private:
   // MVA values and categories (optional)
   edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_ph_;
   edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_ph_;
+
   bool verboseIdFlag_;
 
   //Effective areas for isolation

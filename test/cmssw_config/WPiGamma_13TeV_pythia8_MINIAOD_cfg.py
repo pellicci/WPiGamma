@@ -2,7 +2,7 @@
 # using: 
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: WPiGamma -s PAT --eventcontent MINIAODSIM --runUnscheduled --mc --filein WPiGamma_pythia8_RECO.root --conditions auto:run2_mc -n 10 --no_exe
+# with command line options: WPiGamma -s PAT --eventcontent MINIAODSIM --runUnscheduled --mc --filein WPiGamma_pythia8_RECO.root --conditions auto:run2_mc -n 10 --no_exec
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('PAT')
@@ -20,7 +20,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(15)
 )
 
 # Input source
