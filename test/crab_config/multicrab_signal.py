@@ -46,14 +46,14 @@ if __name__ == '__main__':
     #############################################################################################
 
     config.General.requestName = 'WPiGammaAnalysis_Signal_WPlus'
-    config.Data.inputDataset = '/WPlusPiGamma_GENSIM_80XV1/pellicci-WPlusPiGamma_MINIAODSIM_80XV1-1ccbf35f8ddfb81066cfc2789c02310c/USER'
+    config.Data.inputDataset = '/WPlusPiGamma_GENSIM_80XV1/rselvati-WPlusPiGamma_MINIAODSIM_94XV3-9a5eaf7e0651dc0135fee9d652526a74/USER'
     p = Process(target=submit, args=(config,))
     p.start()
     p.join()
 
     config.General.requestName = 'WPiGammaAnalysis_Signal_WMinus'
     config.Data.unitsPerJob = 5
-    config.Data.inputDataset = '/WMinusPiGamma_GENSIM_80XV1/pellicci-WMinusPiGamma_MINIAODSIM_80XV1-1ccbf35f8ddfb81066cfc2789c02310c/USER'
+    config.Data.inputDataset = '/WMinusPiGamma_GENSIM_80XV1/rselvati-WMinusPiGamma_MINIAODSIM_94XV3-9a5eaf7e0651dc0135fee9d652526a74/USER'
     p = Process(target=submit, args=(config,))
     p.start()
     p.join()

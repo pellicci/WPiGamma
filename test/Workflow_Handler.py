@@ -8,19 +8,18 @@ from array import array
 #                                                                                 #
 #----------- Acess scale factor histos for EGamma and Muon corrections -----------#
 #                                                                                 #
+#        https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaIDRecipesRun2         #
+#                                                                                 #
+#   https://twiki.cern.ch/twiki/bin/view/CMS/MuonReferenceEffs2016LegacyRereco    #
+#                                                                                 #
 ###################################################################################
 
-eg_reco_scale_name  = "scale_factors/Electron_reco_2D.root"
-eg_reco_scale_file  = ROOT.TFile(eg_reco_scale_name)
-eg_reco_scale_histo = ROOT.TH2F()
-eg_reco_scale_histo = eg_reco_scale_file.Get("EGamma_SF2D")
-
-eg_ID_scale_name  = "scale_factors/Electron_ID_2D.root"
+eg_ID_scale_name  = "scale_factors/2016LegacyReReco_ElectronMVA90_Fall17V2.root"
 eg_ID_scale_file  = ROOT.TFile(eg_ID_scale_name)
 eg_ID_scale_histo = ROOT.TH2F()
 eg_ID_scale_histo = eg_ID_scale_file.Get("EGamma_SF2D")
 
-ph_ID_scale_name  = "scale_factors/Photon_ID_2D.root"
+ph_ID_scale_name  = "scale_factors/Fall17V2_2016_MVAwp90_photons.root"
 ph_ID_scale_file  = ROOT.TFile(ph_ID_scale_name)
 ph_ID_scale_histo = ROOT.TH2F()
 ph_ID_scale_histo = ph_ID_scale_file.Get("EGamma_SF2D")
@@ -236,13 +235,12 @@ class Workflow_Handler:
         eg_ID_err         = 0.
         tot_err           = 0.
 
-        scale_factor_reco = eg_reco_scale_histo.GetBinContent( eg_reco_scale_histo.GetXaxis().FindBin(local_lep_eta), eg_reco_scale_histo.GetYaxis().FindBin(local_lep_pt) )
-        eg_reco_err       = eg_reco_scale_histo.GetBinError( eg_reco_scale_histo.GetXaxis().FindBin(local_lep_eta), eg_reco_scale_histo.GetYaxis().FindBin(local_lep_pt) )
         scale_factor_ID   = eg_ID_scale_histo.GetBinContent( eg_ID_scale_histo.GetXaxis().FindBin(local_lep_eta), eg_ID_scale_histo.GetYaxis().FindBin(local_lep_pt) )
         eg_ID_err         = eg_ID_scale_histo.GetBinError( eg_ID_scale_histo.GetXaxis().FindBin(local_lep_eta), eg_ID_scale_histo.GetYaxis().FindBin(local_lep_pt) )
 
-        scale_factor = scale_factor_reco * scale_factor_ID
-        tot_err      = math.sqrt( scale_factor_reco * scale_factor_reco * eg_ID_err * eg_ID_err + scale_factor_ID * scale_factor_ID * eg_reco_err * eg_reco_err )
+        scale_factor = scale_factor_ID
+        tot_err      = eg_ID_err
+
 
         return scale_factor, tot_err
 
@@ -270,7 +268,7 @@ class Workflow_Handler:
         scale_factor_ID      = ph_ID_scale_histo.GetBinContent( ph_ID_scale_histo.GetXaxis().FindBin(local_ph_eta), ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
         ph_ID_err            = ph_ID_scale_histo.GetBinError( ph_ID_scale_histo.GetXaxis().FindBin(local_ph_eta), ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
         scale_factor_pixVeto = ph_pixVeto_scale_histo.GetBinContent( ph_pixVeto_scale_histo.GetXaxis().FindBin(math.fabs(local_ph_eta)), ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
-        ph_pixVeto_err       = ph_pixVeto_scale_histo.GetBinError( ph_pixVeto_scale_histo.GetXaxis().FindBin(local_ph_eta), ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+        ph_pixVeto_err       = ph_pixVeto_scale_histo.GetBinError( ph_pixVeto_scale_histo.GetXaxis().FindBin(math.fabs(local_ph_eta)), ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
 
         scale_factor = scale_factor_ID * scale_factor_pixVeto
         tot_err      = math.sqrt( scale_factor_pixVeto * scale_factor_pixVeto * ph_ID_err * ph_ID_err + scale_factor_ID * scale_factor_ID * ph_pixVeto_err * ph_pixVeto_err )

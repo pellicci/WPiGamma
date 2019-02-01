@@ -263,11 +263,13 @@ for name_sample in samplename_list:
 
         # if "Data" in name_sample: continue  #-------------Excluding data-------------#
 
-        if not (name_sample == "ttbar" or name_sample == "Signal"):
-            continue
+        # if not "Data" in name_sample: continue
 
-        if name_sample == "ZGTo2LG" or name_sample == "WGToLNuG":#name_sample == "TTGJets":
-            continue
+        # if not (name_sample == "ttbar" or name_sample == "Signal"):
+        #     continue
+
+        # if name_sample == "ZGTo2LG" or name_sample == "WGToLNuG":#name_sample == "TTGJets":
+        #    continue
 
 
         ############################################################################
@@ -301,6 +303,7 @@ for name_sample in samplename_list:
             
         gamma_eT = mytree.photon_eT
         gamma_eta = mytree.photon_eta
+        gamma_etaSC = mytree.photon_etaSC
         gamma_phi = mytree.photon_phi
         gamma_E = mytree.photon_energy
         gamma_FourMomentum = ROOT.TLorentzVector()
@@ -346,6 +349,7 @@ for name_sample in samplename_list:
 
         if not isMuon:
             ele_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
+            ele_etaSC = mytree.lepton_etaSC
         else:
             mu_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
             mu_pi_InvMass    = (lep_FourMomentum + pi_FourMomentum).M()
@@ -365,7 +369,7 @@ for name_sample in samplename_list:
             
         if "Signal" in name_sample:
             Nsig_passed += 1
-        if not "Signal" in name_sample:
+        if not "Signal" in name_sample and not "Data" in name_sample:
             Nbkg_passed += 1
 
         ############################################################################
@@ -379,7 +383,7 @@ for name_sample in samplename_list:
             mu_weight_GH, mu_weight_GH_err     = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
 
             # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction
-            Nrandom_for_SF = _Nrandom_for_SF.Rndm(50334)
+            Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
             if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):  # Access muon SF: B to F
 
@@ -397,12 +401,12 @@ for name_sample in samplename_list:
 
 
         else:
-            ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,lep_eta)
+            ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,ele_etaSC)
 
             if random_ele_SF:
                 ele_weight = _Nrandom_for_Gaus_SF.Gaus(ele_weight,ele_weight_err) 
 
-        ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_eta)
+        ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_etaSC)
 
         
         if random_ph_SF:
