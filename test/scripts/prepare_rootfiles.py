@@ -48,7 +48,7 @@ for dirname in list_dirs:
     print "Processing sample dir " + dirname
     
     n_jobs_command = "crab status -d " + dir_input + dirname + " | grep status: " + "| awk " + """'{split($0,array,"/") ; print array[2]}'""" + "| sed 's/.$//'"
-    n_jobs = subprocess.check_output(n_jobs_command, shell=True)
+    n_jobs = int(subprocess.check_output(n_jobs_command, shell=True))
 
     print "Number of jobs to be retrieved: ", n_jobs
 

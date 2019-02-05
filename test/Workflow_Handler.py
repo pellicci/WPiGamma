@@ -152,7 +152,7 @@ class Workflow_Handler:
     ###############################################################################################################################################
 
     # get the sample names (MC and data)
-    def get_samples_names(self, Add_Signal=True,Add_Data=True):
+    def get_samples_names(self,Add_Signal=True,Add_Data=True):
         list_dirs_bkg = os.listdir(self.dir_back_input)
         samplename_list = []
 

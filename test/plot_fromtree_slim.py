@@ -268,8 +268,8 @@ for name_sample in samplename_list:
         # if not (name_sample == "ttbar" or name_sample == "Signal"):
         #     continue
 
-        # if name_sample == "ZGTo2LG" or name_sample == "WGToLNuG":#name_sample == "TTGJets":
-        #    continue
+        # if name_sample == "ZGTo2LG" or name_sample == "TTGJets" or name_sample == "WGToLNuG":
+        #     continue
 
 
         ############################################################################
@@ -370,6 +370,7 @@ for name_sample in samplename_list:
         if "Signal" in name_sample:
             Nsig_passed += 1
         if not "Signal" in name_sample and not "Data" in name_sample:
+        #if "WJetsToLNu" in name_sample:
             Nbkg_passed += 1
 
         ############################################################################
@@ -624,6 +625,30 @@ for name_sample in samplename_list:
 
 print "Finished runnning over samples!"
 
+
+
+##################### Plotting all the backgrounds in separate histos for a given distribution ######################
+
+color_index = 0
+eleeta_canvas = dict()
+
+for sample_name in samplename_list:
+    
+    if "QCD" in sample_name or "Data" in sample_name or "Signal" in sample_name:
+        continue
+    else:
+        eleeta_canvas[sample_name] = ROOT.TCanvas(sample_name,sample_name,200,106,600,600)
+        h_base[sample_name+"h_eleeta"].SetTitle(sample_name)
+        h_base[sample_name+"h_eleeta"].SetFillColor(colors_mask[color_index])
+        h_base[sample_name+"h_eleeta"].Draw("hist")
+        print sample_name, " integral: ", h_base[sample_name+"h_eleeta"].Integral()
+        color_index += 1
+        eleeta_canvas[sample_name].SaveAs("plots/eleeta/h_eleeta_" + sample_name + ".pdf")
+
+ ####################################################################################################################
+        
+    
+
 for idx_histo,hname in enumerate(list_histos):
     hs[hname].Add(h_base["QCD_"+hname])
 
@@ -632,6 +657,7 @@ for hname in list_histos:
     canvas[hname].cd()
 
     hs[hname].Draw("histo")
+
     if "h_Wmass_" in hname:
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),65.))
     if hname == "h_Wmass":
@@ -716,7 +742,7 @@ for hname in list_histos:
         hs[hname].GetXaxis().SetTitle("#pi_{Iso}/p_{T}^{#pi}")
     
     if signal_magnify != 1:
-        h_base[myWF.sig_samplename+hname].Scale(signal_magnify)
+        h_base[myWF.sig_samplename+hname].Scale(signal_magnify)      
 
 
     #---Wmass ratio plots---#
@@ -733,7 +759,7 @@ for hname in list_histos:
         Wmass_ratio_ele = hs[hname].GetStack().Last()
 
 
-    h_base[myWF.sig_samplename+hname].Draw("SAME,hist")
+    h_base[myWF.sig_samplename+hname].Draw("SAME,hist") 
     h_base[myWF.data_samplename+hname].Draw("SAME,E1")
 
     hMCErr = copy.deepcopy(hs[hname].GetStack().Last())
@@ -824,16 +850,15 @@ canvas8.SaveAs("plots/ttbar_signal_ratio.pdf")
 print "Number of expected events for ", luminosity_norm, " in fb-1"
 print "Number of signal events passed = ", Nsig_passed
 print "Number of background events passed = ", Nbkg_passed
-print "Number of data events passed = ", Ndata_passed
 print "number of Signal events in muon channel: ", Sevts_mu_SFvariation
 print "number of Signal events in electron channel: ", Sevts_ele_SFvariation
 print "total number of S evts weighted -mu: ", Sevts_weighted_mu
-print "total number of B evts weighted -mu: ", Bevts_weighted_mu
+print "total number of B (WJetsToLNu) evts weighted -mu: ", Bevts_weighted_mu
 print "total number of S evts weighted -ele: ", Sevts_weighted_ele
-print "total number of B evts weighted -ele: ", Bevts_weighted_ele
+print "total number of B (WJetsToLNu) evts weighted -ele: ", Bevts_weighted_ele
 
 print "N_WGToLNuG_mu", N_WGToLNuG_mu
 print "N_DoubleEMEnriched", N_DoubleEMEnriched
 
-for mother in mother_list:
-    print mother, " --- ", motherID[mother] 
+#for mother in mother_list:
+#    print mother, " --- ", motherID[mother] 
