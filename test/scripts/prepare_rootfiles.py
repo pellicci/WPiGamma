@@ -58,14 +58,14 @@ for dirname in list_dirs:
     elif (n_jobs > 500 and n_jobs <= 1000):
         crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
         os.system(crab_command)
-        crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-" + n_jobs
+        crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-" + str(n_jobs) # Because it is impossible to concatenate str and int objects
         os.system(crab_command_1)
     else:
         crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
         os.system(crab_command)
         crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-1000"
         os.system(crab_command_1)
-        crab_command_2 = "crab getoutput -d " + dir_input + dirname + " --jobids 1001-" + n_jobs
+        crab_command_2 = "crab getoutput -d " + dir_input + dirname + " --jobids 1001-" + str(n_jobs) # Because it is impossible to concatenate str and int objects
         os.system(crab_command_2)
 
     samplename = dirname.split("crab_WPiGammaAnalysis_") #--which means "dirname"-"crab_WPiGammaAnalysys_"

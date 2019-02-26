@@ -109,7 +109,6 @@ if __name__ == '__main__':
     p = Process(target=submit, args=(config,))
     p.start()
     p.join()
-    p.join()
 
     config.General.requestName = 'WPiGammaAnalysis_SingleAntiTop_tW'
     config.Data.unitsPerJob = 5

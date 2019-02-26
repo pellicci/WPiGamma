@@ -5,6 +5,7 @@
 #include <TLorentzVector.h>
 #include <TTree.h>
 #include "Math/VectorUtil.h"
+#include <stdlib.h>
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -30,6 +31,7 @@
 #include "DataFormats/BeamSpot/interface/BeamSpot.h" 
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 //Electron ID stuff
 #include "DataFormats/Common/interface/ValueMap.h"
@@ -52,37 +54,27 @@ typedef math::XYZTLorentzVector LorentzVector;
  
 // constructors and destructor
 WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
-  packedPFCandidates_(iConfig.getParameter<edm::InputTag>("packedPFCandidates")),
-  slimmedMuons_(iConfig.getParameter<edm::InputTag>("slimmedMuons")), 
-  prunedGenParticles_(iConfig.getParameter<edm::InputTag>("prunedGenParticles")),
-  slimmedPhotons_(iConfig.getParameter<edm::InputTag>("slimmedPhotons")),
-  slimmedElectrons_(iConfig.getParameter<edm::InputTag>("slimmedElectrons")),
-  slimmedJets_(iConfig.getParameter<edm::InputTag>("slimmedJets")),
-  slimmedMETs_(iConfig.getParameter<edm::InputTag>("slimmedMETs")),
-  slimmedMETsPuppi_(iConfig.getParameter<edm::InputTag>("slimmedMETsPuppi")),
   runningOnData_(iConfig.getParameter<bool>("runningOnData")),
-  pvCollection_(iConfig.getParameter<edm::InputTag>("pvCollection")),   
-  bsCollection_(iConfig.getParameter<edm::InputTag>("bsCollection")),  
-  PileupSrc_(iConfig.getParameter<edm::InputTag>("PileupSrc")),
-  triggerBits_(consumes<edm::TriggerResults> (iConfig.getParameter<edm::InputTag>("triggerbits"))),
   verboseIdFlag_(iConfig.getParameter<bool>("phoIdVerbose")),
   effectiveAreas_el_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile_el")).fullPath() ),
   effectiveAreas_ph_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile_ph")).fullPath() ),
   Bjets_WP_(iConfig.getParameter<double>("Bjets_WP"))
 
 {
-  packedPFCandidatestoken_  = consumes<std::vector<pat::PackedCandidate> >(packedPFCandidates_); 
-  slimmedMuonstoken_        = consumes<std::vector<pat::Muon> >(slimmedMuons_);
-  prunedGenParticlestoken_  = consumes<std::vector<reco::GenParticle> >(prunedGenParticles_);
-  photonsMiniAODToken_      = consumes<std::vector<pat::Photon> > (slimmedPhotons_);
-  electronsMiniAODToken_    = consumes<std::vector<pat::Electron> > (slimmedElectrons_);
-  slimmedJetstoken_         = consumes<std::vector<pat::Jet> >(slimmedJets_);
-  slimmedMETstoken_         = consumes<std::vector<pat::MET> >(slimmedMETs_);
-  slimmedMETsPuppitoken_    = consumes<std::vector<pat::MET> >(slimmedMETsPuppi_);
-  tok_Vertex_               = consumes<std::vector<reco::Vertex> > (pvCollection_);  
-  tok_beamspot_             = consumes<reco::BeamSpot> (edm::InputTag(bsCollection_));
-  pileupSummaryToken_       = consumes<std::vector<PileupSummaryInfo> >(edm::InputTag(PileupSrc_));
-  rhoToken_                 = consumes<double> (iConfig.getParameter <edm::InputTag>("rho"));
+  packedPFCandidatesToken_            = consumes<std::vector<pat::PackedCandidate> >(edm::InputTag("packedPFCandidates")); 
+  slimmedMuonsToken_                  = consumes<std::vector<pat::Muon> >(edm::InputTag("slimmedMuons"));
+  prunedGenParticlesToken_            = consumes<std::vector<reco::GenParticle> >(edm::InputTag("prunedGenParticles"));
+  photonsMiniAODToken_                = consumes<std::vector<pat::Photon> > (edm::InputTag("slimmedPhotons"));
+  electronsMiniAODToken_              = consumes<std::vector<pat::Electron> > (edm::InputTag("slimmedElectrons"));
+  slimmedJetsToken_                   = consumes<std::vector<pat::Jet> >(edm::InputTag("slimmedJets"));
+  slimmedMETsToken_                   = consumes<std::vector<pat::MET> >(edm::InputTag("slimmedMETs"));
+  slimmedMETsPuppiToken_              = consumes<std::vector<pat::MET> >(edm::InputTag("slimmedMETsPuppi"));
+  offlineSlimmedPrimaryVerticesToken_ = consumes<std::vector<reco::Vertex> > (edm::InputTag("offlineSlimmedPrimaryVertices"));  
+  offlineBeamSpotToken_               = consumes<reco::BeamSpot> (edm::InputTag("offlineBeamSpot"));
+  pileupSummaryToken_                 = consumes<std::vector<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo"));
+  GenInfoToken_                       = consumes<GenEventInfoProduct> (edm::InputTag("generator"));
+  triggerBitsToken_                   = consumes<edm::TriggerResults> (edm::InputTag("TriggerResults","","HLT"));
+  rhoToken_                           = consumes<double> (iConfig.getParameter <edm::InputTag>("rho"));
 
   h_Events = fs->make<TH1F>("h_Events", "Event counting in different steps", 8, 0., 8.);
   _Nevents_processed  = 0;
@@ -96,6 +88,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
 
   inv_mass_1 = fs->make<TH1F>("Mw - no match with MC Truth", "Mw no match", 200,0,120);
   inv_mass_2 = fs->make<TH1F>("Mw - match with MC Truth", "Mw match", 200,0,120);
+  h_pileup   = fs->make<TH1F>("pileup", "pileup", 75,0,75);
 
   create_trees();
 }
@@ -108,13 +101,13 @@ WPiGammaAnalysis::~WPiGammaAnalysis()
 void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   edm::Handle<std::vector<pat::PackedCandidate>  > PFCandidates;
-  iEvent.getByLabel(packedPFCandidates_, PFCandidates);
+  iEvent.getByToken(packedPFCandidatesToken_, PFCandidates);
 
   edm::Handle<std::vector<pat::Muon>  > slimmedMuons;
-  iEvent.getByLabel(slimmedMuons_, slimmedMuons);
+  iEvent.getByToken(slimmedMuonsToken_, slimmedMuons);
 
   edm::Handle<std::vector<reco::GenParticle>  > genParticles;
-  if(!runningOnData_)iEvent.getByLabel(prunedGenParticles_, genParticles);
+  if(!runningOnData_)iEvent.getByToken(prunedGenParticlesToken_, genParticles);
 
   edm::Handle<std::vector<pat::Photon> > slimmedPhotons;
   iEvent.getByToken(photonsMiniAODToken_,slimmedPhotons);
@@ -123,19 +116,19 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   iEvent.getByToken(electronsMiniAODToken_,slimmedElectrons);
 
   edm::Handle<std::vector<pat::Jet > > slimmedJets;
-  iEvent.getByLabel(slimmedJets_, slimmedJets);
+  iEvent.getByToken(slimmedJetsToken_, slimmedJets);
 
   edm::Handle<std::vector<pat::MET > > slimmedMETs;
-  iEvent.getByLabel(slimmedMETs_, slimmedMETs);
+  iEvent.getByToken(slimmedMETsToken_, slimmedMETs);
 
   edm::Handle<std::vector<pat::MET > > slimmedMETsPuppi;
-  iEvent.getByLabel(slimmedMETsPuppi_, slimmedMETsPuppi);
+  iEvent.getByToken(slimmedMETsPuppiToken_, slimmedMETsPuppi);
 
   edm::Handle<std::vector<reco::Vertex > > slimmedPV;
-  iEvent.getByLabel(pvCollection_, slimmedPV);
+  iEvent.getByToken(offlineSlimmedPrimaryVerticesToken_, slimmedPV);
 
   edm::Handle<edm::TriggerResults> triggerBits;
-  iEvent.getByToken(triggerBits_, triggerBits);
+  iEvent.getByToken(triggerBitsToken_, triggerBits);
 
 
   _Nevents_processed++;
@@ -154,6 +147,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //Count the number of vertices
   nPV = -1;
+
   if(slimmedPV->size()<=0) return;
   for(reco::VertexCollection::const_iterator vtx=slimmedPV->begin();vtx!=slimmedPV->end();++vtx) {
     // check that the primary vertex is not a fake one, that is the beamspot (it happens when no primary vertex is reconstructed)
@@ -169,12 +163,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //                                                             //
   //*************************************************************//
 
-  PU_Weight = 1.;
+  PU_Weight = -1.;
   float npT = -1.;
 
   if(!runningOnData_){
     edm::Handle<std::vector< PileupSummaryInfo>>  PupInfo;
-    iEvent.getByLabel(PileupSrc_, PupInfo);
+    iEvent.getByToken(pileupSummaryToken_, PupInfo);
   
     std::vector<PileupSummaryInfo>::const_iterator PVI; 
  
@@ -185,9 +179,39 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       }
     }
 
-    // calculate weight using above code
+    if(npT == -1) {
+      std::cout << "!!!! npT = -1 !!!!" << std::endl;
+      abort();
+    }
+    // Calculate weight using above code
     PU_Weight = Lumiweights_.weight(npT);
+
+    // Fill histogram with PU distribution
+    h_pileup->Fill(npT);
   }
+
+  //*************************************************************//
+  //                                                             //
+  //-------------------------- MC Weight ------------------------//
+  //                                                             //
+  //*************************************************************//
+
+  MC_Weight = -10000000.;
+
+  if(!runningOnData_){
+    edm::Handle<GenEventInfoProduct> GenInfo;
+    iEvent.getByToken(GenInfoToken_, GenInfo);
+    
+    float _aMCatNLOweight = GenInfo->weight();
+    MC_Weight = _aMCatNLOweight;
+
+    if(MC_Weight == -10000000.) {
+      std::cout << "!!!! MC_Weight = -10000000 !!!!" << std::endl;
+      abort();
+    }
+  }
+
+
 
   //*************************************************************//
   //                                                             //
@@ -208,8 +232,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	tmp_triggername.find("HLT_IsoTkMu24_v") != std::string::npos){
       isSingleMuTrigger_24 = true;
     }
-    if( tmp_triggername.find("HLT_Mu50_v") != std::string::npos ||
-	tmp_triggername.find("HLT_TkMu50_v") != std::string::npos){
+    if( tmp_triggername.find("HLT_Mu50_v") != std::string::npos ){
       isSingleMuTrigger_50 = true;
     }
     if( tmp_triggername.find("HLT_Ele25_eta2p1_WPTight_Gsf_v") != std::string::npos ||
@@ -375,14 +398,10 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     //-------------Conditions on loose/medium MVA electron ID-------------//
     if(!is_muon){
-      // bool isPassLoose = (*el_loose_id_decisions)[el];
-      // if(!isPassLoose) continue;
       if(el->electronID("mvaEleID-Fall17-iso-V2-wpLoose") == 0) continue;
       nElectronsLoose++;
     }
 
-    // bool isPassMedium = (*el_medium_id_decisions)[el];
-    // if(!isPassMedium) continue;
     if(el->electronID("mvaEleID-Fall17-iso-V2-wp90") == 0) continue;
     
     is_ele = true;
@@ -786,6 +805,7 @@ void WPiGammaAnalysis::create_trees()
   //Save MC info
   if(!runningOnData_){
     mytree->Branch("PU_Weight",&PU_Weight);
+    mytree->Branch("MC_Weight",&MC_Weight);
 
     mytree->Branch("isMuonSignal",&is_Mu_signal);
     mytree->Branch("isEleSignal",&is_Ele_signal);

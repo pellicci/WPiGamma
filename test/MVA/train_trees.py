@@ -59,42 +59,41 @@ ROOT.TMVA.Tools.Instance()
 
 factory = ROOT.TMVA.Factory("TMVAClassification", fOut,":".join(["!V","Transformations=I;D;P;G,D","AnalysisType=Classification"]))
 
+dataloader = ROOT.TMVA.DataLoader()
 
-factory.AddVariable("pi_pT","D")
-factory.AddVariable("gamma_eT","D")
-# factory.AddVariable("pi_pT/Wmass","D")
-# factory.AddVariable("gamma_eT/Wmass","D")
-factory.AddVariable("nBjets_25","I")
-factory.AddVariable("lep_pT","D")
-factory.AddVariable("piRelIso_05_ch","D")
-factory.AddVariable("MET","D")
+dataloader.AddVariable("pi_pT","F") # Both Float and Double variable types must be indicated as F
+dataloader.AddVariable("gamma_eT","F")
+# dataloader.AddVariable("pi_pT/Wmass","F")
+# dataloader.AddVariable("gamma_eT/Wmass","F")
+dataloader.AddVariable("nBjets_25","I")
+dataloader.AddVariable("lep_pT","F")
+dataloader.AddVariable("piRelIso_05_ch","F")
+dataloader.AddVariable("MET","F")
 
+sig_weight = 1.
+bkg_weight = 1.
 
 if data_sidebands:
-    factory.AddSignalTree(tree_sig_training, ROOT.TMVA.Types.kTraining)
-    factory.AddSignalTree(tree_sig_test, ROOT.TMVA.Types.kTesting)
-    factory.AddBackgroundTree(tree_bkg_DATA, ROOT.TMVA.Types.kTraining)
-    factory.AddBackgroundTree(tree_bkg, ROOT.TMVA.Types.kTesting)
+    dataloader.AddSignalTree(tree_sig_training, sig_weight, "Training")
+    dataloader.AddSignalTree(tree_sig_test, sig_weight, "Testing")
+    dataloader.AddBackgroundTree(tree_bkg_DATA, bkg_weight, "Training")
+    dataloader.AddBackgroundTree(tree_bkg, bkg_weight, "Testing")
 
 else:
-    factory.AddSignalTree(tree_sig)
-    factory.AddBackgroundTree(tree_bkg)
+    dataloader.AddSignalTree(tree_sig, sig_weight)
+    dataloader.AddBackgroundTree(tree_bkg, bkg_weight)
 
-factory.SetWeightExpression("weight")
+dataloader.SetWeightExpression("weight")
 
-mycuts = ROOT.TCut("weight > 0.")
-mycutb = ROOT.TCut("weight > 0.")
+mycutSig = ROOT.TCut("")
+mycutBkg = ROOT.TCut("")
 
 if isMuon:
-    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=9758:nTrain_Background=230843:nTest_Signal=0:nTest_Background=0"]) ) # To be set with 75/25 ratio of training and testing events
+    dataloader.PrepareTrainingAndTestTree(mycutSig, mycutBkg, ":".join(["!V","nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0"]))
+    method_btd  = factory.BookMethod(dataloader, ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=20","NegWeightTreatment=IgnoreNegWeightsInTraining"]))
 else:
-    factory.PrepareTrainingAndTestTree(mycuts, mycutb, ":".join(["!V","nTrain_Signal=7145:nTrain_Background=174851:nTest_Signal=0:nTest_Background=0"]) ) # To be set with 75/25 ratio of training and testing events
-
-if isMuon:
-    method_btd  = factory.BookMethod(ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=20"]))
-else:
-    method_btd  = factory.BookMethod(ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=1100", "MinNodeSize=2.5%","MaxDepth=2","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=40"]))
-
+    dataloader.PrepareTrainingAndTestTree(mycutSig, mycutBkg, ":".join(["!V","nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0"])) 
+    method_btd  = factory.BookMethod(dataloader, ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=20","NegWeightTreatment=IgnoreNegWeightsInTraining"]))
 
 factory.TrainAllMethods()
 factory.TestAllMethods()
@@ -102,16 +101,16 @@ factory.EvaluateAllMethods()
 
 fOut.Close()
 
-weightfile_dir = "weights/TMVAClassification_BDT.weights.xml"
+weightfile_dir = "default/weights/TMVAClassification_BDT.weights.xml"
 
 if data_sidebands:
-    weightfile_mu  = "weights/TMVAClassification_BDT.weights_mu_DATA.xml"
-    weightfile_ele = "weights/TMVAClassification_BDT.weights_ele_DATA.xml"
+    weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_DATA.xml"
+    weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_DATA.xml"
 else:
-    weightfile_mu  = "weights/TMVAClassification_BDT.weights_mu.xml"
-    weightfile_ele = "weights/TMVAClassification_BDT.weights_ele.xml"
-    # weightfile_mu  = "weights/TMVAClassification_BDT.weights_mu_Wmass.xml"
-    # weightfile_ele = "weights/TMVAClassification_BDT.weights_ele_Wmass.xml"
+    weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu.xml"
+    weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele.xml"
+    # weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_Wmass.xml"
+    # weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_Wmass.xml"
 
 if isMuon:
     rename_weightfile = "mv " + weightfile_dir + " " + weightfile_mu

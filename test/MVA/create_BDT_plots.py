@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from ROOT import TH1F, TCanvas, TFile, TLegend, gStyle
 
-isMuon = False
+isMuon = True
 
 def BDT_output():
 
@@ -14,8 +14,8 @@ def BDT_output():
     else:
         f = TFile("outputs/Nominal_training_ele.root")
 
-    h_BDT_sig = f.Get("Method_BDT/BDT/MVA_BDT_S")
-    h_BDT_bkg = f.Get("Method_BDT/BDT/MVA_BDT_B")
+    h_BDT_sig = f.Get("default/Method_BDT/BDT/MVA_BDT_S")
+    h_BDT_bkg = f.Get("default/Method_BDT/BDT/MVA_BDT_B")
 
     leg1 = TLegend(0.65,0.7,0.8,0.95)
     leg1.SetHeader(" ")
@@ -56,8 +56,8 @@ def rejB_vs_S():
         f1 = TFile("outputs/Nominal_training_ele_Wmass.root")
         f2 = TFile("outputs/Nominal_training_ele.root")
 
-    h_rejB_vs_S_1 = f1.Get("Method_BDT/BDT/MVA_BDT_rejBvsS")
-    h_rejB_vs_S_2 = f2.Get("Method_BDT/BDT/MVA_BDT_rejBvsS")
+    h_rejB_vs_S_1 = f1.Get("default/Method_BDT/BDT/MVA_BDT_rejBvsS")
+    h_rejB_vs_S_2 = f2.Get("default/Method_BDT/BDT/MVA_BDT_rejBvsS")
 
     leg2 = TLegend(0.2,0.6,0.6,0.7)
     #leg1.SetHeader(" ")

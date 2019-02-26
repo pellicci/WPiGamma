@@ -26,8 +26,8 @@ myWF = Workflow_Handler("Signal","Data",isBDT_with_Wmass)
 
 #------------------------------------------------------------------------#
 
-isData   = False #------switch from DATA to MC and vice versa
-split_MC = False #------if True, MC signal sample is split in two for the training/testing of the BDT
+isData   = False # Switch from DATA to MC and vice versa
+split_MC = False # If True, MC signal sample is split in two for the training/testing of the BDT
 
 #------------------------------------------------------------------------#
 
@@ -108,8 +108,7 @@ nBkg_ele = 0.
 if not isData:
 
     if create_mass_tree:
-        f = TFile('WmassAnalysis/Tree_input_massfit_MC.root','recreate')
-        
+        f = TFile('WmassAnalysis/Tree_input_massfit_MC.root','recreate')        
         t = TTree('minitree','tree with branches')
         t.Branch('Wmass',_Wmass_fit,'Wmass/D')
         t.Branch('isMuon',_isMuon_fit,'isMuon/I')
@@ -272,9 +271,7 @@ if isData:
 
     else:
         fMVA_background_mu_DATA = TFile('MVA/Tree_Background_mu_DATA.root','recreate')
-        #fMVA_background_mu_DATA = TFile('MVA/Tree_mu_DATA.root','recreate')
         tMVA_background_mu_DATA = TTree('minitree_background_mu_DATA','tree with branches')
-        #tMVA_background_mu_DATA = TTree('minitree_mu_DATA','tree with branches')
         tMVA_background_mu_DATA.Branch('isMuon',_isMuon,'isMuon/I')
         tMVA_background_mu_DATA.Branch('weight',_weight,'weight/D')
         tMVA_background_mu_DATA.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
@@ -292,9 +289,7 @@ if isData:
         tMVA_background_mu_DATA.Branch('Wmass',_Wmass,'Wmass/D')
         
         fMVA_background_ele_DATA = TFile('MVA/Tree_Background_ele_DATA.root','recreate')
-        #fMVA_background_ele_DATA = TFile('MVA/Tree_ele_DATA.root','recreate')
         tMVA_background_ele_DATA = TTree('minitree_background_ele_DATA','tree with branches')
-        #tMVA_background_ele_DATA = TTree('minitree_ele_DATA','tree with branches')
         tMVA_background_ele_DATA.Branch('isMuon',_isMuon,'isMuon/I')
         tMVA_background_ele_DATA.Branch('weight',_weight,'weight/D')
         tMVA_background_ele_DATA.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
@@ -391,11 +386,11 @@ for name_sample in samplename_list:
             is_ttbarlnu += 1
             continue
 
-        if name_sample == "ZGTo2LG" or name_sample == "WGToLNuG":#name_sample == "TTGJets":
-            continue
+        # if name_sample == "ZGTo2LG" or name_sample == "WGToLNuG":#name_sample == "TTGJets":
+        #     continue
 
-        #if not "Signal" in name_sample:
-        #    continue
+        # if not "Signal" in name_sample:
+        #     continue
 
 
         ############################################################################
@@ -497,7 +492,7 @@ for name_sample in samplename_list:
             mu_weight_BtoF, mu_weight_BtoF_err = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24)
             mu_weight_GH, mu_weight_GH_err     = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
             
-            Nrandom_for_SF = _Nrandom_for_SF.Rndm(50334)
+            Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
             if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):
                 mu_weight = mu_weight_BtoF
@@ -512,9 +507,10 @@ for name_sample in samplename_list:
         
 
         if not isData:
-            #norm_factor = Norm_Map[name_sample]*luminosity_norm
-            PU_Weight = mytree.PU_Weight
-            Event_Weight = norm_factor*PU_Weight*ph_weight
+            MC_Weight = mytree.MC_Weight # Add MC weight        
+            PU_Weight = mytree.PU_Weight # Add PU weight
+            Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
+
             if isMuon:
                 Event_Weight = Event_Weight*mu_weight
             else:

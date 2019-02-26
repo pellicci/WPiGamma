@@ -78,6 +78,9 @@ Wmass_ratio_ele = ROOT.TH1F("Wmass_ratio_ele","Wmass ratio ele",10,40,100)
 W_signal_hist = ROOT.TH1F("W_signal"," W signal",8,0,300)
 W_ttbar_hist  = ROOT.TH1F("W_ttbar"," W ttbar",8,0,300)
 
+h_PUdistrib = ROOT.TH1F("pile up", "pile up",75,0,75)
+h_PUdistrib.Sumw2()
+
 Wmass_mu.Sumw2()
 Wmass_ele.Sumw2()
 Wmass_ratio_mu.Sumw2()
@@ -213,8 +216,8 @@ N_DoubleEMEnriched = 0.
 
 #############---------------- BDT score cut values ----------------#############
 
-BDT_OUT_MU = 0.190
-BDT_OUT_ELE = 0.210
+BDT_OUT_MU = 0.220
+BDT_OUT_ELE = 0.240
 
 ################################################################################
 
@@ -268,7 +271,7 @@ for name_sample in samplename_list:
         # if not (name_sample == "ttbar" or name_sample == "Signal"):
         #     continue
 
-        # if name_sample == "ZGTo2LG" or name_sample == "TTGJets" or name_sample == "WGToLNuG":
+        # if name_sample == "ZGTo2LG" or name_sample == "TTGJets" or sample_name == "ttbarlnu" or sample_name == "ttbar":# or name_sample == "WGToLNuG" or:
         #     continue
 
 
@@ -415,8 +418,9 @@ for name_sample in samplename_list:
         
 
         if not "Data" in name_sample:
+            MC_Weight = mytree.MC_Weight # Add MC weight        
             PU_Weight = mytree.PU_Weight # Add Pile Up weight        
-            Event_Weight = norm_factor*ph_weight*PU_Weight
+            Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
 
             if isMuon:
                 Event_Weight = Event_Weight*mu_weight
@@ -429,7 +433,7 @@ for name_sample in samplename_list:
                 if Wplus_pT > 300.:
                     local_Wplus_pT = 300.
 
-                Event_Weight = Event_Weight#*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wplus_pT))
+                Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wplus_pT))
 
 
             if name_sample == "Signal" and is_signal_Wminus:
@@ -437,7 +441,7 @@ for name_sample in samplename_list:
                 if Wminus_pT > 300.:
                     local_Wminus_pT = 300.
 
-                Event_Weight = Event_Weight#*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wminus_pT))
+                Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wminus_pT))
 
         else:
             Event_Weight = 1.
@@ -485,6 +489,10 @@ for name_sample in samplename_list:
         h_base[theSampleName+"h_pieta"].Fill(pi_eta,Event_Weight)
         h_base[theSampleName+"h_gammaet"].Fill(gamma_eT,Event_Weight)
         h_base[theSampleName+"h_gammaeta"].Fill(gamma_eta,Event_Weight)
+
+        #if not "Signal" in name_sample and not "Data" in name_sample:
+        if name_sample == "Data":
+            h_PUdistrib.Fill(nPV,Event_Weight)
         
 
         if isMuon:
@@ -592,6 +600,13 @@ for name_sample in samplename_list:
 
     for idx_histo,hname in enumerate(list_histos):
 
+        # Set to 0 the bins containing negative values, due to negative weights
+        hsize = h_base[theSampleName+hname].GetSize() - 2 # GetSize() returns the number of bins +2 (that is + overflow + underflow) 
+        for bin in range(1,hsize):
+            bincontent = h_base[theSampleName+hname].GetBinContent(bin)
+            if bincontent < 0.:
+                h_base[theSampleName+hname].SetBinContent(bin,0.)
+
         if QCDflag:
             h_base[theSampleName+hname].SetFillColor(12)
         elif name_sample == myWF.sig_samplename:
@@ -645,7 +660,16 @@ for sample_name in samplename_list:
         color_index += 1
         eleeta_canvas[sample_name].SaveAs("plots/eleeta/h_eleeta_" + sample_name + ".pdf")
 
- ####################################################################################################################
+PU_canvas = ROOT.TCanvas(sample_name,sample_name,200,106,600,600)
+print "INTEGRALE!!!!!! ", h_PUdistrib.Integral()
+h_PUdistrib.Scale(1/h_PUdistrib.Integral())
+h_PUdistrib.Draw("hist")
+PU_canvas.SaveAs("plots/h_PUdistrib_Data.pdf")
+PU_file = ROOT.TFile("PUdistrib_Data.root","RECREATE")
+h_PUdistrib.Write("PUdistrib_Data")
+PU_file.Close()
+
+####################################################################################################################
         
     
 
@@ -837,15 +861,18 @@ canvas7.SaveAs("plots/ttbar_signal.pdf")
 W_ttbar_hist.Divide(W_signal_hist)
 
 canvas8 = ROOT.TCanvas()
-# ttbar_sig_file = ROOT.TFile("ttbar_signal_ratio.root","RECREATE")
 ROOT.gStyle.SetOptStat(0)
 W_ttbar_hist.SetMarkerStyle(21)
 W_ttbar_hist.SetTitle(" ")
 W_ttbar_hist.GetXaxis().SetTitle("p_{T}^{W} (GeV)")
 W_ttbar_hist.Draw("Pe")
 canvas8.SaveAs("plots/ttbar_signal_ratio.pdf")
-# W_ttbar_hist.Write("ttbar_signal_ratio")
-# ttbar_sig_file.Close()
+
+#-------- Create and write on rootfile with Signal/ttbar ratio --------#
+
+#ttbar_sig_file = ROOT.TFile("ttbar_signal_ratio.root","RECREATE")
+#W_ttbar_hist.Write("ttbar_signal_ratio")
+#ttbar_sig_file.Close()
 
 print "Number of expected events for ", luminosity_norm, " in fb-1"
 print "Number of signal events passed = ", Nsig_passed
@@ -853,9 +880,9 @@ print "Number of background events passed = ", Nbkg_passed
 print "number of Signal events in muon channel: ", Sevts_mu_SFvariation
 print "number of Signal events in electron channel: ", Sevts_ele_SFvariation
 print "total number of S evts weighted -mu: ", Sevts_weighted_mu
-print "total number of B (WJetsToLNu) evts weighted -mu: ", Bevts_weighted_mu
+print "total number of B evts weighted -mu: ", Bevts_weighted_mu
 print "total number of S evts weighted -ele: ", Sevts_weighted_ele
-print "total number of B (WJetsToLNu) evts weighted -ele: ", Bevts_weighted_ele
+print "total number of B evts weighted -ele: ", Bevts_weighted_ele
 
 print "N_WGToLNuG_mu", N_WGToLNuG_mu
 print "N_DoubleEMEnriched", N_DoubleEMEnriched
