@@ -24,31 +24,40 @@ options.register('runningOnMuons',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "muon trigger config flag")
+options.register('runningOn2017',
+                 False, #default value
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "2016-2017 config flag")
 options.parseArguments()
 
 ################################################################################################################
 from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
 
-#if not options.runningOnData: #Add PostReco corrections for MC
-setupEgammaPostRecoSeq(process,
-                       runVID=True,
-                       runEnergyCorrections=False, #corrections by default are fine so no need to re-run
-                       era='2016-Legacy')
+if not options.runningOn2017: #Add PostReco corrections for MC
+   setupEgammaPostRecoSeq(process,
+                          runVID=True,
+                          runEnergyCorrections=False, #corrections by default are fine so no need to re-run
+                          era='2016-Legacy'
+                          )
 
 ################################################################################################################
 
 #Input source
 if options.runningOnData: 
-   process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v10') #which conditions to use
-   print "Data Sample will be taken as input for check up of the code working "
-   inputFiles = "root://cms-xrd-global.cern.ch//store/data/Run2016E/SingleMuon/MINIAOD/17Jul2018-v1/20000/3A57508D-348B-E811-8F39-008CFA197E0C.root"#"root://cms-xrd-global.cern.ch//store/data/Run2016B/SingleMuon/MINIAOD/17Jul2018_ver2-v1/00000/1EB7C205-0E8D-E811-ABD0-0CC47AC52D7A.root"
-#"root://cms-xrd-global.cern.ch//store/data/Run2016E/SingleMuon/MINIAOD/17Jul2018-v1/00000/022C9A20-A78A-E811-A986-008CFA111210.root"#"root://cms-xrd-global.cern.ch//store/data/Run2016B/SingleMuon/MINIAOD/17Jul2018_ver2-v1/90000/FEADEB19-1D92-E811-BAFA-0025905C54D8.root"
+   if options.runningOn2017:
+      process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v6') #which conditions to use
+      print "Data Sample will be taken as input for check up of the code working "
+      inputFiles = {"root://cms-xrd-global.cern.ch//store/data/Run2017B/SingleElectron/MINIAOD/31Mar2018-v1/90000/FC89D712-AF37-E811-AD13-008CFAC93F84.root"}
+   else:
+      process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v10') #which conditions to use
+      print "Data Sample will be taken as input for check up of the code working "
+      inputFiles = {"root://cms-xrd-global.cern.ch//store/data/Run2016E/SingleMuon/MINIAOD/17Jul2018-v1/20000/3A57508D-348B-E811-8F39-008CFA197E0C.root"}
+
 else:
    process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mcRun2_asymptotic_v3')
    print "MC Sample will be taken as input for check up of the code working "
-   inputFiles = {#"root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/92962341-B2BE-E611-9D57-0025905B8574.root"}#,
-#"root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/80000/FE7324D3-87DA-E611-8CB1-0CC47A4C8E5E.root"
-"root://cms-xrd-global.cern.ch//store/user/rselvati/WMinusPiGamma_GENSIM_80XV1/WMinusPiGamma_MINIAODSIM_94XV3/190129_151107/0000/WPiGamma_pythia8_MINIAOD_9.root"}
+   inputFiles = {"root://cms-xrd-global.cern.ch//store/user/rselvati/WMinusPiGamma_GENSIM_80XV1/WMinusPiGamma_MINIAODSIM_94XV3/190129_151107/0000/WPiGamma_pythia8_MINIAOD_9.root"}
 
 
 process.source = cms.Source ("PoolSource",
@@ -79,9 +88,9 @@ updateJetCollection(
 
 process.load("StandardModel.WPiGamma.WPiGammaAnalysis_cfi")
 process.WPiGammaAnalysis.runningOnData  = options.runningOnData # Load the boolean into the python _cfg file, so that the plugins can read it
-#process.WPiGammaAnalysis.runningOnMuons = options.runningOnMuons
+process.WPiGammaAnalysis.runningOn2017  = options.runningOn2017
 
-if not options.runningOnData:    #Only for MC, data reprocessing already has corrections!
+if not options.runningOnData:    #Only for MC; data reprocessing already has corrections! This might be different now!!! CHECK CHECK CHECK CHECK CHECK CHECK CHECK 
    process.WPiGammaAnalysis.slimmedJets = cms.InputTag("updatedPatJetsUpdatedJEC")
 
 #Add the trigger request

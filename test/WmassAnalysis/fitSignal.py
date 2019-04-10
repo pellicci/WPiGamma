@@ -1,4 +1,3 @@
-
 #This code only fits the signal lineshape from MC and saves it into a RooWorkspace in a ROOT file
 
 import ROOT

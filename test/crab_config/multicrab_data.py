@@ -6,18 +6,43 @@ config = Configuration()
 config.section_('General')
 config.General.transferOutputs = True
 
-config.General.workArea = 'crab_projects/dataprocess/'
+runningOn2017 = False # Decide whether to run on 2016 or 2017 data
+
+if runningOn2017:
+    config.General.workArea = 'crab_projects/dataprocess_2017/'
+else:
+    config.General.workArea = 'crab_projects/dataprocess_2016/'
+
+
 
 config.section_('JobType')
 config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
 config.JobType.pluginName = 'Analysis'
-config.JobType.inputFiles = ['MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root','MyDataPileupHistogram.root'] #MC and data files for PileUp reweighting
+
+
+
+if runningOn2017:
+    config.JobType.inputFiles = ['MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root','MyDataPileupHistogram.root'] #MC and data files for PileUp reweighting
+else:
+    config.JobType.inputFiles = ['MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root','MyDataPileupHistogram.root'] #MC and data files for PileUp reweighting
+
+
+
 config.JobType.outputFiles = ['WPiGammaAnalysis_output.root']
 
 config.JobType.pyCfgParams = ['runningOnData=True']
 
 config.section_('Data')
-config.Data.lumiMask = 'json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
+
+
+
+if runningOn2017:
+    config.Data.lumiMask = 'json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
+else:
+    config.Data.lumiMask = 'json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
+
+
+
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'LumiBased'
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
@@ -48,106 +73,191 @@ if __name__ == '__main__':
     #First the muon datasets
 
     config.JobType.pyCfgParams = ['runningOnMuons=True']
-    
-    config.General.requestName = 'WPiGammaAnalysis_SingleMu_B'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleMuon/Run2016B-17Jul2018_ver2-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
-    
-    config.General.requestName = 'WPiGammaAnalysis_SingleMu_C'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleMuon/Run2016C-17Jul2018-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
 
-    config.General.requestName = 'WPiGammaAnalysis_SingleMu_D'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleMuon/Run2016D-17Jul2018-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
-    
-    config.General.requestName = 'WPiGammaAnalysis_SingleMu_E'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleMuon/Run2016E-17Jul2018-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
+    if not runningOn2017:
 
-    config.General.requestName = 'WPiGammaAnalysis_SingleMu_F'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleMuon/Run2016F-17Jul2018-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
+        config.JobType.pyCfgParams = ['runningOn2017=False'] # Configure 2016 data jobs 
     
-    config.General.requestName = 'WPiGammaAnalysis_SingleMu_G'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleMuon/Run2016G-17Jul2018-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
-    
-    config.General.requestName = 'WPiGammaAnalysis_SingleMu_H'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleMuon/Run2016H-17Jul2018-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
+        config.General.requestName = 'WPiGammaAnalysis_SingleMu_B'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2016B-17Jul2018_ver2-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleMu_C'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2016C-17Jul2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleMu_D'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2016D-17Jul2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleMu_E'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2016E-17Jul2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleMu_F'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2016F-17Jul2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleMu_G'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2016G-17Jul2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleMu_H'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2016H-17Jul2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+
+    else:
+
+        config.JobType.pyCfgParams = ['runningOn2017=True'] # Configure 2017 data jobs 
+
+        config.General.requestName = 'WPiGammaAnalysis_SingleMu_B'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2017B-31Mar2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleMu_C'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2017C-31Mar2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleMu_D'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2017D-31Mar2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleMu_E'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2017E-31Mar2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleMu_F'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2017F-31Mar2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
 
 
     #Now the electron datasets    
     config.JobType.pyCfgParams = ['runningOnMuons=False']
-    
-    config.General.requestName = 'WPiGammaAnalysis_SingleEle_B'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleElectron/Run2016B-17Jul2018_ver2-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
 
-    config.General.requestName = 'WPiGammaAnalysis_SingleEle_C'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleElectron/Run2016C-17Jul2018-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
-    
-    config.General.requestName = 'WPiGammaAnalysis_SingleEle_D'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleElectron/Run2016D-17Jul2018-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
-    
-    config.General.requestName = 'WPiGammaAnalysis_SingleEle_E'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleElectron/Run2016E-17Jul2018-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
-    
-    config.General.requestName = 'WPiGammaAnalysis_SingleEle_F'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleElectron/Run2016F-17Jul2018-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
-    
-    config.General.requestName = 'WPiGammaAnalysis_SingleEle_G'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleElectron/Run2016G-17Jul2018-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
-    
-    config.General.requestName = 'WPiGammaAnalysis_SingleEle_H'
-    config.Data.unitsPerJob = 50
-    config.Data.inputDataset = '/SingleElectron/Run2016H-17Jul2018-v1/MINIAOD'
-    p = Process(target=submit, args=(config,))
-    p.start()
-    p.join()
+    if not runningOn2017:
 
+        config.JobType.pyCfgParams = ['runningOn2017=False'] # Configure 2016 data jobs 
+    
+        config.General.requestName = 'WPiGammaAnalysis_SingleEle_B'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleElectron/Run2016B-17Jul2018_ver2-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleEle_C'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleElectron/Run2016C-17Jul2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleEle_D'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleElectron/Run2016D-17Jul2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleEle_E'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleElectron/Run2016E-17Jul2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleEle_F'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleElectron/Run2016F-17Jul2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleEle_G'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleElectron/Run2016G-17Jul2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleEle_H'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleElectron/Run2016H-17Jul2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+
+    else:
+
+        config.JobType.pyCfgParams = ['runningOn2017=True'] # Configure 2017 data jobs 
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleEle_B'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleElectron/Run2017B-31Mar2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleEle_C'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleElectron/Run2017C-31Mar2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleEle_D'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleElectron/Run2017D-31Mar2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleEle_E'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleElectron/Run2017E-31Mar2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = 'WPiGammaAnalysis_SingleEle_F'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleElectron/Run2017F-31Mar2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()

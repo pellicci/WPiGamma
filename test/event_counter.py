@@ -4,24 +4,34 @@ import math
 import numpy as np
 import copy
 from array import array
+from Workflow_Handler import Workflow_Handler
 
 #Supress the opening of many Canvas's
 ROOT.gROOT.SetBatch(True)   
 
-from Workflow_Handler import Workflow_Handler
-myWF = Workflow_Handler("Signal","Data",isMedium = True)
+isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
+myWF = Workflow_Handler("Signal","Data",isBDT_with_Wmass)
 
-#---Some bools for SF variation
+ttbar_sig_calib_file = ROOT.TFile.Open("ttbar_signal_ratio.root")
+ttbar_sig_calib = ttbar_sig_calib_file.Get("ttbar_signal_ratio")
+
+##Bools for rundom SF variation
 random_mu_SF  = False #------if True, muon scale factors are sampled from a Gaussian
 random_ele_SF = False #------if True, electron scale factors are sampled from a Gaussian
 random_ph_SF  = False #------if True, photon scale factors are sampled from a Gaussian
+
+
+############################################################################
+#                                                                          #
+#-------------------------- Integrated luminosity -------------------------#
+#                                                                          #
+############################################################################
 
 #Normalize to this luminsity, in fb-1
 #luminosity_norm = 36.46
 luminosity_norm = 35.86
 luminosity_BtoF = 19.72
 luminosity_GH   = 16.14
-
 
 ##Here starts the program
 Norm_Map = myWF.get_normalizations_map()
@@ -85,8 +95,10 @@ for name_sample in samplename_list:
         #---------- Access the tree variables ----------#
 
         isMuon = mytree.is_muon
+        LepPiOppositeCharge = mytree.LepPiOppositeCharge
 
-        #run_number = mytree.run_number
+        nPV = mytree.nPV
+
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
         isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
 
@@ -107,6 +119,7 @@ for name_sample in samplename_list:
             
         gamma_eT = mytree.photon_eT
         gamma_eta = mytree.photon_eta
+        gamma_etaSC = mytree.photon_etaSC
         gamma_phi = mytree.photon_phi
         gamma_E = mytree.photon_energy
         gamma_FourMomentum = ROOT.TLorentzVector()
@@ -116,33 +129,50 @@ for name_sample in samplename_list:
         gamma_iso_Ph = mytree.photon_iso_Photon
         gamma_iso_eArho = mytree.photon_iso_eArho
 
-        W_phi = (pi_FourMomentum + gamma_FourMomentum).Phi()
-
         met = mytree.met_pT
+        met_puppi = mytree.metpuppi_pT
        
         Wmass = mytree.Wmass
+        W_phi = (pi_FourMomentum + gamma_FourMomentum).Phi()
 
         lep_FourMomentum = ROOT.TLorentzVector()
         lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
 
-        if not isMuon:
-            ele_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
-        else:
-            mu_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
-            mu_pi_InvMass = (lep_FourMomentum + pi_FourMomentum).M()
-        
         nBjets = mytree.nBjets
         nBjets_25 = mytree.nBjets_25
 
         deltaeta_lep_pi = lep_eta-pi_eta
         
-        deltaphi_lep_pi = math.fabs(lep_phi-pi_phi)
+        deltaphi_lep_pi = math.fabs(lep_phi - pi_phi)
         if deltaphi_lep_pi > 3.14:
             deltaphi_lep_pi = 6.28 - deltaphi_lep_pi
 
-        deltaphi_lep_W = math.fabs(lep_phi-W_phi)
+        deltaphi_lep_W = math.fabs(lep_phi - W_phi)
         if deltaphi_lep_W > 3.14:
             deltaphi_lep_W = 6.28 - deltaphi_lep_W
+
+        deltaphi_lep_gamma = math.fabs(lep_phi - gamma_phi)
+        if deltaphi_lep_gamma > 3.14:
+            deltaphi_lep_gamma = 6.28 - deltaphi_lep_gamma
+
+        if not "Data" in name_sample:
+            Wplus_pT = mytree.Wplus_pT
+            Wminus_pT = mytree.Wminus_pT
+            is_gen_ph = mytree.is_gen_ph
+            gen_ph_pT = mytree.gen_ph_pT
+            gen_ph_mother = str(math.fabs(mytree.gen_ph_mother))
+            gen_ph_mother = gen_ph_mother.replace('.0','')
+
+        if name_sample == "Signal":
+            is_signal_Wplus = mytree.is_signal_Wplus
+            is_signal_Wminus = mytree.is_signal_Wminus
+
+        if not isMuon:
+            ele_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
+            ele_etaSC = mytree.lepton_etaSC
+        else:
+            mu_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
+            mu_pi_InvMass    = (lep_FourMomentum + pi_FourMomentum).M()
 
         #---------Determine the total event weight---------#
         
@@ -150,46 +180,62 @@ for name_sample in samplename_list:
             mu_weight_BtoF, mu_weight_BtoF_err = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24)
             mu_weight_GH, mu_weight_GH_err     = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
 
-            # Use a random number to select which muon scale factor to use, depending on the associated lumi fraction
+            # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction
             Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
-            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):  # Accessing muon SF, B to F
+            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm): # Access muon SF: B to F
 
                 if random_mu_SF:
                     mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_BtoF,mu_weight_BtoF_err)
-
                 else:
                     mu_weight = mu_weight_BtoF
 
-            else: #Accessing muon SF, G and H
+            else: # Access muon SF: G and H
                 
                 if random_mu_SF:
                     mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_GH,mu_weight_GH_err)
-
                 else:
                     mu_weight = mu_weight_GH
 
+
         else:
-            ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,lep_eta)
+            ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,ele_etaSC)
 
             if random_ele_SF:
                 ele_weight = _Nrandom_for_Gaus_SF.Gaus(ele_weight,ele_weight_err) 
 
-        ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_eta)
+        ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_etaSC)
+
         
         if random_ph_SF:
             ph_weight = _Nrandom_for_Gaus_SF.Gaus(ph_weight,ph_weight_err)
+        
 
         if not "Data" in name_sample:
-            PU_Weight = mytree.PU_Weight        
-            Event_Weight = norm_factor*PU_Weight*ph_weight
+            MC_Weight = mytree.MC_Weight # Add MC weight        
+            PU_Weight = mytree.PU_Weight # Add Pile Up weight        
+            Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
 
             if isMuon:
                 Event_Weight = Event_Weight*mu_weight
             else:
                 Event_Weight = Event_Weight*ele_weight
 
+            # Correct for the difference in pT of the generated W in Pythia and Madgraph samples
+            if name_sample == "Signal" and is_signal_Wplus:
+                local_Wplus_pT = Wplus_pT
+                if Wplus_pT > 300.:
+                    local_Wplus_pT = 300.
 
+                Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wplus_pT))
+
+
+            if name_sample == "Signal" and is_signal_Wminus:
+                local_Wminus_pT = Wminus_pT
+                if Wminus_pT > 300.:
+                    local_Wminus_pT = 300.
+
+                Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wminus_pT))
 
             # Obtaining the number of sig and bkg events (weighted)
             
@@ -215,13 +261,16 @@ for name_sample in samplename_list:
 
         #---------Retrieve the BDT output----------#
 
-        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)          
+        if isBDT_with_Wmass:
+            BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)  
+        else:
+            BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)       
 
         #---------------------Here's where the BDT selection starts---------------------#
       
-        if (isMuon and BDT_out >= 0.255) or (not isMuon and BDT_out >= 0.250):
-            # if (Wmass >= 65. and Wmass <= 90.):
-            if (Wmass >= 50. and Wmass <= 100.):
+        if (isMuon and BDT_out >= 0.220) or (not isMuon and BDT_out >= 0.170):
+            if (Wmass >= 65. and Wmass <= 90.): # Count the number of events in the signal region only
+            #if (Wmass >= 50. and Wmass <= 100.):
 
                 if isMuon:
                     if not "Data" in name_sample:
@@ -231,7 +280,7 @@ for name_sample in samplename_list:
                         #     Sevts_mu_SFvariation += Event_Weight
 
  
-                if not isMuon and lep_iso <= 0.35:
+                if not isMuon:# and lep_iso <= 0.35:
                     if not "Data" in name_sample:
                         event_counter_el[theSampleName] += Event_Weight
 

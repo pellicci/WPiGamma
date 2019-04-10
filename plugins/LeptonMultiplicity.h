@@ -11,16 +11,19 @@ private:
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   //virtual void endJob() override;
 
+  bool runningOnData_;
   const edm::InputTag packedPFCandidates_;
   const edm::InputTag slimmedMuons_; 
   const edm::InputTag prunedGenParticles_;
   const edm::InputTag slimmedPhotons_;
   const edm::InputTag slimmedElectrons_;
   const edm::InputTag slimmedJets_;
-  bool runningOnData_;
+  const edm::InputTag slimmedMETs_;
+  const edm::InputTag slimmedMETsPuppi_;
   const edm::InputTag pvCollection_;  
   const edm::InputTag bsCollection_;  
   const edm::InputTag PileupSrc_;
+  const edm::InputTag GenInfo_;
 
   edm::LumiReWeighting Lumiweights_;
 
@@ -83,39 +86,26 @@ private:
   float rho_;
 
   //Tokens
-  edm::EDGetTokenT<std::vector<pat::PackedCandidate> > packedPFCandidatestoken_; 
-  edm::EDGetTokenT<std::vector<pat::Muon> > slimmedMuonstoken_; 
-  edm::EDGetTokenT<std::vector<reco::GenParticle> > prunedGenParticlestoken_; 
-  edm::EDGetTokenT<std::vector<pat::Jet> > slimmedJetstoken_;
-  edm::EDGetTokenT<std::vector<reco::Vertex> > tok_Vertex_; 
-  edm::EDGetTokenT<reco::BeamSpot> tok_beamspot_;
+  edm::EDGetTokenT<std::vector<pat::PackedCandidate> > packedPFCandidatesToken_; 
+  edm::EDGetTokenT<std::vector<pat::Muon> > slimmedMuonsToken_; 
+  edm::EDGetTokenT<std::vector<reco::GenParticle> > prunedGenParticlesToken_; 
+  edm::EDGetTokenT<std::vector<reco::Vertex> > offlineSlimmedPrimaryVerticesToken_; 
   edm::EDGetTokenT<std::vector<PileupSummaryInfo> > pileupSummaryToken_;
-  edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
+  edm::EDGetTokenT<edm::TriggerResults> triggerBitsToken_;
 
   //Ele ID decisions objects
   edm::EDGetToken electronsMiniAODToken_;
-  // edm::EDGetTokenT<edm::ValueMap<bool> > eleLooseIdMapToken_;
-  // edm::EDGetTokenT<edm::ValueMap<bool> > eleMediumIdMapToken_;
-  // edm::EDGetTokenT<edm::ValueMap<bool> > eleTightIdMapToken_;
-  // MVA values and categories (optional)
-  // edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_el_loose_;
-  // edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_el_loose_;
-  // edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_el_;
-  // edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_el_;
 
   //Photon ID decisions
   edm::EDGetToken photonsMiniAODToken_;
-  // edm::EDGetTokenT<edm::ValueMap<bool> > phoMediumIdBoolMapToken_;
-  // edm::EDGetTokenT<edm::ValueMap<vid::CutFlowResult> > phoMediumIdFullInfoMapToken_;
+
 
   //rho (PU energy density)
   edm::EDGetTokenT<double> rhoToken_;
 
-  // MVA values and categories (optional)
-  // edm::EDGetTokenT<edm::ValueMap<float> > mvaValuesMapToken_ph_;
-  // edm::EDGetTokenT<edm::ValueMap<int> > mvaCategoriesMapToken_ph_;
   bool verboseIdFlag_;
 
   //Effective areas for isolation
   EffectiveAreas   effectiveAreas_el_;
+  EffectiveAreas   effectiveAreas_ph_;
 };

@@ -3,20 +3,13 @@ import ROOT
 ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
 #Get the model and the data
-fInput = ROOT.TFile("fitMC.root")
+#fInput = ROOT.TFile("fitMC.root")
+fInput = ROOT.TFile("fitData.root")
 fInput.cd()
 
 workspace = fInput.Get("workspace")
 workspace.Print()
-workspace.var("W_pigamma_BR").setRange(0.,0.0001)
-
-#Set a few things constant
-#workspace.var("a0_el").setConstant(1)
-#workspace.var("a1_el").setConstant(1)
-#workspace.var("a0_mu").setConstant(1)
-#workspace.var("a1_mu").setConstant(1)
-#workspace.var("Nbkg_el").setConstant(1)
-#workspace.var("Nbkg_mu").setConstant(1)
+workspace.var("W_pigamma_BR").setRange(0.0000001,0.0001)
 
 #Define the parameter of interest
 W_pigamma_BR = workspace.var("W_pigamma_BR")
@@ -24,14 +17,11 @@ poi = ROOT.RooArgSet(W_pigamma_BR)
 
 #Define observables
 Wmass = workspace.var("Wmass")
-#weight = workspace.var("weight")
-#isMuon = workspace.cat("isMuon")
 Categorization = workspace.cat("Categorization")
 observables = ROOT.RooArgSet()
 observables.add(Wmass)
 observables.add(Categorization)
-#observables.add(weight)
-#observables.add(isSignal)
+
 
 #Define nuisances
 constrained_params = ROOT.RooArgSet()
@@ -106,9 +96,10 @@ print "Number of events in data = ", workspace.data("data").numEntries()
 
 #----------------------------------------------------------------------------------#
 
-_data = workspace.data("data")
-isSignal = ROOT.workspace.cat("isSignal")
-data = _data.reduce("isSignal==0")
+#_data = workspace.data("data")
+#isSignal = ROOT.workspace.cat("isSignal")
+#data = _data.reduce("isSignal==0")
+data = workspace.data("data")
 
 #fc = ROOT.RooStats.AsymptoticCalculator(workspace.data("data"), bModel, sbModel,0)
 fc = ROOT.RooStats.AsymptoticCalculator(data, bModel, sbModel,0)
@@ -125,24 +116,24 @@ calc.SetVerbose(0)
 #use CLs
 calc.UseCLs(1)
 
-npoints = 100 #Number of points to scan
+npoints = 30 #Number of points to scan
 # min and max for the scan (better to choose smaller intervals)
 poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
 print "Doing a fixed scan  in interval : ", poimin, " , ", poimax
-calc.SetFixedScan(npoints,poimin,0.0001)
+calc.SetFixedScan(npoints,poimin,0.000006)
 
 # In order to use PROOF, one should instal the test statistic on the workers
 # pc = ROOT.RooStats.ProofConfig(workspace, 0, "workers=6",0)
 # toymc.SetProofConfig(pc)
 
 result = calc.GetInterval() #This is a HypoTestInveter class object
-upperLimit = result.UpperLimit()
+#upperLimit = result.UpperLimit()
 
 #Now let's print the result of the two methods
-print "################"
-print "The observed CLs upper limit is: ", upperLimit
+#print "################"
+#print "The observed CLs upper limit is: ", upperLimit
 
 #Compute expected limit
 print "Expected upper limits, using the B (alternate) model : "

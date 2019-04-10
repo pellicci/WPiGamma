@@ -79,8 +79,8 @@ _met_puppi          = np.zeros(1, dtype=float)
 _Wmass              = np.zeros(1, dtype=float)
 
 #BDT scores
-BDT_OUT_MU  = 0.190
-BDT_OUT_ELE = 0.210
+BDT_OUT_MU  = 0.220
+BDT_OUT_ELE = 0.170
 
 _Nrandom_for_SF = ROOT.TRandom3(44317)
 
@@ -428,6 +428,7 @@ for name_sample in samplename_list:
             
         gamma_eT = mytree.photon_eT
         gamma_eta = mytree.photon_eta
+        gamma_etaSC = mytree.photon_etaSC
         gamma_phi = mytree.photon_phi
         gamma_E = mytree.photon_energy
         gamma_FourMomentum = ROOT.TLorentzVector()
@@ -454,6 +455,7 @@ for name_sample in samplename_list:
         met_puppi = mytree.metpuppi_pT
 
         if not isMuon:
+            ele_etaSC = mytree.lepton_etaSC
             ele_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
         else:
             mu_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
@@ -463,11 +465,11 @@ for name_sample in samplename_list:
 
         deltaeta_lep_pi = lep_eta-pi_eta
 
-        deltaphi_lep_pi = math.fabs(lep_phi-pi_phi)
+        deltaphi_lep_pi = math.fabs(lep_phi - pi_phi)
         if deltaphi_lep_pi > 3.14:
             deltaphi_lep_pi = 6.28 - deltaphi_lep_pi
 
-        deltaphi_lep_W = math.fabs(lep_phi-W_phi)
+        deltaphi_lep_W = math.fabs(lep_phi - W_phi)
         if deltaphi_lep_W > 3.14:
             deltaphi_lep_W = 6.28 - deltaphi_lep_W  
 
@@ -488,22 +490,24 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
-        if isMuon:
+        if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
             mu_weight_BtoF, mu_weight_BtoF_err = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24)
             mu_weight_GH, mu_weight_GH_err     = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
             
+            # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction
             Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
-            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):
+            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm): # Access muon SF: B to F
                 mu_weight = mu_weight_BtoF
-            else:
+
+            else: # Access muon SF: G and H
                 mu_weight = mu_weight_GH
 
         else:
-            ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,lep_eta)
+            ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,ele_etaSC)
 
 
-        ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_eta)
+        ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_etaSC)
         
 
         if not isData:
@@ -558,7 +562,7 @@ for name_sample in samplename_list:
 
         #---------Retrieve the BDT output----------#
 
-        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)
+        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)
 
 
         #---------- Fill the tree ----------#
@@ -578,9 +582,9 @@ for name_sample in samplename_list:
                     _isSignalRegion_fit[0] = 0
                     
                 if isMuon and BDT_out < BDT_OUT_MU:
-                    _Categorization_fit[0] = 0
+                    _Categorization_fit[0] = 0 # Control Region muon channel = 0
                 if isMuon and BDT_out >= BDT_OUT_MU:
-                    _Categorization_fit[0] = 1
+                    _Categorization_fit[0] = 1 # Signal Region muon channel = 1
                     if not name_sample=="Signal":
                         Wmass_mu.Fill(Wmass,Event_Weight)
                         #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]
@@ -588,9 +592,9 @@ for name_sample in samplename_list:
                             print "WARNING!!! mu channel"
 
                 if (not isMuon) and BDT_out < BDT_OUT_ELE:
-                    _Categorization_fit[0] = 2
+                    _Categorization_fit[0] = 2 # Control Region electron channel = 2
                 if (not isMuon) and BDT_out >= BDT_OUT_ELE:
-                    _Categorization_fit[0] = 3
+                    _Categorization_fit[0] = 3 # Signal Region electron channel = 3
                     if not name_sample=="Signal":
                         Wmass_ele.Fill(Wmass,Event_Weight)
                         #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]
@@ -654,7 +658,7 @@ for name_sample in samplename_list:
                     lep_pt_ele.Fill(lep_pT,Event_Weight)
                     tMVA_background_ele.Fill()
 
-            if isData and (Wmass < 65. or Wmass > 90.):
+            if isData:# and (Wmass < 65. or Wmass > 90.):
 
                 _gamma_eT[0]        = gamma_eT
                 _pi_pT[0]           = pi_pT

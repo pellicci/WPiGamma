@@ -4,8 +4,20 @@ import math
 import sys
 import numpy as np
 from ROOT import TH1F, TCanvas, TFile, TLegend, gStyle
+import argparse
 
-isMuon = True
+#---------------------------------#
+p = argparse.ArgumentParser(description='Select whether the plots will regard the muon or the electron channels')
+p.add_argument('isMuon_option', help='Type <<muon>> or <<electron>>')
+args = p.parse_args()
+
+# Switch from muon to electron channel
+if args.isMuon_option == "muon":
+    isMuon = True
+if args.isMuon_option == "electron":
+    isMuon = False
+
+#---------------------------------#
 
 def BDT_output():
 
@@ -68,16 +80,18 @@ def rejB_vs_S():
     leg2.SetLineWidth(1)
     leg2.SetFillStyle(0)
     #leg2.AddEntry(h_rejB_vs_S_1,"with data sidebands","l")
-    leg2.AddEntry(h_rejB_vs_S_1,"with Wmass","l")
+    #leg2.AddEntry(h_rejB_vs_S_1,"without #Delta#varphi_{l,#pi}","l")
+    leg2.AddEntry(h_rejB_vs_S_1,"with m_{W}","l")
     #leg2.AddEntry(h_rejB_vs_S_2,"with MC","l")
-    leg2.AddEntry(h_rejB_vs_S_2,"without Wmass","l")
+    #leg2.AddEntry(h_rejB_vs_S_2,"with #Delta#varphi_{l,#pi}","l")
+    leg2.AddEntry(h_rejB_vs_S_2,"without m_{W}","l")
 
     gStyle.SetOptStat(0)
     canvas2 = TCanvas()
     h_rejB_vs_S_1.SetTitle(" ")
-    h_rejB_vs_S_1.SetLineColor(2)
+    h_rejB_vs_S_1.SetLineColor(1)
     h_rejB_vs_S_1.SetLineWidth(3)
-    h_rejB_vs_S_2.SetLineColor(1)    
+    h_rejB_vs_S_2.SetLineColor(2)    
     h_rejB_vs_S_2.SetLineWidth(3)
     h_rejB_vs_S_1.Draw("hist")
     h_rejB_vs_S_2.Draw("SAME, hist")
@@ -90,5 +104,5 @@ def rejB_vs_S():
 
 if __name__ == "__main__":
 
-    #rejB_vs_S()
-    BDT_output()
+    rejB_vs_S()
+    #BDT_output()

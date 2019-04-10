@@ -50,6 +50,14 @@ luminosity_BtoF = 19.72
 luminosity_GH   = 16.14
 
 
+#############---------------- BDT score cut values ----------------#############
+
+BDT_OUT_MU = 0.220
+BDT_OUT_ELE = 0.170
+
+################################################################################
+
+
 ############################################################################
 #                                                                          #
 #------------------------------ Create histos -----------------------------#
@@ -68,12 +76,12 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 #Here's the list of histos to plot
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet","h_mupt_sig","h_elept_sig","h_pipt_sig","h_gammaet_sig", "h_mueta", "h_eleeta","h_pieta","h_gammaeta","h_mueta_sig","h_eleeta_sig","h_pieta_sig","h_gammaeta_sig", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_ratio_mu","h_Wmass_ratio_ele","h_nPV_mu","h_nPV_ele","h_motherID_mu","h_motherID_ele"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet","h_mupt_sig","h_elept_sig","h_pipt_sig","h_gammaet_sig", "h_mueta", "h_eleeta","h_pieta","h_gammaeta","h_mueta_sig","h_eleeta_sig","h_pieta_sig","h_gammaeta_sig", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_ratio_mu","h_Wmass_ratio_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma"]
 
-Wmass_mu        = ROOT.TH1F("Wmass_mu","Wmass mu",10,40,100)
-Wmass_ele       = ROOT.TH1F("Wmass_ele","Wmass ele",10,40,100)
-Wmass_ratio_mu  = ROOT.TH1F("Wmass_ratio_mu","Wmass ratio mu",10,40,100)
-Wmass_ratio_ele = ROOT.TH1F("Wmass_ratio_ele","Wmass ratio ele",10,40,100)
+Wmass_mu        = ROOT.TH1F("Wmass_mu","Wmass mu",10,50,100)
+Wmass_ele       = ROOT.TH1F("Wmass_ele","Wmass ele",10,50,100)
+Wmass_ratio_mu  = ROOT.TH1F("Wmass_ratio_mu","Wmass ratio mu",10,50,100)
+Wmass_ratio_ele = ROOT.TH1F("Wmass_ratio_ele","Wmass ratio ele",10,50,100)
 
 W_signal_hist = ROOT.TH1F("W_signal"," W signal",8,0,300)
 W_ttbar_hist  = ROOT.TH1F("W_ttbar"," W ttbar",8,0,300)
@@ -135,7 +143,7 @@ for sample_name in samplename_list:
         theSampleName = sample_name
 
     h_base[theSampleName+list_histos[0]]  = ROOT.TH1F(theSampleName+list_histos[0], "p_{T} of the muon", 15, 25, 100.)
-    h_base[theSampleName+list_histos[1]]  = ROOT.TH1F(theSampleName+list_histos[1], "p_{T} of the electron", 15, 26, 100.)
+    h_base[theSampleName+list_histos[1]]  = ROOT.TH1F(theSampleName+list_histos[1], "p_{T} of the electron", 15, 28, 100.)
     h_base[theSampleName+list_histos[2]]  = ROOT.TH1F(theSampleName+list_histos[2], "p_{T} of the pion", 15, 20, 100.)
     h_base[theSampleName+list_histos[3]]  = ROOT.TH1F(theSampleName+list_histos[3], "E_{T} of the gamma", 15, 20, 100.)
     h_base[theSampleName+list_histos[4]]  = ROOT.TH1F(theSampleName+list_histos[4], "p_{T} of the muon - sig", 15, 20, 100.)
@@ -157,26 +165,27 @@ for sample_name in samplename_list:
     h_base[theSampleName+list_histos[20]] = ROOT.TH1F(theSampleName+list_histos[20], "deltaphi ele-W", 10, 0, 3.14)
     h_base[theSampleName+list_histos[21]] = ROOT.TH1F(theSampleName+list_histos[21], "deltaeta mu-pi", 20, -5, 5)
     h_base[theSampleName+list_histos[22]] = ROOT.TH1F(theSampleName+list_histos[22], "deltaeta ele-pi", 20, -5, 5)
-    h_base[theSampleName+list_histos[23]] = ROOT.TH1F(theSampleName+list_histos[23], "W mass", 15, 50, 100)
-    h_base[theSampleName+list_histos[24]] = ROOT.TH1F(theSampleName+list_histos[24], "W mass if flag mu", 15, 50, 100)
-    h_base[theSampleName+list_histos[25]] = ROOT.TH1F(theSampleName+list_histos[25], "W mass if flag ele", 15, 50, 100)
-    h_base[theSampleName+list_histos[26]] = ROOT.TH1F(theSampleName+list_histos[26], "mu-gamma InvMass", 50, 0, 300)
-    h_base[theSampleName+list_histos[27]] = ROOT.TH1F(theSampleName+list_histos[27], "ele-gamma InvMass", 50, 0, 300)
+    h_base[theSampleName+list_histos[23]] = ROOT.TH1F(theSampleName+list_histos[23], "W mass", 10, 50, 100)
+    h_base[theSampleName+list_histos[24]] = ROOT.TH1F(theSampleName+list_histos[24], "W mass if flag mu", 10, 50, 100)
+    h_base[theSampleName+list_histos[25]] = ROOT.TH1F(theSampleName+list_histos[25], "W mass if flag ele", 10, 50, 100)
+    h_base[theSampleName+list_histos[26]] = ROOT.TH1F(theSampleName+list_histos[26], "mu-gamma InvMass", 20, 0, 300)
+    h_base[theSampleName+list_histos[27]] = ROOT.TH1F(theSampleName+list_histos[27], "ele-gamma InvMass", 20, 0, 300)
     h_base[theSampleName+list_histos[28]] = ROOT.TH1F(theSampleName+list_histos[28], "Pion isolation 05 - mu", 75, 0, 150)
     h_base[theSampleName+list_histos[29]] = ROOT.TH1F(theSampleName+list_histos[29], "Pion rel. isolation 05 - mu - ch", 50, 0, 10)
     h_base[theSampleName+list_histos[30]] = ROOT.TH1F(theSampleName+list_histos[30], "Pion rel. isolation 05 - mu", 50, 0, 10)
     h_base[theSampleName+list_histos[31]] = ROOT.TH1F(theSampleName+list_histos[31], "Pion isolation 05 - ele", 75, 0, 150)
     h_base[theSampleName+list_histos[32]] = ROOT.TH1F(theSampleName+list_histos[32], "Pion rel. isolation 05 - ele - ch", 50, 0, 10)
     h_base[theSampleName+list_histos[33]] = ROOT.TH1F(theSampleName+list_histos[33], "Pion rel. isolation 05 - ele", 50, 0, 10)
-    h_base[theSampleName+list_histos[34]] = ROOT.TH1F(theSampleName+list_histos[34], "met mu", 40, 0, 200)
-    h_base[theSampleName+list_histos[35]] = ROOT.TH1F(theSampleName+list_histos[35], "met ele", 40, 0, 200)
+    h_base[theSampleName+list_histos[34]] = ROOT.TH1F(theSampleName+list_histos[34], "met mu", 20, 0, 200)
+    h_base[theSampleName+list_histos[35]] = ROOT.TH1F(theSampleName+list_histos[35], "met ele", 20, 0, 200)
     h_base[theSampleName+list_histos[36]] = ROOT.TH1F(theSampleName+list_histos[36], "met puppi", 45, 0, 300)
-    h_base[theSampleName+list_histos[37]] = ROOT.TH1F(theSampleName+list_histos[37], "Wmass ratio mu", 10, 40, 100)
-    h_base[theSampleName+list_histos[38]] = ROOT.TH1F(theSampleName+list_histos[38], "Wmass ratio ele", 10, 40, 100)
-    h_base[theSampleName+list_histos[39]] = ROOT.TH1F(theSampleName+list_histos[39], "nPV - mu", 50, 0, 50)
-    h_base[theSampleName+list_histos[40]] = ROOT.TH1F(theSampleName+list_histos[40], "nPV - ele", 50, 0, 50)
-    h_base[theSampleName+list_histos[41]] = ROOT.TH1F(theSampleName+list_histos[41], "mother ID - mu", 1000, 0, 1000)
-    h_base[theSampleName+list_histos[42]] = ROOT.TH1F(theSampleName+list_histos[42], "mother ID - ele", 1000, 0, 1000)
+    h_base[theSampleName+list_histos[37]] = ROOT.TH1F(theSampleName+list_histos[37], "Wmass ratio mu", 10, 50, 100)
+    h_base[theSampleName+list_histos[38]] = ROOT.TH1F(theSampleName+list_histos[38], "Wmass ratio ele", 10, 50, 100)
+    h_base[theSampleName+list_histos[39]] = ROOT.TH1F(theSampleName+list_histos[39], "nPV - mu", 15, 0, 50)
+    h_base[theSampleName+list_histos[40]] = ROOT.TH1F(theSampleName+list_histos[40], "nPV - ele", 15, 0, 50)
+    h_base[theSampleName+list_histos[41]] = ROOT.TH1F(theSampleName+list_histos[41], "deltaphi mu-gamma", 10, 0, 3.14)
+    h_base[theSampleName+list_histos[42]] = ROOT.TH1F(theSampleName+list_histos[42], "deltaphi ele-gamma", 10, 0, 3.14)
+
 
 
 
@@ -213,13 +222,6 @@ _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 N_WGToLNuG_mu = 0.
 Nevts_per_sample = 0.
 N_DoubleEMEnriched = 0.
-
-#############---------------- BDT score cut values ----------------#############
-
-BDT_OUT_MU = 0.220
-BDT_OUT_ELE = 0.240
-
-################################################################################
 
 ##Loop on samples, and then on events, and merge QCD stuff
 idx_sample = 0
@@ -266,7 +268,7 @@ for name_sample in samplename_list:
 
         # if "Data" in name_sample: continue  #-------------Excluding data-------------#
 
-        # if not "Data" in name_sample: continue
+        # if not "Signal" in name_sample: continue
 
         # if not (name_sample == "ttbar" or name_sample == "Signal"):
         #     continue
@@ -330,13 +332,17 @@ for name_sample in samplename_list:
 
         deltaeta_lep_pi = lep_eta-pi_eta
         
-        deltaphi_lep_pi = math.fabs(lep_phi-pi_phi)
+        deltaphi_lep_pi = math.fabs(lep_phi - pi_phi)
         if deltaphi_lep_pi > 3.14:
             deltaphi_lep_pi = 6.28 - deltaphi_lep_pi
 
-        deltaphi_lep_W = math.fabs(lep_phi-W_phi)
+        deltaphi_lep_W = math.fabs(lep_phi - W_phi)
         if deltaphi_lep_W > 3.14:
             deltaphi_lep_W = 6.28 - deltaphi_lep_W
+
+        deltaphi_lep_gamma = math.fabs(lep_phi - gamma_phi)
+        if deltaphi_lep_gamma > 3.14:
+            deltaphi_lep_gamma = 6.28 - deltaphi_lep_gamma
 
         if not "Data" in name_sample:
             Wplus_pT = mytree.Wplus_pT
@@ -366,9 +372,6 @@ for name_sample in samplename_list:
 
         if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge):
             continue
-
-        #if ("WJetsToLNu" in name_sample or "DY" in name_sample) and is_gen_ph:# and not gen_ph_mother == "13":
-        #    continue
             
         if "Signal" in name_sample:
             Nsig_passed += 1
@@ -389,7 +392,7 @@ for name_sample in samplename_list:
             # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction
             Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
-            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm):  # Access muon SF: B to F
+            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm): # Access muon SF: B to F
 
                 if random_mu_SF:
                     mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_BtoF,mu_weight_BtoF_err)
@@ -457,9 +460,9 @@ for name_sample in samplename_list:
         ############################################################################
 
         if isBDT_with_Wmass:
-            BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)  
+            BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)  
         else:
-            BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)
+            BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)
 
    
         ############################################################################
@@ -468,7 +471,7 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
-        if (isMuon and BDT_out >= -0.1 and BDT_out < BDT_OUT_MU) or (not isMuon and BDT_out >= -0.1 and BDT_out < BDT_OUT_ELE): # Alternative cut on BDT score. Two histos will be filled. Eventually, they will be the ratio of Wmass distributions: one with pi_pT and gamma_ET normalized to Wmass, one not
+        if (isMuon and BDT_out > -0.1 and BDT_out < BDT_OUT_MU) or (not isMuon and BDT_out > -0.1 and BDT_out < BDT_OUT_ELE): # Alternative cut on BDT score. Two histos will be filled. Eventually, they will be the ratio of Wmass distributions: one with pi_pT and gamma_ET normalized to Wmass, one not
             if (Wmass >= 50. and Wmass <= 100.) and isMuon:
                 h_base[theSampleName+"h_Wmass_ratio_mu"].Fill(Wmass,Event_Weight)
             if (Wmass >= 50. and Wmass <= 100.) and not isMuon:
@@ -506,6 +509,8 @@ for name_sample in samplename_list:
             h_base[theSampleName+"h_deltaphi_mu_W"].Fill(deltaphi_lep_W,Event_Weight)
             h_base[theSampleName+"h_mu_gamma_InvMass"].Fill(mu_gamma_InvMass,Event_Weight)  
             h_base[theSampleName+"h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
+            h_base[theSampleName+"h_deltaphi_mu_pi"].Fill(deltaphi_lep_pi,Event_Weight)
+            h_base[theSampleName+"h_deltaphi_mu_gamma"].Fill(deltaphi_lep_gamma,Event_Weight)
 
             if isBDT and"Signal" in name_sample:
                 Sevts_mu_SFvariation += Event_Weight
@@ -520,6 +525,8 @@ for name_sample in samplename_list:
             h_base[theSampleName+"h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
             h_base[theSampleName+"h_met_ele"].Fill(met,Event_Weight)
             h_base[theSampleName+"h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
+            h_base[theSampleName+"h_deltaphi_ele_pi"].Fill(deltaphi_lep_pi,Event_Weight)
+            h_base[theSampleName+"h_deltaphi_ele_gamma"].Fill(deltaphi_lep_gamma,Event_Weight)
             h_base[theSampleName+"h_deltaphi_ele_W"].Fill(deltaphi_lep_W,Event_Weight)
 
             if isBDT and "Signal" in name_sample:
@@ -602,7 +609,7 @@ for name_sample in samplename_list:
 
         # Set to 0 the bins containing negative values, due to negative weights
         hsize = h_base[theSampleName+hname].GetSize() - 2 # GetSize() returns the number of bins +2 (that is + overflow + underflow) 
-        for bin in range(1,hsize):
+        for bin in range(1,hsize+1): # The +1 is in order to get the last bin
             bincontent = h_base[theSampleName+hname].GetBinContent(bin)
             if bincontent < 0.:
                 h_base[theSampleName+hname].SetBinContent(bin,0.)
@@ -683,9 +690,9 @@ for hname in list_histos:
     hs[hname].Draw("histo")
 
     if "h_Wmass_" in hname:
-        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),65.))
-    if hname == "h_Wmass":
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),100.))
+    if hname == "h_Wmass":
+        hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),140.))
     if hname == "h_piRelIso_05_ele_ch":
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),10000.))
     if hname == "h_piRelIso_05_mu_ch":
@@ -708,10 +715,10 @@ for hname in list_histos:
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),90.))
     if hname == "h_gammaet":
         hs[hname].SetMaximum(max(hs[hname].GetHistogram().GetMaximum(),100.))
-    #if hname == "h_pieta_sig" or hname == "h_pipt_sig" or hname == "h_gammaeta_sig" or hname == "h_gammaet_sig":
-    #    hs[hname].SetMaximum(30.)
-    #if hname == "h_mueta_sig" or hname == "h_mupt_sig" or hname == "h_eleeta_sig" or hname == "h_elept_sig":
-    #    hs[hname].SetMaximum(20.)
+    if hname == "h_pieta_sig" or hname == "h_pipt_sig" or hname == "h_gammaeta_sig" or hname == "h_gammaet_sig":
+        hs[hname].SetMaximum(0.3)
+    if hname == "h_mueta_sig" or hname == "h_mupt_sig" or hname == "h_eleeta_sig" or hname == "h_elept_sig":
+        hs[hname].SetMaximum(0.2)
 
 
     #---------Histos names---------#
@@ -748,10 +755,10 @@ for hname in list_histos:
         hs[hname].GetXaxis().SetTitle("#eta^{#pi}")
 
     if hname == "h_deltaphi_mu_pi":
-        hs[hname].GetXaxis().SetTitle("#Delta#varphi_{#mu-#pi})")
+        hs[hname].GetXaxis().SetTitle("#Delta#varphi_{#mu-#pi}")
 
     if hname == "h_deltaphi_ele_pi":
-        hs[hname].GetXaxis().SetTitle("#Delta#varphi_{e-#pi})")
+        hs[hname].GetXaxis().SetTitle("#Delta#varphi_{e-#pi}")
 
     if hname == "h_ele_gamma_InvMass":
         hs[hname].GetXaxis().SetTitle("m_{e#gamma} (GeV/c^{2})")
@@ -798,12 +805,34 @@ for hname in list_histos:
         
     canvas[hname].SaveAs("plots/" + hname + ".pdf")
 
-#print "Wmass_mu: ", Wmass_mu.Integral()
-#print "Wmass_ele: ", Wmass_ele.Integral()
+print "Wmass_mu: ", Wmass_mu.Integral()
+print "Wmass_ele: ", Wmass_ele.Integral()
+print "Wmass_ratio_mu: ", Wmass_ratio_mu.Integral()
+print "Wmass_ratio_ele: ", Wmass_ratio_ele.Integral()
+
+
 Wmass_mu.Scale(1/Wmass_mu.Integral())
 Wmass_ratio_mu.Scale(1/Wmass_ratio_mu.Integral())
 Wmass_ele.Scale(1/Wmass_ele.Integral())
 Wmass_ratio_ele.Scale(1/Wmass_ratio_ele.Integral())
+
+###################################
+canvas_Wmass_mu = ROOT.TCanvas()
+ROOT.gStyle.SetOptStat(0)
+Wmass_mu.SetMarkerStyle(21)
+Wmass_mu.SetTitle(" ")
+Wmass_mu.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
+Wmass_mu.Draw("Pe")
+canvas_Wmass_mu.SaveAs("plots/Wmass_mu_standalone.pdf")
+canvas_Wmass_ratio_mu = ROOT.TCanvas()
+ROOT.gStyle.SetOptStat(0)
+Wmass_ratio_mu.SetMarkerStyle(21)
+Wmass_ratio_mu.SetTitle(" ")
+Wmass_ratio_mu.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
+Wmass_ratio_mu.Draw("Pe")
+canvas_Wmass_ratio_mu.SaveAs("plots/Wmass_ratio_mu_standalone.pdf")
+###################################
+
 
 Wmass_ratio_mu.Divide(Wmass_ratio_mu,Wmass_mu,1.0,1.0,"B")
 Wmass_ratio_ele.Divide(Wmass_ratio_ele,Wmass_ele,1.0,1.0,"B")
@@ -814,7 +843,10 @@ Wmass_ratio_mu.SetMarkerStyle(21)
 Wmass_ratio_mu.SetTitle(" ")
 Wmass_ratio_mu.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
 Wmass_ratio_mu.Draw("Pe")
-canvas5.SaveAs("plots/Wmass_ratio_mu.pdf")
+if isBDT_with_Wmass:
+    canvas5.SaveAs("plots/Wmass_ratio_mu_Wmass.pdf")
+else:
+    canvas5.SaveAs("plots/Wmass_ratio_mu.pdf")
 
 
 canvas6 = ROOT.TCanvas()
@@ -822,7 +854,10 @@ Wmass_ratio_ele.SetMarkerStyle(21)
 Wmass_ratio_ele.SetTitle(" ")
 Wmass_ratio_ele.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
 Wmass_ratio_ele.Draw("Pe")
-canvas6.SaveAs("plots/Wmass_ratio_ele.pdf")
+if isBDT_with_Wmass:
+    canvas6.SaveAs("plots/Wmass_ratio_ele_Wmass.pdf")
+else:
+    canvas6.SaveAs("plots/Wmass_ratio_ele.pdf")
 
 
 #---------- Signal-ttbar comparison ----------#
@@ -873,6 +908,11 @@ canvas8.SaveAs("plots/ttbar_signal_ratio.pdf")
 #ttbar_sig_file = ROOT.TFile("ttbar_signal_ratio.root","RECREATE")
 #W_ttbar_hist.Write("ttbar_signal_ratio")
 #ttbar_sig_file.Close()
+
+
+
+
+
 
 print "Number of expected events for ", luminosity_norm, " in fb-1"
 print "Number of signal events passed = ", Nsig_passed

@@ -76,6 +76,7 @@ nBjets_25_array       = array('f', [0.])
 lep_pT_array          = array('f', [0.])
 piRelIso_05_array     = array('f', [0.])
 met_array             = array('f', [0.])
+deltaphi_lep_pi_array = array('f', [0.])
 isMuon_array          = array('i', [0])
 
 reader = ROOT.TMVA.Reader("!Color")
@@ -94,13 +95,10 @@ class Workflow_Handler:
         #---------- Medium selection ----------#
         self.norm_filename = "rootfiles/" + self.subprocess + "Medium/Normalizations_table.txt"
         self.dir_back_input = "rootfiles/" + self.subprocess + "Medium/backgrounds/"
-        #self.norm_filename = "rootfiles/" + self.subprocess + "partial_MC/Normalizations_table.txt"
-        #self.dir_back_input = "rootfiles/" + self.subprocess + "partial_MC/backgrounds/"
         self.sig_filename = "rootfiles/" + self.subprocess + "Medium/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
 
         #---------------- Data ----------------#
         self.dir_data_input = "rootfiles/" + self.subprocess + "data/"
-        #self.dir_data_input = "rootfiles/" + self.subprocess + "partial_data/temp_data/"
 
         
         ###################################################################################
@@ -121,6 +119,7 @@ class Workflow_Handler:
         reader.AddVariable("lep_pT",lep_pT_array)
         reader.AddVariable("piRelIso_05_ch",piRelIso_05_array)
         reader.AddVariable("MET",met_array)
+        reader.AddVariable("deltaphi_lep_pi",deltaphi_lep_pi_array)
 
         if isBDT_with_Wmass:
             reader.BookMVA("BDT_mu","MVA/default/weights/TMVAClassification_BDT.weights_mu_Wmass.xml")# First argument is arbitrary. To be chosen in order to distinguish among methods
@@ -133,15 +132,16 @@ class Workflow_Handler:
 
     ###############################################################################################################################################
 
-    def get_BDT_output(self,pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon):
+    def get_BDT_output(self,pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon):
 
-        pi_pT_array[0] = pi_pT
-        gamma_eT_array[0] = gamma_eT
-        nBjets_25_array[0] = nBjets_25
-        lep_pT_array[0] = lep_pT
-        piRelIso_05_array[0] = piRelIso_05_ch
-        met_array[0] = met
-        isMuon_array[0] = int(isMuon)
+        pi_pT_array[0]           = pi_pT
+        gamma_eT_array[0]        = gamma_eT
+        nBjets_25_array[0]       = nBjets_25
+        lep_pT_array[0]          = lep_pT
+        piRelIso_05_array[0]     = piRelIso_05_ch
+        met_array[0]             = met
+        deltaphi_lep_pi_array[0] = deltaphi_lep_pi
+        isMuon_array[0]          = int(isMuon)
         
         if isMuon:
             return reader.EvaluateMVA("BDT_mu")
@@ -208,7 +208,7 @@ class Workflow_Handler:
         cut = False
 
         #if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 26.) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge or ((name_sample == "WJetsToLNu" or "DY" in name_sample) and is_gen_ph):
-        if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 26.) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge:
+        if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 28.) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge:
             cut = True
 
         return cut

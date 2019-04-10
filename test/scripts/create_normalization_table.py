@@ -35,7 +35,7 @@ secs_table["QCD_DoubleEMEnriched_40toInf"] = 113100.0
 secs_table["WGToLNuG"] = 510.6
 secs_table["TTGJets"] = 3.795
 secs_table["ZGTo2LG"] = 123.8
-secs_table["Signal"] = 831.76*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
+secs_table["Signal"] = 730.6*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
 
 #fraction of negative-weighted events in NLO samples
 frac_table = dict()
