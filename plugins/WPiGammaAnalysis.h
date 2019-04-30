@@ -12,6 +12,7 @@ private:
   virtual void endJob() override;
 
   bool runningOnData_;
+  bool runningOn2017_;
   const edm::InputTag packedPFCandidates_;
   const edm::InputTag slimmedMuons_; 
   const edm::InputTag prunedGenParticles_;
@@ -131,8 +132,12 @@ private:
   bool is_muon;
   bool is_ele;
   bool isSingleMuTrigger_24;
+  bool isSingleMuTrigger_27;
   bool isSingleMuTrigger_50;
-  bool isSingleEleTrigger;
+  bool isSingleEleTrigger_25;
+  bool isSingleEleTrigger_27;
+  bool isSingleEleTrigger_32_DoubleEG;
+  bool isSingleEleTrigger_32;
 
   //MC truth
   float PU_Weight;

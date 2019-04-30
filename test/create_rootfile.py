@@ -9,6 +9,7 @@ import argparse
 #---------------------------------#
 p = argparse.ArgumentParser(description='Select whether to fill the mass tree to be used for fits, or the MVA trees')
 p.add_argument('create_mass_tree_option', help='Type <<mass>> or <<MVA>>')
+p.add_argument('runningOn2017_option', help='Type <<2016>> or <<2017>>')
 args = p.parse_args()
 
 # Switch from muon to electron channel
@@ -16,6 +17,10 @@ if args.create_mass_tree_option == "mass":
     create_mass_tree = True
 if args.create_mass_tree_option == "MVA":
     create_mass_tree = False
+if args.runningOn2017_option == "2016":
+    runningOn2017 = False
+if args.runningOn2017_option == "2017":
+    runningOn2017 = True
 #---------------------------------#
 
 #Supress the opening of many Canvas's
@@ -408,6 +413,8 @@ for name_sample in samplename_list:
 
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
         isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
+        if runningOn2017:
+            isSingleMuTrigger_27 = mytree.isSingleMuTrigger_27
 
         lep_pT  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
@@ -490,18 +497,31 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
-        if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
-            mu_weight_BtoF, mu_weight_BtoF_err = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24)
-            mu_weight_GH, mu_weight_GH_err     = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
+        # if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
+        #     mu_weight_BtoF, mu_weight_BtoF_err = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24)
+        #     mu_weight_GH, mu_weight_GH_err     = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
             
-            # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction
-            Nrandom_for_SF = _Nrandom_for_SF.Rndm()
+        #     # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction
+        #     Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
-            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm): # Access muon SF: B to F
-                mu_weight = mu_weight_BtoF
+        #     if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm): # Access muon SF: B to F
+        #         mu_weight = mu_weight_BtoF
 
-            else: # Access muon SF: G and H
-                mu_weight = mu_weight_GH
+        #     else: # Access muon SF: G and H
+        #         mu_weight = mu_weight_GH
+
+        # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction (only for 2016)
+        Nrandom_for_SF = _Nrandom_for_SF.Rndm()
+
+        if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
+            if runningOn2017:
+                isSingleMuTrigger_LOW = isSingleMuTrigger_27
+            else:
+                isSingleMuTrigger_LOW = isSingleMuTrigger_24
+
+            mu_weight, mu_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,runningOn2017,Nrandom_for_SF,luminosity_BtoF,luminosity_norm,isSingleMuTrigger_LOW)
+
+            mu_weight = mu_weight
 
         else:
             ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,ele_etaSC)

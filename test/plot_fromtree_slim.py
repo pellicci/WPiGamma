@@ -19,17 +19,22 @@ ROOT.gROOT.SetBatch(True)
 #---------------------------------#
 p = argparse.ArgumentParser(description='Select whether to fill the histograms after pre-selection or after BDT')
 p.add_argument('isBDT_option', help='Type <<preselection>> or <<BDT>>')
+p.add_argument('runningOn2017_option', help='Type <<2016>> or <<2017>>')
 args = p.parse_args()
 
-# Switch from muon to electron channel
+# Switch from muon to electron channel, and from 2016 to 2017
 if args.isBDT_option == "preselection":
     isBDT = False
 if args.isBDT_option == "BDT":
     isBDT = True
+if args.runningOn2017_option == "2016":
+    runningOn2017 = False
+if args.runningOn2017_option == "2017":
+    runningOn2017 = True
 #---------------------------------#
 
 isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
-myWF = Workflow_Handler("Signal","Data",isBDT_with_Wmass)
+myWF = Workflow_Handler("Signal","Data",isBDT_with_Wmass,runningOn2017)
 
 ##Bools for rundom SF variation
 random_mu_SF  = False #------if True, muon scale factors are sampled from a Gaussian
@@ -44,8 +49,15 @@ random_ph_SF  = False #------if True, photon scale factors are sampled from a Ga
 ############################################################################
 
 #Normalize to this luminsity, in fb-1
-#luminosity_norm = 36.46
-luminosity_norm = 35.86
+
+luminosity_norm_2016 = 35.86
+luminosity_norm_2017 = 41.529
+
+if runningOn2017:
+    luminosity_norm = luminosity_norm_2017
+else:
+    luminosity_norm = luminosity_norm_2016
+
 luminosity_BtoF = 19.72
 luminosity_GH   = 16.14
 
@@ -56,6 +68,10 @@ BDT_OUT_MU = 0.220
 BDT_OUT_ELE = 0.170
 
 ################################################################################
+
+
+
+
 
 
 ############################################################################
@@ -290,6 +306,8 @@ for name_sample in samplename_list:
 
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
         isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
+        if runningOn2017:
+            isSingleMuTrigger_27 = mytree.isSingleMuTrigger_27           
 
         lep_pT  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
@@ -384,28 +402,22 @@ for name_sample in samplename_list:
         #--------------------- Determine the total event weight -------------------#
         #                                                                          #
         ############################################################################
-        
+
+        # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction (only for 2016)
+        Nrandom_for_SF = _Nrandom_for_SF.Rndm()
+
         if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
-            mu_weight_BtoF, mu_weight_BtoF_err = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24)
-            mu_weight_GH, mu_weight_GH_err     = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
+            if runningOn2017:
+                isSingleMuTrigger_LOW = isSingleMuTrigger_27
+            else:
+                isSingleMuTrigger_LOW = isSingleMuTrigger_24
 
-            # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction
-            Nrandom_for_SF = _Nrandom_for_SF.Rndm()
+            mu_weight, mu_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,runningOn2017,Nrandom_for_SF,luminosity_BtoF,luminosity_norm,isSingleMuTrigger_LOW)
 
-            if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm): # Access muon SF: B to F
-
-                if random_mu_SF:
-                    mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_BtoF,mu_weight_BtoF_err)
-                else:
-                    mu_weight = mu_weight_BtoF
-
-            else: # Access muon SF: G and H
-                
-                if random_mu_SF:
-                    mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight_GH,mu_weight_GH_err)
-                else:
-                    mu_weight = mu_weight_GH
-
+            if random_mu_SF:
+                mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight,mu_weight_err)
+            else:
+                mu_weight = mu_weight
 
         else:
             ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,ele_etaSC)
@@ -802,8 +814,10 @@ for hname in list_histos:
     if not "_sig" in hname:
         leg1.Draw()
  
-        
-    canvas[hname].SaveAs("plots/" + hname + ".pdf")
+    if runningOn2017:
+        canvas[hname].SaveAs("plots/2017/" + hname + ".pdf")
+    else:
+        canvas[hname].SaveAs("plots/2016/" + hname + ".pdf")
 
 print "Wmass_mu: ", Wmass_mu.Integral()
 print "Wmass_ele: ", Wmass_ele.Integral()

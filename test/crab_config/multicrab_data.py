@@ -6,12 +6,12 @@ config = Configuration()
 config.section_('General')
 config.General.transferOutputs = True
 
-runningOn2017 = False # Decide whether to run on 2016 or 2017 data
+runningOn2017 = True # Decide whether to run on 2016 or 2017 data
 
 if runningOn2017:
-    config.General.workArea = 'crab_projects/dataprocess_2017/'
+    config.General.workArea = 'crab_projects/samples_data_2017/'
 else:
-    config.General.workArea = 'crab_projects/dataprocess_2016/'
+    config.General.workArea = 'crab_projects/samples_data_2016/'
 
 
 
@@ -22,9 +22,9 @@ config.JobType.pluginName = 'Analysis'
 
 
 if runningOn2017:
-    config.JobType.inputFiles = ['MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root','MyDataPileupHistogram.root'] #MC and data files for PileUp reweighting
+    config.JobType.inputFiles = ['PU/MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root','PU/MyDataPileupHistogram_2017.root'] #MC and data files for PileUp reweighting (2017)
 else:
-    config.JobType.inputFiles = ['MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root','MyDataPileupHistogram.root'] #MC and data files for PileUp reweighting
+    config.JobType.inputFiles = ['PU/MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root','PU/MyDataPileupHistogram_2016.root'] #MC and data files for PileUp reweighting (2016)
 
 
 
@@ -37,7 +37,7 @@ config.section_('Data')
 
 
 if runningOn2017:
-    config.Data.lumiMask = 'json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
+    config.Data.lumiMask = 'json/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
 else:
     config.Data.lumiMask = 'json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
 

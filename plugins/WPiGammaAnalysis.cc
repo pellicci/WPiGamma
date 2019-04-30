@@ -55,6 +55,7 @@ typedef math::XYZTLorentzVector LorentzVector;
 // constructors and destructor
 WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   runningOnData_(iConfig.getParameter<bool>("runningOnData")),
+  runningOn2017_(iConfig.getParameter<bool>("runningOn2017")),
   verboseIdFlag_(iConfig.getParameter<bool>("phoIdVerbose")),
   effectiveAreas_el_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile_el")).fullPath() ),
   effectiveAreas_ph_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile_ph")).fullPath() ),
@@ -221,8 +222,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //Examine the trigger information
   isSingleMuTrigger_24 = false;
+  isSingleMuTrigger_27 = false;
   isSingleMuTrigger_50 = false;
-  isSingleEleTrigger = false;
+  isSingleEleTrigger_25 = false;
+  isSingleEleTrigger_27 = false;
+  isSingleEleTrigger_32_DoubleEG = false;
+  isSingleEleTrigger_32 = false;
 
   const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
   for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i){
@@ -232,12 +237,23 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	tmp_triggername.find("HLT_IsoTkMu24_v") != std::string::npos){
       isSingleMuTrigger_24 = true;
     }
+    if( tmp_triggername.find("HLT_IsoMu27_v") != std::string::npos ){
+      isSingleMuTrigger_27 = true;
+    }
     if( tmp_triggername.find("HLT_Mu50_v") != std::string::npos ){
       isSingleMuTrigger_50 = true;
     }
-    if( tmp_triggername.find("HLT_Ele25_eta2p1_WPTight_Gsf_v") != std::string::npos ||
-	tmp_triggername.find("HLT_Ele27_WPTight_Gsf_v") != std::string::npos){
-      isSingleEleTrigger = true;
+    if( tmp_triggername.find("HLT_Ele25_eta2p1_WPTight_Gsf_v") != std::string::npos){
+      isSingleEleTrigger_25 = true;
+    }
+    if( tmp_triggername.find("HLT_Ele27_WPTight_Gsf_v") != std::string::npos){
+      isSingleEleTrigger_27 = true;
+    }
+    if( tmp_triggername.find("HLT_Ele32_WPTight_Gsf_L1DoubleEG_v") != std::string::npos){
+      isSingleEleTrigger_32_DoubleEG = true;
+    }
+    if( tmp_triggername.find("HLT_Ele32_WPTight_Gsf_v") != std::string::npos){
+      isSingleEleTrigger_32 = true;
     }
   }
 
@@ -283,6 +299,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   el_dz    = 0.;
   el_iso   = 0.;
   best_el_iso = 0.;
+  LorentzVector el_p4;
 
   deltaphi_lep_pi = 0.;
 
@@ -384,15 +401,21 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   iEvent.getByToken(rhoToken_,rhoH);
   rho_ = *rhoH;
 
+  float corr_pt = 0.;
+
   for(auto el = slimmedElectrons->begin(); el != slimmedElectrons->end(); ++el){
-    //for (size_t i = 0; i < slimmedElectrons->size(); ++i){
-    //const auto el = slimmedElectrons->ptrAt(i);
-    if(el->pt() < 20. || fabs(el->eta()) > 2.5 || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
+    //Calculate electron p4, correct it with the Scale&Smearing correction and extract the pT
+    el_p4 = el->p4() * el->userFloat("ecalTrkEnergyPostCorr")/el->energy();
+    corr_pt = el_p4.pt();
+
+      //if(el->pt() < 20. || fabs(el->eta()) > 2.5 || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
+      if(corr_pt < 20. || fabs(el->eta()) > 2.5 || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
 
     //PflowIsolationVariables pfIso = el->pfIsolationVariables();
     float abseta = fabs(el->superCluster()->eta());
     float eA     = effectiveAreas_el_.getEffectiveArea(abseta);
-    el_iso   = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
+
+    el_iso   = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/corr_pt;
 
     if(el_iso > 0.35) continue;
 
@@ -407,13 +430,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     is_ele = true;
     nElectrons++;
     
-    if(el->pt() > pTeleMax){
+    if(corr_pt > pTeleMax){
       
       el_ID    = el->pdgId();
       el_eta   = el->eta();
       el_etaSC = el->superCluster()->eta();
       el_phi   = el->phi();
-      el_pT    = el->pt();
+      el_pT    = corr_pt;
       el_dxy   = el->gsfTrack()->dxy((&slimmedPV->at(0))->position());
       el_dz    = el->gsfTrack()->dz((&slimmedPV->at(0))->position());
       best_el_iso = el_iso; //Save the value of el_iso of the best candidate (highest pT) electron passing the selection
@@ -606,7 +629,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   for(auto photon = slimmedPhotons->begin(); photon != slimmedPhotons->end(); ++photon){
 
-    corr_et = photon->et();
+    corr_et = photon->et() * photon->userFloat("ecalEnergyPostCorr")/photon->energy();
 
     // Apply energy scale corrections to MC (not available for 2016)
     // if(!runningOnData_){
@@ -634,14 +657,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     ph_eta    = photon->eta();
     ph_etaSC  = photon->superCluster()->eta();
     ph_phi    = photon->phi();
-    ph_energy = photon->energy();
-    ph_p4     = photon->p4();
+    //ph_energy = photon->energy();
+    //ph_p4     = photon->p4();
 
     // Apply energy scale corrections to MC
-    // if(!runningOnData_){
-    //   ph_energy = photon->userFloat("ecalEnergyPostCorr");
-    //   ph_p4     = photon->p4() * photon->userFloat("ecalEnergyPostCorr")/photon->energy();
-    // }
+    ph_energy = photon->userFloat("ecalEnergyPostCorr");
+    ph_p4     = photon->p4() * photon->userFloat("ecalEnergyPostCorr")/photon->energy();
+    
 
     cand_photon_found = true;
     nPhotons++;
@@ -754,8 +776,12 @@ void WPiGammaAnalysis::create_trees()
 
   mytree->Branch("nPV",&nPV);
   mytree->Branch("isSingleMuTrigger_24",&isSingleMuTrigger_24);
+  mytree->Branch("isSingleMuTrigger_27",&isSingleMuTrigger_27);
   mytree->Branch("isSingleMuTrigger_50",&isSingleMuTrigger_50);
-  mytree->Branch("isSingleEleTrigger",&isSingleEleTrigger);
+  mytree->Branch("isSingleEleTrigger_25",&isSingleEleTrigger_25);
+  mytree->Branch("isSingleEleTrigger_27",&isSingleEleTrigger_27);
+  mytree->Branch("isSingleEleTrigger_32_DoubleEG",&isSingleEleTrigger_32_DoubleEG);
+  mytree->Branch("isSingleEleTrigger_32",&isSingleEleTrigger_32);
 
   //Save run number info when running on data
   if(runningOnData_){
@@ -828,8 +854,11 @@ void WPiGammaAnalysis::create_trees()
 void WPiGammaAnalysis::beginJob()
 {
   //Flag for PileUp reweighting
-  if (!runningOnData_){
-   Lumiweights_ = edm::LumiReWeighting("MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root", "MyDataPileupHistogram.root", "pileup", "pileup");
+  if (!runningOnData_ && !runningOn2017_){ // PU reweighting for 2016
+   Lumiweights_ = edm::LumiReWeighting("PU/MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root", "PU/MyDataPileupHistogram_2016.root", "pileup", "pileup");
+  }
+  if (!runningOnData_ && runningOn2017_){ // PU reweighting for 2017
+   Lumiweights_ = edm::LumiReWeighting("PU/MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root", "PU/MyDataPileupHistogram_2017.root", "pileup", "pileup");
   }
 }
 
