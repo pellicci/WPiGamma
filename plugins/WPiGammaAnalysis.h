@@ -12,7 +12,7 @@ private:
   virtual void endJob() override;
 
   bool runningOnData_;
-  bool runningOn2017_;
+  int runningEra_;
   const edm::InputTag packedPFCandidates_;
   const edm::InputTag slimmedMuons_; 
   const edm::InputTag prunedGenParticles_;
@@ -196,6 +196,7 @@ private:
   //Effective areas for isolation
   EffectiveAreas   effectiveAreas_el_;
   EffectiveAreas   effectiveAreas_ph_;
-  double Bjets_WP_;
+  double Bjets_WP_2016_;
+  double Bjets_WP_2017_;
 
 };

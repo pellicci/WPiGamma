@@ -55,11 +55,12 @@ typedef math::XYZTLorentzVector LorentzVector;
 // constructors and destructor
 WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   runningOnData_(iConfig.getParameter<bool>("runningOnData")),
-  runningOn2017_(iConfig.getParameter<bool>("runningOn2017")),
+  runningEra_(iConfig.getParameter<int>("runningEra")),
   verboseIdFlag_(iConfig.getParameter<bool>("phoIdVerbose")),
   effectiveAreas_el_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile_el")).fullPath() ),
   effectiveAreas_ph_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile_ph")).fullPath() ),
-  Bjets_WP_(iConfig.getParameter<double>("Bjets_WP"))
+  Bjets_WP_2016_(iConfig.getParameter<double>("Bjets_WP_2016")),
+  Bjets_WP_2017_(iConfig.getParameter<double>("Bjets_WP_2017"))
 
 {
   packedPFCandidatesToken_            = consumes<std::vector<pat::PackedCandidate> >(edm::InputTag("packedPFCandidates")); 
@@ -440,7 +441,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       el_dxy   = el->gsfTrack()->dxy((&slimmedPV->at(0))->position());
       el_dz    = el->gsfTrack()->dz((&slimmedPV->at(0))->position());
       best_el_iso = el_iso; //Save the value of el_iso of the best candidate (highest pT) electron passing the selection
-      pTeleMax = el_pT;
+      pTeleMax = el_pT; //el_pT has assumed the value of corr_pt a few lines above
     } 
   }
 
@@ -752,7 +753,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   nBjets = 0;
   for (auto jet = slimmedJets->begin(); jet != slimmedJets->end(); ++jet){
-    if(jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") < Bjets_WP_) continue;   //0.46 = loose
+    if(runningEra_ == 0 && jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") < Bjets_WP_2016_) continue;   //loose 2016
+    if(runningEra_ == 1 && jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") < Bjets_WP_2017_) continue;   //loose 2017
     if(jet->pt() < 25.) continue;
     nBjets_25++;
     if(jet->pt() < 30.) continue;
@@ -774,6 +776,7 @@ void WPiGammaAnalysis::create_trees()
 {
   mytree = fs->make<TTree>("mytree", "Tree containing gen&reco");
 
+  mytree->Branch("runningEra",&runningEra_);
   mytree->Branch("nPV",&nPV);
   mytree->Branch("isSingleMuTrigger_24",&isSingleMuTrigger_24);
   mytree->Branch("isSingleMuTrigger_27",&isSingleMuTrigger_27);
@@ -854,10 +857,10 @@ void WPiGammaAnalysis::create_trees()
 void WPiGammaAnalysis::beginJob()
 {
   //Flag for PileUp reweighting
-  if (!runningOnData_ && !runningOn2017_){ // PU reweighting for 2016
+  if (!runningOnData_ && runningEra_ == 0){ // PU reweighting for 2016
    Lumiweights_ = edm::LumiReWeighting("PU/MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root", "PU/MyDataPileupHistogram_2016.root", "pileup", "pileup");
   }
-  if (!runningOnData_ && runningOn2017_){ // PU reweighting for 2017
+  if (!runningOnData_ && runningEra_ == 1){ // PU reweighting for 2017
    Lumiweights_ = edm::LumiReWeighting("PU/MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root", "PU/MyDataPileupHistogram_2017.root", "pileup", "pileup");
   }
 }

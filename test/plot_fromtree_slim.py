@@ -19,7 +19,7 @@ ROOT.gROOT.SetBatch(True)
 #---------------------------------#
 p = argparse.ArgumentParser(description='Select whether to fill the histograms after pre-selection or after BDT')
 p.add_argument('isBDT_option', help='Type <<preselection>> or <<BDT>>')
-p.add_argument('runningOn2017_option', help='Type <<2016>> or <<2017>>')
+p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017 and <<2>> for 2018')
 args = p.parse_args()
 
 # Switch from muon to electron channel, and from 2016 to 2017
@@ -27,14 +27,11 @@ if args.isBDT_option == "preselection":
     isBDT = False
 if args.isBDT_option == "BDT":
     isBDT = True
-if args.runningOn2017_option == "2016":
-    runningOn2017 = False
-if args.runningOn2017_option == "2017":
-    runningOn2017 = True
+runningEra = int(args.runningEra_option)
 #---------------------------------#
 
 isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
-myWF = Workflow_Handler("Signal","Data",isBDT_with_Wmass,runningOn2017)
+myWF = Workflow_Handler("Signal","Data",isBDT_with_Wmass,runningEra)
 
 ##Bools for rundom SF variation
 random_mu_SF  = False #------if True, muon scale factors are sampled from a Gaussian
@@ -53,13 +50,13 @@ random_ph_SF  = False #------if True, photon scale factors are sampled from a Ga
 luminosity_norm_2016 = 35.86
 luminosity_norm_2017 = 41.529
 
-if runningOn2017:
-    luminosity_norm = luminosity_norm_2017
-else:
+if runningEra == 0:
     luminosity_norm = luminosity_norm_2016
+if runningEra == 1:
+    luminosity_norm = luminosity_norm_2017
 
-luminosity_BtoF = 19.72
-luminosity_GH   = 16.14
+luminosity_BtoF = 19.72 #For 2016
+luminosity_GH   = 16.14 #For 2016
 
 
 #############---------------- BDT score cut values ----------------#############
@@ -299,6 +296,7 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
+        runningEra = mytree.runningEra # Define on which year we work
         isMuon = mytree.is_muon
         LepPiOppositeCharge = mytree.LepPiOppositeCharge
 
@@ -306,7 +304,7 @@ for name_sample in samplename_list:
 
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
         isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
-        if runningOn2017:
+        if runningEra == 1:
             isSingleMuTrigger_27 = mytree.isSingleMuTrigger_27           
 
         lep_pT  = mytree.lepton_pT
@@ -407,17 +405,15 @@ for name_sample in samplename_list:
         Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
         if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
-            if runningOn2017:
-                isSingleMuTrigger_LOW = isSingleMuTrigger_27
-            else:
+            if runningEra == 0:
                 isSingleMuTrigger_LOW = isSingleMuTrigger_24
+            if runningEra == 1:
+                isSingleMuTrigger_LOW = isSingleMuTrigger_27
 
-            mu_weight, mu_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,runningOn2017,Nrandom_for_SF,luminosity_BtoF,luminosity_norm,isSingleMuTrigger_LOW)
+            mu_weight, mu_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,runningEra,Nrandom_for_SF,luminosity_BtoF,luminosity_norm,isSingleMuTrigger_LOW)
 
             if random_mu_SF:
                 mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight,mu_weight_err)
-            else:
-                mu_weight = mu_weight
 
         else:
             ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,ele_etaSC)
@@ -814,10 +810,10 @@ for hname in list_histos:
     if not "_sig" in hname:
         leg1.Draw()
  
-    if runningOn2017:
-        canvas[hname].SaveAs("plots/2017/" + hname + ".pdf")
-    else:
+    if runningEra == 0:
         canvas[hname].SaveAs("plots/2016/" + hname + ".pdf")
+    if runningEra == 1:
+        canvas[hname].SaveAs("plots/2017/" + hname + ".pdf")
 
 print "Wmass_mu: ", Wmass_mu.Integral()
 print "Wmass_ele: ", Wmass_ele.Integral()

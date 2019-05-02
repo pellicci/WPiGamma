@@ -7,6 +7,7 @@ import argparse
 #---------------------------------#
 p = argparse.ArgumentParser(description='Select whether to download MC or data')
 p.add_argument('isData_option', help='Type <<MC>> or <<data>>')
+p.add_argument('year_option', help='Type <<2016>> or <<2017>>')
 args = p.parse_args()
 
 # Switch from muon to electron channel
@@ -14,21 +15,30 @@ if args.isData_option == "MC":
     isData = False
 if args.isData_option == "data":
     isData = True
+
+year = args.year_option
 #---------------------------------#
 
 if not isData:
-    dir_input = "crab_projects/samples_Medium/"
-    dir_output_bkg = "rootfiles/Medium/backgrounds/"
-    dir_output_sig = "rootfiles/Medium/signals/"
+    dir_input = "crab_projects/samples_MC_" + year + "/"
+    dir_output_bkg = "rootfiles/latest_production/MC/" + year + "/backgrounds/"
+    dir_output_sig = "rootfiles/latest_production/MC/" + year + "/signals/"  
 
 if isData:
-    dir_input = "crab_projects/dataprocess/"
-    dir_output_data = "rootfiles/data/"
+    dir_input = "crab_projects/samples_data_" + year + "/"
+    dir_output_data = "rootfiles/latest_production/data/" + year + "/"
 
 
 list_dirs = os.listdir(dir_input)
 
-complementary_samples_list = ["ttbarWlnu","ttbarZlnu","DY_10_50","DY_50","QCD_HT200to300","QCD_HT300to500","QCD_HT500to700","QCD_HT700to1000","QCD_HT1000to1500","QCD_HT1500to2000","QCD_HT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG"]
+complementary_samples_list_2016 = ["ttbarWlnu","ttbarZlnu","DY_10_50","DY_50","QCD_HT200to300","QCD_HT300to500","QCD_HT500to700","QCD_HT700to1000","QCD_HT1000to1500","QCD_HT1500to2000","QCD_HT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG"]
+
+complementary_samples_list_2017 = ["ttbar","WJetsToLNu","DY_50","TTGJets"]
+
+if year == "2016":
+    complementary_samples_list = complementary_samples_list_2016
+if year == "2017":
+    complementary_samples_list = complementary_samples_list_2017
 
 
 if not os.path.exists("rootfiles"):

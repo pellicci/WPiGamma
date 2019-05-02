@@ -1,6 +1,15 @@
 ###All normalizations are provided to 1fb-1 of lumi in these tables
 import os
 import sys
+import argparse
+
+#---------------------------------#
+p = argparse.ArgumentParser(description='Select whether to download MC or data')
+p.add_argument('year_option', help='Type <<2016>> or <<2017>>')
+args = p.parse_args()
+
+year = args.year_option
+#---------------------------------#
 
 #xsec lookup in pb
 secs_table = dict()
@@ -37,6 +46,9 @@ secs_table["TTGJets"] = 3.795
 secs_table["ZGTo2LG"] = 123.8
 secs_table["Signal"] = 730.6*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
 
+secs_table_2017 = dict()
+secs_table[""]
+
 #fraction of negative-weighted events in NLO samples
 frac_table = dict()
 frac_table["ttbar"] = 0.
@@ -72,7 +84,14 @@ frac_table["TTGJets"] = 0.3381
 frac_table["ZGTo2LG"] = 0.1584
 frac_table["Signal"] = 0.
 
-complementary_samples_list = ["ttbarWlnu","ttbarZlnu","DY_10_50","DY_50","QCD_HT200to300","QCD_HT300to500","QCD_HT500to700","QCD_HT700to1000","QCD_HT1000to1500","QCD_HT1500to2000","QCD_HT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG","Signal"]
+complementary_samples_list_2016 = ["ttbarWlnu","ttbarZlnu","DY_10_50","DY_50","QCD_HT200to300","QCD_HT300to500","QCD_HT500to700","QCD_HT700to1000","QCD_HT1000to1500","QCD_HT1500to2000","QCD_HT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG","Signal"]
+
+complementary_samples_list_2017 = ["ttbar","WJetsToLNu","DY_50","TTGJets"]
+
+if year == "2016":
+    complementary_samples_list = complementary_samples_list_2016
+if year == "2017":
+    complementary_samples_list = complementary_samples_list_2017
 
 ##Now starts the program
 def main():

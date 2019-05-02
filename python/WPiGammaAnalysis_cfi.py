@@ -11,13 +11,15 @@ WPiGammaAnalysis = cms.EDAnalyzer('WPiGammaAnalysis',
                                   slimmedMETsPuppi   = cms.InputTag("slimmedMETsPuppi"),
                                   runningOnData      = cms.bool(False),
                                   runningOnMuons     = cms.bool(False),
-                                  runningOn2017      = cms.bool(False),
+                                  runningEra         = cms.int32(0), # One of the possible python types for the C++ type "int" 
                                   pvCollection       = cms.InputTag("offlineSlimmedPrimaryVertices"),
                                   bsCollection       = cms.InputTag("offlineBeamSpot"),
                                   PileupSrc          = cms.InputTag("slimmedAddPileupInfo"),
                                   triggerbits        = cms.InputTag("TriggerResults","","HLT"),
                                   rho                = cms.InputTag("fixedGridRhoFastjetAll"),
-                                  Bjets_WP           = cms.double(0.46), # Working point for the Bjet discriminator (0.46 is loose)
+                                  #Bjets_WP           = cms.double(0.46), # Working point for the Bjet discriminator (0.46 is loose)
+                                  Bjets_WP_2016      = cms.double(0.5426), # Working point for the Bjet discriminator (loose)
+                                  Bjets_WP_2017      = cms.double(0.5803), # Working point for the Bjet discriminator (loose)
 
                                   # ELE ID decisions (common to all formats)
                                   # eleLooseIdMap  = cms.InputTag("egmGsfElectronIDs:mvaEleID-Spring16-HZZ-V1-wpLoose"),

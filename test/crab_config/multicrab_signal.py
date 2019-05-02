@@ -5,33 +5,30 @@ config = Configuration()
 config.section_('General')
 config.General.transferOutputs = True
 
-runningOn2017 = True # Decide whether to run on 2016 or 2017 data
-
-if runningOn2017:
-    config.General.workArea = 'crab_projects/samples_MC_2017/'
-    #config.General.workArea = 'crab_projects/samples_LeptonStudy_2017/'
-else:
-    config.General.workArea = 'crab_projects/samples_MC_2016/'
-    #config.General.workArea = 'crab_projects/samples_LeptonStudy_2016/'
+runningEra = 0 # 0 = 2016, 1 = 2017, 2 = 2018
 
 config.section_('JobType')
 config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
 #config.JobType.psetName = 'cmssw_config/run_LeptonMultiplicity.py'
 config.JobType.pluginName = 'Analysis'
-
-if runningOn2017:
-    config.JobType.inputFiles = ['PU/MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root','PU/MyDataPileupHistogram_2017.root'] #MC and data files for PileUp reweighting (2017)
-else:
-    config.JobType.inputFiles = ['PU/MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root','PU/MyDataPileupHistogram_2016.root'] #MC and data files for PileUp reweighting (2016)
-
 config.JobType.outputFiles = ['WPiGammaAnalysis_output.root']
 #config.JobType.outputFiles = ['LeptonMultiplicity_output.root']
 config.JobType.pyCfgParams = ['runningOnData=False']
 
+if runningEra == 0:
+    config.General.workArea = 'crab_projects/samples_MC_2016/'
+    #config.General.workArea = 'crab_projects/samples_LeptonStudy_2016/'
+    config.JobType.inputFiles = ['PU/MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root','PU/MyDataPileupHistogram_2016.root'] #MC and data files for PileUp reweighting (2016)
+
+if runningEra == 1:
+    config.General.workArea = 'crab_projects/samples_MC_2017/'
+    #config.General.workArea = 'crab_projects/samples_LeptonStudy_2017/'
+    config.JobType.inputFiles = ['PU/MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root','PU/MyDataPileupHistogram_2017.root'] #MC and data files for PileUp reweighting (2017)
+
+
 config.section_('Data')
 config.Data.inputDBS = 'phys03'
-config.Data.splitting = 'FileBased'
-config.Data.unitsPerJob = 5
+config.Data.splitting = 'Automatic'
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = False
 
@@ -57,7 +54,9 @@ if __name__ == '__main__':
     ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
     #############################################################################################
 
-    if runningOn2017:
+    if runningEra == 0: #2016
+
+        config.JobType.pyCfgParams = ['runningEra=0'] # Configure 2016 MC signal jobs 
 
         config.General.requestName = 'WPiGammaAnalysis_Signal_WPlus'
         config.Data.inputDataset = '/WPlusPiGamma_GENSIM_80XV1/rselvati-WPlusPiGamma_MINIAODSIM_94XV3-9a5eaf7e0651dc0135fee9d652526a74/USER'
@@ -66,13 +65,15 @@ if __name__ == '__main__':
         p.join()
         
         config.General.requestName = 'WPiGammaAnalysis_Signal_WMinus'
-        config.Data.unitsPerJob = 5
+        #config.Data.unitsPerJob = 5
         config.Data.inputDataset = '/WMinusPiGamma_GENSIM_80XV1/rselvati-WMinusPiGamma_MINIAODSIM_94XV3-9a5eaf7e0651dc0135fee9d652526a74/USER'
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()
 
-    else:
+    if runningEra == 1: #2017
+
+        config.JobType.pyCfgParams = ['runningEra=1'] # Configure 2017 MC signal jobs 
 
         config.General.requestName = 'WPiGammaAnalysis_Signal_WPlus'
         config.Data.inputDataset = '/WPlusPiGamma_GENSIM_80XV1/rselvati-WPlusPiGamma_MINIAODSIM_94XV3-9a5eaf7e0651dc0135fee9d652526a74/USER'
@@ -81,7 +82,7 @@ if __name__ == '__main__':
         p.join()
         
         config.General.requestName = 'WPiGammaAnalysis_Signal_WMinus'
-        config.Data.unitsPerJob = 5
+        #config.Data.unitsPerJob = 5
         config.Data.inputDataset = '/WMinusPiGamma_GENSIM_80XV1/rselvati-WMinusPiGamma_MINIAODSIM_94XV3-9a5eaf7e0651dc0135fee9d652526a74/USER'
         p = Process(target=submit, args=(config,))
         p.start()

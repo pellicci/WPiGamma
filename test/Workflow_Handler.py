@@ -126,7 +126,7 @@ reader = ROOT.TMVA.Reader("!Color")
 
 class Workflow_Handler:
 
-    def __init__(self,signalname,dataname,isBDT_with_Wmass,runningOn2017,subprocess="//"):
+    def __init__(self,signalname,dataname,isBDT_with_Wmass,runningEra,subprocess="//"):
 
         # Where the root files are
         self.subprocess = subprocess
@@ -138,7 +138,16 @@ class Workflow_Handler:
         # self.dir_back_input = "rootfiles/" + self.subprocess + "Medium/backgrounds/"
         # self.sig_filename = "rootfiles/" + self.subprocess + "Medium/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
 
-        if runningOn2017:
+        if runningEra == 0:
+            self.norm_filename = "rootfiles/" + self.subprocess + "MC/2016/Normalizations_table.txt"
+            self.dir_back_input = "rootfiles/" + self.subprocess + "MC/2016/backgrounds/"
+            self.sig_filename = "rootfiles/" + self.subprocess + "MC/2016/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
+
+            #---------------- Data ----------------#
+            self.dir_data_input = "rootfiles/" + self.subprocess + "data/2016/"
+
+
+        if runningEra == 1:
             #----------------- MC -----------------#
             self.norm_filename = "rootfiles/" + self.subprocess + "MC/2017/Normalizations_table.txt"
             self.dir_back_input = "rootfiles/" + self.subprocess + "MC/2017/backgrounds/"
@@ -146,14 +155,6 @@ class Workflow_Handler:
 
             #---------------- Data ----------------#
             self.dir_data_input = "rootfiles/" + self.subprocess + "data/2017/"
-
-        else:
-            self.norm_filename = "rootfiles/" + self.subprocess + "MC/2016/Normalizations_table.txt"
-            self.dir_back_input = "rootfiles/" + self.subprocess + "MC/2016/backgrounds/"
-            self.sig_filename = "rootfiles/" + self.subprocess + "MC/2016/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
-
-            #---------------- Data ----------------#
-            self.dir_data_input = "rootfiles/" + self.subprocess + "data/2016/"
 
 
         
@@ -259,15 +260,15 @@ class Workflow_Handler:
 
     ###############################################################################################################################################
 
-    def post_preselection_cuts(self, lep_eta, lep_pT, isMuon, LepPiOppositeCharge, runningOn2017):
+    def post_preselection_cuts(self, lep_eta, lep_pT, isMuon, LepPiOppositeCharge, runningEra):
 
         cut = False
 
-        if runningOn2017:
+        if runningEra == 0:
             if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 28.) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge:
                 cut = True
 
-        else:
+        if runningEra == 1:
             if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 28.) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge:
                 cut = True
 
@@ -275,9 +276,35 @@ class Workflow_Handler:
 
     ###############################################################################################################################################
         
-    def get_ele_scale(self, lep_pt, lep_eta, runningOn2017):
-        
-        if runningOn2017: # Scale factors for 2017
+    def get_ele_scale(self, lep_pt, lep_eta, runningEra):
+
+        if runningEra == 0: # Scale factors for 2016
+
+            local_lep_pt = lep_pt
+            if local_lep_pt > 150.: # This is because corrections are up to 150 GeV
+                local_lep_pt = 150.
+
+            local_lep_eta = lep_eta
+            if local_lep_eta >= 2.5:
+                local_lep_eta = 2.49
+            if local_lep_eta <= -2.5:
+                local_lep_eta = -2.49
+
+            scale_factor      = 1.
+            scale_factor_reco = 1.
+            scale_factor_ID   = 1.
+            el_reco_err       = 0.
+            el_ID_err         = 0.
+            tot_err           = 0.
+
+            scale_factor_ID   = el_ID_scale_histo.GetBinContent( el_ID_scale_histo.GetXaxis().FindBin(local_lep_eta), el_ID_scale_histo.GetYaxis().FindBin(local_lep_pt) )
+            el_ID_err         = el_ID_scale_histo.GetBinError( el_ID_scale_histo.GetXaxis().FindBin(local_lep_eta), el_ID_scale_histo.GetYaxis().FindBin(local_lep_pt) )
+            
+            scale_factor = scale_factor_ID
+            tot_err      = el_ID_err
+
+
+        if runningEra == 1: # Scale factors for 2017
 
             local_lep_pt = lep_pt
             if local_lep_pt > 499.: # This is because corrections are up to 499 GeV
@@ -307,39 +334,39 @@ class Workflow_Handler:
             tot_err      = math.sqrt( scale_factor_ID * scale_factor_ID * el_reco_err * el_reco_err + scale_factor_reco * scale_factor_reco * el_ID_err * el_ID_err)
 
 
-        else: # Scale factors for 2016
-
-            local_lep_pt = lep_pt
-            if local_lep_pt > 150.: # This is because corrections are up to 150 GeV
-                local_lep_pt = 150.
-
-            local_lep_eta = lep_eta
-            if local_lep_eta >= 2.5:
-                local_lep_eta = 2.49
-            if local_lep_eta <= -2.5:
-                local_lep_eta = -2.49
-
-            scale_factor      = 1.
-            scale_factor_reco = 1.
-            scale_factor_ID   = 1.
-            el_reco_err       = 0.
-            el_ID_err         = 0.
-            tot_err           = 0.
-
-            scale_factor_ID   = el_ID_scale_histo.GetBinContent( el_ID_scale_histo.GetXaxis().FindBin(local_lep_eta), el_ID_scale_histo.GetYaxis().FindBin(local_lep_pt) )
-            el_ID_err         = el_ID_scale_histo.GetBinError( el_ID_scale_histo.GetXaxis().FindBin(local_lep_eta), el_ID_scale_histo.GetYaxis().FindBin(local_lep_pt) )
-            
-            scale_factor = scale_factor_ID
-            tot_err      = el_ID_err
-
-
         return scale_factor, tot_err
 
     ###############################################################################################################################################
 
-    def get_photon_scale(self, ph_pt, ph_eta, runningOn2017):
+    def get_photon_scale(self, ph_pt, ph_eta, runningEra):
 
-        if runningOn2017:  
+        if runningEra == 0: # Scale factors for 2016
+
+            local_ph_pt = ph_pt
+            if local_ph_pt > 150.: # This is because corrections are up to 150 GeV
+                local_ph_pt = 150.
+
+            local_ph_eta = ph_eta
+            if local_ph_eta >= 2.5:
+                local_ph_eta = 2.49
+            if local_ph_eta <= -2.5:
+                local_ph_eta = -2.49
+                
+            scale_factor         = 1.
+            scale_factor_ID      = 1.
+            scale_factor_pixVeto = 1.
+            ph_ID_err            = 0.
+            ph_pixVeto_err       = 0.
+            tot_err              = 0.
+            
+            scale_factor_ID      = ph_ID_scale_histo.GetBinContent( ph_ID_scale_histo.GetXaxis().FindBin(local_ph_eta), ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+            ph_ID_err            = ph_ID_scale_histo.GetBinError( ph_ID_scale_histo.GetXaxis().FindBin(local_ph_eta), ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+            
+            scale_factor_pixVeto = ph_pixVeto_scale_histo.GetBinContent( ph_pixVeto_scale_histo.GetXaxis().FindBin(math.fabs(local_ph_eta)), ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+            ph_pixVeto_err       = ph_pixVeto_scale_histo.GetBinError( ph_pixVeto_scale_histo.GetXaxis().FindBin(math.fabs(local_ph_eta)), ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
+
+
+        if runningEra == 1:  # Scale factors for 2017
 
             local_ph_pt = ph_pt
             if local_ph_pt > 499.: # This is because corrections are up to 499 GeV
@@ -369,41 +396,16 @@ class Workflow_Handler:
                 scale_factor_pixVeto = ph_pixVeto_scale_histo_2017.GetBinContent(4)
                 ph_pixVeto_err       = ph_pixVeto_scale_histo_2017.GetBinError(4)
 
-        else:
-
-            local_ph_pt = ph_pt
-            if local_ph_pt > 150.: # This is because corrections are up to 150 GeV
-                local_ph_pt = 150.
-
-            local_ph_eta = ph_eta
-            if local_ph_eta >= 2.5:
-                local_ph_eta = 2.49
-            if local_ph_eta <= -2.5:
-                local_ph_eta = -2.49
-                
-            scale_factor         = 1.
-            scale_factor_ID      = 1.
-            scale_factor_pixVeto = 1.
-            ph_ID_err            = 0.
-            ph_pixVeto_err       = 0.
-            tot_err              = 0.
-            
-            scale_factor_ID      = ph_ID_scale_histo.GetBinContent( ph_ID_scale_histo.GetXaxis().FindBin(local_ph_eta), ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
-            ph_ID_err            = ph_ID_scale_histo.GetBinError( ph_ID_scale_histo.GetXaxis().FindBin(local_ph_eta), ph_ID_scale_histo.GetYaxis().FindBin(local_ph_pt) )
-            
-            scale_factor_pixVeto = ph_pixVeto_scale_histo.GetBinContent( ph_pixVeto_scale_histo.GetXaxis().FindBin(math.fabs(local_ph_eta)), ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
-            ph_pixVeto_err       = ph_pixVeto_scale_histo.GetBinError( ph_pixVeto_scale_histo.GetXaxis().FindBin(math.fabs(local_ph_eta)), ph_pixVeto_scale_histo.GetYaxis().FindBin(local_ph_pt) )
-
-
 
         scale_factor = scale_factor_ID * scale_factor_pixVeto
         tot_err      = math.sqrt( scale_factor_pixVeto * scale_factor_pixVeto * ph_ID_err * ph_ID_err + scale_factor_ID * scale_factor_ID * ph_pixVeto_err * ph_pixVeto_err )
+
 
         return scale_factor, tot_err
 
     ###############################################################################################################################################
 
-    def get_muon_scale(self, lep_pT, lep_eta, runningOn2017, Nrandom_for_SF, luminosity_BtoF, luminosity_norm, isSingleMuTrigger_LOW):
+    def get_muon_scale(self, lep_pT, lep_eta, runningEra, Nrandom_for_SF, luminosity_BtoF, luminosity_norm, isSingleMuTrigger_LOW):
 
         local_lep_pt = lep_pt
         if local_lep_pt >= 120.:  # This is because corrections go up to 120 GeV (excluded)
@@ -431,57 +433,11 @@ class Workflow_Handler:
 
         ###############################################
         #                                             #
-        #------------ Get muon SF for 2017 -----------#
-        #                                             #
-        ###############################################
-
-
-        if runningOn2017: # Get muon SFs for 2017. ID and ISO histos have pT and eta positions inverted wrt 2016 histos
-                              
-            scale_factor_ID       = mu_ID_scale_histo_2017.GetBinContent( mu_ID_scale_histo_2017.GetYaxis().FindBin(local_lep_pt), mu_ID_scale_histo_2017.GetXaxis().FindBin(math.fabs(local_lep_eta)) )
-            mu_ID_err             = mu_ID_scale_histo_2017.GetBinError( mu_ID_scale_histo_2017.GetYaxis().FindBin(local_lep_pt), mu_ID_scale_histo_2017.GetXaxis().FindBin(math.fabs(local_lep_eta)) )
-            scale_factor_Iso      = mu_Iso_scale_histo_2017.GetBinContent( mu_Iso_scale_histo_2017.GetYaxis().FindBin(local_lep_pt), mu_Iso_scale_histo_2017.GetXaxis().FindBin(math.fabs(local_lep_eta)) )
-            mu_Iso_err            = mu_Iso_scale_histo_2017.GetBinError( mu_Iso_scale_histo_2017.GetYaxis().FindBin(local_lep_pt),mu_Iso_scale_histo_2017.GetXaxis().FindBin(math.fabs(local_lep_eta)) )
-
-
-            if isSingleMuTrigger_LOW: # Trigger SF go up to higher energies than 120 GeV, so no local_lep_pt is used for those
-
-                local_lep_pt_forTrigger = lep_pt 
-                if local_lep_pt_forTrigger < 29.:
-                    local_lep_pt_forTrigger = 29.
-
-                scale_factor_Trigger = mu_Trigger_scale_histo_2017_Mu27.GetBinContent( mu_Trigger_scale_histo_2017_Mu27.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_2017_Mu27.GetYaxis().FindBin(local_lep_pt_forTrigger) )
-                mu_Trigger_err       = mu_Trigger_scale_histo_2017_Mu27.GetBinError( mu_Trigger_scale_histo_2017_Mu27.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_2017_Mu27.GetYaxis().FindBin(local_lep_pt_forTrigger) )
-                
-                scale_factor         = scale_factor_ID * scale_factor_Iso * scale_factor_Trigger
-                tot_err              = math.sqrt( scale_factor_Iso * scale_factor_Iso * scale_factor_Trigger * scale_factor_Trigger * mu_ID_err * mu_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_Trigger * scale_factor_Trigger * mu_Iso_err * mu_Iso_err + scale_factor_ID * scale_factor_ID * scale_factor_Iso * scale_factor_Iso * mu_Trigger_err * mu_Trigger_err )
-                
-                return scale_factor, tot_err
-
-
-
-            else: # An event can have more than one trigger
-
-                local_lep_pt_forTrigger = lep_pt 
-                if local_lep_pt_forTrigger < 52.:
-                    local_lep_pt_forTrigger = 52.
-
-                scale_factor_Trigger = mu_Trigger_scale_histo_2017_Mu50.GetBinContent( mu_Trigger_scale_histo_2017_Mu50.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_2017_Mu50.GetYaxis().FindBin(local_lep_pt_forTrigger) )
-                mu_Trigger_err       = mu_Trigger_scale_histo_2017_Mu50.GetBinError( mu_Trigger_scale_histo_2017_Mu50.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_2017_Mu50.GetYaxis().FindBin(local_lep_pt_forTrigger) )
-                
-                scale_factor         = scale_factor_ID * scale_factor_Iso * scale_factor_Trigger
-                tot_err              = math.sqrt( scale_factor_Iso * scale_factor_Iso * scale_factor_Trigger * scale_factor_Trigger * mu_ID_err * mu_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_Trigger * scale_factor_Trigger * mu_Iso_err * mu_Iso_err + scale_factor_ID * scale_factor_ID * scale_factor_Iso * scale_factor_Iso * mu_Trigger_err * mu_Trigger_err )
-                
-                return scale_factor, tot_err
-
-
-        ###############################################
-        #                                             #
         #------------ Get muon SF for 2016 -----------#
         #                                             #
         ###############################################
 
-        else:
+        if runningEra == 0:
             
             if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm): # Access muon SF: B to F
 
@@ -555,3 +511,52 @@ class Workflow_Handler:
                     tot_err              = math.sqrt( scale_factor_Iso * scale_factor_Iso * scale_factor_Trigger * scale_factor_Trigger * mu_ID_err * mu_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_Trigger * scale_factor_Trigger * mu_Iso_err * mu_Iso_err + scale_factor_ID * scale_factor_ID * scale_factor_Iso * scale_factor_Iso * mu_Trigger_err * mu_Trigger_err )
                     
                     return scale_factor, tot_err
+
+
+        ###############################################
+        #                                             #
+        #------------ Get muon SF for 2017 -----------#
+        #                                             #
+        ###############################################
+
+
+        if runningEra == 1: # Get muon SFs for 2017. ID and ISO histos have pT and eta positions inverted wrt 2016 histos
+                              
+            scale_factor_ID       = mu_ID_scale_histo_2017.GetBinContent( mu_ID_scale_histo_2017.GetYaxis().FindBin(local_lep_pt), mu_ID_scale_histo_2017.GetXaxis().FindBin(math.fabs(local_lep_eta)) )
+            mu_ID_err             = mu_ID_scale_histo_2017.GetBinError( mu_ID_scale_histo_2017.GetYaxis().FindBin(local_lep_pt), mu_ID_scale_histo_2017.GetXaxis().FindBin(math.fabs(local_lep_eta)) )
+            scale_factor_Iso      = mu_Iso_scale_histo_2017.GetBinContent( mu_Iso_scale_histo_2017.GetYaxis().FindBin(local_lep_pt), mu_Iso_scale_histo_2017.GetXaxis().FindBin(math.fabs(local_lep_eta)) )
+            mu_Iso_err            = mu_Iso_scale_histo_2017.GetBinError( mu_Iso_scale_histo_2017.GetYaxis().FindBin(local_lep_pt),mu_Iso_scale_histo_2017.GetXaxis().FindBin(math.fabs(local_lep_eta)) )
+
+
+            if isSingleMuTrigger_LOW: # Trigger SF go up to higher energies than 120 GeV, so no local_lep_pt is used for those
+
+                local_lep_pt_forTrigger = lep_pt 
+                if local_lep_pt_forTrigger < 29.:
+                    local_lep_pt_forTrigger = 29.
+
+                scale_factor_Trigger = mu_Trigger_scale_histo_2017_Mu27.GetBinContent( mu_Trigger_scale_histo_2017_Mu27.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_2017_Mu27.GetYaxis().FindBin(local_lep_pt_forTrigger) )
+                mu_Trigger_err       = mu_Trigger_scale_histo_2017_Mu27.GetBinError( mu_Trigger_scale_histo_2017_Mu27.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_2017_Mu27.GetYaxis().FindBin(local_lep_pt_forTrigger) )
+                
+                scale_factor         = scale_factor_ID * scale_factor_Iso * scale_factor_Trigger
+                tot_err              = math.sqrt( scale_factor_Iso * scale_factor_Iso * scale_factor_Trigger * scale_factor_Trigger * mu_ID_err * mu_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_Trigger * scale_factor_Trigger * mu_Iso_err * mu_Iso_err + scale_factor_ID * scale_factor_ID * scale_factor_Iso * scale_factor_Iso * mu_Trigger_err * mu_Trigger_err )
+                
+                return scale_factor, tot_err
+
+
+
+            else: # An event can have more than one trigger
+
+                local_lep_pt_forTrigger = lep_pt 
+                if local_lep_pt_forTrigger < 52.:
+                    local_lep_pt_forTrigger = 52.
+
+                scale_factor_Trigger = mu_Trigger_scale_histo_2017_Mu50.GetBinContent( mu_Trigger_scale_histo_2017_Mu50.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_2017_Mu50.GetYaxis().FindBin(local_lep_pt_forTrigger) )
+                mu_Trigger_err       = mu_Trigger_scale_histo_2017_Mu50.GetBinError( mu_Trigger_scale_histo_2017_Mu50.GetXaxis().FindBin(math.fabs(local_lep_eta)), mu_Trigger_scale_histo_2017_Mu50.GetYaxis().FindBin(local_lep_pt_forTrigger) )
+                
+                scale_factor         = scale_factor_ID * scale_factor_Iso * scale_factor_Trigger
+                tot_err              = math.sqrt( scale_factor_Iso * scale_factor_Iso * scale_factor_Trigger * scale_factor_Trigger * mu_ID_err * mu_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_Trigger * scale_factor_Trigger * mu_Iso_err * mu_Iso_err + scale_factor_ID * scale_factor_ID * scale_factor_Iso * scale_factor_Iso * mu_Trigger_err * mu_Trigger_err )
+                
+                return scale_factor, tot_err
+
+
+

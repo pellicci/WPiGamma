@@ -9,7 +9,7 @@ import argparse
 #---------------------------------#
 p = argparse.ArgumentParser(description='Select whether to fill the mass tree to be used for fits, or the MVA trees')
 p.add_argument('create_mass_tree_option', help='Type <<mass>> or <<MVA>>')
-p.add_argument('runningOn2017_option', help='Type <<2016>> or <<2017>>')
+p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017 and <<2>> for 2018')
 args = p.parse_args()
 
 # Switch from muon to electron channel
@@ -17,10 +17,7 @@ if args.create_mass_tree_option == "mass":
     create_mass_tree = True
 if args.create_mass_tree_option == "MVA":
     create_mass_tree = False
-if args.runningOn2017_option == "2016":
-    runningOn2017 = False
-if args.runningOn2017_option == "2017":
-    runningOn2017 = True
+runningEra = int(args.runningEra_option)
 #---------------------------------#
 
 #Supress the opening of many Canvas's
@@ -51,10 +48,19 @@ ELE_GAMMA_INVMASS_MIN = 90.4
 ELE_GAMMA_INVMASS_MAX = 91.6
 
 #Normalize to this luminsity, in fb-1
-#luminosity_norm = 36.46
-luminosity_norm = 35.86
-luminosity_BtoF = 19.72
-luminosity_GH   = 16.14
+
+luminosity_norm_2016 = 35.86
+luminosity_norm_2017 = 41.529
+
+if runningEra == 0:
+    luminosity_norm = luminosity_norm_2016
+if runningEra == 1:
+    luminosity_norm = luminosity_norm_2017
+
+luminosity_BtoF = 19.72 #For 2016
+luminosity_GH   = 16.14 #For 2016
+
+
 
 #Variables for the FIT trees
 _Wmass_fit          = np.zeros(1, dtype=float)
@@ -413,7 +419,7 @@ for name_sample in samplename_list:
 
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
         isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
-        if runningOn2017:
+        if runningEra == 1:
             isSingleMuTrigger_27 = mytree.isSingleMuTrigger_27
 
         lep_pT  = mytree.lepton_pT
@@ -514,14 +520,13 @@ for name_sample in samplename_list:
         Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
         if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
-            if runningOn2017:
-                isSingleMuTrigger_LOW = isSingleMuTrigger_27
-            else:
+            if runningEra == 0:
                 isSingleMuTrigger_LOW = isSingleMuTrigger_24
+            if runningEra == 1:
+                isSingleMuTrigger_LOW = isSingleMuTrigger_27
 
-            mu_weight, mu_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,runningOn2017,Nrandom_for_SF,luminosity_BtoF,luminosity_norm,isSingleMuTrigger_LOW)
+            mu_weight, mu_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,runningEra,Nrandom_for_SF,luminosity_BtoF,luminosity_norm,isSingleMuTrigger_LOW)
 
-            mu_weight = mu_weight
 
         else:
             ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,ele_etaSC)
