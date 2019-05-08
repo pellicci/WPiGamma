@@ -33,7 +33,7 @@ list_dirs = os.listdir(dir_input)
 
 complementary_samples_list_2016 = ["ttbarWlnu","ttbarZlnu","DY_10_50","DY_50","QCD_HT200to300","QCD_HT300to500","QCD_HT500to700","QCD_HT700to1000","QCD_HT1000to1500","QCD_HT1500to2000","QCD_HT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG"]
 
-complementary_samples_list_2017 = ["ttbar","WJetsToLNu","DY_50","TTGJets"]
+complementary_samples_list_2017 = ["WJetsToLNu","DY_50","TTGJets"]
 
 if year == "2016":
     complementary_samples_list = complementary_samples_list_2016

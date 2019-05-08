@@ -858,10 +858,10 @@ void WPiGammaAnalysis::beginJob()
 {
   //Flag for PileUp reweighting
   if (!runningOnData_ && runningEra_ == 0){ // PU reweighting for 2016
-   Lumiweights_ = edm::LumiReWeighting("PU/MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root", "PU/MyDataPileupHistogram_2016.root", "pileup", "pileup");
+   Lumiweights_ = edm::LumiReWeighting("MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root", "MyDataPileupHistogram_2016.root", "pileup", "pileup");
   }
   if (!runningOnData_ && runningEra_ == 1){ // PU reweighting for 2017
-   Lumiweights_ = edm::LumiReWeighting("PU/MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root", "PU/MyDataPileupHistogram_2017.root", "pileup", "pileup");
+   Lumiweights_ = edm::LumiReWeighting("MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root", "MyDataPileupHistogram_2017.root", "pileup", "pileup");
   }
 }
 
