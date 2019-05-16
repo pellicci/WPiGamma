@@ -7,6 +7,7 @@ import argparse
 #---------------------------------#
 p = argparse.ArgumentParser(description='Select whether to download MC or data')
 p.add_argument('isData_option', help='Type <<MC>> or <<data>>')
+p.add_argument('year_option', help='Type <<2016>> or <<2017>>')
 args = p.parse_args()
 
 # Switch from muon to electron channel
@@ -14,12 +15,14 @@ if args.isData_option == "MC":
     isData = False
 if args.isData_option == "data":
     isData = True
+
+year = args.year_option
 #---------------------------------#
 
 if isData:
-    dir_input = "crab_projects/dataprocess/"
+    dir_input = "crab_projects/samples_data_" + year + "/"
 else:
-    dir_input = "crab_projects/samples_Medium/"
+    dir_input = "crab_projects/samples_MC_" + year + "/"
 
 list_dirs = os.listdir(dir_input)
 
@@ -40,5 +43,7 @@ for dirname in list_dirs:
         print "!!!! N JOBS IN STATUS FINISHED != N ROOTFILES IN DIRECTORY !!!!"
         print "n jobs finished: ",  n_jobs_finished
         print "n rootfiles: ",  n_rootfiles_in_dir
+    else:
+        print "It's alright!"
 
     print "/////////////////"

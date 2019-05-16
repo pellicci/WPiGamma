@@ -22,7 +22,6 @@ if runningEra == 1:
     config.JobType.outputFiles = ['WPiGamma_pythia8_GENSIM_2017.root']
     config.Data.outputPrimaryDataset = 'WMinusPiGamma_GENSIM_94X_2017_v3'
 
-
 config.Data.splitting = 'EventBased' # Can only be set to EventBased if pluginName = PrivateMC 
 config.Data.unitsPerJob = 5
 NJOBS = 8000

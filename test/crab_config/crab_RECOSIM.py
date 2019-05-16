@@ -13,6 +13,8 @@ config.section_('Data')
 
 if runningEra == 0:
 
+    config.JobType.psetName = 'cmssw_config/WPiGamma_13TeV_pythia8_RECO_cfg.py'
+
     if doPlus: 
         config.General.requestName = 'WPlusPiGamma_Pythia8_RECOSIM_80XV1'
         config.Data.inputDataset = '/WPlusPiGamma_GENSIM_80XV1/pellicci-WPlusPiGamma_GENSIM_80XV1-8d45dc557bfa1dd3d3626668174f8fd0/USER'
@@ -20,23 +22,21 @@ if runningEra == 0:
         config.General.requestName = 'WMinusPiGamma_Pythia8_RECOSIM_80XV1'
         config.Data.inputDataset = '/WMinusPiGamma_GENSIM_80XV1/pellicci-WMinusPiGamma_GENSIM_80XV1-f51ba7e770fc51cae8263bad5b777b64/USER'
 
-    config.JobType.psetName = 'cmssw_config/WPiGamma_13TeV_pythia8_RECO_cfg.py'
-
 if runningEra == 1:
+
+    config.JobType.psetName = 'cmssw_config/WPiGamma_13TeV_pythia8_RAW2DIGIRECO_2017_cfg.py'
 
     if doPlus: 
         config.General.requestName = 'WPlusPiGamma_Pythia8_RECOSIM_94X'
         config.Data.inputDataset = '/WPlusPiGamma_GENSIM_80XV1/pellicci-WPlusPiGamma_GENSIM_80XV1-8d45dc557bfa1dd3d3626668174f8fd0/USER'
     else:
-        config.General.requestName = 'WMinusPiGamma_Pythia8_RECOSIM_94X'
-        config.Data.inputDataset = '/WMinusPiGamma_GENSIM_80XV1/pellicci-WMinusPiGamma_GENSIM_80XV1-f51ba7e770fc51cae8263bad5b777b64/USER'
-
-    config.JobType.psetName = 'cmssw_config/WPiGamma_13TeV_pythia8_RAW2DIGIRECO_2017_cfg.py'
+        config.General.requestName = 'WMinusPiGamma_Pythia8_RECOSIM_94X_2017_v3'
+        config.Data.inputDataset = '/WMinusPiGamma_GENSIM_94X_2017_v3/rselvati-WMinusPiGamma_DIGIHLT_94X_2017_v3-5b9cd2c7eef36524de7af1c8e43b0ebc/USER'
 
 
 config.Data.inputDBS = 'phys03'
-config.Data.splitting = 'Automatic'
-config.Data.unitsPerJob = 5
+config.Data.splitting = 'FileBased'
+config.Data.unitsPerJob = 1
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = True
 
@@ -50,9 +50,9 @@ if runningEra == 0:
 if runningEra == 1:
 
     if doPlus:
-        config.Data.outputDatasetTag = 'WPlusPiGamma_RECOSIM_94X'
+        config.Data.outputDatasetTag = 'WPlusPiGamma_RECOSIM_94X_2017'
     else:
-        config.Data.outputDatasetTag = 'WMinusPiGamma_RECOSIM_94X'
+        config.Data.outputDatasetTag = 'WMinusPiGamma_RECOSIM_94X_2017_v3'
 
 config.section_('Site')
 config.Site.storageSite = 'T2_IT_Bari'

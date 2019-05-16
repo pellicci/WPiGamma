@@ -134,27 +134,18 @@ class Workflow_Handler:
         self.data_samplename = dataname  
         self.sig_samplename = signalname
         
-        # self.norm_filename = "rootfiles/" + self.subprocess + "Medium/Normalizations_table.txt"
-        # self.dir_back_input = "rootfiles/" + self.subprocess + "Medium/backgrounds/"
-        # self.sig_filename = "rootfiles/" + self.subprocess + "Medium/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
 
         if runningEra == 0:
-            self.norm_filename = "rootfiles/" + self.subprocess + "MC/2016/Normalizations_table.txt"
-            self.dir_back_input = "rootfiles/" + self.subprocess + "MC/2016/backgrounds/"
-            self.sig_filename = "rootfiles/" + self.subprocess + "MC/2016/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
-
-            #---------------- Data ----------------#
-            self.dir_data_input = "rootfiles/" + self.subprocess + "data/2016/"
-
-
+            year == "2016"
         if runningEra == 1:
-            #----------------- MC -----------------#
-            self.norm_filename = "rootfiles/" + self.subprocess + "MC/2017/Normalizations_table.txt"
-            self.dir_back_input = "rootfiles/" + self.subprocess + "MC/2017/backgrounds/"
-            self.sig_filename = "rootfiles/" + self.subprocess + "MC/2017/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
+            year == "2017"
 
-            #---------------- Data ----------------#
-            self.dir_data_input = "rootfiles/" + self.subprocess + "data/2017/"
+        self.norm_filename = "rootfiles/" + self.subprocess + "latest_production/MC/" + year + "/Normalizations_table.txt"
+        self.dir_back_input = "rootfiles/" + self.subprocess + "latest_production/MC/" + year + "/backgrounds/"
+        self.sig_filename = "rootfiles/" + self.subprocess + "latest_production/MC/" + year + "/signals/" + "WPiGammaAnalysis_" + self.sig_samplename + ".root"
+        
+        #---------------- Data ----------------#
+        self.dir_data_input = "rootfiles/" + self.subprocess + "latest_production/dataprocess/" + year + "/"
 
 
         

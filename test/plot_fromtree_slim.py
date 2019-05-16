@@ -404,6 +404,8 @@ for name_sample in samplename_list:
         # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction (only for 2016)
         Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
+        ################ MUON SFs ################
+
         if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
             if runningEra == 0:
                 isSingleMuTrigger_LOW = isSingleMuTrigger_24
@@ -415,11 +417,17 @@ for name_sample in samplename_list:
             if random_mu_SF:
                 mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight,mu_weight_err)
 
+
+        ############## ELECTRON SFs ##############
+
         else:
             ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,ele_etaSC)
 
             if random_ele_SF:
                 ele_weight = _Nrandom_for_Gaus_SF.Gaus(ele_weight,ele_weight_err) 
+
+
+        ############### PHOTON SFs ###############
 
         ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_etaSC)
 
@@ -427,6 +435,8 @@ for name_sample in samplename_list:
         if random_ph_SF:
             ph_weight = _Nrandom_for_Gaus_SF.Gaus(ph_weight,ph_weight_err)
         
+
+        ############### Multiply weights and SFs for MC. Set weight to 1 for data ###############
 
         if not "Data" in name_sample:
             MC_Weight = mytree.MC_Weight # Add MC weight        

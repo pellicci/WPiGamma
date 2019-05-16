@@ -19,8 +19,8 @@ year = args.year_option
 
 #xsec lookup in pb
 secs_table_2016 = dict()
-secs_table_2016["ttbar"] = 730.6 - 76.7
-secs_table_2016["ttbarlnu"] = 76.7
+secs_table_2016["ttbar"] = 831.76 - 88.29
+secs_table_2016["ttbarlnu"] = 88.29 #Controllare questo conto
 secs_table_2016["ttbarWQQ"] = 0.405
 secs_table_2016["ttbarWlnu"] = 0.2001
 secs_table_2016["ttbarZQQ"] = 0.5297
@@ -50,7 +50,7 @@ secs_table_2016["QCD_DoubleEMEnriched_40toInf"] = 113100.0
 secs_table_2016["WGToLNuG"] = 510.6
 secs_table_2016["TTGJets"] = 3.795
 secs_table_2016["ZGTo2LG"] = 123.8
-secs_table_2016["Signal"] = 730.6*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
+secs_table_2016["Signal"] = 831.76*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
 
 #fraction of negative-weighted events in NLO samples (2016)
 frac_table_2016 = dict()
@@ -90,7 +90,7 @@ frac_table_2016["Signal"] = 0.
 
 #######################################
 #                                     #
-#--------------- 2016 ----------------#
+#--------------- 2017 ----------------#
 #                                     #
 #######################################
 
@@ -170,14 +170,7 @@ frac_table_2017["Signal"] = 0.
 
 
 secs_table = dict()
-
-if year == "2016":
-secs_table = secs_table_2016
-frac_table = frac_table_2016
-
-if year == "2017":
-secs_table = secs_table_2017
-frac_table = frac_table_2017
+frac_table = dict()
 
 complementary_samples_list_2016 = ["ttbarWlnu","ttbarZlnu","DY_10_50","DY_50","QCD_HT200to300","QCD_HT300to500","QCD_HT500to700","QCD_HT700to1000","QCD_HT1000to1500","QCD_HT1500to2000","QCD_HT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG","Signal"]
 
@@ -185,19 +178,24 @@ complementary_samples_list_2017 = ["WJetsToLNu","DY_50","TTGJets","Signal"]
 
 if year == "2016":
     complementary_samples_list = complementary_samples_list_2016
+    secs_table = secs_table_2016
+    frac_table = frac_table_2016
+
 if year == "2017":
     complementary_samples_list = complementary_samples_list_2017
+    secs_table = secs_table_2017
+    frac_table = frac_table_2017
 
 ##Now starts the program
 def main():
 
-    dir_input = "crab_projects/samples_Medium/"
+    dir_input = "crab_projects/samples_MC_" + year + "/"
     list_dirs = os.listdir(dir_input)
 
     if not os.path.exists("rootfiles"):
         os.makedirs("rootfiles")
 
-    output_filename = "rootfiles/Medium/Normalizations_table.txt"
+    output_filename = "rootfiles/latest_production/MC/" + year + "/"
     out_file = open(output_filename,"w")
 
     events_cumul = dict()

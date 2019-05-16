@@ -17,10 +17,10 @@ if runningEra == 0:
     config.Data.outputPrimaryDataset = 'WPlusPiGamma_GENSIM_80XV1'
 
 if runningEra == 1:
-    config.General.requestName = 'WPlusPiGamma_Pythia8_GENSIM_94X_2017_v3'
+    config.General.requestName = 'WPlusPiGamma_Pythia8_GENSIM_94X_2017_v5'
     config.JobType.psetName = 'cmssw_config/WPlusPiGamma_13TeV_pythia8_GENSIM_2017_cfg.py'
     config.JobType.outputFiles = ['WPiGamma_pythia8_GENSIM_2017.root']
-    config.Data.outputPrimaryDataset = 'WPlusPiGamma_GENSIM_94X_2017_v3'
+    config.Data.outputPrimaryDataset = 'WPlusPiGamma_GENSIM_94X_2017_v5'
 
 config.Data.splitting = 'EventBased' # Can only be set to EventBased if pluginName = PrivateMC
 config.Data.unitsPerJob = 5
@@ -32,7 +32,7 @@ config.Data.publication = True
 if runningEra == 0:
     config.Data.outputDatasetTag = 'WPlusPiGamma_GENSIM_80XV1'
 if runningEra == 1:
-    config.Data.outputDatasetTag = 'WPlusPiGamma_GENSIM_94X_2017_v3'
+    config.Data.outputDatasetTag = 'WPlusPiGamma_GENSIM_94X_2017_v5'
 
 config.section_('Site')
 config.Site.storageSite = 'T2_IT_Bari'
