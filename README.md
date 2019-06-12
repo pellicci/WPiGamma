@@ -3,7 +3,9 @@
 - Create a new CMSSW release
    
    cmsrel CMSSW_8_0_28
+   
    cd CMSSW_8_0_28/src
+   
    cmsenv
 
 - Get the EGamma recommended tags
