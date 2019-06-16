@@ -2,13 +2,15 @@
 
 - Create a new CMSSW release
    
-   cmsrel CMSSW_8_0_28
-   cd CMSSW_8_0_28/src
+   cmsrel CMSSW_9_4_10
+   
+   cd CMSSW_9_4_10/src
+   
    cmsenv
 
 - Get the EGamma recommended tags
 
-   git cms-merge-topic ikrav:egm_id_80X_v3_photons
+   git cms-merge-topic cms-egamma:EgammaPostRecoTools_940
 
 - In src, get the package
 
