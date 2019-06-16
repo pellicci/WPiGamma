@@ -5,7 +5,7 @@ config = Configuration()
 config.section_('General')
 config.General.transferOutputs = True
 
-runningEra = 0 # 0 = 2016, 1 = 2017, 2 = 2018
+runningEra = 1 # 0 = 2016, 1 = 2017, 2 = 2018
 
 config.section_('JobType')
 config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
@@ -64,7 +64,6 @@ if __name__ == '__main__':
         p.join()
         
         config.General.requestName = '2016_WPiGammaAnalysis_Signal_WMinus'
-        #config.Data.unitsPerJob = 5
         config.Data.inputDataset = '/WMinusPiGamma_GENSIM_80XV1/rselvati-WMinusPiGamma_MINIAODSIM_94XV3-9a5eaf7e0651dc0135fee9d652526a74/USER'
         p = Process(target=submit, args=(config,))
         p.start()
@@ -75,14 +74,13 @@ if __name__ == '__main__':
         config.JobType.pyCfgParams = ['runningOnData=False','runningEra=1'] # Configure 2017 MC signal jobs 
 
         config.General.requestName = '2017_WPiGammaAnalysis_Signal_WPlus'
-        config.Data.inputDataset = '/WPlusPiGamma_GENSIM_80XV1/rselvati-WPlusPiGamma_MINIAODSIM_94XV3-9a5eaf7e0651dc0135fee9d652526a74/USER'
+        config.Data.inputDataset = '/WPlusPiGamma_GENSIM_94X_2017_v5/rselvati-WPlusPiGamma_MINIAODSIM_94X_2017_v5-10a67796329f4238191918f07d0f7633/USER'
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()
         
         config.General.requestName = '2017_WPiGammaAnalysis_Signal_WMinus'
-        #config.Data.unitsPerJob = 5
-        config.Data.inputDataset = '/WMinusPiGamma_GENSIM_80XV1/rselvati-WMinusPiGamma_MINIAODSIM_94XV3-9a5eaf7e0651dc0135fee9d652526a74/USER'
+        config.Data.inputDataset = '/WMinusPiGamma_GENSIM_94X_2017_v3/rselvati-WMinusPiGamma_MINIAODSIM_94X_2017_v3-10a67796329f4238191918f07d0f7633/USER'
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()

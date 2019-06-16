@@ -19,7 +19,7 @@ ROOT.gROOT.SetBatch(True)
 #---------------------------------#
 p = argparse.ArgumentParser(description='Select whether to fill the histograms after pre-selection or after BDT')
 p.add_argument('isBDT_option', help='Type <<preselection>> or <<BDT>>')
-p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017 and <<2>> for 2018')
+p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <<2>> for 2018, <<3>> for combination 2016+2017')
 args = p.parse_args()
 
 # Switch from muon to electron channel, and from 2016 to 2017
@@ -33,7 +33,7 @@ runningEra = int(args.runningEra_option)
 isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
 myWF = Workflow_Handler("Signal","Data",isBDT_with_Wmass,runningEra)
 
-##Bools for rundom SF variation
+#Bools for rundom SF variation
 random_mu_SF  = False #------if True, muon scale factors are sampled from a Gaussian
 random_ele_SF = False #------if True, electron scale factors are sampled from a Gaussian
 random_ph_SF  = False #------if True, photon scale factors are sampled from a Gaussian
@@ -54,6 +54,8 @@ if runningEra == 0:
     luminosity_norm = luminosity_norm_2016
 if runningEra == 1:
     luminosity_norm = luminosity_norm_2017
+if runningEra == 3:
+    luminosity_norm = luminosity_norm_2016 + luminosity_norm_2017
 
 luminosity_BtoF = 19.72 #For 2016
 luminosity_GH   = 16.14 #For 2016
@@ -61,7 +63,7 @@ luminosity_GH   = 16.14 #For 2016
 
 #############---------------- BDT score cut values ----------------#############
 
-BDT_OUT_MU = 0.220
+BDT_OUT_MU  = 0.220
 BDT_OUT_ELE = 0.170
 
 ################################################################################
@@ -111,14 +113,19 @@ W_signal_hist.Sumw2()
 W_ttbar_hist.Sumw2()
 
 # Color mask must have the same number of entries as non-QCD backgrounds
-colors_mask = [ROOT.kYellow-8,ROOT.kAzure+7,ROOT.kOrange-3,ROOT.kTeal-5,ROOT.kViolet-6,ROOT.kSpring-1,ROOT.kOrange+6+1,ROOT.kMagenta+1,ROOT.kYellow-2,ROOT.kGreen+2,ROOT.kBlue-7,ROOT.kRed-7,ROOT.kOrange-2,ROOT.kYellow+3,ROOT.kBlue-4,ROOT.kGreen+3,ROOT.kCyan-7,ROOT.kPink+10,ROOT.kOrange+8,ROOT.kRed-7]
+colors_mask = [ROOT.kYellow-8,ROOT.kAzure+7,ROOT.kOrange-3,ROOT.kTeal-5,ROOT.kViolet-6,ROOT.kSpring-1,ROOT.kOrange+6+1,ROOT.kMagenta+1,ROOT.kYellow-2,ROOT.kGreen+2,ROOT.kBlue-7,ROOT.kRed-7,ROOT.kOrange-2,ROOT.kYellow+3,ROOT.kBlue-4,ROOT.kGreen+3,ROOT.kCyan-7,ROOT.kPink+10,ROOT.kOrange+8,ROOT.kRed-7,ROOT.kBlue+3]
 
 # Get the files and the names of the samples
-samplename_list = myWF.get_samples_names()
+samplename_list,sampleEra_list = myWF.get_samples_names()
+#print "samplename_list: ", samplename_list, "  sampleEra_list: ", sampleEra_list
 root_file = myWF.get_root_files()
+#print "root_file: ",root_file
 
 # Get the normalization
-Norm_Map = myWF.get_normalizations_map()
+#Norm_Map = myWF.get_normalizations_map()
+Norm_Map_2016, Norm_Map_2017 = myWF.get_normalizations_map()
+
+
 ttbar_sig_calib_file = ROOT.TFile.Open("ttbar_signal_ratio.root")
 ttbar_sig_calib = ttbar_sig_calib_file.Get("ttbar_signal_ratio")
 
@@ -126,14 +133,6 @@ ttbar_sig_calib = ttbar_sig_calib_file.Get("ttbar_signal_ratio")
 hs      = dict()
 h_base  = dict()
 canvas  = dict()
-
-#####################################################################
-#Event counters
-motherID = dict()
-mother_list = ["1","2","3","4","5","13","15","21","22","24","111","213","221","223","313","323","331","333","423","2212","3214"]
-
-for mother in mother_list:
-    motherID[mother] = 0.
 
 #####################################################################
 
@@ -144,8 +143,35 @@ for hname in list_histos:
 ##Define the histos to be created
 isQCDfirst = True
 
-
+double_samplenames = dict() #Identify the samples which appear twice or more with the same name
 for sample_name in samplename_list:
+    double_samplenames[sample_name] = 0
+
+for sample_name, sampleEra in zip(samplename_list,sampleEra_list):
+
+    # if samplename_list.count(sample_name) == 1:
+    #     print "name of samples which appear only once in the list: ",sample_name
+
+    ###################################################
+    #                                                 #
+    #------- Select which era will be plotted --------#
+    #                                                 #
+    ###################################################
+
+    if runningEra == 0 and not sampleEra == "2016":
+        continue
+    if runningEra == 1 and not sampleEra == "2017":
+        continue
+    if runningEra == 2 and not sampleEra == "2018":
+        continue
+    if runningEra == 3 and not (sampleEra == "2016" or sampleEra == "2017"):
+        continue
+
+    #Prevent memory leaks from creation of two or more histos with same name. At the same time, account for samples which are unique among the eras
+    double_samplenames[sample_name] += 1 
+    if double_samplenames[sample_name] > 1:
+        continue
+    #######################################################################
 
     if "QCD" in sample_name:
         theSampleName = "QCD_"
@@ -230,7 +256,7 @@ Sevts_weighted_mu = 0
 Bevts_weighted_mu = 0
 Sevts_weighted_ele = 0
 Bevts_weighted_ele = 0
-_Nrandom_for_SF = ROOT.TRandom3(44317)
+#_Nrandom_for_SF = ROOT.TRandom3(44317)
 _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 N_WGToLNuG_mu = 0.
 Nevts_per_sample = 0.
@@ -241,7 +267,7 @@ idx_sample = 0
 isFirstQCDlegend = True
 
 
-for name_sample in samplename_list:
+for name_sample, sampleEra in zip(samplename_list,sampleEra_list):
 
     theSampleName = name_sample
 
@@ -251,11 +277,33 @@ for name_sample in samplename_list:
     else:
         QCDflag = False
 
+    ###################################################
+    #                                                 #
+    #------- Select which era will be plotted --------#
+    #                                                 #
+    ###################################################
+
+    if runningEra == 0 and not sampleEra == "2016":
+        continue
+    if runningEra == 1 and not sampleEra == "2017":
+        continue
+    if runningEra == 2 and not sampleEra == "2018":
+        continue
+    if runningEra == 3 and not (sampleEra == "2016" or sampleEra == "2017"):
+        continue
+
+    #######################################################################
 
     if not "Data" in name_sample:
-        norm_factor = Norm_Map[name_sample]*luminosity_norm
+        
+        #norm_factor = Norm_Map[name_sample]*luminosity_norm
+        if sampleEra == "2016":
+            norm_factor = Norm_Map_2016[name_sample]*luminosity_norm
+        if sampleEra == "2017":
+            norm_factor = Norm_Map_2017[name_sample]*luminosity_norm
 
-    mytree = root_file[name_sample].Get("WPiGammaAnalysis/mytree")
+
+    mytree = root_file[name_sample+"_"+sampleEra].Get("WPiGammaAnalysis/mytree")
  
     print "Processing Sample ", name_sample
 
@@ -296,7 +344,7 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
-        runningEra = mytree.runningEra # Define on which year we work
+        #sampleEra = mytree.runningEra # Define on which year we work
         isMuon = mytree.is_muon
         LepPiOppositeCharge = mytree.LepPiOppositeCharge
 
@@ -304,7 +352,7 @@ for name_sample in samplename_list:
 
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
         isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
-        if runningEra == 1:
+        if sampleEra == "2017":
             isSingleMuTrigger_27 = mytree.isSingleMuTrigger_27           
 
         lep_pT  = mytree.lepton_pT
@@ -386,8 +434,8 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
-        if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge):
-            continue
+        if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge,sampleEra):
+           continue
             
         if "Signal" in name_sample:
             Nsig_passed += 1
@@ -401,18 +449,17 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
-        # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction (only for 2016)
-        Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
         ################ MUON SFs ################
 
         if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
-            if runningEra == 0:
+            if sampleEra == "2016":
                 isSingleMuTrigger_LOW = isSingleMuTrigger_24
-            if runningEra == 1:
+            if sampleEra == "2017":
                 isSingleMuTrigger_LOW = isSingleMuTrigger_27
 
-            mu_weight, mu_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,runningEra,Nrandom_for_SF,luminosity_BtoF,luminosity_norm,isSingleMuTrigger_LOW)
+            mu_weight, mu_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,sampleEra,isSingleMuTrigger_LOW)
+
 
             if random_mu_SF:
                 mu_weight = _Nrandom_for_Gaus_SF.Gaus(mu_weight,mu_weight_err)
@@ -421,7 +468,7 @@ for name_sample in samplename_list:
         ############## ELECTRON SFs ##############
 
         else:
-            ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,ele_etaSC)
+            ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,ele_etaSC,sampleEra)
 
             if random_ele_SF:
                 ele_weight = _Nrandom_for_Gaus_SF.Gaus(ele_weight,ele_weight_err) 
@@ -429,7 +476,7 @@ for name_sample in samplename_list:
 
         ############### PHOTON SFs ###############
 
-        ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_etaSC)
+        ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_etaSC,sampleEra)
 
         
         if random_ph_SF:
@@ -449,7 +496,7 @@ for name_sample in samplename_list:
                 Event_Weight = Event_Weight*ele_weight
 
             # Correct for the difference in pT of the generated W in Pythia and Madgraph samples
-            if name_sample == "Signal" and is_signal_Wplus:
+            if sampleEra == "2016" and name_sample == "Signal" and is_signal_Wplus:
                 local_Wplus_pT = Wplus_pT
                 if Wplus_pT > 300.:
                     local_Wplus_pT = 300.
@@ -457,7 +504,7 @@ for name_sample in samplename_list:
                 Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wplus_pT))
 
 
-            if name_sample == "Signal" and is_signal_Wminus:
+            if sampleEra == "2016" and name_sample == "Signal" and is_signal_Wminus:
                 local_Wminus_pT = Wminus_pT
                 if Wminus_pT > 300.:
                     local_Wminus_pT = 300.
@@ -573,6 +620,9 @@ for name_sample in samplename_list:
                 Bevts_weighted_mu += Event_Weight
             if "Signal" in name_sample and not isMuon:
                 Sevts_weighted_ele += Event_Weight
+
+
+
             #if "WJetsToLNu" in name_sample and not isMuon:
             if not "Signal" in name_sample and not isMuon:
                 Bevts_weighted_ele += Event_Weight
@@ -580,9 +630,6 @@ for name_sample in samplename_list:
 
         if "DoubleEMEnriched" in name_sample:
             N_DoubleEMEnriched += Event_Weight
-
-        if "WGToLNuG" in name_sample and is_gen_ph and gen_ph_pT > 30.:# and isMuon:
-            motherID[gen_ph_mother] += Event_Weight 
 
 
         ############################################################################
@@ -618,7 +665,7 @@ for name_sample in samplename_list:
 
         ############################################################################
         #                                                                          #
-        #--------------------- Define histos and legend features ------------------#
+        #--------------------- Define histo and legend features -------------------#
         #                                                                          #
         ############################################################################
 
@@ -639,12 +686,13 @@ for name_sample in samplename_list:
             h_base[theSampleName+hname].SetLineColor(2)   #red
             h_base[theSampleName+hname].SetLineWidth(4)   #kind of thick
         elif name_sample == myWF.data_samplename:
-            h_base[theSampleName+hname].SetMarkerStyle(20)   #dashed
+            h_base[theSampleName+hname].SetMarkerStyle(20)   #point
         else:
+            #sample_color[theSampleName] = colors_mask[idx_sample]
             h_base[theSampleName+hname].SetFillColor(colors_mask[idx_sample])
 
 
-        if idx_histo == 0 and (Nevts_per_sample > 800 or name_sample == myWF.sig_samplename):
+        if idx_histo == 0 and (Nevts_per_sample > 800 or name_sample == myWF.sig_samplename): #Only plot in the legends those samples which give significant contribution
             if QCDflag and isFirstQCDlegend:
                 leg1.AddEntry(h_base[theSampleName+hname],"QCD","f")
                 isFirstQCDlegend = False
@@ -657,7 +705,12 @@ for name_sample in samplename_list:
             elif not QCDflag and not name_sample == myWF.data_samplename:
                 leg1.AddEntry(h_base[theSampleName+hname],theSampleName,"f")
 
-        if not QCDflag and not name_sample == myWF.sig_samplename and not name_sample == myWF.data_samplename:
+        # if samplename_list.count(theSampleName) > 1:
+        #     n_samples_with_this_name += 1
+            
+        #     h_temp[theSampleName] = h_base[theSampleName]
+        #Here is where histos are added in the THStack. Signal and Data are added later
+        if not QCDflag and not name_sample == myWF.sig_samplename and not name_sample == myWF.data_samplename: 
             hs[hname].Add(h_base[theSampleName+hname])
 
     if not QCDflag and not name_sample == myWF.sig_samplename and not name_sample == myWF.data_samplename:
@@ -672,7 +725,24 @@ print "Finished runnning over samples!"
 color_index = 0
 eleeta_canvas = dict()
 
-for sample_name in samplename_list:
+for sample_name, sampleEra in zip(samplename_list,sampleEra_list):
+
+    ###################################################
+    #                                                 #
+    #------- Select which era will be plotted --------#
+    #                                                 #
+    ###################################################
+
+    if runningEra == 0 and not sampleEra == "2016":
+        continue
+    if runningEra == 1 and not sampleEra == "2017":
+        continue
+    if runningEra == 2 and not sampleEra == "2018":
+        continue
+    if runningEra == 3 and not (sampleEra == "2016" or sampleEra == "2017"):
+        continue
+
+    #######################################################################
     
     if "QCD" in sample_name or "Data" in sample_name or "Signal" in sample_name:
         continue
@@ -824,6 +894,10 @@ for hname in list_histos:
         canvas[hname].SaveAs("plots/2016/" + hname + ".pdf")
     if runningEra == 1:
         canvas[hname].SaveAs("plots/2017/" + hname + ".pdf")
+    if runningEra == 2:
+        canvas[hname].SaveAs("plots/2018/" + hname + ".pdf")
+    if runningEra == 3:
+        canvas[hname].SaveAs("plots/2016_2017/" + hname + ".pdf")
 
 print "Wmass_mu: ", Wmass_mu.Integral()
 print "Wmass_ele: ", Wmass_ele.Integral()
@@ -946,6 +1020,3 @@ print "total number of B evts weighted -ele: ", Bevts_weighted_ele
 
 print "N_WGToLNuG_mu", N_WGToLNuG_mu
 print "N_DoubleEMEnriched", N_DoubleEMEnriched
-
-#for mother in mother_list:
-#    print mother, " --- ", motherID[mother] 

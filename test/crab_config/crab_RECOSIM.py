@@ -1,7 +1,7 @@
 from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
  
-doPlus = False
+doPlus = True
 runningEra = 1 # 0 = 2016, 1 = 2017, 2 = 2018 
 
 config.section_('General')
@@ -27,8 +27,8 @@ if runningEra == 1:
     config.JobType.psetName = 'cmssw_config/WPiGamma_13TeV_pythia8_RAW2DIGIRECO_2017_cfg.py'
 
     if doPlus: 
-        config.General.requestName = 'WPlusPiGamma_Pythia8_RECOSIM_94X'
-        config.Data.inputDataset = '/WPlusPiGamma_GENSIM_80XV1/pellicci-WPlusPiGamma_GENSIM_80XV1-8d45dc557bfa1dd3d3626668174f8fd0/USER'
+        config.General.requestName = 'WPlusPiGamma_Pythia8_RECOSIM_94X_2017_v5'
+        config.Data.inputDataset = '/WPlusPiGamma_GENSIM_94X_2017_v5/rselvati-WPlusPiGamma_DIGIHLT_94X_2017_v5-5b9cd2c7eef36524de7af1c8e43b0ebc/USER'
     else:
         config.General.requestName = 'WMinusPiGamma_Pythia8_RECOSIM_94X_2017_v3'
         config.Data.inputDataset = '/WMinusPiGamma_GENSIM_94X_2017_v3/rselvati-WMinusPiGamma_DIGIHLT_94X_2017_v3-5b9cd2c7eef36524de7af1c8e43b0ebc/USER'
@@ -50,7 +50,7 @@ if runningEra == 0:
 if runningEra == 1:
 
     if doPlus:
-        config.Data.outputDatasetTag = 'WPlusPiGamma_RECOSIM_94X_2017'
+        config.Data.outputDatasetTag = 'WPlusPiGamma_RECOSIM_94X_2017_v5'
     else:
         config.Data.outputDatasetTag = 'WMinusPiGamma_RECOSIM_94X_2017_v3'
 

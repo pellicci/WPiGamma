@@ -93,7 +93,7 @@ _Wmass              = np.zeros(1, dtype=float)
 BDT_OUT_MU  = 0.220
 BDT_OUT_ELE = 0.170
 
-_Nrandom_for_SF = ROOT.TRandom3(44317)
+#_Nrandom_for_SF = ROOT.TRandom3(44317)
 
 Wmass_mu   = ROOT.TH1F("Wmass_mu","Wmass mu",15,50,100)
 Wmass_ele  = ROOT.TH1F("Wmass_ele","Wmass ele",15,50,100)
@@ -503,21 +503,6 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
-        # if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
-        #     mu_weight_BtoF, mu_weight_BtoF_err = myWF.get_muon_scale_BtoF(lep_pT,lep_eta,isSingleMuTrigger_24)
-        #     mu_weight_GH, mu_weight_GH_err     = myWF.get_muon_scale_GH(lep_pT,lep_eta,isSingleMuTrigger_24)
-            
-        #     # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction
-        #     Nrandom_for_SF = _Nrandom_for_SF.Rndm()
-
-        #     if Nrandom_for_SF <= (luminosity_BtoF/luminosity_norm): # Access muon SF: B to F
-        #         mu_weight = mu_weight_BtoF
-
-        #     else: # Access muon SF: G and H
-        #         mu_weight = mu_weight_GH
-
-        # Use a random number to select which muon scale factor to use, depending on the respective lumi fraction (only for 2016)
-        Nrandom_for_SF = _Nrandom_for_SF.Rndm()
 
         if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
             if runningEra == 0:
@@ -525,7 +510,7 @@ for name_sample in samplename_list:
             if runningEra == 1:
                 isSingleMuTrigger_LOW = isSingleMuTrigger_27
 
-            mu_weight, mu_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,runningEra,Nrandom_for_SF,luminosity_BtoF,luminosity_norm,isSingleMuTrigger_LOW)
+            mu_weight, mu_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,runningEra,isSingleMuTrigger_LOW)
 
 
         else:

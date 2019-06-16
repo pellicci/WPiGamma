@@ -21,19 +21,19 @@ year = args.year_option
 
 if not isData:
     dir_input = "crab_projects/samples_MC_" + year + "/"
-    dir_output_bkg = "rootfiles/latest_production/MC/" + year + "/backgrounds/"
-    dir_output_sig = "rootfiles/latest_production/MC/" + year + "/signals/"  
+    dir_output_bkg = "rootfiles/latest_production/MC/backgrounds/"
+    dir_output_sig = "rootfiles/latest_production/MC/signals/"  
 
 if isData:
     dir_input = "crab_projects/samples_data_" + year + "/"
-    dir_output_data = "rootfiles/latest_production/dataprocess/" + year + "/"
+    dir_output_data = "rootfiles/latest_production/dataprocess/"
 
 
 list_dirs = os.listdir(dir_input)
 
-complementary_samples_list_2016 = ["ttbarWlnu","ttbarZlnu","DY_10_50","DY_50","QCD_HT200to300","QCD_HT300to500","QCD_HT500to700","QCD_HT700to1000","QCD_HT1000to1500","QCD_HT1500to2000","QCD_HT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG"]
+complementary_samples_list_2016 = ["ttbarWlnu","ttbarZlnu","DY10to50","DY50","QCDHT200to300","QCDHT300to500","QCDHT500to700","QCDHT700to1000","QCDHT1000to1500","QCDHT1500to2000","QCDHT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG"]
 
-complementary_samples_list_2017 = ["WJetsToLNu","DY_50","TTGJets"]
+complementary_samples_list_2017 = ["WJetsToLNu","DY50","TTGJets"]
 
 if year == "2016":
     complementary_samples_list = complementary_samples_list_2016
@@ -57,26 +57,26 @@ for dirname in list_dirs:
 
     print "Processing sample dir " + dirname
     
-    # n_jobs_command = "crab status -d " + dir_input + dirname + " | grep status: " + "| awk " + """'{split($0,array,"/") ; print array[2]}'""" + "| sed 's/.$//'"
-    # n_jobs = int(subprocess.check_output(n_jobs_command, shell=True))
+    n_jobs_command = "crab status -d " + dir_input + dirname + " | grep status: " + "| awk " + """'{split($0,array,"/") ; print array[2]}'""" + "| sed 's/.$//'"
+    n_jobs = int(subprocess.check_output(n_jobs_command, shell=True))
 
-    # print "Number of jobs to be retrieved: ", n_jobs
+    print "Number of jobs to be retrieved: ", n_jobs
 
-    # if n_jobs <= 500:
-    #     crab_command = "crab getoutput -d " + dir_input + dirname
-    #     os.system(crab_command)
-    # elif (n_jobs > 500 and n_jobs <= 1000):
-    #     crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
-    #     os.system(crab_command)
-    #     crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-" + str(n_jobs) # Because it is impossible to concatenate str and int objects
-    #     os.system(crab_command_1)
-    # else:
-    #     crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
-    #     os.system(crab_command)
-    #     crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-1000"
-    #     os.system(crab_command_1)
-    #     crab_command_2 = "crab getoutput -d " + dir_input + dirname + " --jobids 1001-" + str(n_jobs) # Because it is impossible to concatenate str and int objects
-    #     os.system(crab_command_2)
+    if n_jobs <= 500:
+        crab_command = "crab getoutput -d " + dir_input + dirname
+        os.system(crab_command)
+    elif (n_jobs > 500 and n_jobs <= 1000):
+        crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
+        os.system(crab_command)
+        crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-" + str(n_jobs) # Because it is impossible to concatenate str and int objects
+        os.system(crab_command_1)
+    else:
+        crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
+        os.system(crab_command)
+        crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-1000"
+        os.system(crab_command_1)
+        crab_command_2 = "crab getoutput -d " + dir_input + dirname + " --jobids 1001-" + str(n_jobs) # Because it is impossible to concatenate str and int objects
+        os.system(crab_command_2)
 
     if year == "2016":
         samplename = dirname.split("crab_2016_WPiGammaAnalysis_") #--which means "dirname"-"crab_2016_WPiGammaAnalysys_"
