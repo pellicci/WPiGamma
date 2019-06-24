@@ -113,7 +113,29 @@ W_signal_hist.Sumw2()
 W_ttbar_hist.Sumw2()
 
 # Color mask must have the same number of entries as non-QCD backgrounds
-colors_mask = [ROOT.kYellow-8,ROOT.kAzure+7,ROOT.kOrange-3,ROOT.kTeal-5,ROOT.kViolet-6,ROOT.kSpring-1,ROOT.kOrange+6+1,ROOT.kMagenta+1,ROOT.kYellow-2,ROOT.kGreen+2,ROOT.kBlue-7,ROOT.kRed-7,ROOT.kOrange-2,ROOT.kYellow+3,ROOT.kBlue-4,ROOT.kGreen+3,ROOT.kCyan-7,ROOT.kPink+10,ROOT.kOrange+8,ROOT.kRed-7,ROOT.kBlue+3]
+colors_mask = dict()
+colors_mask["ttbar"]               = ROOT.kYellow-8
+colors_mask["ttbarlnu"]            = ROOT.kAzure+7
+colors_mask["ttbarWQQ"]            = ROOT.kOrange-3
+colors_mask["ttbarZlnu"]           = ROOT.kTeal-5
+colors_mask["DY50"]                = ROOT.kViolet-6
+colors_mask["ttbarZQQ"]            = ROOT.kSpring-1
+colors_mask["GammaJets20to40"]     = ROOT.kOrange+7
+colors_mask["SingleToptW"]         = ROOT.kMagenta+1
+colors_mask["WJetsToLNu"]          = ROOT.kGreen+2
+colors_mask["SingleAntiToptW"]     = ROOT.kYellow-2
+colors_mask["WZ"]                  = ROOT.kBlue-7
+colors_mask["WGToLNuG"]            = ROOT.kRed-7
+colors_mask["TTGJets"]             = ROOT.kOrange-2
+colors_mask["ZGTo2LG"]             = ROOT.kYellow+3
+colors_mask["DY10to50"]            = ROOT.kBlue-4
+colors_mask["GammaJets20toInf"]    = ROOT.kGreen+3
+colors_mask["GammaJets40toInf"]    = ROOT.kCyan-7
+colors_mask["WW"]                  = ROOT.kPink+1
+colors_mask["ttbarWlnu"]           = ROOT.kOrange+8
+colors_mask["ttbarToHadronic"]     = ROOT.kRed-7
+colors_mask["ttbarToSemiLeptonic"] = ROOT.kBlue+3
+
 
 # Get the files and the names of the samples
 samplename_list,sampleEra_list = myWF.get_samples_names()
@@ -304,7 +326,7 @@ for name_sample, sampleEra in zip(samplename_list,sampleEra_list):
 
 
     mytree = root_file[name_sample+"_"+sampleEra].Get("WPiGammaAnalysis/mytree")
- 
+    #print "Rootfile: ", root_file[name_sample+"_"+sampleEra] #Verify to get the right rootfile for the processed sample
     print "Processing Sample ", name_sample
 
     Nevts_per_sample = 0. # Count the number of events survived per each sample processed
@@ -458,7 +480,7 @@ for name_sample, sampleEra in zip(samplename_list,sampleEra_list):
             if sampleEra == "2017":
                 isSingleMuTrigger_LOW = isSingleMuTrigger_27
 
-            mu_weight, mu_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,sampleEra,isSingleMuTrigger_LOW)
+            mu_weight, mu_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,isSingleMuTrigger_LOW,sampleEra)
 
 
             if random_mu_SF:
@@ -688,8 +710,7 @@ for name_sample, sampleEra in zip(samplename_list,sampleEra_list):
         elif name_sample == myWF.data_samplename:
             h_base[theSampleName+hname].SetMarkerStyle(20)   #point
         else:
-            #sample_color[theSampleName] = colors_mask[idx_sample]
-            h_base[theSampleName+hname].SetFillColor(colors_mask[idx_sample])
+            h_base[theSampleName+hname].SetFillColor(colors_mask[theSampleName])
 
 
         if idx_histo == 0 and (Nevts_per_sample > 800 or name_sample == myWF.sig_samplename): #Only plot in the legends those samples which give significant contribution
@@ -705,16 +726,12 @@ for name_sample, sampleEra in zip(samplename_list,sampleEra_list):
             elif not QCDflag and not name_sample == myWF.data_samplename:
                 leg1.AddEntry(h_base[theSampleName+hname],theSampleName,"f")
 
-        # if samplename_list.count(theSampleName) > 1:
-        #     n_samples_with_this_name += 1
-            
-        #     h_temp[theSampleName] = h_base[theSampleName]
         #Here is where histos are added in the THStack. Signal and Data are added later
         if not QCDflag and not name_sample == myWF.sig_samplename and not name_sample == myWF.data_samplename: 
             hs[hname].Add(h_base[theSampleName+hname])
 
-    if not QCDflag and not name_sample == myWF.sig_samplename and not name_sample == myWF.data_samplename:
-        idx_sample += 1
+    # if not QCDflag and not name_sample == myWF.sig_samplename and not name_sample == myWF.data_samplename:
+    #     idx_sample += 1
 
 print "Finished runnning over samples!"
 
@@ -722,7 +739,6 @@ print "Finished runnning over samples!"
 
 ##################### Plotting all the backgrounds in separate histos for a given distribution ######################
 
-color_index = 0
 eleeta_canvas = dict()
 
 for sample_name, sampleEra in zip(samplename_list,sampleEra_list):
@@ -749,20 +765,20 @@ for sample_name, sampleEra in zip(samplename_list,sampleEra_list):
     else:
         eleeta_canvas[sample_name] = ROOT.TCanvas(sample_name,sample_name,200,106,600,600)
         h_base[sample_name+"h_eleeta"].SetTitle(sample_name)
-        h_base[sample_name+"h_eleeta"].SetFillColor(colors_mask[color_index])
+        h_base[sample_name+"h_eleeta"].SetFillColor(colors_mask[sample_name])
         h_base[sample_name+"h_eleeta"].Draw("hist")
         print sample_name, " integral: ", h_base[sample_name+"h_eleeta"].Integral()
-        color_index += 1
-        eleeta_canvas[sample_name].SaveAs("plots/eleeta/h_eleeta_" + sample_name + ".pdf")
 
-PU_canvas = ROOT.TCanvas(sample_name,sample_name,200,106,600,600)
-print "INTEGRALE!!!!!! ", h_PUdistrib.Integral()
-h_PUdistrib.Scale(1/h_PUdistrib.Integral())
-h_PUdistrib.Draw("hist")
-PU_canvas.SaveAs("plots/h_PUdistrib_Data.pdf")
-PU_file = ROOT.TFile("PUdistrib_Data.root","RECREATE")
-h_PUdistrib.Write("PUdistrib_Data")
-PU_file.Close()
+        eleeta_canvas[sample_name].SaveAs("plots/" + sampleEra + "/eleeta/h_eleeta_" + sample_name + ".pdf")
+
+# PU_canvas = ROOT.TCanvas(sample_name,sample_name,200,106,600,600)
+# print "INTEGRALE!!!!!! ", h_PUdistrib.Integral()
+# h_PUdistrib.Scale(1/h_PUdistrib.Integral())
+# h_PUdistrib.Draw("hist")
+# PU_canvas.SaveAs("plots/h_PUdistrib_Data.pdf")
+# PU_file = ROOT.TFile("PUdistrib_Data.root","RECREATE")
+# h_PUdistrib.Write("PUdistrib_Data")
+# PU_file.Close()
 
 ####################################################################################################################
         
