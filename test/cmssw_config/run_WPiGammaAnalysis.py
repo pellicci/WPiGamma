@@ -1,5 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 process = cms.Process("USER")
+
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.Geometry.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
@@ -177,23 +178,13 @@ process.trigger_filter_MC.throw = cms.bool( False )
 #                                             #
 ###############################################
 
-if options.runningOnData and options.runningOnMuons and options.runningEra == 0: # Data, Muons 2016
+if options.runningOnData and options.runningOnMuons: # Data, Muons
    process.seq = cms.Path(process.trigger_filter_data_mu  * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis) #Excluding events when both muon and electron triggers were lit
 
-if options.runningOnData and not options.runningOnMuons and options.runningEra == 0: # Data, Electrons 2016
+if options.runningOnData and not options.runningOnMuons: # Data, Electrons
    process.seq = cms.Path(process.trigger_filter_data_ele * (~process.trigger_filter_data_mu) * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis)
 
-if options.runningOnData and options.runningOnMuons and options.runningEra == 1: # Data, Muons 2017
-   process.seq = cms.Path(process.trigger_filter_data_mu  * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis) #Excluding events when both muon and electron triggers were lit
-
-if options.runningOnData and not options.runningOnMuons and options.runningEra == 1: # Data, Electrons 2017
-   process.seq = cms.Path(process.trigger_filter_data_ele * (~process.trigger_filter_data_mu) * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis)
-
-if not options.runningOnData and options.runningEra == 0: # MC 2016
+if not options.runningOnData # MC
    process.seq = cms.Path(process.trigger_filter_MC * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis)
-
-if not options.runningOnData and options.runningEra == 1: # MC 2017
-   process.seq = cms.Path(process.trigger_filter_MC * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis)
-
 
 process.schedule = cms.Schedule(process.seq)

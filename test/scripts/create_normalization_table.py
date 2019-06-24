@@ -167,8 +167,6 @@ frac_table_2017["TTGJets"] = 0.3049
 frac_table_2017["ZGTo2LG"] = 0.1584
 frac_table_2017["Signal"] = 0.
 
-
-
 secs_table = dict()
 frac_table = dict()
 

@@ -10,7 +10,6 @@ WPiGammaAnalysis = cms.EDAnalyzer('WPiGammaAnalysis',
                                   slimmedMETs        = cms.InputTag("slimmedMETs"),
                                   slimmedMETsPuppi   = cms.InputTag("slimmedMETsPuppi"),
                                   runningOnData      = cms.bool(False),
-                                  runningOnMuons     = cms.bool(False),
                                   runningEra         = cms.int32(0), # One of the possible python types for the C++ type "int" 
                                   pvCollection       = cms.InputTag("offlineSlimmedPrimaryVertices"),
                                   bsCollection       = cms.InputTag("offlineBeamSpot"),

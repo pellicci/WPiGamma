@@ -546,18 +546,11 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     
     if(cand->pt() < 20. || !cand->trackHighPurity() || fabs(cand->dxy()) >= 0.2 || fabs(cand->dz()) >= 0.5 ) continue;
 
-    if(is_muon){
-      deltaphi_lep_pi = fabs(mu_phi-cand->phi());
-      if(deltaphi_lep_pi > 3.14) deltaphi_lep_pi = 6.28-deltaphi_lep_pi;
-    } 
-    if(!is_muon && is_ele){
-      deltaphi_lep_pi = fabs(el_phi-cand->phi());
-      if(deltaphi_lep_pi > 3.14) deltaphi_lep_pi = 6.28-deltaphi_lep_pi;
-    } 
-
-    if(deltaphi_lep_pi < 0.00005) continue;
-
     if(cand->pt() < pTpiMax) continue;
+
+    deltaphi_lep_pi = fabs(lepton_phi_tree-cand->phi());
+    if(deltaphi_lep_pi > 3.14) deltaphi_lep_pi = 6.28-deltaphi_lep_pi;
+    if(deltaphi_lep_pi < 0.00005) continue;
 
     pTpiMax = cand->pt();
     cand_pion_found = true;

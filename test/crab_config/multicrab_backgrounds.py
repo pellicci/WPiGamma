@@ -407,7 +407,7 @@ if __name__ == '__main__':
 
     if runningEra == 1:
 
-        config.JobType.pyCfgParams = ['runningOnData=False','runningEra=1'] # Configure 2016 MC jobs 
+        config.JobType.pyCfgParams = ['runningOnData=False','runningEra=1'] # Configure 2017 MC jobs 
 
         config.General.requestName = '2017_WPiGammaAnalysis_ttbarToHadronic'
         config.Data.unitsPerJob = 5
@@ -654,9 +654,3 @@ if __name__ == '__main__':
         p.start()
         p.join()
 
-
-
-        
-
-
-    
