@@ -10,6 +10,8 @@
 
 - Get the EGamma recommended tags
 
+   git cms-merge-topic cms-egamma:EgammaID_949
+
    git cms-merge-topic cms-egamma:EgammaPostRecoTools_940
 
 - In src, get the package
