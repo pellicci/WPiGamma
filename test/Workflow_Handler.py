@@ -133,7 +133,7 @@ class Workflow_Handler:
         if runningEra == 1:
             year = "2017"
         if runningEra == 2:
-            year = "2017"
+            year = "2018"
         if runningEra == 3:
             year = "2016" #FIXME: For the moment, just pick up the BDT corresponding to a random year for the combination 2016+2017        
 
