@@ -202,17 +202,15 @@ class Simplified_Workflow_Handler:
 
     def post_preselection_cuts(self, lep_eta, lep_pT, isMuon, LepPiOppositeCharge, runningEra):
 
-        cut = False
-
-        if sampleEra == 0:
+        if runningEra == 0:
             if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 28.) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge:
-                cut = True
+                return True
 
-        if sampleEra == 1:
+        if runningEra == 1:
             if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and lep_pT < 28.) or not LepPiOppositeCharge:
-                cut = True
+                return True
 
-        return cut
+        return False
 
     ###############################################################################################################################################
         

@@ -1,4 +1,5 @@
 import ROOT
+import math
 import argparse
 from Simplified_Workflow_Handler import Simplified_Workflow_Handler
 
@@ -20,23 +21,17 @@ if args.isBDT_option == "BDT":
     isBDT = True
 
 runningEra = int(args.runningEra_option)
-
 input_filename = args.inputfile_option
 output_filename = args.outputfile_option
 
-print input_filename
-print output_filename
-
-#---------------------------------#
-
+#Configuration bools---------------------#
 isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
-
-myWF = Simplified_Workflow_Handler("Signal","Data",isBDT,isBDT_with_Wmass,runningEra)
-
-#Bools for rundom SF variation
 random_mu_SF  = False #------if True, muon scale factors are sampled from a Gaussian
 random_ele_SF = False #------if True, electron scale factors are sampled from a Gaussian
 random_ph_SF  = False #------if True, photon scale factors are sampled from a Gaussian
+
+#-------------------------#
+myWF = Simplified_Workflow_Handler("Signal","Data",isBDT,isBDT_with_Wmass,runningEra)
 
 ############################################################################
 #                                                                          #
@@ -59,11 +54,6 @@ BDT_OUT_ELE = 0.170
 #                                                                          #
 ############################################################################
 
-#Make signal histos larger
-signal_magnify = 10000
-if isBDT:
-    signal_magnify = 100
-
 #Here's the list of histos to plot
 W_signal_hist = ROOT.TH1F("W_signal"," W signal",8,0,300)
 W_ttbar_hist  = ROOT.TH1F("W_ttbar"," W ttbar",8,0,300)
@@ -75,10 +65,9 @@ W_ttbar_hist.Sumw2()
 h_PUdistrib.Sumw2()
 
 # Get the files and the names of the samples
-sample_name = input_filename.split("_")[1]
+sample_name = input_filename.split("_")[2]
 
 # Get the normalization
-#Norm_Map = myWF.get_normalizations_map()
 Norm_Map = myWF.get_normalizations_map(runningEra)
 
 ttbar_sig_calib_file = ROOT.TFile.Open("ttbar_signal_ratio.root")
@@ -252,7 +241,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
     if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge,runningEra):
         continue
         
-    Nevts_passed = Nevts_passed + 1
+    Nevts_selected = Nevts_selected + 1
 
     ############################################################################
     #                                                                          #
@@ -305,7 +294,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
             else:
                 local_W_pT = Wminus_pT
 
-            if local_W__pT > 300.:
+            if local_W_pT > 300.:
                 local_W_pT = 300.
 
             Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_W_pT))
@@ -322,7 +311,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
     ############################################################################
     if isBDT_with_Wmass:
         BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)  
-    else:
+    elif isBDT:
         BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)
    
     ############################################################################
@@ -331,7 +320,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
     #                                                                          #
     ############################################################################
 
-    if (isMuon and BDT_out > -0.1 and BDT_out < BDT_OUT_MU) or (not isMuon and BDT_out > -0.1 and BDT_out < BDT_OUT_ELE): # Alternative cut on BDT score. Two histos will be filled. Eventually, they will be the ratio of Wmass distributions: one with pi_pT and gamma_ET normalized to Wmass, one not
+    if isBDT and ((isMuon and BDT_out > -0.1 and BDT_out < BDT_OUT_MU) or (not isMuon and BDT_out > -0.1 and BDT_out < BDT_OUT_ELE)): # Alternative cut on BDT score. Two histos will be filled. Eventually, they will be the ratio of Wmass distributions: one with pi_pT and gamma_ET normalized to Wmass, one not
         if (Wmass >= 50. and Wmass <= 100.) and isMuon:
             h_base["h_Wmass_ratio_mu"].Fill(Wmass,Event_Weight)
         if (Wmass >= 50. and Wmass <= 100.) and not isMuon:
@@ -391,11 +380,11 @@ for jentry in xrange(mytree.GetEntriesFast()):
     ########----------- To be filled in "preselection" mode! -----------########
     if sample_name == "Signal":
         if is_signal_Wplus:
-            local_pt = Wplus_pt
+            local_pT = Wplus_pT
         else:
-            local_pt = Wminus_pt
+            local_pT = Wminus_pT
 
-        if local_pt > 300.:
+        if local_pT > 300.:
             W_signal_hist.Fill(300.,Event_Weight)
         else:
             W_signal_hist.Fill(local_pT,Event_Weight)
@@ -418,7 +407,6 @@ for hist_name in list_histos:
 fOut.Close()
 
 print "###################"
-print "Finished runnning over samples!"
 print "Number of expected events for ", luminosity_norm, " in fb-1, for sample " , sample_name
 print "Number of events processed = ", Nevts_per_sample
 print "Number of events selected = ", Nevts_selected
