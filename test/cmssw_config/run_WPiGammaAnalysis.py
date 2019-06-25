@@ -184,7 +184,7 @@ if options.runningOnData and options.runningOnMuons: # Data, Muons
 if options.runningOnData and not options.runningOnMuons: # Data, Electrons
    process.seq = cms.Path(process.trigger_filter_data_ele * (~process.trigger_filter_data_mu) * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis)
 
-if not options.runningOnData # MC
+if not options.runningOnData: # MC
    process.seq = cms.Path(process.trigger_filter_MC * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis)
 
 process.schedule = cms.Schedule(process.seq)

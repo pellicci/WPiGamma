@@ -138,8 +138,8 @@ colors_mask["ttbarToSemiLeptonic"] = ROOT.kBlue+3
 
 
 # Get the files and the names of the samples
-samplename_list,sampleEra_list = myWF.get_samples_names()
-#print "samplename_list: ", samplename_list, "  sampleEra_list: ", sampleEra_list
+samplename_list = myWF.get_samples_names()
+print "samplename_list: ", samplename_list#, "  sampleEra_list: ", sampleEra_list
 root_file = myWF.get_root_files()
 #print "root_file: ",root_file
 
@@ -166,13 +166,15 @@ for hname in list_histos:
 isQCDfirst = True
 
 double_samplenames = dict() #Identify the samples which appear twice or more with the same name
-for sample_name in samplename_list:
-    double_samplenames[sample_name] = 0
+for name_sample_withYear in samplename_list:
+    name_sample = name_sample_withYear.split("_")[0]
+    double_samplenames[name_sample] = 0
 
-for sample_name, sampleEra in zip(samplename_list,sampleEra_list):
+#for sample_name, sampleEra in zip(samplename_list,sampleEra_list):
+for name_sample_withYear in samplename_list:
 
-    # if samplename_list.count(sample_name) == 1:
-    #     print "name of samples which appear only once in the list: ",sample_name
+    # if samplename_list.count(name_sample) == 1:
+    #     print "name of samples which appear only once in the list: ", name_sample
 
     ###################################################
     #                                                 #
@@ -180,28 +182,42 @@ for sample_name, sampleEra in zip(samplename_list,sampleEra_list):
     #                                                 #
     ###################################################
 
-    if runningEra == 0 and not sampleEra == "2016":
+    # if runningEra == 0 and not sampleEra == "2016":
+    #     continue
+    # if runningEra == 1 and not sampleEra == "2017":
+    #     continue
+    # if runningEra == 2 and not sampleEra == "2018":
+    #     continue
+    # if runningEra == 3 and not (sampleEra == "2016" or sampleEra == "2017"):
+    #     continue
+
+    if runningEra == 0 and not "2016" in name_sample_withYear:
         continue
-    if runningEra == 1 and not sampleEra == "2017":
+    if runningEra == 1 and not "2017" in name_sample_withYear:
         continue
-    if runningEra == 2 and not sampleEra == "2018":
+    if runningEra == 2 and not "2018" in name_sample_withYear:
         continue
-    if runningEra == 3 and not (sampleEra == "2016" or sampleEra == "2017"):
+    if runningEra == 3 and not ("2016" or "2017") in name_sample_withYear:
         continue
 
+    name_sample = name_sample_withYear.split("_")[0]
+    print "nome del sample: ", name_sample
+    sampleEra   = name_sample_withYear.split("_")[1]
+    print "era del sample: ", sampleEra
+
     #Prevent memory leaks from creation of two or more histos with same name. At the same time, account for samples which are unique among the eras
-    double_samplenames[sample_name] += 1 
-    if double_samplenames[sample_name] > 1:
+    double_samplenames[name_sample] += 1 
+    if double_samplenames[name_sample] > 1:
         continue
     #######################################################################
 
-    if "QCD" in sample_name:
+    if "QCD" in name_sample:
         theSampleName = "QCD_"
         if not isQCDfirst:
             continue
         isQCDfirst = False
     else:
-        theSampleName = sample_name
+        theSampleName = name_sample
 
     h_base[theSampleName+list_histos[0]]  = ROOT.TH1F(theSampleName+list_histos[0], "p_{T} of the muon", 15, 25, 100.)
     h_base[theSampleName+list_histos[1]]  = ROOT.TH1F(theSampleName+list_histos[1], "p_{T} of the electron", 15, 28, 100.)
@@ -289,7 +305,35 @@ idx_sample = 0
 isFirstQCDlegend = True
 
 
-for name_sample, sampleEra in zip(samplename_list,sampleEra_list):
+# for name_sample, sampleEra in zip(samplename_list,sampleEra_list):
+for name_sample_withYear in samplename_list:
+
+    ###################################################
+    #                                                 #
+    #------- Select which era will be plotted --------#
+    #                                                 #
+    ###################################################
+
+    # if runningEra == 0 and not sampleEra == "2016":
+    #     continue
+    # if runningEra == 1 and not sampleEra == "2017":
+    #     continue
+    # if runningEra == 2 and not sampleEra == "2018":
+    #     continue
+    # if runningEra == 3 and not (sampleEra == "2016" or sampleEra == "2017"):
+    #     continue
+
+    if runningEra == 0 and not "2016" in name_sample_withYear:
+        continue
+    if runningEra == 1 and not "2017" in name_sample_withYear:
+        continue
+    if runningEra == 2 and not "2018" in name_sample_withYear:
+        continue
+    if runningEra == 3 and not ("2016" or "2017") in name_sample_withYear:
+        continue
+
+    name_sample = name_sample_withYear.split("_")[0]
+    sampleEra   = name_sample_withYear.split("_")[1]
 
     theSampleName = name_sample
 
@@ -298,21 +342,6 @@ for name_sample, sampleEra in zip(samplename_list,sampleEra_list):
         theSampleName = "QCD_"
     else:
         QCDflag = False
-
-    ###################################################
-    #                                                 #
-    #------- Select which era will be plotted --------#
-    #                                                 #
-    ###################################################
-
-    if runningEra == 0 and not sampleEra == "2016":
-        continue
-    if runningEra == 1 and not sampleEra == "2017":
-        continue
-    if runningEra == 2 and not sampleEra == "2018":
-        continue
-    if runningEra == 3 and not (sampleEra == "2016" or sampleEra == "2017"):
-        continue
 
     #######################################################################
 
@@ -356,7 +385,7 @@ for name_sample, sampleEra in zip(samplename_list,sampleEra_list):
         # if not (name_sample == "ttbar" or name_sample == "Signal"):
         #     continue
 
-        # if name_sample == "ZGTo2LG" or name_sample == "TTGJets" or sample_name == "ttbarlnu" or sample_name == "ttbar":# or name_sample == "WGToLNuG" or:
+        # if name_sample == "ZGTo2LG" or name_sample == "TTGJets" or name_sample == "ttbarlnu" or name_sample == "ttbar":# or name_sample == "WGToLNuG" or:
         #     continue
 
 
@@ -741,7 +770,8 @@ print "Finished runnning over samples!"
 
 eleeta_canvas = dict()
 
-for sample_name, sampleEra in zip(samplename_list,sampleEra_list):
+# for sample_name, sampleEra in zip(samplename_list,sampleEra_list):
+for name_sample_withYear in samplename_list:
 
     ###################################################
     #                                                 #
@@ -749,29 +779,42 @@ for sample_name, sampleEra in zip(samplename_list,sampleEra_list):
     #                                                 #
     ###################################################
 
-    if runningEra == 0 and not sampleEra == "2016":
+    # if runningEra == 0 and not sampleEra == "2016":
+    #     continue
+    # if runningEra == 1 and not sampleEra == "2017":
+    #     continue
+    # if runningEra == 2 and not sampleEra == "2018":
+    #     continue
+    # if runningEra == 3 and not (sampleEra == "2016" or sampleEra == "2017"):
+    #     continue
+
+
+    if runningEra == 0 and not "2016" in name_sample_withYear:
         continue
-    if runningEra == 1 and not sampleEra == "2017":
+    if runningEra == 1 and not "2017" in name_sample_withYear:
         continue
-    if runningEra == 2 and not sampleEra == "2018":
+    if runningEra == 2 and not "2018" in name_sample_withYear:
         continue
-    if runningEra == 3 and not (sampleEra == "2016" or sampleEra == "2017"):
+    if runningEra == 3 and not ("2016" or "2017") in name_sample_withYear:
         continue
+
+    name_sample = name_sample_withYear.split("_")[0]
+    sampleEra   = name_sample_withYear.split("_")[1]
 
     #######################################################################
     
-    if "QCD" in sample_name or "Data" in sample_name or "Signal" in sample_name:
+    if "QCD" in name_sample or "Data" in name_sample or "Signal" in name_sample:
         continue
     else:
-        eleeta_canvas[sample_name] = ROOT.TCanvas(sample_name,sample_name,200,106,600,600)
-        h_base[sample_name+"h_eleeta"].SetTitle(sample_name)
-        h_base[sample_name+"h_eleeta"].SetFillColor(colors_mask[sample_name])
-        h_base[sample_name+"h_eleeta"].Draw("hist")
-        print sample_name, " integral: ", h_base[sample_name+"h_eleeta"].Integral()
+        eleeta_canvas[name_sample] = ROOT.TCanvas(name_sample,name_sample,200,106,600,600)
+        h_base[name_sample+"h_eleeta"].SetTitle(name_sample)
+        h_base[name_sample+"h_eleeta"].SetFillColor(colors_mask[name_sample])
+        h_base[name_sample+"h_eleeta"].Draw("hist")
+        print name_sample, " integral: ", h_base[name_sample+"h_eleeta"].Integral()
 
-        eleeta_canvas[sample_name].SaveAs("plots/" + sampleEra + "/eleeta/h_eleeta_" + sample_name + ".pdf")
+        eleeta_canvas[name_sample].SaveAs("plots/" + sampleEra + "/eleeta/h_eleeta_" + name_sample + ".pdf")
 
-# PU_canvas = ROOT.TCanvas(sample_name,sample_name,200,106,600,600)
+# PU_canvas = ROOT.TCanvas(name_sample,name_sample,200,106,600,600)
 # print "INTEGRALE!!!!!! ", h_PUdistrib.Integral()
 # h_PUdistrib.Scale(1/h_PUdistrib.Integral())
 # h_PUdistrib.Draw("hist")

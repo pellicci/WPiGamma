@@ -26,39 +26,39 @@ ph_ID_scale_file_2016  = ROOT.TFile(ph_ID_scale_name_2016)
 ph_ID_scale_histo_2016 = ROOT.TH2F()
 ph_ID_scale_histo_2016 = ph_ID_scale_file_2016.Get("EGamma_SF2D")
 
-ph_pixVeto_scale_name_2016  = "scale_factors/Photon_pixVeto_2D.root"
+ph_pixVeto_scale_name_2016  = "scale_factors/Photon_pixVeto_2D_2016.root"
 ph_pixVeto_scale_file_2016  = ROOT.TFile(ph_pixVeto_scale_name_2016)
 ph_pixVeto_scale_histo_2016 = ROOT.TH2F()
 ph_pixVeto_scale_histo_2016 = ph_pixVeto_scale_file_2016.Get("Scaling_Factors_HasPix_R9 Inclusive")
 
-mu_ID_scale_name_BCDEF_2016  = "scale_factors/RunBCDEF_SF_ID.root"
+mu_ID_scale_name_BCDEF_2016  = "scale_factors/RunBCDEF_SF_ID_muon_2016.root"
 mu_ID_scale_file_BCDEF_2016  = ROOT.TFile(mu_ID_scale_name_BCDEF_2016)
 mu_ID_scale_histo_BCDEF_2016 = ROOT.TH2F()
 mu_ID_scale_histo_BCDEF_2016 = mu_ID_scale_file_BCDEF_2016.Get("NUM_MediumID_DEN_genTracks_eta_pt")
 
-mu_ID_scale_name_GH_2016  = "scale_factors/RunGH_SF_ID.root"
+mu_ID_scale_name_GH_2016  = "scale_factors/RunGH_SF_ID_muon_2016.root"
 mu_ID_scale_file_GH_2016  = ROOT.TFile(mu_ID_scale_name_GH_2016)
 mu_ID_scale_histo_GH_2016 = ROOT.TH2F()
 mu_ID_scale_histo_GH_2016 = mu_ID_scale_file_GH_2016.Get("NUM_MediumID_DEN_genTracks_eta_pt")
 
-mu_Iso_scale_name_BCDEF_2016  = "scale_factors/RunBCDEF_SF_ISO.root"
+mu_Iso_scale_name_BCDEF_2016  = "scale_factors/RunBCDEF_SF_ISO_muon_2016.root"
 mu_Iso_scale_file_BCDEF_2016  = ROOT.TFile(mu_Iso_scale_name_BCDEF_2016)
 mu_Iso_scale_histo_BCDEF_2016 = ROOT.TH2F()
 mu_Iso_scale_histo_BCDEF_2016 = mu_Iso_scale_file_BCDEF_2016.Get("NUM_LooseRelIso_DEN_MediumID_eta_pt")
 
-mu_Iso_scale_name_GH_2016  = "scale_factors/RunGH_SF_ISO.root"
+mu_Iso_scale_name_GH_2016  = "scale_factors/RunGH_SF_ISO_muon_2016.root"
 mu_Iso_scale_file_GH_2016  = ROOT.TFile(mu_Iso_scale_name_GH_2016)
 mu_Iso_scale_histo_GH_2016 = ROOT.TH2F()
 mu_Iso_scale_histo_GH_2016 = mu_Iso_scale_file_GH_2016.Get("NUM_LooseRelIso_DEN_MediumID_eta_pt")
 
-mu_Trigger_scale_name_BCDEF_2016       = "scale_factors/EfficienciesAndSF_RunBtoF.root"
+mu_Trigger_scale_name_BCDEF_2016       = "scale_factors/EfficienciesAndSF_RunBtoF_muon_2016.root"
 mu_Trigger_scale_file_BCDEF_2016       = ROOT.TFile(mu_Trigger_scale_name_BCDEF_2016)
 mu_Trigger_scale_histo_BCDEF_Mu24_2016 = ROOT.TH2F()
 mu_Trigger_scale_histo_BCDEF_Mu24_2016 = mu_Trigger_scale_file_BCDEF_2016.Get("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio")
 mu_Trigger_scale_histo_BCDEF_Mu50_2016 = ROOT.TH2F()
 mu_Trigger_scale_histo_BCDEF_Mu50_2016 = mu_Trigger_scale_file_BCDEF_2016.Get("Mu50_OR_TkMu50_PtEtaBins/abseta_pt_ratio")
 
-mu_Trigger_scale_name_GH_2016       = "scale_factors/EfficienciesAndSF_Period4.root"
+mu_Trigger_scale_name_GH_2016       = "scale_factors/EfficienciesAndSF_Period4_muonTrigger_2016.root"
 mu_Trigger_scale_file_GH_2016       = ROOT.TFile(mu_Trigger_scale_name_GH_2016)
 mu_Trigger_scale_histo_GH_Mu24_2016 = ROOT.TH2F()
 mu_Trigger_scale_histo_GH_Mu24_2016 = mu_Trigger_scale_file_GH_2016.Get("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio")
@@ -73,7 +73,7 @@ el_ID_scale_file_2017  = ROOT.TFile(el_ID_scale_name_2017)
 el_ID_scale_histo_2017 = ROOT.TH2F()
 el_ID_scale_histo_2017 = el_ID_scale_file_2017.Get("EGamma_SF2D")
 
-el_reco_scale_name_2017  = "scale_factors/egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root"
+el_reco_scale_name_2017  = "scale_factors/egammaEffi.txt_EGM2D_runBCDEF_passingRECO_electron_2017.root"
 el_reco_scale_file_2017  = ROOT.TFile(el_reco_scale_name_2017)
 el_reco_scale_histo_2017 = ROOT.TH2F()
 el_reco_scale_histo_2017 = el_reco_scale_file_2017.Get("EGamma_SF2D")
@@ -88,17 +88,17 @@ ph_pixVeto_scale_file_2017  = ROOT.TFile(ph_pixVeto_scale_name_2017)
 ph_pixVeto_scale_histo_2017 = ROOT.TH1F()
 ph_pixVeto_scale_histo_2017 = ph_pixVeto_scale_file_2017.Get("MVA_ID")
 
-mu_ID_scale_name_2017  = "scale_factors/RunBCDEF_SF_ID_2017.root"
+mu_ID_scale_name_2017  = "scale_factors/RunBCDEF_SF_ID_muon_2017.root"
 mu_ID_scale_file_2017  = ROOT.TFile(mu_ID_scale_name_2017)
 mu_ID_scale_histo_2017 = ROOT.TH2F()
 mu_ID_scale_histo_2017 = mu_ID_scale_file_2017.Get("NUM_MediumID_DEN_genTracks_pt_abseta")
 
-mu_Iso_scale_name_2017  = "scale_factors/RunBCDEF_SF_ISO_2017.root"
+mu_Iso_scale_name_2017  = "scale_factors/RunBCDEF_SF_ISO_muon_2017.root"
 mu_Iso_scale_file_2017  = ROOT.TFile(mu_Iso_scale_name_2017)
 mu_Iso_scale_histo_2017 = ROOT.TH2F()
 mu_Iso_scale_histo_2017 = mu_Iso_scale_file_2017.Get("NUM_LooseRelIso_DEN_MediumID_pt_abseta")
 
-mu_Trigger_scale_name_2017       = "scale_factors/EfficienciesAndSF_RunBtoF_Nov17Nov2017.root"
+mu_Trigger_scale_name_2017       = "scale_factors/EfficienciesAndSF_RunBtoF_Nov17Nov2017_muonTrigger.root"
 mu_Trigger_scale_file_2017       = ROOT.TFile(mu_Trigger_scale_name_2017)
 mu_Trigger_scale_histo_2017_Mu27 = ROOT.TH2F()
 mu_Trigger_scale_histo_2017_Mu27 = mu_Trigger_scale_file_2017.Get("IsoMu27_PtEtaBins/abseta_pt_ratio")
@@ -205,29 +205,29 @@ class Workflow_Handler:
         list_dirs_sig  = os.listdir(self.dir_sig_input)
         list_dirs_data = os.listdir(self.dir_data_input)
         samplename_list = []
-        sampleEra_list  = []
+        #sampleEra_list  = []
 
         for dirname in list_dirs_bkg:
-            tmp_samplename = dirname.split("_")[1]
+            tmp_samplename = dirname.split("WPiGammaAnalysis_")[1].replace(".root","")
             samplename_list.append(tmp_samplename)
-            sample_era = dirname.split("_")[2].split(".root")[0]
-            sampleEra_list.append(sample_era)
+            #sample_era = dirname.split("_")[2].split(".root")[0]
+            #sampleEra_list.append(sample_era)
 
         if Add_Signal:
             for dirname in list_dirs_sig:
-                tmp_samplename = dirname.split("_")[1]
+                tmp_samplename = dirname.split("WPiGammaAnalysis_")[1].replace(".root","")
                 samplename_list.append(tmp_samplename)
-                sample_era = dirname.split("_")[2].split(".root")[0]
-                sampleEra_list.append(sample_era)
+                #sample_era = dirname.split("_")[2].split(".root")[0]
+                #sampleEra_list.append(sample_era)
 
         if Add_Data:
             for dirname in list_dirs_data:
-                tmp_samplename = dirname.split("_")[1]
+                tmp_samplename = dirname.split("WPiGammaAnalysis_")[1].replace(".root","")
                 samplename_list.append(tmp_samplename)
-                sample_era = dirname.split("_")[2].split(".root")[0]
-                sampleEra_list.append(sample_era)
+                #sample_era = dirname.split("_")[2].split(".root")[0]
+                #sampleEra_list.append(sample_era)
 
-        return samplename_list, sampleEra_list
+        return samplename_list#, sampleEra_list
 
     ###############################################################################################################################################
 
