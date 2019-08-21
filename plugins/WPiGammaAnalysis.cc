@@ -77,6 +77,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   GenInfoToken_                       = consumes<GenEventInfoProduct> (edm::InputTag("generator"));
   triggerBitsToken_                   = consumes<edm::TriggerResults> (edm::InputTag("TriggerResults","","HLT"));
   rhoToken_                           = consumes<double> (iConfig.getParameter <edm::InputTag>("rho"));
+  PrefiringWeight_Token               = consumes<double>(edm::InputTag("prefiringweight:NonPrefiringProb"));
 
   h_Events = fs->make<TH1F>("h_Events", "Event counting in different steps", 8, 0., 8.);
   _Nevents_processed  = 0;
@@ -109,7 +110,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   iEvent.getByToken(slimmedMuonsToken_, slimmedMuons);
 
   edm::Handle<std::vector<reco::GenParticle>  > genParticles;
-  if(!runningOnData_)iEvent.getByToken(prunedGenParticlesToken_, genParticles);
+  if(!runningOnData_){iEvent.getByToken(prunedGenParticlesToken_, genParticles);}
 
   edm::Handle<std::vector<pat::Photon> > slimmedPhotons;
   iEvent.getByToken(photonsMiniAODToken_,slimmedPhotons);
@@ -131,6 +132,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   edm::Handle<edm::TriggerResults> triggerBits;
   iEvent.getByToken(triggerBitsToken_, triggerBits);
+
+  Prefiring_Weight = -10000;
+  edm::Handle<double> PrefiringWeight;
+  if(!runningOnData_ && (runningEra_ == 0 || runningEra_ == 1)){
+    iEvent.getByToken(PrefiringWeight_Token, PrefiringWeight);
+    Prefiring_Weight = (*PrefiringWeight);
+  }
 
 
   _Nevents_processed++;
@@ -347,6 +355,48 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //*************************************************************//
   //                                                             //
+  //----------- Highest pT mu, ele, gamma in MC Truth -----------//
+  //                                                             //
+  //*************************************************************//
+  
+  MCT_HpT_mu_pT_Max  = -1000;
+  MCT_HpT_mu_pT      = -1000;
+  MCT_HpT_mu_eta     = -1000;
+  MCT_HpT_mu_phi     = -1000;
+  MCT_HpT_ele_pT_Max = -1000;
+  MCT_HpT_ele_pT     = -1000;
+  MCT_HpT_ele_eta    = -1000;
+  MCT_HpT_ele_phi    = -1000;
+  MCT_HeT_ph_eT_Max  = -1000;
+  MCT_HeT_ph_eT      = -1000;
+  MCT_HeT_ph_eta     = -1000;
+  MCT_HeT_ph_phi     = -1000;
+
+  if(!runningOnData_){
+    for(auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
+      if(fabs(gen->pdgId()) == 13 && gen->pt() > MCT_HpT_mu_pT_Max){
+	MCT_HpT_mu_pT  = gen->pt();
+	MCT_HpT_mu_eta = gen->eta();
+	MCT_HpT_mu_phi = gen->phi();
+	MCT_HpT_mu_pT_Max = MCT_HpT_mu_pT;
+      }
+      if(fabs(gen->pdgId()) == 11 && gen->pt() > MCT_HpT_ele_pT_Max){
+	MCT_HpT_ele_pT  = gen->pt();
+	MCT_HpT_ele_eta = gen->eta();
+	MCT_HpT_ele_phi = gen->phi();
+	MCT_HpT_ele_pT_Max = MCT_HpT_ele_pT;
+      }
+      if(fabs(gen->pdgId()) == 22 && gen->status() == 1 && gen->et() > MCT_HeT_ph_eT_Max){
+	MCT_HeT_ph_eT  = gen->et();
+	MCT_HeT_ph_eta = gen->eta();
+	MCT_HeT_ph_phi = gen->phi();
+	MCT_HeT_ph_eT_Max = MCT_HeT_ph_eT;
+      }
+    }
+  }
+
+  //*************************************************************//
+  //                                                             //
   //----------------------------- MET ---------------------------//
   //                                                             //
   //*************************************************************//
@@ -409,7 +459,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     el_p4 = el->p4() * el->userFloat("ecalTrkEnergyPostCorr")/el->energy();
     corr_pt = el_p4.pt();
 
-      //if(el->pt() < 20. || fabs(el->eta()) > 2.5 || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
       if(corr_pt < 20. || fabs(el->eta()) > 2.5 || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
 
     //PflowIsolationVariables pfIso = el->pfIsolationVariables();
@@ -418,7 +467,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     el_iso   = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/corr_pt;
 
-    if(el_iso > 0.35) continue;
+    //if(el_iso > 0.35) continue;
 
     //-------------Conditions on loose/medium MVA electron ID-------------//
     if(!is_muon){
@@ -444,7 +493,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       pTeleMax = el_pT; //el_pT has assumed the value of corr_pt a few lines above
     } 
   }
-
 
   //*************************************************************//
   //                                                             //
@@ -506,7 +554,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     for(auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
       if(fabs(gen->pdgId() ) == 11 && fabs(gen->mother()->pdgId()) == 24) is_Ele_signal = true;
       if(fabs(gen->pdgId() ) == 13 && fabs(gen->mother()->pdgId()) == 24) is_Mu_signal = true;
-      if(gen->numberOfDaughters() != 2) continue; //Avoid Ws <<decaying>> in another W (especially in Signal)
+      if(gen->numberOfDaughters() != 2) continue; //Avoid Ws <<decaying>> into another W (especially in Signal)
       if(gen->pdgId() == 24){// && gen->mother()->pdgId() == 6){
 	is_Wplus_from_t = true;
 	Wplus_pT = gen->pt();
@@ -549,7 +597,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     if(cand->pt() < pTpiMax) continue;
 
     deltaphi_lep_pi = fabs(lepton_phi_tree-cand->phi());
-    if(deltaphi_lep_pi > 3.14) deltaphi_lep_pi = 6.28-deltaphi_lep_pi;
+    if(deltaphi_lep_pi > 3.14) deltaphi_lep_pi = 6.28 - deltaphi_lep_pi;
     if(deltaphi_lep_pi < 0.00005) continue;
 
     pTpiMax = cand->pt();
@@ -576,9 +624,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     if(!runningOnData_){
       for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){ // Matching candidate for W reconstruction with MC truth
-	
-	float deltaR = sqrt((pi_eta-gen->eta())*(pi_eta-gen->eta())+(pi_phi-gen->phi())*(pi_phi-gen->phi()));
-	float deltapT = fabs(pi_pT-gen->pt());
+	float deltaPhi = fabs(pi_phi - gen->phi());
+	if(deltaPhi > 3.14){
+	  deltaPhi = 6.28 - deltaPhi;
+	}
+	float deltaR = sqrt((pi_eta - gen->eta())*(pi_eta - gen->eta()) + deltaPhi*deltaPhi);
+	float deltapT = fabs(pi_pT - gen->pt());
 
 	if(deltaR > deltaRMax || deltapT > deltapTMax) continue;
 	deltapTMax = deltapT;
@@ -604,7 +655,11 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //*************************************************************//
 
   for(auto cand_iso = PFCandidates->begin(); cand_iso != PFCandidates->end(); ++cand_iso){
-    float deltaR = sqrt((pi_eta-cand_iso->eta())*(pi_eta-cand_iso->eta())+(pi_phi-cand_iso->phi())*(pi_phi-cand_iso->phi()));
+    float deltaPhi = fabs(pi_phi - cand_iso->phi());
+    if(deltaPhi > 3.14){
+      deltaPhi = 6.28 - deltaPhi;
+    }
+    float deltaR = sqrt((pi_eta - cand_iso->eta())*(pi_eta - cand_iso->eta()) + deltaPhi*deltaPhi);
     if(deltaR <= 0.3 && deltaR >= 0.02) sum_pT_03 += cand_iso->pt();
     if(deltaR <= 0.5 && deltaR >= 0.02) sum_pT_05 += cand_iso->pt();
     if(cand_iso->charge() != 0 && (fabs(cand_iso->dxy()) >= 0.2 || fabs(cand_iso->dz()) >= 0.5) ) continue; // Requesting charged particles to come from PV
@@ -623,12 +678,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   for(auto photon = slimmedPhotons->begin(); photon != slimmedPhotons->end(); ++photon){
 
-    corr_et = photon->et() * photon->userFloat("ecalEnergyPostCorr")/photon->energy();
-
-    // Apply energy scale corrections to MC (not available for 2016)
-    // if(!runningOnData_){
-    //   corr_et = photon->et() * photon->userFloat("ecalEnergyPostCorr")/photon->energy();
-    // }
+    corr_et = photon->et()*photon->userFloat("ecalEnergyPostCorr")/photon->energy();
 
     if(corr_et < 20. || fabs(photon->eta()) > 2.5 || corr_et < eTphMax) continue;
     if(photon->hasPixelSeed()) continue;   //electron veto
@@ -637,8 +687,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     float abseta = fabs(photon->superCluster()->eta());
     float eA = effectiveAreas_ph_.getEffectiveArea(abseta);
-    //photon_iso = (pfIso.sumChargedHadronPt + std::max( 0.0f, pfIso.sumNeutralHadronEt + pfIso.sumPhotonEt - eA*rho_))/photon->et();
-    if(photon->chargedHadronIso()/corr_et > 0.3 || photon->photonIso() > 4.) continue; //|| photon->trackIso() > 6
+    //float photon_iso = (photon->IsolationVariables().sumChargedHadronPt + std::max( 0.0f, photon->IsolationVariables().sumNeutralHadronEt + photon->IsolationVariables().sumPhotonEt - eA*rho_))/photon->et();
+    //if(photon->chargedHadronIso()/corr_et > 0.3 || photon->photonIso() > 4.) continue; //|| photon->trackIso() > 6
     ph_iso_ChargedHadron = photon->chargedHadronIso();
     ph_iso_NeutralHadron = photon->neutralHadronIso();
     ph_iso_Photon        = photon->photonIso();
@@ -656,7 +706,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     // Apply energy scale corrections to MC
     ph_energy = photon->userFloat("ecalEnergyPostCorr");
-    ph_p4     = photon->p4() * photon->userFloat("ecalEnergyPostCorr")/photon->energy();
+    ph_p4     = photon->p4()*photon->userFloat("ecalEnergyPostCorr")/photon->energy();
     
 
     cand_photon_found = true;
@@ -672,8 +722,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     if(!runningOnData_){
       for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
-	float deltaR = sqrt((ph_eta-gen->eta())*(ph_eta-gen->eta())+(ph_phi-gen->phi())*(ph_phi-gen->phi()));
-	float deltapT = fabs(ph_eT-gen->pt());
+	float deltaPhi = fabs(ph_phi - gen->phi());
+	if(deltaPhi > 3.14){
+	  deltaPhi = 6.28 - deltaPhi;
+	}
+	float deltaR = sqrt((ph_eta - gen->eta())*(ph_eta - gen->eta()) + deltaPhi*deltaPhi);
+	float deltapT = fabs(ph_eT - gen->pt());
 
 	if(deltaR > deltaRMax || deltapT > deltapTMax) continue;
 	deltapTMax = deltapT;
@@ -828,7 +882,18 @@ void WPiGammaAnalysis::create_trees()
   if(!runningOnData_){
     mytree->Branch("PU_Weight",&PU_Weight);
     mytree->Branch("MC_Weight",&MC_Weight);
-
+    if(runningEra_ == 0 || runningEra_ == 1){
+      mytree->Branch("Prefiring_Weight",&Prefiring_Weight);
+    }
+    mytree->Branch("MCT_HpT_mu_pT",&MCT_HpT_mu_pT);
+    mytree->Branch("MCT_HpT_mu_eta",&MCT_HpT_mu_eta);
+    mytree->Branch("MCT_HpT_mu_phi",&MCT_HpT_mu_phi);
+    mytree->Branch("MCT_HpT_ele_pT",&MCT_HpT_ele_pT);
+    mytree->Branch("MCT_HpT_ele_eta",&MCT_HpT_ele_eta);
+    mytree->Branch("MCT_HpT_ele_phi",&MCT_HpT_ele_phi);
+    mytree->Branch("MCT_HeT_ph_eT",&MCT_HeT_ph_eT);
+    mytree->Branch("MCT_HeT_ph_eta",&MCT_HeT_ph_eta);
+    mytree->Branch("MCT_HeT_ph_phi",&MCT_HeT_ph_phi);
     mytree->Branch("isMuonSignal",&is_Mu_signal);
     mytree->Branch("isEleSignal",&is_Ele_signal);
     mytree->Branch("isPionTrue",&is_pi_a_pi);
@@ -851,9 +916,11 @@ void WPiGammaAnalysis::beginJob()
 {
   //Flag for PileUp reweighting
   if (!runningOnData_ && runningEra_ == 0){ // PU reweighting for 2016
+    //std::cout << "Using 2016 PU histos" << std::endl;
    Lumiweights_ = edm::LumiReWeighting("MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root", "MyDataPileupHistogram_2016.root", "pileup", "pileup");
   }
   if (!runningOnData_ && runningEra_ == 1){ // PU reweighting for 2017
+    //std::cout << "Using 2017 PU histos" << std::endl;
    Lumiweights_ = edm::LumiReWeighting("MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root", "MyDataPileupHistogram_2017.root", "pileup", "pileup");
   }
 }

@@ -142,6 +142,18 @@ private:
   //MC truth
   float PU_Weight;
   float MC_Weight;
+  float MCT_HpT_mu_pT_Max;
+  float MCT_HpT_mu_pT;
+  float MCT_HpT_mu_eta;
+  float MCT_HpT_mu_phi;
+  float MCT_HpT_ele_pT_Max;
+  float MCT_HpT_ele_pT;
+  float MCT_HpT_ele_eta;
+  float MCT_HpT_ele_phi;
+  float MCT_HeT_ph_eT_Max;
+  float MCT_HeT_ph_eT;
+  float MCT_HeT_ph_eta;
+  float MCT_HeT_ph_phi;
 
   bool is_signal_Wplus ;
   bool is_signal_Wminus;
@@ -164,8 +176,9 @@ private:
   bool is_ttbar_lnu;
 
   //rho for isolation
-
   float rho_;
+
+  double Prefiring_Weight;
 
   //Tokens
   edm::EDGetTokenT<std::vector<pat::PackedCandidate> > packedPFCandidatesToken_; 
@@ -189,6 +202,7 @@ private:
 
   //rho (PU energy density)
   edm::EDGetTokenT<double> rhoToken_;
+  edm::EDGetTokenT<double> PrefiringWeight_Token;
 
 
   bool verboseIdFlag_;

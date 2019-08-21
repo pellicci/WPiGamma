@@ -110,14 +110,15 @@ mu_Trigger_scale_histo_2017_Mu50 = mu_Trigger_scale_file_2017.Get("Mu50_PtEtaBin
 #                                             #
 ###############################################
 
-pi_pT_array           = array('f', [0.])
-gamma_eT_array        = array('f', [0.])
-nBjets_25_array       = array('f', [0.])
-lep_pT_array          = array('f', [0.])
-piRelIso_05_array     = array('f', [0.])
-met_array             = array('f', [0.])
-deltaphi_lep_pi_array = array('f', [0.])
-isMuon_array          = array('i', [0])
+pi_pT_array              = array('f', [0.])
+gamma_eT_array           = array('f', [0.])
+nBjets_25_array          = array('f', [0.])
+lep_pT_array             = array('f', [0.])
+piRelIso_05_array        = array('f', [0.])
+met_array                = array('f', [0.])
+#deltaphi_lep_pi_array = array('f', [0.])
+deltaphi_lep_gamma_array = array('f', [0.])
+isMuon_array             = array('i', [0])
 
 reader = ROOT.TMVA.Reader("!Color")
 
@@ -133,6 +134,10 @@ class Simplified_Workflow_Handler:
             year = "2018"
 
         # Where the files are
+        self.dir_bkg_input  = "rootfiles/latest_production/MC/backgrounds/"
+        self.dir_sig_input  = "rootfiles/latest_production/MC/signals/"
+        self.dir_data_input = "rootfiles/latest_production/dataprocess/"
+
         self.norm_filename_2016 = "rootfiles/latest_production/MC/normalizations/Normalizations_table_2016.txt"
         self.norm_filename_2017 = "rootfiles/latest_production/MC/normalizations/Normalizations_table_2017.txt"
         
@@ -153,7 +158,8 @@ class Simplified_Workflow_Handler:
         reader.AddVariable("lep_pT",lep_pT_array)
         reader.AddVariable("piRelIso_05_ch",piRelIso_05_array)
         reader.AddVariable("MET",met_array)
-        reader.AddVariable("deltaphi_lep_pi",deltaphi_lep_pi_array)
+        #reader.AddVariable("deltaphi_lep_pi",deltaphi_lep_pi_array)
+        reader.AddVariable("deltaphi_lep_gamma",deltaphi_lep_gamma_array)
 
         if isBDT_with_Wmass:
             reader.BookMVA("BDT_mu","MVA/default/weights/" + year + "/TMVAClassification_BDT.weights_mu_Wmass.xml")# First argument is arbitrary. To be chosen in order to distinguish among methods
@@ -166,7 +172,7 @@ class Simplified_Workflow_Handler:
 
     ###############################################################################################################################################
 
-    def get_BDT_output(self,pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon):
+    def get_BDT_output(self,pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_gamma,isMuon):
 
         pi_pT_array[0]           = pi_pT
         gamma_eT_array[0]        = gamma_eT
@@ -174,7 +180,8 @@ class Simplified_Workflow_Handler:
         lep_pT_array[0]          = lep_pT
         piRelIso_05_array[0]     = piRelIso_05_ch
         met_array[0]             = met
-        deltaphi_lep_pi_array[0] = deltaphi_lep_pi
+        #deltaphi_lep_pi_array[0] = deltaphi_lep_pi
+        deltaphi_lep_gamma_array[0] = deltaphi_lep_gamma
         isMuon_array[0]          = int(isMuon)
         
         if isMuon:
@@ -200,14 +207,74 @@ class Simplified_Workflow_Handler:
 
     ###############################################################################################################################################
 
-    def post_preselection_cuts(self, lep_eta, lep_pT, isMuon, LepPiOppositeCharge, runningEra):
+    # get the sample names (MC and data)
+    def get_samples_names(self,Add_Signal=True,Add_Data=True):
+        list_dirs_bkg  = os.listdir(self.dir_bkg_input)
+        list_dirs_sig  = os.listdir(self.dir_sig_input)
+        list_dirs_data = os.listdir(self.dir_data_input)
+        samplename_list = []
+        #sampleEra_list  = []
+
+        for dirname in list_dirs_bkg:
+            tmp_samplename = dirname.split("WPiGammaAnalysis_")[1].replace(".root","")
+            samplename_list.append(tmp_samplename)
+            #sample_era = dirname.split("_")[2].split(".root")[0]
+            #sampleEra_list.append(sample_era)
+
+        if Add_Signal:
+            for dirname in list_dirs_sig:
+                tmp_samplename = dirname.split("WPiGammaAnalysis_")[1].replace(".root","")
+                samplename_list.append(tmp_samplename)
+                #sample_era = dirname.split("_")[2].split(".root")[0]
+                #sampleEra_list.append(sample_era)
+
+        if Add_Data:
+            for dirname in list_dirs_data:
+                tmp_samplename = dirname.split("WPiGammaAnalysis_")[1].replace(".root","")
+                samplename_list.append(tmp_samplename)
+                #sample_era = dirname.split("_")[2].split(".root")[0]
+                #sampleEra_list.append(sample_era)
+
+        return samplename_list#, sampleEra_list
+
+    ###############################################################################################################################################
+
+    # get the corresponding root files for background, signal and data sample names
+    def get_root_files(self,Add_Signal=True,Add_Data=True):
+        list_dirs_bkg  = os.listdir(self.dir_bkg_input)
+        list_dirs_sig  = os.listdir(self.dir_sig_input)
+        list_dirs_data = os.listdir(self.dir_data_input)
+        root_file = dict()
+
+        for dirname in list_dirs_bkg:
+            tmp_samplename = dirname.split("_")[1]
+            tmp_sampleEra  = dirname.split("_")[2].replace(".root","") 
+            root_file[tmp_samplename+"_"+tmp_sampleEra] = ROOT.TFile(self.dir_bkg_input + dirname)
+
+        if Add_Signal:
+            for dirname in list_dirs_sig:
+                tmp_samplename = dirname.split("_")[1]
+                tmp_sampleEra  = dirname.split("_")[2].replace(".root","")
+                root_file[tmp_samplename+"_"+tmp_sampleEra] = ROOT.TFile(self.dir_sig_input + dirname)
+
+        if Add_Data:
+            for dirname in list_dirs_data:
+                tmp_samplename = dirname.split("_")[1]
+                tmp_sampleEra  = dirname.split("_")[2].replace(".root","")
+                root_file[tmp_samplename+"_"+tmp_sampleEra] = ROOT.TFile(self.dir_data_input + dirname)
+
+        return root_file
+
+    ###############################################################################################################################################
+
+    def post_preselection_cuts(self, lep_eta, lep_pT, isMuon, LepPiOppositeCharge, deltaphi_lep_gamma, runningEra):
 
         if runningEra == 0:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 28.) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 28.) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge:
                 return True
 
         if runningEra == 1:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and lep_pT < 28.) or not LepPiOppositeCharge:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 28.) or not LepPiOppositeCharge:
                 return True
 
         return False

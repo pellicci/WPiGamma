@@ -97,6 +97,7 @@ frac_table_2016["Signal"] = 0.
 
 
 secs_table_2017 = dict()
+secs_table_2017["ttbar"] = 831.76 - 88.29
 secs_table_2017["ttbarToHadronic"] = 377.96
 secs_table_2017["ttbarToSemiLeptonic"] = 365.34 # accounting for the 2 possible charge signs of the W
 secs_table_2017["ttbarlnu"] = 88.29 #NNLO-2017
@@ -106,9 +107,9 @@ secs_table_2017["ttbarZQQ"] = 0.5297
 secs_table_2017["ttbarZlnu"] = 0.2529
 secs_table_2017["SingleToptW"] = 35.85
 secs_table_2017["SingleAntiToptW"] = 35.85
-secs_table_2017["WJetsToLNu"] = 60430.0 #oppure usare il valore LO che e' 52940.0?
+#secs_table_2017["WJetsToLNu"] = 60430.0 #oppure usare il valore LO che e' 52940.0?
 secs_table_2017["DY10to50"] = 18810.0
-secs_table_2017["DY50"] = 6529.0 #amcatnlo 2017
+secs_table_2017["DY50"] = 2075.14*3 #amcatnlo 2017
 secs_table_2017["QCDHT100to200"] = 27540000.0
 secs_table_2017["QCDHT200to300"] = 1717000.0
 secs_table_2017["QCDHT300to500"] = 351300.0
@@ -117,14 +118,6 @@ secs_table_2017["QCDHT700to1000"] = 6802.0
 secs_table_2017["QCDHT1000to1500"] = 1206.0
 secs_table_2017["QCDHT1500to2000"] = 120.4
 secs_table_2017["QCDHT2000toInf"] = 25.25
-# secs_table_2017["QCDHT100to200"] = 23700000.0
-# secs_table_2017["QCDHT200to300"] = 1547000.0
-# secs_table_2017["QCDHT300to500"] = 322600.0
-# secs_table_2017["QCDHT500to700"] = 29980.0
-# secs_table_2017["QCDHT700to1000"] = 6334.0
-# secs_table_2017["QCDHT1000to1500"] = 1088.0
-# secs_table_2017["QCDHT1500to2000"] = 99.11
-# secs_table_2017["QCDHT2000toInf"] = 20.23
 #secs_table_2017["ZZ"] = 6.912
 secs_table_2017["WW"] = 47.73
 secs_table_2017["WZ"] = 27.6
@@ -137,10 +130,15 @@ secs_table_2017["QCDDoubleEMEnriched40toInf"] = 117400.0
 secs_table_2017["WGToLNuG"] = 510.6
 secs_table_2017["TTGJets"] = 4.078
 secs_table_2017["ZGTo2LG"] = 123.8
+secs_table_2017["WJetsToLNu0J"] = 50131.98
+secs_table_2017["WJetsToLNu1J"] = 8426.09
+secs_table_2017["WJetsToLNu2J"] = 3172.96
+secs_table_2017["WGToLNuG01J"] = 191.1
 secs_table_2017["Signal"] = 831.76*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
 
 #fraction of negative-weighted events in NLO samples (2017)
 frac_table_2017 = dict()
+frac_table_2017["ttbar"] = 0.31
 frac_table_2017["ttbarToHadronic"] = 0.
 frac_table_2017["ttbarToSemiLeptonic"] = 0.
 frac_table_2017["ttbarlnu"] = 0.
@@ -150,7 +148,7 @@ frac_table_2017["ttbarZQQ"] = 0.2645
 frac_table_2017["ttbarZlnu"] = 0.2652
 frac_table_2017["SingleToptW"] = 0.003758
 frac_table_2017["SingleAntiToptW"] = 0.0034
-frac_table_2017["WJetsToLNu"] = 0.0004079
+#frac_table_2017["WJetsToLNu"] = 0.0004079
 frac_table_2017["DY10to50"] = 0. #There is no xsec nor fraction of negative weights on XSDB. It is though a madgraph sample
 frac_table_2017["DY50"] = 0.1624
 frac_table_2017["QCDHT100to200"] = 0.0001588
@@ -173,6 +171,10 @@ frac_table_2017["QCDDoubleEMEnriched40toInf"] = 0.
 frac_table_2017["WGToLNuG"] = 0. #The sample is not in XSDB, for some reason, but it is madgraph and not amcatnlo like it was in 2016
 frac_table_2017["TTGJets"] = 0.3049
 frac_table_2017["ZGTo2LG"] = 0.1838
+frac_table_2017["WJetsToLNu0J"] = 0.09894
+frac_table_2017["WJetsToLNu1J"] = 0.2701
+frac_table_2017["WJetsToLNu2J"] = 0.3473
+frac_table_2017["WGToLNuG01J"] = 0.1992
 frac_table_2017["Signal"] = 0.
 
 secs_table = dict()
@@ -180,7 +182,8 @@ frac_table = dict()
 
 complementary_samples_list_2016 = ["ttbarWlnu","ttbarZlnu","DY10to50","DY50","QCDHT200to300","QCDHT300to500","QCDHT500to700","QCDHT700to1000","QCDHT1000to1500","QCDHT1500to2000","QCDHT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG","Signal"]
 
-complementary_samples_list_2017 = ["WJetsToLNu","DY50","TTGJets","Signal"]
+# complementary_samples_list_2017 = ["WJetsToLNu","DY50","TTGJets","WJetsToLNu1J","WJetsToLNu2J","Signal"]
+complementary_samples_list_2017 = ["DY50","TTGJets","WJetsToLNu1J","WJetsToLNu2J","Signal"]
 
 if year == "2016":
     complementary_samples_list = complementary_samples_list_2016
@@ -213,6 +216,10 @@ def main():
         is_in_complementary_sample_list = False
         
         samplename = dirname.split("crab_" + year + "_WPiGammaAnalysis_")[1]
+
+        if year == "2017" and (samplename == "WJetsToLNu_1" or samplename == "WJetsToLNu_2"): #FIXME
+            continue
+
         print "Processing sample dir " + dirname
         crab_command = "crab report -d " + dir_input + dirname + " | grep read"
         print crab_command
@@ -221,18 +228,16 @@ def main():
         print "event string: ", event_string
         number_events = float((event_string.split())[4])
         print "No. of events processed = " + str(number_events) + "\n"
-        # number_events = number_events*(1-frac_table[samplename])
-        # print "No. of events with positive weights = " + str(number_events) + "\n"
         
         #Treat differently different samples with same xsec
         for name_complement in complementary_samples_list:
-            if name_complement in samplename :
-                events_cumul[name_complement] = events_cumul[name_complement] + number_events*(1-frac_table[name_complement])
+            if name_complement in samplename:
+                events_cumul[name_complement] = events_cumul[name_complement] + number_events*(1-2*frac_table[name_complement])
                 print "events_cumul: ", events_cumul[name_complement]
                 is_in_complementary_sample_list = True
                 continue
         if not is_in_complementary_sample_list:
-            events_cumul[samplename] = number_events*(1-frac_table[samplename])
+            events_cumul[samplename] = number_events*(1-2*frac_table[samplename])
 
     for sample,event_count in events_cumul.iteritems():
         if event_count == 0:

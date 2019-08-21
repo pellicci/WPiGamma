@@ -8,6 +8,9 @@ config.General.transferOutputs = True
 config.General.workArea = 'crab_projects'
 config.section_('JobType')
 config.JobType.pluginName = 'PrivateMC'
+
+config.JobType.allowUndistributedCMSSW = True #Otherwise get an error for incompatibility of architecture(slc7)/release(9_4_10). It is safe according to https://hypernews.cern.ch/HyperNews/CMS/get/computing-tools/4935/2.html
+
 config.section_('Data')
 
 if runningEra == 0:
@@ -17,10 +20,10 @@ if runningEra == 0:
     config.Data.outputPrimaryDataset = 'WPlusPiGamma_GENSIM_80XV1'
 
 if runningEra == 1:
-    config.General.requestName = 'WPlusPiGamma_Pythia8_GENSIM_94X_2017_v5'
+    config.General.requestName = 'WPlusPiGamma_Pythia8_GENSIM_94X_2017_v7'
     config.JobType.psetName = 'cmssw_config/WPlusPiGamma_13TeV_pythia8_GENSIM_2017_cfg.py'
     config.JobType.outputFiles = ['WPiGamma_pythia8_GENSIM_2017.root']
-    config.Data.outputPrimaryDataset = 'WPlusPiGamma_GENSIM_94X_2017_v5'
+    config.Data.outputPrimaryDataset = 'WPlusPiGamma_GENSIM_94X_2017_v7'
 
 config.Data.splitting = 'EventBased' # Can only be set to EventBased if pluginName = PrivateMC
 config.Data.unitsPerJob = 5
@@ -32,7 +35,7 @@ config.Data.publication = True
 if runningEra == 0:
     config.Data.outputDatasetTag = 'WPlusPiGamma_GENSIM_80XV1'
 if runningEra == 1:
-    config.Data.outputDatasetTag = 'WPlusPiGamma_GENSIM_94X_2017_v5'
+    config.Data.outputDatasetTag = 'WPlusPiGamma_GENSIM_94X_2017_v7'
 
 config.section_('Site')
-config.Site.storageSite = 'T2_IT_Bari'
+config.Site.storageSite = 'T2_IT_Legnaro'

@@ -5,7 +5,7 @@ config = Configuration()
 config.section_('General')
 config.General.transferOutputs = True
 
-runningEra = 1 # 0 = 2016, 1 = 2017, 2 = 2018
+runningEra = 0 # 0 = 2016, 1 = 2017, 2 = 2018
 
 config.section_('JobType')
 config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
@@ -13,26 +13,28 @@ config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
 config.JobType.pluginName = 'Analysis'
 config.JobType.outputFiles = ['WPiGammaAnalysis_output.root']
 #config.JobType.outputFiles = ['LeptonMultiplicity_output.root']
+config.JobType.allowUndistributedCMSSW = True #Otherwise get an error for incompatibility of architecture(slc7)/release(9_4_10). It is safe according to https://hypernews.cern.ch/HyperNews/CMS/get/computing-tools/4935/2.html
 
 if runningEra == 0:
     config.General.workArea = 'crab_projects/samples_MC_2016/'
     #config.General.workArea = 'crab_projects/samples_LeptonStudy_2016/'
-    config.JobType.inputFiles = ['MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root','MyDataPileupHistogram_2016.root'] #MC and data files for PileUp reweighting (2016)
+    config.JobType.inputFiles = ['MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root','MyDataPileupHistogram_2016.root','L1PrefiringMaps_new.root'] #MC and data files for PileUp reweighting (2016)
 
 if runningEra == 1:
     config.General.workArea = 'crab_projects/samples_MC_2017/'
     #config.General.workArea = 'crab_projects/samples_LeptonStudy_2017/'
-    config.JobType.inputFiles = ['MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root','MyDataPileupHistogram_2017.root'] #MC and data files for PileUp reweighting (2017)
+    config.JobType.inputFiles = ['MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root','MyDataPileupHistogram_2017.root','L1PrefiringMaps_new.root'] #MC and data files for PileUp reweighting (2017)
 
 
 config.section_('Data')
 config.Data.inputDBS = 'phys03'
-config.Data.splitting = 'Automatic'
+config.Data.splitting = 'FileBased'
+config.Data.unitsPerJob = 5
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = False
 
 config.section_('Site')
-config.Site.storageSite = 'T2_IT_Legnaro'
+config.Site.storageSite = 'T2_IT_Bari'
 
 if __name__ == '__main__':
 

@@ -57,31 +57,28 @@ for dirname in list_dirs:
 
     print "Processing sample dir " + dirname
     
-    n_jobs_command = "crab status -d " + dir_input + dirname + " | grep status: " + "| awk " + """'{split($0,array,"/") ; print array[2]}'""" + "| sed 's/.$//'"
-    n_jobs = int(subprocess.check_output(n_jobs_command, shell=True))
+    # n_jobs_command = "crab status -d " + dir_input + dirname + " | grep status: " + "| awk " + """'{split($0,array,"/") ; print array[2]}'""" + "| sed 's/.$//'"
+    # n_jobs = int(subprocess.check_output(n_jobs_command, shell=True))
 
-    print "Number of jobs to be retrieved: ", n_jobs
+    # print "Number of jobs to be retrieved: ", n_jobs
 
-    if n_jobs <= 500:
-        crab_command = "crab getoutput -d " + dir_input + dirname
-        os.system(crab_command)
-    elif (n_jobs > 500 and n_jobs <= 1000):
-        crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
-        os.system(crab_command)
-        crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-" + str(n_jobs) # Because it is impossible to concatenate str and int objects
-        os.system(crab_command_1)
-    else:
-        crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
-        os.system(crab_command)
-        crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-1000"
-        os.system(crab_command_1)
-        crab_command_2 = "crab getoutput -d " + dir_input + dirname + " --jobids 1001-" + str(n_jobs) # Because it is impossible to concatenate str and int objects
-        os.system(crab_command_2)
+    # if n_jobs <= 500:
+    #     crab_command = "crab getoutput -d " + dir_input + dirname
+    #     os.system(crab_command)
+    # elif (n_jobs > 500 and n_jobs <= 1000):
+    #     crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
+    #     os.system(crab_command)
+    #     crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-" + str(n_jobs) # Because it is impossible to concatenate str and int objects
+    #     os.system(crab_command_1)
+    # else:
+    #     crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
+    #     os.system(crab_command)
+    #     crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-1000"
+    #     os.system(crab_command_1)
+    #     crab_command_2 = "crab getoutput -d " + dir_input + dirname + " --jobids 1001-" + str(n_jobs) # Because it is impossible to concatenate str and int objects
+    #     os.system(crab_command_2)
 
-    if year == "2016":
-        samplename = dirname.split("crab_2016_WPiGammaAnalysis_") #--which means "dirname"-"crab_2016_WPiGammaAnalysys_"
-    if year == "2017":
-        samplename = dirname.split("crab_2017_WPiGammaAnalysis_") #--which means "dirname"-"crab_2017_WPiGammaAnalysys_"
+    samplename = dirname.split("crab_" + year + "_WPiGammaAnalysis_") #--which means "dirname"-"crab_2017_WPiGammaAnalysys_"
 
     if "Signal" in dirname:
         hadd_command = "hadd -f " + dir_output_sig + "WPiGammaAnalysis_" + samplename[1] + "_" + year + ".root " + dir_input + dirname + "/results/*.root"
@@ -97,14 +94,14 @@ for dirname in list_dirs:
 if not isData:
     list_signals = os.listdir(dir_output_sig)
     if len(list_signals) > 1:
-        hadd_command = "hadd -f " + dir_output_sig + "WPiGammaAnalysis_Signal_" + year + ".root " + dir_output_sig + "WPiGammaAnalysis_Signal_*.root "
+        hadd_command = "hadd -f " + dir_output_sig + "WPiGammaAnalysis_Signal_" + year + ".root " + dir_output_sig + "WPiGammaAnalysis_Signal_*_" + year + ".root "
         rm_command = "rm -rf " + dir_output_sig + "WPiGammaAnalysis_Signal_*" + "_" + year + ".root "
 
         os.system(hadd_command)
         os.system(rm_command)
 
     for sample in complementary_samples_list:
-        hadd_command = "hadd -f " + dir_output_bkg + "WPiGammaAnalysis_" + sample + "_" + year + ".root " + dir_output_bkg + "WPiGammaAnalysis_" + sample + "_*.root "
+        hadd_command = "hadd -f " + dir_output_bkg + "WPiGammaAnalysis_" + sample + "_" + year + ".root " + dir_output_bkg + "WPiGammaAnalysis_" + sample + "_*_" + year + ".root "
         rm_command = "rm -rf " + dir_output_bkg + "WPiGammaAnalysis_" + sample + "_*" + "_" + year + ".root "
 
         os.system(hadd_command)
@@ -114,8 +111,8 @@ if not isData:
 if isData:
     list_data = os.listdir(dir_output_data)
     if len(list_data) > 1:
-        hadd_command = "hadd -f " + dir_output_data + "/WPiGammaAnalysis_Data_" + year + ".root " + dir_output_data + "/WPiGammaAnalysis_*.root "
-        rm_command = "rm -rf " + dir_output_data + "/WPiGammaAnalysis_Single*.root "
+        hadd_command = "hadd -f " + dir_output_data + "WPiGammaAnalysis_Data_" + year + ".root " + dir_output_data + "WPiGammaAnalysis_*_" + year + ".root "
+        rm_command = "rm -rf " + dir_output_data + "WPiGammaAnalysis_Single*.root "
 
         os.system(hadd_command)
         os.system(rm_command)

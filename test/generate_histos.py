@@ -15,7 +15,6 @@ p.add_argument('inputfile_option', help='Provide input file name')
 p.add_argument('outputfile_option', help='Provide output file name')
 args = p.parse_args()
 
-# Switch from muon to electron channel, and from 2016 to 2017
 isBDT = False
 if args.isBDT_option == "BDT":
     isBDT = True
@@ -43,10 +42,28 @@ if runningEra == 0:
     luminosity_norm = 35.86
 if runningEra == 1:
     luminosity_norm = 41.529
+    #luminosity_norm = 27.13 #lumi for Ele32_WPTight only
+
+luminosity_norm_2017 = 41.529
+luminosity_norm_2017_Ele32_WPTight = 27.13
+
+_Nrandom_for_Ele_32_WPTight_exclusion = ROOT.TRandom3(64524)
 
 #############---------------- BDT score cut values ----------------#############
-BDT_OUT_MU  = 0.220
+BDT_OUT_MU  = 0.240
 BDT_OUT_ELE = 0.170
+
+############################################################################
+#                                                                          #
+#-------------------- Get files and normalization map  --------------------#
+#                                                                          #
+############################################################################
+
+# Get the files and the names of the samples
+sample_name = input_filename.split("_")[2]
+
+# Get the normalization
+Norm_Map = myWF.get_normalizations_map(runningEra)
 
 ############################################################################
 #                                                                          #
@@ -55,8 +72,8 @@ BDT_OUT_ELE = 0.170
 ############################################################################
 
 #Here's the list of histos to plot
-W_signal_hist = ROOT.TH1F("W_signal"," W signal",8,0,300)
-W_ttbar_hist  = ROOT.TH1F("W_ttbar"," W ttbar",8,0,300)
+W_signal_hist = ROOT.TH1F("W_signal","W signal",8,0,300)
+W_ttbar_hist  = ROOT.TH1F("W_ttbar","W ttbar",8,0,300)
 
 h_PUdistrib = ROOT.TH1F("pile up", "pile up",75,0,75)
 
@@ -64,30 +81,24 @@ W_signal_hist.Sumw2()
 W_ttbar_hist.Sumw2()
 h_PUdistrib.Sumw2()
 
-# Get the files and the names of the samples
-sample_name = input_filename.split("_")[2]
-
-# Get the normalization
-Norm_Map = myWF.get_normalizations_map(runningEra)
-
 ttbar_sig_calib_file = ROOT.TFile.Open("ttbar_signal_ratio.root")
 ttbar_sig_calib = ttbar_sig_calib_file.Get("ttbar_signal_ratio")
 
 ##Get the handlers for all the histos and graphics
 h_base  = dict()
 
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_ratio_mu","h_Wmass_ratio_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_ratio_mu","h_Wmass_ratio_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma"]
 
-h_base[list_histos[0]] = ROOT.TH1F(list_histos[0], "p_{T} of the muon", 15, 25, 100.)
-h_base[list_histos[1]] = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 15, 28, 100.)
-h_base[list_histos[2]] = ROOT.TH1F(list_histos[2], "p_{T} of the pion", 15, 20, 100.)
-h_base[list_histos[3]] = ROOT.TH1F(list_histos[3],"E_{T} of the gamma", 15, 20, 100.)
-h_base[list_histos[4]] = ROOT.TH1F(list_histos[4], "eta of the muon", 20, -3, 3)
-h_base[list_histos[5]] = ROOT.TH1F(list_histos[5], "eta of the electron", 20, -3, 3)
-h_base[list_histos[6]] = ROOT.TH1F(list_histos[6], "eta of the pion", 20, -3, 3)
-h_base[list_histos[7]] = ROOT.TH1F(list_histos[7], "eta of the photon", 20, -3, 3)
-h_base[list_histos[8]] = ROOT.TH1F(list_histos[8], "n Bjets 25", 6, 0, 6.)
-h_base[list_histos[9]] = ROOT.TH1F(list_histos[9], "deltaphi mu-pi", 10, 0, 3.14)
+h_base[list_histos[0]]  = ROOT.TH1F(list_histos[0], "p_{T} of the muon", 15, 25, 100.)
+h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 15, 28, 100.)
+h_base[list_histos[2]]  = ROOT.TH1F(list_histos[2], "p_{T} of the pion", 15, 20, 100.)
+h_base[list_histos[3]]  = ROOT.TH1F(list_histos[3], "E_{T} of the gamma", 15, 20, 100.)
+h_base[list_histos[4]]  = ROOT.TH1F(list_histos[4], "eta of the muon", 20, -3, 3)
+h_base[list_histos[5]]  = ROOT.TH1F(list_histos[5], "eta of the electron", 20, -3, 3)
+h_base[list_histos[6]]  = ROOT.TH1F(list_histos[6], "eta of the pion", 20, -3, 3)
+h_base[list_histos[7]]  = ROOT.TH1F(list_histos[7], "eta of the photon", 20, -3, 3)
+h_base[list_histos[8]]  = ROOT.TH1F(list_histos[8], "n Bjets 25", 6, 0, 6.)
+h_base[list_histos[9]]  = ROOT.TH1F(list_histos[9], "deltaphi mu-pi", 10, 0, 3.14)
 h_base[list_histos[10]] = ROOT.TH1F(list_histos[10], "deltaphi ele-pi", 10, 0, 3.14)
 h_base[list_histos[11]] = ROOT.TH1F(list_histos[11], "deltaphi mu-W", 10, 0, 3.14)
 h_base[list_histos[12]] = ROOT.TH1F(list_histos[12], "deltaphi ele-W", 10, 0, 3.14)
@@ -111,8 +122,12 @@ h_base[list_histos[29]] = ROOT.TH1F(list_histos[29], "Wmass ratio mu", 10, 50, 1
 h_base[list_histos[30]] = ROOT.TH1F(list_histos[30], "Wmass ratio ele", 10, 50, 100)
 h_base[list_histos[31]] = ROOT.TH1F(list_histos[31], "nPV - mu", 15, 0, 50)
 h_base[list_histos[32]] = ROOT.TH1F(list_histos[32], "nPV - ele", 15, 0, 50)
-h_base[list_histos[33]] = ROOT.TH1F(list_histos[33], "deltaphi mu-gamma", 10, 0, 3.14)
-h_base[list_histos[34]] = ROOT.TH1F(list_histos[34], "deltaphi ele-gamma", 10, 0, 3.14)
+# h_base[list_histos[33]] = ROOT.TH1F(list_histos[33], "deltaphi mu-gamma", 30, 0., 3.14)
+# h_base[list_histos[34]] = ROOT.TH1F(list_histos[34], "deltaphi ele-gamma", 30, 0., 3.14)
+h_base[list_histos[33]] = ROOT.TH1F(list_histos[33], "deltaphi mu-gamma", 100, 0., 0.5)
+h_base[list_histos[34]] = ROOT.TH1F(list_histos[34], "deltaphi ele-gamma", 100, 0., 0.5)
+h_base[list_histos[35]] = ROOT.TH1F(list_histos[35], "deltaR mu-gamma", 50, 0., 5.)
+h_base[list_histos[36]] = ROOT.TH1F(list_histos[36], "deltaR ele-gamma", 50, 0., 5.)
 
 _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 
@@ -120,14 +135,17 @@ _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 
 if not "Data" in sample_name:
     norm_factor = Norm_Map[sample_name]*luminosity_norm
+    print "Norm_Map[", sample_name, "]: ", Norm_Map[sample_name]
     
 root_file = ROOT.TFile(input_filename)
 mytree = root_file.Get("WPiGammaAnalysis/mytree")
 print "Processing Sample ", sample_name
 
-Nevts_per_sample = 0. # Count the number of events in input per each sample processed
-Nevts_selected   = 0. # Count the number of events survived per each sample processed
-Nevts_expected   = 0. # Number of expected events from weights
+Nevts_per_sample   = 0. # Count the number of events in input per each sample processed
+Nevts_selected     = 0. # Count the number of events survived per each sample processed
+Nevts_expected     = 0. # Number of expected events from weights
+Nevts_expected_mu  = 0. # Number of expected events from weights
+Nevts_expected_ele = 0. # Number of expected events from weights
 
 for jentry in xrange(mytree.GetEntriesFast()):
     ientry = mytree.LoadTree( jentry )
@@ -146,6 +164,12 @@ for jentry in xrange(mytree.GetEntriesFast()):
     if runningEra == 0 and sample_name == "ttbar" and mytree.isttbarlnu: # Avoid double-counting of the ttbarlnu background
         continue
 
+    if mytree.is_muon and sample_name == "QCDDoubleEMEnriched30toInf":
+        continue
+
+    if not mytree.is_muon and sample_name == "QCDHT200to300":
+        continue
+
     ############################################################################
     #                                                                          #
     #------------------------ Access the tree variables -----------------------#
@@ -162,7 +186,21 @@ for jentry in xrange(mytree.GetEntriesFast()):
     isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
     isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
     if runningEra == 1:
-        isSingleMuTrigger_27 = mytree.isSingleMuTrigger_27           
+        isSingleMuTrigger_27 = mytree.isSingleMuTrigger_27
+        isSingleEleTrigger_32 = mytree.isSingleEleTrigger_32
+        isSingleEleTrigger_32_DoubleEG = mytree.isSingleEleTrigger_32_DoubleEG
+
+        if sample_name == "Data":
+            run_number = mytree.run_number
+            #Use only Ele32_WPTight trigger for the period it is on
+            if run_number > 302026 and not isSingleMuTrigger_27 and not isSingleMuTrigger_50 and not isSingleEleTrigger_32:
+                continue
+        else: #Use only Ele32_WPTight trigger for the fraction of luminosity it is on
+            if not isSingleMuTrigger_27 and not isSingleMuTrigger_50:
+                if _Nrandom_for_Ele_32_WPTight_exclusion.Rndm() <= (luminosity_norm_2017_Ele32_WPTight/luminosity_norm_2017):
+                    if not isSingleEleTrigger_32:
+                        continue
+
 
     lep_pT  = mytree.lepton_pT
     lep_eta = mytree.lepton_eta
@@ -203,7 +241,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
     nBjets = mytree.nBjets
     nBjets_25 = mytree.nBjets_25
 
-    deltaeta_lep_pi = lep_eta-pi_eta
+    deltaeta_lep_pi = math.fabs(lep_eta-pi_eta)
         
     deltaphi_lep_pi = math.fabs(lep_phi - pi_phi)
     if deltaphi_lep_pi > 3.14:
@@ -216,6 +254,38 @@ for jentry in xrange(mytree.GetEntriesFast()):
     deltaphi_lep_gamma = math.fabs(lep_phi - gamma_phi)
     if deltaphi_lep_gamma > 3.14:
         deltaphi_lep_gamma = 6.28 - deltaphi_lep_gamma
+
+    deltaeta_lep_gamma = math.fabs(lep_eta - gamma_eta)
+    deltaR_lep_gamma = math.sqrt(deltaphi_lep_gamma*deltaphi_lep_gamma + deltaeta_lep_gamma*deltaeta_lep_gamma)
+
+    if "WJetsToLNu" in sample_name:
+
+        if isMuon:
+            MCT_lep_eta = mytree.MCT_HpT_mu_eta
+            MCT_lep_phi = mytree.MCT_HpT_mu_phi
+            if MCT_lep_eta == -1000. or MCT_lep_phi == -1000.:
+                print "NO MCT MUON IN THIS EVENT"
+        else:
+            MCT_lep_eta = mytree.MCT_HpT_ele_eta
+            MCT_lep_phi = mytree.MCT_HpT_ele_phi
+            if MCT_lep_eta == -1000. or MCT_lep_phi == -1000.:
+                print "NO MCT ELECTRON IN THIS EVENT"
+        
+        MCT_deltaeta_lep_gamma = math.fabs(MCT_lep_eta - mytree.MCT_HeT_ph_eta)
+        MCT_deltaphi_lep_gamma = math.fabs(MCT_lep_phi - mytree.MCT_HeT_ph_phi)
+        if not (mytree.MCT_HeT_ph_eta == -1000. or mytree.MCT_HeT_ph_phi == -1000. or mytree.MCT_HeT_ph_eT == -1000.):
+            print "NO MCT PHOTON IN THIS EVENT"
+
+        if MCT_deltaphi_lep_gamma > 3.14:
+            MCT_deltaphi_lep_gamma = 6.28 - MCT_deltaphi_lep_gamma
+
+        MCT_deltaR_lep_gamma = math.sqrt(MCT_deltaeta_lep_gamma*MCT_deltaeta_lep_gamma + MCT_deltaphi_lep_gamma*MCT_deltaphi_lep_gamma)
+
+        if MCT_deltaR_lep_gamma > 1. and (isMuon and not (MCT_lep_eta == -1000. or MCT_lep_phi == -1000.) or not isMuon and not (MCT_lep_eta == -1000. or MCT_lep_phi == -1000.)) and not (mytree.MCT_HeT_ph_eta == -1000. or mytree.MCT_HeT_ph_phi == -1000. or mytree.MCT_HeT_ph_eT == -1000.):
+            continue
+
+    #if deltaR_lep_gamma > 1.0 and sample_name == "WJetsToLNu":
+    #    continue
 
     if not "Data" in sample_name:
         Wplus_pT = mytree.Wplus_pT
@@ -232,13 +302,14 @@ for jentry in xrange(mytree.GetEntriesFast()):
         mu_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
         mu_pi_InvMass    = (lep_FourMomentum + pi_FourMomentum).M()
 
+
     ############################################################################
     #                                                                          #
     #----------------------- Some post-preselection cuts ----------------------#
     #                                                                          #
     ############################################################################
 
-    if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge,runningEra):
+    if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge,deltaphi_lep_gamma,runningEra):
         continue
         
     Nevts_selected = Nevts_selected + 1
@@ -282,12 +353,25 @@ for jentry in xrange(mytree.GetEntriesFast()):
 
     if not "Data" in sample_name:
         MC_Weight = mytree.MC_Weight # Add MC weight        
-        PU_Weight = mytree.PU_Weight # Add Pile Up weight        
-        Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
+        PU_Weight = mytree.PU_Weight # Add Pile Up weight
+        Prefiring_Weight = mytree.Prefiring_Weight # Add prefiring weight  
+        Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight)*Prefiring_Weight # Just take the sign of the gen weight
 
         Event_Weight = Event_Weight*lep_weight
 
-        # Correct for the difference in pT of the generated W in Pythia and Madgraph samples
+        ################ Zvtx inefficiency weight for 2017 MC ################
+        #https://twiki.cern.ch/twiki/bin/view/CMS/Egamma2017DataRecommendations
+
+        if runningEra == 1:
+            if (isSingleEleTrigger_32_DoubleEG or isSingleEleTrigger_32) and not isSingleMuTrigger_27 and not isSingleMuTrigger_50:
+                Event_Weight = Event_Weight*0.991 #uniform penalty for all the 2017 eras
+        # if runningEra == 0:
+        #     if (mytree.isSingleEleTrigger_25 or mytree.isSingleEleTrigger_27) and not isSingleMuTrigger_24 and not isSingleMuTrigger_50:
+        #         Event_Weight = Event_Weight*0.991 #uniform penalty for all the 2017 eras
+
+
+        ################ Correct for the difference in pT of the generated W in Pythia and Madgraph samples ################
+
         if runningEra == 0 and sample_name == "Signal":
             if is_signal_Wplus:
                 local_W_pT = Wplus_pT
@@ -303,6 +387,10 @@ for jentry in xrange(mytree.GetEntriesFast()):
         Event_Weight = 1.
 
     Nevts_expected += Event_Weight # Increment the number of events survived in the analyzed sample
+    if isMuon:
+        Nevts_expected_mu += Event_Weight
+    else:
+        Nevts_expected_ele += Event_Weight
 
     ############################################################################
     #                                                                          #
@@ -310,9 +398,9 @@ for jentry in xrange(mytree.GetEntriesFast()):
     #                                                                          #
     ############################################################################
     if isBDT_with_Wmass:
-        BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)  
+        BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)  #WARNING: contains deltaphi_lep_pi
     elif isBDT:
-        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)
+        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_gamma,isMuon)
    
     ############################################################################
     #                                                                          #
@@ -342,7 +430,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
     h_base["h_gammaeta"].Fill(gamma_eta,Event_Weight)
 
     if sample_name == "Data":
-        h_PUdistrib.Fill(nPV,Event_Weight)
+        h_PUdistrib.Fill(nPV,Event_Weight)      
 
     if isMuon:
         h_base["h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
@@ -357,6 +445,8 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_base["h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
         h_base["h_deltaphi_mu_pi"].Fill(deltaphi_lep_pi,Event_Weight)
         h_base["h_deltaphi_mu_gamma"].Fill(deltaphi_lep_gamma,Event_Weight)
+        if "WJetsToLNu" in sample_name:
+            h_base["h_deltaR_mu_gamma"].Fill(MCT_deltaR_lep_gamma,Event_Weight)
 
     else:
         h_base["h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
@@ -371,6 +461,9 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_base["h_deltaphi_ele_pi"].Fill(deltaphi_lep_pi,Event_Weight)
         h_base["h_deltaphi_ele_gamma"].Fill(deltaphi_lep_gamma,Event_Weight)
         h_base["h_deltaphi_ele_W"].Fill(deltaphi_lep_W,Event_Weight)
+        if "WJetsToLNu" in sample_name:
+            h_base["h_deltaR_ele_gamma"].Fill(MCT_deltaR_lep_gamma,Event_Weight)
+
 
     ############################################################################
     #                                                                          #
@@ -406,9 +499,12 @@ for hist_name in list_histos:
     h_base[hist_name].Write()
 fOut.Close()
 
+
 print "###################"
 print "Number of expected events for ", luminosity_norm, " in fb-1, for sample " , sample_name
 print "Number of events processed = ", Nevts_per_sample
 print "Number of events selected = ", Nevts_selected
 print "Number of events expected = ", Nevts_expected
+print "Number of events expected in muon channel = ", Nevts_expected_mu
+print "Number of events expected in electron channel = ", Nevts_expected_ele
 print "###################"

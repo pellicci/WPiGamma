@@ -3,7 +3,7 @@ import os
 import math
 import numpy as np
 from ROOT import TFile, TTree, TBranch, TCanvas, TH1F
-from Workflow_Handler import Workflow_Handler
+from Simplified_Workflow_Handler import Simplified_Workflow_Handler
 import argparse
 
 #---------------------------------#
@@ -18,18 +18,17 @@ if args.create_mass_tree_option == "mass":
 if args.create_mass_tree_option == "MVA":
     create_mass_tree = False
 runningEra = int(args.runningEra_option)
-#---------------------------------#
+
+#------------------------------------------------------------------------#
 
 #Supress the opening of many Canvas's
 ROOT.gROOT.SetBatch(True)
 
 isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
-myWF = Workflow_Handler("Signal","Data",isBDT_with_Wmass)
-
-#------------------------------------------------------------------------#
-
 isData   = False # Switch from DATA to MC and vice versa
 split_MC = False # If True, MC signal sample is split in two for the training/testing of the BDT
+
+myWF = Simplified_Workflow_Handler("Signal","Data",create_mass_tree,isBDT_with_Wmass,runningEra)
 
 #------------------------------------------------------------------------#
 
@@ -47,20 +46,42 @@ ELE_ISO_MAX = 0.35
 ELE_GAMMA_INVMASS_MIN = 90.4
 ELE_GAMMA_INVMASS_MAX = 91.6
 
+############################################################################
+#                                                                          #
+#-------------------------- Integrated luminosity -------------------------#
+#                                                                          #
+############################################################################
 #Normalize to this luminsity, in fb-1
+# if runningEra == 0:
+#     luminosity_norm = 35.86
+# if runningEra == 1:
+#     luminosity_norm = 41.529
+#     #luminosity_norm = 27.13 #lumi for Ele32_WPTight only
 
-luminosity_norm_2016 = 35.86
-luminosity_norm_2017 = 41.529
+luminosity_norm_list = [35.86,41.529] #2016,2017
 
-if runningEra == 0:
-    luminosity_norm = luminosity_norm_2016
-if runningEra == 1:
-    luminosity_norm = luminosity_norm_2017
+luminosity_norm_2017_Ele32_WPTight = 27.13
+_Nrandom_for_Ele_32_WPTight_exclusion = ROOT.TRandom3(64524)
 
-luminosity_BtoF = 19.72 #For 2016
-luminosity_GH   = 16.14 #For 2016
+#############---------------- BDT score cut values ----------------#############
 
+BDT_OUT_MU  = 0.220
+BDT_OUT_ELE = 0.170
 
+############################################################################
+#                                                                          #
+#------------------- Get rootfiles and name of samples  -------------------#
+#                                                                          #
+############################################################################
+
+samplename_list = myWF.get_samples_names()
+root_file = myWF.get_root_files()
+
+############################################################################
+#                                                                          #
+#------------------------------ Tree variables ----------------------------#
+#                                                                          #
+############################################################################
 
 #Variables for the FIT trees
 _Wmass_fit          = np.zeros(1, dtype=float)
@@ -80,6 +101,7 @@ _lep_iso            = np.zeros(1, dtype=float)
 _nBjets             = np.zeros(1, dtype=int)
 _nBjets_25          = np.zeros(1, dtype=int)
 _deltaphi_lep_pi    = np.zeros(1, dtype=float)
+_deltaphi_lep_gamma = np.zeros(1, dtype=float)
 _piRelIso_05        = np.zeros(1, dtype=float)
 _piRelIso_05_ch     = np.zeros(1, dtype=float)
 _pi_dxy             = np.zeros(1, dtype=float)
@@ -89,26 +111,24 @@ _met                = np.zeros(1, dtype=float)
 _met_puppi          = np.zeros(1, dtype=float)
 _Wmass              = np.zeros(1, dtype=float)
 
-#BDT scores
-BDT_OUT_MU  = 0.220
-BDT_OUT_ELE = 0.170
-
 #_Nrandom_for_SF = ROOT.TRandom3(44317)
 
 Wmass_mu   = ROOT.TH1F("Wmass_mu","Wmass mu",15,50,100)
 Wmass_ele  = ROOT.TH1F("Wmass_ele","Wmass ele",15,50,100)
-lep_pt_mu  = ROOT.TH1F("lep_pt_mu","lep pt mu",15,20,100)
-lep_pt_ele = ROOT.TH1F("lep_pt_ele","lep pt ele",15,20,100)
+lep_pt_mu  = ROOT.TH1F("lep_pt_mu","lep pt mu",15,25,100)
+lep_pt_ele = ROOT.TH1F("lep_pt_ele","lep pt ele",15,28,100)
 
 Wmass_mu_WJets  = ROOT.TH1F("Wmass_mu_WJets","Wmass mu WJets",15,50,100)
 Wmass_ele_WJets = ROOT.TH1F("Wmass_ele_WJets","Wmass ele WJets",15,50,100)
 
 N_WGToLNuG_mu = 0.
 
-nSig_mu = 0.
-nBkg_mu = 0.
+nSig_mu  = 0.
+nBkg_mu  = 0.
 nSig_ele = 0.
 nBkg_ele = 0.
+nBkg_processed_mu  = 0.
+nBkg_processed_ele = 0.
 
 ############################################################################
 #                                                                          #
@@ -206,6 +226,7 @@ if not isData:
         tMVA_signal_mu.Branch('nBjets',_nBjets,'nBjets/I')
         tMVA_signal_mu.Branch('nBjets_25',_nBjets_25,'nBjets_25/I')
         tMVA_signal_mu.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
+        tMVA_signal_mu.Branch('deltaphi_lep_gamma',_deltaphi_lep_gamma,'deltaphi_lep_gamma/D')
         tMVA_signal_mu.Branch('piRelIso_05_ch',_piRelIso_05_ch,'piRelIso_05_ch/D')
         tMVA_signal_mu.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
         tMVA_signal_mu.Branch('pi_dxy',_pi_dxy,'pi_dxy/D')
@@ -224,6 +245,7 @@ if not isData:
         tMVA_signal_ele.Branch('nBjets',_nBjets,'nBjets/I')
         tMVA_signal_ele.Branch('nBjets_25',_nBjets_25,'nBjets_25/I')
         tMVA_signal_ele.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
+        tMVA_signal_ele.Branch('deltaphi_lep_gamma',_deltaphi_lep_gamma,'deltaphi_lep_gamma/D')
         tMVA_signal_ele.Branch('piRelIso_05_ch',_piRelIso_05_ch,'piRelIso_05_ch/D')
         tMVA_signal_ele.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
         tMVA_signal_ele.Branch('pi_dxy',_pi_dxy,'pi_dxy/D')
@@ -244,6 +266,7 @@ if not isData:
         tMVA_background_mu.Branch('nBjets',_nBjets,'nBjets/I')
         tMVA_background_mu.Branch('nBjets_25',_nBjets_25,'nBjets_25/I')
         tMVA_background_mu.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
+        tMVA_background_mu.Branch('deltaphi_lep_gamma',_deltaphi_lep_gamma,'deltaphi_lep_gamma/D')
         tMVA_background_mu.Branch('piRelIso_05_ch',_piRelIso_05_ch,'piRelIso_05_ch/D')
         tMVA_background_mu.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
         tMVA_background_mu.Branch('pi_dxy',_pi_dxy,'pi_dxy/D')
@@ -262,6 +285,7 @@ if not isData:
         tMVA_background_ele.Branch('nBjets',_nBjets,'nBjets/I')
         tMVA_background_ele.Branch('nBjets_25',_nBjets_25,'nBjets_25/I')
         tMVA_background_ele.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
+        tMVA_background_ele.Branch('deltaphi_lep_gamma',_deltaphi_lep_gamma,'deltaphi_lep_gamma/D')
         tMVA_background_ele.Branch('piRelIso_05_ch',_piRelIso_05_ch,'piRelIso_05_ch/D')
         tMVA_background_ele.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
         tMVA_background_ele.Branch('pi_dxy',_pi_dxy,'pi_dxy/D')
@@ -292,6 +316,7 @@ if isData:
         tMVA_background_mu_DATA.Branch('nBjets',_nBjets,'nBjets/I')
         tMVA_background_mu_DATA.Branch('nBjets_25',_nBjets_25,'nBjets_25/I')
         tMVA_background_mu_DATA.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
+        tMVA_background_mu_DATA.Branch('deltaphi_lep_gamma',_deltaphi_lep_gamma,'deltaphi_lep_gamma/D')
         tMVA_background_mu_DATA.Branch('piRelIso_05_ch',_piRelIso_05_ch,'piRelIso_05_ch/D')
         tMVA_background_mu_DATA.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
         tMVA_background_mu_DATA.Branch('pi_dxy',_pi_dxy,'pi_dxy/D')
@@ -310,6 +335,7 @@ if isData:
         tMVA_background_ele_DATA.Branch('nBjets',_nBjets,'nBjets/I')
         tMVA_background_ele_DATA.Branch('nBjets_25',_nBjets_25,'nBjets_25/I')
         tMVA_background_ele_DATA.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
+        tMVA_background_ele_DATA.Branch('deltaphi_lep_gamma',_deltaphi_lep_gamma,'deltaphi_lep_gamma/D')
         tMVA_background_ele_DATA.Branch('piRelIso_05_ch',_piRelIso_05_ch,'piRelIso_05_ch/D')
         tMVA_background_ele_DATA.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
         tMVA_background_ele_DATA.Branch('pi_dxy',_pi_dxy,'pi_dxy/D')
@@ -344,35 +370,48 @@ def select_all_but_one(cutstring):
     return result
 
 ##Here starts the program
-Norm_Map = myWF.get_normalizations_map()
+
 ttbar_sig_calib_file = ROOT.TFile.Open("ttbar_signal_ratio.root")
 ttbar_sig_calib = ttbar_sig_calib_file.Get("ttbar_signal_ratio")
 
-##Get the files and the names of the samples
-samplename_list = myWF.get_samples_names()
-root_file = myWF.get_root_files()
 
 SignalTree_entries = 0
 entry_index = 0
 
-for name_sample in samplename_list:
+for full_sample_name in samplename_list:
 
-    theSampleName = name_sample
+    sample_name = full_sample_name.split("_")[0]
+    sample_era  = full_sample_name.split("_")[1]
+    if sample_era == "2016":
+        sample_era = 0
+    if sample_era == "2017":
+        sample_era = 1
 
-    #i_event = 0
-    is_ttbarlnu = 0
+    print "full_sample_name: ", full_sample_name, "sample_era: ", sample_era
 
-    if not "Data" in name_sample:
-        norm_factor = Norm_Map[name_sample]*luminosity_norm
+    if runningEra == 0 and not sample_era == 0:
+        continue
+    if runningEra == 1 and not sample_era == 1:
+        continue
+    if runningEra == 2 and not (sample_era == 0 or sample_era == 1):
+        continue
 
-    mytree = root_file[name_sample].Get("WPiGammaAnalysis/mytree")
+    Norm_Map = myWF.get_normalizations_map(sample_era)
+    luminosity_norm = luminosity_norm_list[sample_era]
+    print "lumi norm: ", luminosity_norm
+
+    if not "Data" in sample_name:
+        norm_factor = Norm_Map[sample_name]*luminosity_norm
+
+    mytree = root_file[full_sample_name].Get("WPiGammaAnalysis/mytree")
+    #print "root_file[sample_name]: ", root_file[full_sample_name]
  
-    print "Processing Sample ", name_sample
+    print "Processing Sample ", sample_name
 
     #nEvts = mytree.GetEntriesFast() #Get the number of events per sample
 
     for jentry in xrange(mytree.GetEntriesFast()):
-        #i_event += 1
+
         ientry = mytree.LoadTree( jentry )
         if ientry < 0:
             break
@@ -380,29 +419,26 @@ for name_sample in samplename_list:
         if nb <= 0:
             continue
 
-
         ############################################################################
         #                                                                          #
         #-------------------------- Samples to be excluded ------------------------#
         #                                                                          #
         ############################################################################
 
-        if isData and not "Data" in name_sample: 
+        if isData and not "Data" in sample_name: 
             continue
         
-        if not isData and "Data" in name_sample:
+        if not isData and "Data" in sample_name:
             continue
         
-        if name_sample == "ttbar" and mytree.isttbarlnu:
-            is_ttbarlnu += 1
+        if runningEra == 0 and sample_name == "ttbar" and mytree.isttbarlnu: # Avoid double-counting of the ttbarlnu background
             continue
 
-        # if name_sample == "ZGTo2LG" or name_sample == "WGToLNuG":#name_sample == "TTGJets":
-        #     continue
+        if mytree.is_muon and sample_name == "QCDDoubleEMEnriched30toInf":
+            continue
 
-        # if not "Signal" in name_sample:
-        #     continue
-
+        if not mytree.is_muon and sample_name == "QCDHT200to300":
+            continue
 
         ############################################################################
         #                                                                          #
@@ -410,7 +446,7 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
-        if name_sample == "Signal":
+        if sample_name == "Signal":
             SignalTree_entries = mytree.GetEntriesFast()
             entry_index += 1
 
@@ -419,8 +455,22 @@ for name_sample in samplename_list:
 
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
         isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
-        if runningEra == 1:
+
+        if sample_era == 1:
             isSingleMuTrigger_27 = mytree.isSingleMuTrigger_27
+            isSingleEleTrigger_32 = mytree.isSingleEleTrigger_32
+            isSingleEleTrigger_32_DoubleEG = mytree.isSingleEleTrigger_32_DoubleEG
+            
+            if sample_name == "Data":
+                run_number = mytree.run_number
+                #Use only Ele32_WPTight trigger for the period it is on
+                if run_number > 302026 and not isSingleMuTrigger_27 and not isSingleMuTrigger_50 and not isSingleEleTrigger_32:
+                    continue
+            else: #Use only Ele32_WPTight trigger for the fraction of luminosity it is on
+                if not isSingleMuTrigger_27 and not isSingleMuTrigger_50:
+                    if _Nrandom_for_Ele_32_WPTight_exclusion.Rndm() <= (luminosity_norm_2017_Ele32_WPTight/luminosity_norm):
+                        if not isSingleEleTrigger_32:
+                            continue
 
         lep_pT  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
@@ -454,11 +504,11 @@ for name_sample in samplename_list:
 
         W_phi = (pi_FourMomentum + gamma_FourMomentum).Phi()
 
-        if not "Data" in name_sample:
+        if not "Data" in sample_name:
             Wplus_pT = mytree.Wplus_pT
             Wminus_pT = mytree.Wminus_pT
 
-        if name_sample == "Signal":
+        if sample_name == "Signal":
             is_signal_Wplus = mytree.is_signal_Wplus
             is_signal_Wminus = mytree.is_signal_Wminus
 
@@ -476,7 +526,7 @@ for name_sample in samplename_list:
         nBjets = mytree.nBjets
         nBjets_25 = mytree.nBjets_25
 
-        deltaeta_lep_pi = lep_eta-pi_eta
+        deltaeta_lep_pi = math.fabs(lep_eta-pi_eta)
 
         deltaphi_lep_pi = math.fabs(lep_phi - pi_phi)
         if deltaphi_lep_pi > 3.14:
@@ -485,6 +535,39 @@ for name_sample in samplename_list:
         deltaphi_lep_W = math.fabs(lep_phi - W_phi)
         if deltaphi_lep_W > 3.14:
             deltaphi_lep_W = 6.28 - deltaphi_lep_W  
+            
+        deltaphi_lep_W = math.fabs(lep_phi - W_phi)
+        if deltaphi_lep_W > 3.14:
+            deltaphi_lep_W = 6.28 - deltaphi_lep_W
+
+        deltaphi_lep_gamma = math.fabs(lep_phi - gamma_phi)
+        if deltaphi_lep_gamma > 3.14:
+            deltaphi_lep_gamma = 6.28 - deltaphi_lep_gamma
+
+        deltaeta_lep_gamma = math.fabs(lep_eta - gamma_eta)
+        deltaR_lep_gamma = math.sqrt(deltaphi_lep_gamma*deltaphi_lep_gamma + deltaeta_lep_gamma*deltaeta_lep_gamma)
+
+        if "WJetsToLNu" in sample_name:
+            
+            if isMuon:
+                MCT_lep_eta = mytree.MCT_HpT_mu_eta
+                MCT_lep_phi = mytree.MCT_HpT_mu_phi
+            else:
+                MCT_lep_eta = mytree.MCT_HpT_ele_eta
+                MCT_lep_phi = mytree.MCT_HpT_ele_phi
+                
+            MCT_deltaeta_lep_gamma = math.fabs(MCT_lep_eta - mytree.MCT_HeT_ph_eta)
+            MCT_deltaphi_lep_gamma = math.fabs(MCT_lep_phi - mytree.MCT_HeT_ph_phi)
+
+            if MCT_deltaphi_lep_gamma > 3.14:
+                MCT_deltaphi_lep_gamma = 6.28 - MCT_deltaphi_lep_gamma
+
+            MCT_deltaR_lep_gamma = math.sqrt(MCT_deltaeta_lep_gamma*MCT_deltaeta_lep_gamma + MCT_deltaphi_lep_gamma*MCT_deltaphi_lep_gamma)
+            
+            # if MCT_deltaR_lep_gamma > 1.:
+            #     continue
+            if MCT_deltaR_lep_gamma > 1. and (isMuon and not (MCT_lep_eta == -1000. or MCT_lep_phi == -1000.) or not isMuon and not (MCT_lep_eta == -1000. or MCT_lep_phi == -1000.)) and not (mytree.MCT_HeT_ph_eta == -1000. or mytree.MCT_HeT_ph_phi == -1000. or mytree.MCT_HeT_ph_eT == -1000.):
+                continue
 
 
         ############################################################################
@@ -493,9 +576,9 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
-        if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge):
+        if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge,deltaphi_lep_gamma,sample_era):
             continue
-        
+
 
         ############################################################################
         #                                                                          #
@@ -503,60 +586,68 @@ for name_sample in samplename_list:
         #                                                                          #
         ############################################################################
 
+        ################ MUON SFs ################
 
         if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
-            if runningEra == 0:
+            if sample_era == 0:
                 isSingleMuTrigger_LOW = isSingleMuTrigger_24
-            if runningEra == 1:
+            if sample_era == 1:
                 isSingleMuTrigger_LOW = isSingleMuTrigger_27
 
-            mu_weight, mu_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,runningEra,isSingleMuTrigger_LOW)
-
+            lep_weight, lep_weight_err = myWF.get_muon_scale(lep_pT,lep_eta,isSingleMuTrigger_LOW,sample_era)
+            
+        ############## ELECTRON SFs ##############
 
         else:
-            ele_weight, ele_weight_err = myWF.get_ele_scale(lep_pT,ele_etaSC)
+            lep_weight, lep_weight_err = myWF.get_ele_scale(lep_pT,ele_etaSC,sample_era)
+            
+        ############### PHOTON SFs ###############
 
+        ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_etaSC,sample_era)
 
-        ph_weight, ph_weight_err = myWF.get_photon_scale(gamma_eT,gamma_etaSC)
-        
+        ############### Multiply weights and SFs for MC. Set weight to 1 for data ###############
 
-        if not isData:
+        if not "Data" in sample_name:
             MC_Weight = mytree.MC_Weight # Add MC weight        
-            PU_Weight = mytree.PU_Weight # Add PU weight
-            Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
+            PU_Weight = mytree.PU_Weight # Add Pile Up weight
+            Prefiring_Weight = mytree.Prefiring_Weight # Add prefiring weight  
+            Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight)*Prefiring_Weight # Just take the sign of the gen weight
 
-            if isMuon:
-                Event_Weight = Event_Weight*mu_weight
-            else:
-                Event_Weight = Event_Weight*ele_weight
+            Event_Weight = Event_Weight*lep_weight
 
-            # Correct for the difference in pT of the generated W between Pythia and Madgraph samples
-            if name_sample == "Signal" and is_signal_Wplus:
-                local_Wplus_pT = Wplus_pT
-                if Wplus_pT > 300.:
-                    local_Wplus_pT = 300.
+            ################ Zvtx inefficiency weight for 2017 MC ################
+            #https://twiki.cern.ch/twiki/bin/view/CMS/Egamma2017DataRecommendations
 
-                Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wplus_pT))
+            if sample_era == 1:
+                if (isSingleEleTrigger_32_DoubleEG or isSingleEleTrigger_32) and not isSingleMuTrigger_27 and not isSingleMuTrigger_50:
+                    Event_Weight = Event_Weight*0.991 #uniform penalty for all the 2017 eras
+                    
+            ################ Correct for the difference in pT of the generated W in Pythia and Madgraph samples ################
 
-            if name_sample == "Signal" and is_signal_Wminus:
-                local_Wminus_pT = Wminus_pT
-                if Wminus_pT > 300.:
-                    local_Wminus_pT = 300.
+            if sample_era == 0 and sample_name == "Signal":
+                if is_signal_Wplus:
+                    local_W_pT = Wplus_pT
+                else:
+                    local_W_pT = Wminus_pT
 
-                Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_Wminus_pT))
+                if local_W_pT > 300.:
+                    local_W_pT = 300.
 
-          
-            if "Signal" in name_sample and isMuon:
+                Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_W_pT))
+
+            if "Signal" in sample_name and isMuon:
                 nSig_mu += Event_Weight
-            if not "Signal" in name_sample and isMuon:
+            if not "Signal" in sample_name and isMuon:
                 nBkg_mu += Event_Weight
-                # if "WJetsToLNu" in name_sample:
+                nBkg_processed_mu  += 1.
+                # if "WJetsToLNu" in sample_name:
                 #     Wmass_mu_WJets.Fill(Wmass,Event_Weight)
-            if "Signal" in name_sample and not isMuon:
+            if "Signal" in sample_name and not isMuon:
                 nSig_ele += Event_Weight
-            if not "Signal" in name_sample and not isMuon:
+            if not "Signal" in sample_name and not isMuon:
                 nBkg_ele += Event_Weight
-                # if "WJetsToLNu" in name_sample:
+                nBkg_processed_ele  += 1.
+                # if "WJetsToLNu" in sample_name:
                 #     Wmass_ele_WJets.Fill(Wmass,Event_Weight)
 
         else:
@@ -572,7 +663,8 @@ for name_sample in samplename_list:
 
         #---------Retrieve the BDT output----------#
 
-        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)
+        if create_mass_tree:
+            BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)
 
 
         #---------- Fill the tree ----------#
@@ -595,7 +687,7 @@ for name_sample in samplename_list:
                     _Categorization_fit[0] = 0 # Control Region muon channel = 0
                 if isMuon and BDT_out >= BDT_OUT_MU:
                     _Categorization_fit[0] = 1 # Signal Region muon channel = 1
-                    if not name_sample=="Signal":
+                    if not sample_name=="Signal":
                         Wmass_mu.Fill(Wmass,Event_Weight)
                         #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]
                         if not Wmass == _Wmass_fit[0]:
@@ -605,7 +697,7 @@ for name_sample in samplename_list:
                     _Categorization_fit[0] = 2 # Control Region electron channel = 2
                 if (not isMuon) and BDT_out >= BDT_OUT_ELE:
                     _Categorization_fit[0] = 3 # Signal Region electron channel = 3
-                    if not name_sample=="Signal":
+                    if not sample_name=="Signal":
                         Wmass_ele.Fill(Wmass,Event_Weight)
                         #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]
                         if not Wmass == _Wmass_fit[0]:
@@ -613,7 +705,7 @@ for name_sample in samplename_list:
 
                 if not isData:
                     _weight_fit[0] = Event_Weight
-                    if name_sample == myWF.sig_samplename :
+                    if sample_name == myWF.sig_samplename :
                         _isSignal_fit[0] = 1
                     else:
                         _isSignal_fit[0] = 0
@@ -632,39 +724,40 @@ for name_sample in samplename_list:
 
             if not isData:
                 
-                _gamma_eT[0]        = gamma_eT
-                _pi_pT[0]           = pi_pT
-                _lep_pT[0]          = lep_pT
-                _lep_iso[0]         = lep_iso
-                _nBjets[0]          = nBjets
-                _nBjets_25[0]       = nBjets_25
-                _weight[0]          = Event_Weight
-                _deltaphi_lep_pi[0] = deltaphi_lep_pi
-                _isMuon[0]          = isMuon
-                _piRelIso_05[0]     = piRelIso_05
-                _piRelIso_05_ch[0]  = piRelIso_05_ch
-                _pi_dxy[0]          = pi_dxy
-                _met[0]             = met
-                _met_puppi[0]       = met_puppi
-                _Wmass[0]           = Wmass
+                _gamma_eT[0]           = gamma_eT
+                _pi_pT[0]              = pi_pT
+                _lep_pT[0]             = lep_pT
+                _lep_iso[0]            = lep_iso
+                _nBjets[0]             = nBjets
+                _nBjets_25[0]          = nBjets_25
+                _weight[0]             = Event_Weight
+                _deltaphi_lep_pi[0]    = deltaphi_lep_pi
+                _deltaphi_lep_gamma[0] = deltaphi_lep_gamma
+                _isMuon[0]             = isMuon
+                _piRelIso_05[0]        = piRelIso_05
+                _piRelIso_05_ch[0]     = piRelIso_05_ch
+                _pi_dxy[0]             = pi_dxy
+                _met[0]                = met
+                _met_puppi[0]          = met_puppi
+                _Wmass[0]              = Wmass
                 
                 
-                if name_sample == myWF.sig_samplename and isMuon and split_MC and entry_index <= SignalTree_entries/2:
+                if sample_name == "Signal" and isMuon and split_MC and entry_index <= SignalTree_entries/2:
                     tMVA_signal_mu_training.Fill()
-                if name_sample == myWF.sig_samplename and (not isMuon) and split_MC and entry_index <= SignalTree_entries/2:
+                if sample_name == "Signal" and (not isMuon) and split_MC and entry_index <= SignalTree_entries/2:
                     tMVA_signal_ele_training.Fill()
-                if name_sample == myWF.sig_samplename and isMuon and split_MC and entry_index > SignalTree_entries/2:
+                if sample_name == "Signal" and isMuon and split_MC and entry_index > SignalTree_entries/2:
                     tMVA_signal_mu_test.Fill()
-                if name_sample == myWF.sig_samplename and (not isMuon) and split_MC and entry_index > SignalTree_entries/2:
+                if sample_name == "Signal" and (not isMuon) and split_MC and entry_index > SignalTree_entries/2:
                     tMVA_signal_ele_test.Fill()
-                if name_sample == myWF.sig_samplename and isMuon and (not split_MC):
+                if sample_name == "Signal" and isMuon and (not split_MC):
                     tMVA_signal_mu.Fill()
-                if name_sample == myWF.sig_samplename and (not isMuon) and (not split_MC):
+                if sample_name == "Signal" and (not isMuon) and (not split_MC):
                     tMVA_signal_ele.Fill()
-                if (not name_sample == myWF.sig_samplename) and isMuon:
+                if (not sample_name == "Signal") and isMuon:
                     lep_pt_mu.Fill(lep_pT,Event_Weight)
                     tMVA_background_mu.Fill()
-                if (not name_sample == myWF.sig_samplename) and (not isMuon):
+                if (not sample_name == "Signal") and (not isMuon):
                     lep_pt_ele.Fill(lep_pT,Event_Weight)
                     tMVA_background_ele.Fill()
 
@@ -686,16 +779,16 @@ for name_sample in samplename_list:
                 _met_puppi[0]       = met_puppi
                 _Wmass[0]           = Wmass
                 
-                if name_sample == "Data" and isMuon:
+                if sample_name == "Data" and isMuon:
                     tMVA_background_mu_DATA.Fill()
-                if name_sample == "Data" and not isMuon:
+                if sample_name == "Data" and not isMuon:
                     tMVA_background_ele_DATA.Fill()
 
 
 
 print "Finished runnning over samples!"
 
-print "N_WGToLNuG_mu", N_WGToLNuG_mu 
+#print "N_WGToLNuG_mu", N_WGToLNuG_mu 
 
 ############################################################################
 #                                                                          #
@@ -759,6 +852,7 @@ print "File written"
 
 print "nSig_mu: ", nSig_mu, "nBkg_mu: ", nBkg_mu 
 print "nSig_ele: ", nSig_ele, "nBkg_ele: ", nBkg_ele 
+print "nBkg_processed_mu: ", nBkg_processed_mu, "nBkg_processed_ele: ", nBkg_processed_ele
 
 canvas1 = TCanvas("canvas1","canvas1",200,106,600,600)
 ROOT.gStyle.SetOptStat(0)
