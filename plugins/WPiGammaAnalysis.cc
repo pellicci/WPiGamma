@@ -359,28 +359,28 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //                                                             //
   //*************************************************************//
   
-  MCT_HpT_mu_pT_Max  = -1000;
-  MCT_HpT_mu_pT      = -1000;
-  MCT_HpT_mu_eta     = -1000;
-  MCT_HpT_mu_phi     = -1000;
-  MCT_HpT_ele_pT_Max = -1000;
-  MCT_HpT_ele_pT     = -1000;
-  MCT_HpT_ele_eta    = -1000;
-  MCT_HpT_ele_phi    = -1000;
-  MCT_HeT_ph_eT_Max  = -1000;
-  MCT_HeT_ph_eT      = -1000;
-  MCT_HeT_ph_eta     = -1000;
-  MCT_HeT_ph_phi     = -1000;
+  MCT_HpT_mu_pT_Max  = -1000.;
+  MCT_HpT_mu_pT      = -1000.;
+  MCT_HpT_mu_eta     = -1000.;
+  MCT_HpT_mu_phi     = -1000.;
+  MCT_HpT_ele_pT_Max = -1000.;
+  MCT_HpT_ele_pT     = -1000.;
+  MCT_HpT_ele_eta    = -1000.;
+  MCT_HpT_ele_phi    = -1000.;
+  MCT_HeT_ph_eT_Max  = -1000.;
+  MCT_HeT_ph_eT      = -1000.;
+  MCT_HeT_ph_eta     = -1000.;
+  MCT_HeT_ph_phi     = -1000.;
 
   if(!runningOnData_){
     for(auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
-      if(fabs(gen->pdgId()) == 13 && gen->pt() > MCT_HpT_mu_pT_Max){
+      if(fabs(gen->pdgId()) == 13 && gen->status() == 1 && gen->pt() > MCT_HpT_mu_pT_Max){
 	MCT_HpT_mu_pT  = gen->pt();
 	MCT_HpT_mu_eta = gen->eta();
 	MCT_HpT_mu_phi = gen->phi();
 	MCT_HpT_mu_pT_Max = MCT_HpT_mu_pT;
       }
-      if(fabs(gen->pdgId()) == 11 && gen->pt() > MCT_HpT_ele_pT_Max){
+      if(fabs(gen->pdgId()) == 11 && gen->status() == 1 && gen->pt() > MCT_HpT_ele_pT_Max){
 	MCT_HpT_ele_pT  = gen->pt();
 	MCT_HpT_ele_eta = gen->eta();
 	MCT_HpT_ele_phi = gen->phi();

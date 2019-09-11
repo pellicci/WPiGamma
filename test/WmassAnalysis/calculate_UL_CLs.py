@@ -18,6 +18,7 @@ poi = ROOT.RooArgSet(W_pigamma_BR)
 #Define observables
 Wmass = workspace.var("Wmass")
 Categorization = workspace.cat("Categorization")
+
 observables = ROOT.RooArgSet()
 observables.add(Wmass)
 observables.add(Categorization)
@@ -26,19 +27,34 @@ observables.add(Categorization)
 #Define nuisances
 constrained_params = ROOT.RooArgSet()
 constrained_params.add(workspace.var("dCB_width"))
-constrained_params.add(workspace.var("eta"))
-constrained_params.add(workspace.var("lumi_constr"))
+constrained_params.add(workspace.var("eta_mu_2016"))
+constrained_params.add(workspace.var("eta_el_2016"))
+constrained_params.add(workspace.var("eta_mu_2017"))
+constrained_params.add(workspace.var("eta_el_2017"))
 constrained_params.add(workspace.var("W_xsec_constr"))
-constrained_params.add(workspace.var("eff_mu_constr"))
-constrained_params.add(workspace.var("eff_el_constr"))
+constrained_params.add(workspace.var("lumi_constr_2016"))
+constrained_params.add(workspace.var("lumi_constr_2017"))
+constrained_params.add(workspace.var("eff_mu_constr_2016"))
+constrained_params.add(workspace.var("eff_el_constr_2016"))
+constrained_params.add(workspace.var("eff_mu_constr_2017"))
+constrained_params.add(workspace.var("eff_el_constr_2017"))
 
 #Define global observables
 global_params = ROOT.RooArgSet()
 global_params.add(workspace.var("dCB_width_constr"))
 global_params.add(workspace.var("glb_W_xsec"))
-global_params.add(workspace.var("glb_lumi"))
-global_params.add(workspace.var("glb_eff_mu"))
-global_params.add(workspace.var("glb_eff_el"))
+global_params.add(workspace.var("glb_lumi_2016"))
+global_params.add(workspace.var("glb_lumi_2017"))
+global_params.add(workspace.var("glb_eff_mu_2016"))
+global_params.add(workspace.var("glb_eff_el_2016"))
+global_params.add(workspace.var("glb_eff_mu_2017"))
+global_params.add(workspace.var("glb_eff_el_2017"))
+
+global_params.add(workspace.var("glb_bkg_param_mu_2016"))#Bisogna metterli?
+global_params.add(workspace.var("glb_bkg_param_el_2016"))
+global_params.add(workspace.var("glb_bkg_param_mu_2017"))
+global_params.add(workspace.var("glb_bkg_param_el_2017"))
+
 
 #Define the model container
 #First the S+B
@@ -64,6 +80,7 @@ bModel.SetSnapshot(poi)
 poi.find("W_pigamma_BR").setVal(oldval)
 
 print "Number of events in data = ", workspace.data("data").numEntries()
+
 
 #use the CLs method with the asymptotic calculator, using Asimov datasets
 #See here https://arxiv.org/pdf/1007.1727.pdf
@@ -96,12 +113,8 @@ print "Number of events in data = ", workspace.data("data").numEntries()
 
 #----------------------------------------------------------------------------------#
 
-#_data = workspace.data("data")
-#isSignal = ROOT.workspace.cat("isSignal")
-#data = _data.reduce("isSignal==0")
 data = workspace.data("data")
 
-#fc = ROOT.RooStats.AsymptoticCalculator(workspace.data("data"), bModel, sbModel,0)
 fc = ROOT.RooStats.AsymptoticCalculator(data, bModel, sbModel,0)
 fc.SetOneSided(1)
 #fc.UseSameAltToys()
@@ -124,16 +137,25 @@ poimax = poi.find("W_pigamma_BR").getMax()
 print "Doing a fixed scan  in interval : ", poimin, " , ", poimax
 calc.SetFixedScan(npoints,poimin,0.000006)
 
-# In order to use PROOF, one should instal the test statistic on the workers
+# In order to use PROOF, one should install the test statistic on the workers
 # pc = ROOT.RooStats.ProofConfig(workspace, 0, "workers=6",0)
 # toymc.SetProofConfig(pc)
 
 result = calc.GetInterval() #This is a HypoTestInveter class object
-#upperLimit = result.UpperLimit()
+
+##################################################################
+#                                                                #
+#--------------------- Only when unblinded ----------------------#
+#                                                                #
+##################################################################
+
+# upperLimit = result.UpperLimit()
 
 #Now let's print the result of the two methods
-#print "################"
-#print "The observed CLs upper limit is: ", upperLimit
+# print "################"
+# print "The observed CLs upper limit is: ", upperLimit
+
+##################################################################
 
 #Compute expected limit
 print "Expected upper limits, using the B (alternate) model : "
@@ -148,7 +170,10 @@ freq_plot = ROOT.RooStats.HypoTestInverterPlot("HTI_Result_Plot","Frequentist sc
 #xPlot in a new canvas with style
 canvas = ROOT.TCanvas()
 canvas.cd()
-freq_plot.Draw("2CL")
+#freq_plot.Draw("2CL")
+freq_plot.Draw("EXP")
+# freq_plot.GetYaxis().SetRangeUser(0.,0.8)
+# freq_plot.GetXaxis().SetRange(0.,0.0000107)
 canvas.SaveAs("UL_CLs.pdf")
 
 del fc

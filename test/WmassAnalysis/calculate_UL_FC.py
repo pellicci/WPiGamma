@@ -1,5 +1,7 @@
 import ROOT
 
+ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
+
 #Get the model and the data
 #fInput = ROOT.TFile("fitData.root")
 fInput = ROOT.TFile("fitMC.root")
@@ -32,7 +34,6 @@ model.SetParametersOfInterest(poi)
 #ROOT.RooRandom.randomGenerator().SetSeed(111)
 
 
-#print "Number of events in data = ", workspace.data("data").numEntries()
 print "Number of events in data = ", workspace.data("data").numEntries()
 
 #Set up the FC calculator

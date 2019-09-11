@@ -5,7 +5,7 @@ config = Configuration()
 config.section_('General')
 config.General.transferOutputs = True
 
-runningEra = 0 # 0 = 2016, 1 = 2017, 2 = 2018
+runningEra = 1 # 0 = 2016, 1 = 2017, 2 = 2018
 
 config.section_('JobType')
 config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
@@ -60,13 +60,13 @@ if __name__ == '__main__':
         config.JobType.pyCfgParams = ['runningOnData=False','runningEra=0'] # Configure 2016 MC signal jobs 
 
         config.General.requestName = '2016_WPiGammaAnalysis_Signal_WPlus'
-        config.Data.inputDataset = '/WPlusPiGamma_GENSIM_80XV1/rselvati-WPlusPiGamma_MINIAODSIM_94XV3-9a5eaf7e0651dc0135fee9d652526a74/USER'
+        config.Data.inputDataset = '/WPlusPiGamma_GENSIM_80X_v2/rselvati-WPlusPiGamma_MINIAODSIM_94X_2016_v2-793fab47b42ceb2f28d6e316553fc80e/USER'
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()
         
         config.General.requestName = '2016_WPiGammaAnalysis_Signal_WMinus'
-        config.Data.inputDataset = '/WMinusPiGamma_GENSIM_80XV1/rselvati-WMinusPiGamma_MINIAODSIM_94XV3-9a5eaf7e0651dc0135fee9d652526a74/USER'
+        config.Data.inputDataset = '/WMinusPiGamma_GENSIM_80X_v2/rselvati-WMinusPiGamma_MINIAODSIM_94X_2016_v2-793fab47b42ceb2f28d6e316553fc80e/USER'
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()
@@ -76,13 +76,13 @@ if __name__ == '__main__':
         config.JobType.pyCfgParams = ['runningOnData=False','runningEra=1'] # Configure 2017 MC signal jobs 
 
         config.General.requestName = '2017_WPiGammaAnalysis_Signal_WPlus'
-        config.Data.inputDataset = '/WPlusPiGamma_GENSIM_94X_2017_v5/rselvati-WPlusPiGamma_MINIAODSIM_94X_2017_v5-10a67796329f4238191918f07d0f7633/USER'
+        config.Data.inputDataset = '/WPlusPiGamma_GENSIM_94X_2017_v7/rselvati-WPlusPiGamma_MINIAODSIM_94X_2017_v7-4fa7a8e0675466927bc37686a776c034/USER'
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()
         
         config.General.requestName = '2017_WPiGammaAnalysis_Signal_WMinus'
-        config.Data.inputDataset = '/WMinusPiGamma_GENSIM_94X_2017_v3/rselvati-WMinusPiGamma_MINIAODSIM_94X_2017_v3-10a67796329f4238191918f07d0f7633/USER'
+        config.Data.inputDataset = '/WMinusPiGamma_GENSIM_94X_2017_v7/rselvati-WMinusPiGamma_MINIAODSIM_94X_2017_v7-4fa7a8e0675466927bc37686a776c034/USER'
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()

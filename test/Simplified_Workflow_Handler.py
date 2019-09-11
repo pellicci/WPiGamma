@@ -117,7 +117,7 @@ lep_pT_array             = array('f', [0.])
 piRelIso_05_array        = array('f', [0.])
 met_array                = array('f', [0.])
 #deltaphi_lep_pi_array = array('f', [0.])
-deltaphi_lep_gamma_array = array('f', [0.])
+#deltaphi_lep_gamma_array = array('f', [0.])
 isMuon_array             = array('i', [0])
 
 reader = ROOT.TMVA.Reader("!Color")
@@ -140,6 +140,8 @@ class Simplified_Workflow_Handler:
 
         self.norm_filename_2016 = "rootfiles/latest_production/MC/normalizations/Normalizations_table_2016.txt"
         self.norm_filename_2017 = "rootfiles/latest_production/MC/normalizations/Normalizations_table_2017.txt"
+
+        self.ttbar_sig_calib_file = ROOT.TFile.Open("ttbar_signal_ratio_" + year + ".root")
         
         ###################################################################################
         #                                                                                 #
@@ -159,7 +161,7 @@ class Simplified_Workflow_Handler:
         reader.AddVariable("piRelIso_05_ch",piRelIso_05_array)
         reader.AddVariable("MET",met_array)
         #reader.AddVariable("deltaphi_lep_pi",deltaphi_lep_pi_array)
-        reader.AddVariable("deltaphi_lep_gamma",deltaphi_lep_gamma_array)
+        #reader.AddVariable("deltaphi_lep_gamma",deltaphi_lep_gamma_array)
 
         if isBDT_with_Wmass:
             reader.BookMVA("BDT_mu","MVA/default/weights/" + year + "/TMVAClassification_BDT.weights_mu_Wmass.xml")# First argument is arbitrary. To be chosen in order to distinguish among methods
@@ -172,7 +174,7 @@ class Simplified_Workflow_Handler:
 
     ###############################################################################################################################################
 
-    def get_BDT_output(self,pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_gamma,isMuon):
+    def get_BDT_output(self,pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon):
 
         pi_pT_array[0]           = pi_pT
         gamma_eT_array[0]        = gamma_eT
@@ -181,7 +183,7 @@ class Simplified_Workflow_Handler:
         piRelIso_05_array[0]     = piRelIso_05_ch
         met_array[0]             = met
         #deltaphi_lep_pi_array[0] = deltaphi_lep_pi
-        deltaphi_lep_gamma_array[0] = deltaphi_lep_gamma
+        #deltaphi_lep_gamma_array[0] = deltaphi_lep_gamma
         isMuon_array[0]          = int(isMuon)
         
         if isMuon:
@@ -207,35 +209,36 @@ class Simplified_Workflow_Handler:
 
     ###############################################################################################################################################
 
+    def get_ttbar_signal_reweight(self):
+
+        ttbar_sig_calib = self.ttbar_sig_calib_file.Get("ttbar_signal_ratio")
+
+        return ttbar_sig_calib
+
+    ###############################################################################################################################################
+
     # get the sample names (MC and data)
     def get_samples_names(self,Add_Signal=True,Add_Data=True):
         list_dirs_bkg  = os.listdir(self.dir_bkg_input)
         list_dirs_sig  = os.listdir(self.dir_sig_input)
         list_dirs_data = os.listdir(self.dir_data_input)
         samplename_list = []
-        #sampleEra_list  = []
 
         for dirname in list_dirs_bkg:
             tmp_samplename = dirname.split("WPiGammaAnalysis_")[1].replace(".root","")
             samplename_list.append(tmp_samplename)
-            #sample_era = dirname.split("_")[2].split(".root")[0]
-            #sampleEra_list.append(sample_era)
 
         if Add_Signal:
             for dirname in list_dirs_sig:
                 tmp_samplename = dirname.split("WPiGammaAnalysis_")[1].replace(".root","")
                 samplename_list.append(tmp_samplename)
-                #sample_era = dirname.split("_")[2].split(".root")[0]
-                #sampleEra_list.append(sample_era)
 
         if Add_Data:
             for dirname in list_dirs_data:
                 tmp_samplename = dirname.split("WPiGammaAnalysis_")[1].replace(".root","")
                 samplename_list.append(tmp_samplename)
-                #sample_era = dirname.split("_")[2].split(".root")[0]
-                #sampleEra_list.append(sample_era)
 
-        return samplename_list#, sampleEra_list
+        return samplename_list
 
     ###############################################################################################################################################
 

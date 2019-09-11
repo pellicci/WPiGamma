@@ -66,6 +66,13 @@ for filename in list_inputfiles:
     for histo_name in list_histos:
         histo = fileIn.Get(histo_name)
 
+        # Set to 0 the bins containing negative values, due to negative weights
+        hsize = histo.GetSize() - 2 # GetSize() returns the number of bins +2 (that is + overflow + underflow) 
+        for bin in range(1,hsize+1): # The +1 is in order to get the last bin
+            bincontent = histo.GetBinContent(bin)
+            if bincontent < 0.:
+                histo.SetBinContent(bin,0.)
+
         histo_container.append(copy.copy(histo))
 
         if "Signal" in sample_name:
@@ -97,13 +104,34 @@ for histo_name in list_histos:
     canvas[histo_name] = ROOT.TCanvas("Cavas_" + histo_name,"",200,106,600,600)
     canvas[histo_name].cd()
 
+    ##########################################
+    pad1 = ROOT.TPad("pad_" + histo_name,"",0,0.28,1,1)
+    pad2 = ROOT.TPad("pad_" + histo_name,'',0,0,1,0.25)
+    pad1.SetBottomMargin(0.02)
+    pad1.SetBorderMode(0)
+    #pad2.SetTopMargin(0.01)
+    pad2.SetBottomMargin(0.3)
+    pad2.SetBorderMode(0)
+    pad1.Draw()
+    pad2.Draw()
+    ##########################################
+
+    ##########################################
+    pad1.cd()
+    ##########################################
+
     hstack[histo_name].SetTitle("")
     hstack[histo_name].Draw("histo")
+
+    ##########################################
+    #hstack[histo_name].GetXaxis().SetTickLength(0)
+    hstack[histo_name].GetXaxis().SetLabelOffset(999)
+    ##########################################
 
     if histo_name == "h_Wmass" or histo_name == "h_Wmass_flag_mu" or histo_name == "h_Wmass_flag_ele":
         hstack[histo_name].GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
         #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),5000))
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),100))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),150))
 
     if histo_name == "h_mupt":
         hstack[histo_name].GetXaxis().SetTitle("p_{T}^{#mu} (GeV)")
@@ -112,7 +140,7 @@ for histo_name in list_histos:
 
     if histo_name == "h_elept":
         hstack[histo_name].GetXaxis().SetTitle("p_{T}^{e} (GeV)")
-        #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),12000))
+        #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),4000))
         hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),60.))
     
     if histo_name == "h_pipt":
@@ -138,7 +166,7 @@ for histo_name in list_histos:
 
     if histo_name == "h_pieta":
         hstack[histo_name].GetXaxis().SetTitle("#eta^{#pi}")
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),60))
+        #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),60))
 
     if histo_name == "h_deltaphi_mu_pi":
         hstack[histo_name].GetXaxis().SetTitle("#Delta#varphi_{#mu-#pi}")
@@ -160,6 +188,7 @@ for histo_name in list_histos:
     if histo_name == "h_ele_gamma_InvMass":
         hstack[histo_name].GetXaxis().SetTitle("m_{e#gamma} (GeV/c^{2})")
         #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),10000))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),80))
 
     if histo_name == "h_mu_gamma_InvMass":
         hstack[histo_name].GetXaxis().SetTitle("m_{#mu#gamma} (GeV/c^{2})")
@@ -188,6 +217,90 @@ for histo_name in list_histos:
     hMCErr.Draw("sameE2")
 
     leg1.Draw()
+
+    ################################################
+    pad2.cd()
+    pad2.SetTopMargin(0)
+    pad2.SetFillColor(0)
+    pad2.SetFillStyle(0)
+    ROOT.gStyle.SetOptStat(0)
+    totalMC = copy.deepcopy(hstack[histo_name].GetStack().Last())
+    totalData = copy.deepcopy(hdata[histo_name])
+    totalData.Divide(totalMC)
+    totalData.SetTitle("")
+    totalData.SetMarkerStyle(8)
+    totalData.SetMarkerColor(1)
+    totalData.SetLineColor(1)
+    totalData.GetYaxis().SetLabelSize(0.10)
+    totalData.GetYaxis().SetTitle("Data/MC")
+    totalData.GetYaxis().SetTitleSize(0.08)
+    totalData.GetYaxis().SetTitleOffset(0.5)
+    #totalData.GetYaxis().SetRangeUser(0.4,1.6)
+
+    totalData.GetXaxis().SetLabelSize(0.10)
+    totalData.GetXaxis().SetTitleSize(0.12)
+    totalData.GetXaxis().SetTitleOffset(1.0)
+
+    if histo_name == "h_Wmass" or histo_name == "h_Wmass_flag_mu" or histo_name == "h_Wmass_flag_ele":
+        totalData.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
+
+    if histo_name == "h_mupt":
+        totalData.GetXaxis().SetTitle("p_{T}^{#mu} (GeV)")
+
+    if histo_name == "h_elept":
+        totalData.GetXaxis().SetTitle("p_{T}^{e} (GeV)")
+    
+    if histo_name == "h_pipt":
+        totalData.GetXaxis().SetTitle("p_{T}^{#pi} (GeV)")
+
+    if histo_name == "h_gammaet":
+        totalData.GetXaxis().SetTitle("E_{T}^{#gamma} (GeV)")
+
+    if histo_name == "h_gammaeta":
+        totalData.GetXaxis().SetTitle("#eta^{#gamma}")
+
+    if histo_name == "h_mueta":
+        totalData.GetXaxis().SetTitle("#eta^{#mu}")
+
+    if histo_name == "h_eleeta":
+        totalData.GetXaxis().SetTitle("#eta^{e}")
+
+    if histo_name == "h_pieta":
+        totalData.GetXaxis().SetTitle("#eta^{#pi}")
+
+    if histo_name == "h_deltaphi_mu_pi":
+        totalData.GetXaxis().SetTitle("#Delta#varphi_{#mu-#pi}")
+
+    if histo_name == "h_deltaphi_ele_pi":
+        totalData.GetXaxis().SetTitle("#Delta#varphi_{e-#pi}")
+
+    if histo_name == "h_deltaphi_ele_gamma":
+        totalData.GetXaxis().SetTitle("#Delta#varphi_{e-#gamma}")
+
+    if histo_name == "h_deltaphi_mu_gamma":
+        totalData.GetXaxis().SetTitle("#Delta#varphi_{#mu-#gamma}")
+
+    if histo_name == "h_ele_gamma_InvMass":
+        totalData.GetXaxis().SetTitle("m_{e#gamma} (GeV/c^{2})")
+
+    if histo_name == "h_mu_gamma_InvMass":
+        totalData.GetXaxis().SetTitle("m_{#mu#gamma} (GeV/c^{2})")
+
+    if histo_name == "h_nBjets":
+        totalData.GetXaxis().SetTitle("Number of b-jets")
+
+    if histo_name == "h_nBjets_25":
+        totalData.GetXaxis().SetTitle("Number of b-jets (p_{T}>25 GeV/c)")
+
+    if "h_piRelIso" in histo_name:
+        totalData.GetXaxis().SetTitle("#pi_{Iso}/p_{T}^{#pi}")
+
+    line_on_one = ROOT.TLine(totalData.GetXaxis().GetXmin(),1.,totalData.GetXaxis().GetXmax(),1.)
+    line_on_one.SetLineColor(38)
+
+    totalData.Draw()
+    line_on_one.Draw("SAME")
+    ################################################
 
     canvas[histo_name].SaveAs(output_dir + histo_name + ".pdf")
 

@@ -25,9 +25,9 @@ output_filename = args.outputfile_option
 
 #Configuration bools---------------------#
 isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
-random_mu_SF  = False #------if True, muon scale factors are sampled from a Gaussian
-random_ele_SF = False #------if True, electron scale factors are sampled from a Gaussian
-random_ph_SF  = False #------if True, photon scale factors are sampled from a Gaussian
+random_mu_SF     = False #------if True, muon scale factors are sampled from a Gaussian
+random_ele_SF    = False #------if True, electron scale factors are sampled from a Gaussian
+random_ph_SF     = False #------if True, photon scale factors are sampled from a Gaussian
 
 #-------------------------#
 myWF = Simplified_Workflow_Handler("Signal","Data",isBDT,isBDT_with_Wmass,runningEra)
@@ -50,8 +50,8 @@ luminosity_norm_2017_Ele32_WPTight = 27.13
 _Nrandom_for_Ele_32_WPTight_exclusion = ROOT.TRandom3(64524)
 
 #############---------------- BDT score cut values ----------------#############
-BDT_OUT_MU  = 0.240
-BDT_OUT_ELE = 0.170
+BDT_OUT_MU  = 0.220
+BDT_OUT_ELE = 0.180
 
 ############################################################################
 #                                                                          #
@@ -81,8 +81,7 @@ W_signal_hist.Sumw2()
 W_ttbar_hist.Sumw2()
 h_PUdistrib.Sumw2()
 
-ttbar_sig_calib_file = ROOT.TFile.Open("ttbar_signal_ratio.root")
-ttbar_sig_calib = ttbar_sig_calib_file.Get("ttbar_signal_ratio")
+ttbar_sig_calib = myWF.get_ttbar_signal_reweight()
 
 ##Get the handlers for all the histos and graphics
 h_base  = dict()
@@ -258,34 +257,37 @@ for jentry in xrange(mytree.GetEntriesFast()):
     deltaeta_lep_gamma = math.fabs(lep_eta - gamma_eta)
     deltaR_lep_gamma = math.sqrt(deltaphi_lep_gamma*deltaphi_lep_gamma + deltaeta_lep_gamma*deltaeta_lep_gamma)
 
+    #Avoid double counting between WJetsToLNu and WGToLNuG, based on the DeltaR(lepton,photon)
     if "WJetsToLNu" in sample_name:
 
         if isMuon:
             MCT_lep_eta = mytree.MCT_HpT_mu_eta
             MCT_lep_phi = mytree.MCT_HpT_mu_phi
-            if MCT_lep_eta == -1000. or MCT_lep_phi == -1000.:
-                print "NO MCT MUON IN THIS EVENT"
+            MCT_lep_pT  = mytree.MCT_HpT_mu_pT
+            # if MCT_lep_eta == -1000. or MCT_lep_phi == -1000.:
+            #     print "NO MCT MUON IN THIS EVENT"
         else:
             MCT_lep_eta = mytree.MCT_HpT_ele_eta
             MCT_lep_phi = mytree.MCT_HpT_ele_phi
-            if MCT_lep_eta == -1000. or MCT_lep_phi == -1000.:
-                print "NO MCT ELECTRON IN THIS EVENT"
+            MCT_lep_pT  = mytree.MCT_HpT_ele_pT
+            # if MCT_lep_eta == -1000. or MCT_lep_phi == -1000.:
+            #     print "NO MCT ELECTRON IN THIS EVENT"
         
         MCT_deltaeta_lep_gamma = math.fabs(MCT_lep_eta - mytree.MCT_HeT_ph_eta)
         MCT_deltaphi_lep_gamma = math.fabs(MCT_lep_phi - mytree.MCT_HeT_ph_phi)
-        if not (mytree.MCT_HeT_ph_eta == -1000. or mytree.MCT_HeT_ph_phi == -1000. or mytree.MCT_HeT_ph_eT == -1000.):
-            print "NO MCT PHOTON IN THIS EVENT"
+        # if not (mytree.MCT_HeT_ph_eta == -1000. or mytree.MCT_HeT_ph_phi == -1000. or mytree.MCT_HeT_ph_eT == -1000.):
+        #     print "NO MCT PHOTON IN THIS EVENT"
 
         if MCT_deltaphi_lep_gamma > 3.14:
             MCT_deltaphi_lep_gamma = 6.28 - MCT_deltaphi_lep_gamma
 
         MCT_deltaR_lep_gamma = math.sqrt(MCT_deltaeta_lep_gamma*MCT_deltaeta_lep_gamma + MCT_deltaphi_lep_gamma*MCT_deltaphi_lep_gamma)
 
-        if MCT_deltaR_lep_gamma > 1. and (isMuon and not (MCT_lep_eta == -1000. or MCT_lep_phi == -1000.) or not isMuon and not (MCT_lep_eta == -1000. or MCT_lep_phi == -1000.)) and not (mytree.MCT_HeT_ph_eta == -1000. or mytree.MCT_HeT_ph_phi == -1000. or mytree.MCT_HeT_ph_eT == -1000.):
+        if MCT_deltaR_lep_gamma > 0.5 and not MCT_lep_pT < 0. and not mytree.MCT_HeT_ph_eT < 0.:
             continue
+        # if not MCT_lep_pT < 0. and not mytree.MCT_HeT_ph_eT < 0.:
+        #     continue
 
-    #if deltaR_lep_gamma > 1.0 and sample_name == "WJetsToLNu":
-    #    continue
 
     if not "Data" in sample_name:
         Wplus_pT = mytree.Wplus_pT
@@ -365,14 +367,10 @@ for jentry in xrange(mytree.GetEntriesFast()):
         if runningEra == 1:
             if (isSingleEleTrigger_32_DoubleEG or isSingleEleTrigger_32) and not isSingleMuTrigger_27 and not isSingleMuTrigger_50:
                 Event_Weight = Event_Weight*0.991 #uniform penalty for all the 2017 eras
-        # if runningEra == 0:
-        #     if (mytree.isSingleEleTrigger_25 or mytree.isSingleEleTrigger_27) and not isSingleMuTrigger_24 and not isSingleMuTrigger_50:
-        #         Event_Weight = Event_Weight*0.991 #uniform penalty for all the 2017 eras
-
 
         ################ Correct for the difference in pT of the generated W in Pythia and Madgraph samples ################
 
-        if runningEra == 0 and sample_name == "Signal":
+        if sample_name == "Signal":
             if is_signal_Wplus:
                 local_W_pT = Wplus_pT
             else:
@@ -398,9 +396,11 @@ for jentry in xrange(mytree.GetEntriesFast()):
     #                                                                          #
     ############################################################################
     if isBDT_with_Wmass:
-        BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)  #WARNING: contains deltaphi_lep_pi
+        #BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_gamma,isMuon)
+        BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)
     elif isBDT:
-        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_gamma,isMuon)
+        #BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_gamma,isMuon)
+        BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)
    
     ############################################################################
     #                                                                          #
@@ -418,7 +418,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
         continue
     if isBDT and (Wmass < 50. or Wmass > 100.): # General Wmass condition
         continue
-    if isBDT and sample_name=="Data" and (Wmass >= 65. and Wmass <= 90.): # Exclude data in the Blind Window
+    if isBDT and sample_name == "Data" and (Wmass >= 65. and Wmass <= 90.): # Exclude data in the Blind Window
         continue
 
     h_base["h_nBjets_25"].Fill(nBjets_25,Event_Weight)
@@ -471,27 +471,40 @@ for jentry in xrange(mytree.GetEntriesFast()):
     #                                                                          #
     ############################################################################
     ########----------- To be filled in "preselection" mode! -----------########
-    if sample_name == "Signal":
-        if is_signal_Wplus:
-            local_pT = Wplus_pT
-        else:
-            local_pT = Wminus_pT
+#     if sample_name == "Signal":
+#         if is_signal_Wplus:
+#             local_pT = Wplus_pT
+#         else:
+#             local_pT = Wminus_pT
 
-        if local_pT > 300.:
-            W_signal_hist.Fill(300.,Event_Weight)
-        else:
-            W_signal_hist.Fill(local_pT,Event_Weight)
+#         if local_pT > 300.:
+#             W_signal_hist.Fill(300.,Event_Weight)
+#         else:
+#             W_signal_hist.Fill(local_pT,Event_Weight)
 
-    if sample_name == "ttbar":
-        if Wplus_pT > 300.:
-            W_ttbar_hist.Fill(300.,Event_Weight)
-        else:
-            W_ttbar_hist.Fill(Wplus_pT,Event_Weight)
 
-        if Wminus_pT > 300.:
-            W_ttbar_hist.Fill(300.,Event_Weight)
-        else:
-            W_ttbar_hist.Fill(Wminus_pT,Event_Weight)
+#     if sample_name == "ttbarToSemiLeptonic":
+#         if Wplus_pT > 300.:
+#             W_ttbar_hist.Fill(300.,Event_Weight)
+#         else:
+#             W_ttbar_hist.Fill(Wplus_pT,Event_Weight)
+
+#         if Wminus_pT > 300.:
+#             W_ttbar_hist.Fill(300.,Event_Weight)
+#         else:
+#             W_ttbar_hist.Fill(Wminus_pT,Event_Weight)
+
+# if sample_name == "Signal":
+#     fOut_signal = ROOT.TFile("signal_pT.root","RECREATE")
+#     fOut_signal.cd()
+#     W_signal_hist.Write()
+#     fOut_signal.Close()
+
+# if sample_name == "ttbarToSemiLeptonic":
+#     fOut_ttbar = ROOT.TFile("ttbar_SemiLeptonic_pT.root","RECREATE")
+#     fOut_ttbar.cd()
+#     W_ttbar_hist.Write()
+#     fOut_ttbar.Close()
 
 fOut = ROOT.TFile(output_filename,"RECREATE")
 fOut.cd()

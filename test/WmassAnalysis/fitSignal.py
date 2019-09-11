@@ -23,22 +23,27 @@ isSignal.defineType("Background",0)
 
 #Define the mu/ele category
 Categorization = ROOT.RooCategory("Categorization","Categorization")
-Categorization.defineType("MuonCR",0)
-Categorization.defineType("MuonSignal",1)
-Categorization.defineType("ElectronCR",2)
-Categorization.defineType("ElectronSignal",3)
+Categorization.defineType("MuonCR_2016",0)
+Categorization.defineType("MuonSignal_2016",1)
+Categorization.defineType("ElectronCR_2016",2)
+Categorization.defineType("ElectronSignal_2016",3)
+Categorization.defineType("MuonCR_2017",4)
+Categorization.defineType("MuonSignal_2017",5)
+Categorization.defineType("ElectronCR_2017",6)
+Categorization.defineType("ElectronSignal_2017",7)
 
-Categorization.setRange("SignalRegion","MuonSignal,ElectronSignal")
-
+Categorization.setRange("SignalRegion","MuonSignal_2016,ElectronSignal_2016,MuonSignal_2017,ElectronSignal_2017")
+#Categorization.setRange("SignalRegion_2017","MuonSignal_2017,ElectronSignal_2017")#FIXME
 
 #Create the RooDataSet. No need to import weight for signal only analysis
 sample = ROOT.RooDataSet("sample","sample", ROOT.RooArgSet(Wmass,isSignal,weight,Categorization), ROOT.RooFit.Import(mytree),ROOT.RooFit.Cut("isSignal==1"))
 
 #Skim the signal only
 data_Signal = sample.reduce(ROOT.RooFit.CutRange("SignalRegion"))
-
+#data_Signal_2017 = sample.reduce(ROOT.RooFit.CutRange("SignalRegion_2017"))#FIXME
 
 print "Using ", data_Signal.numEntries(), " events to fit the signal shape"
+#print "Using ", data_Signal_2017.numEntries(), " events to fit the signal shape (2017)"#FIXME
 
 #Define the signal lineshape
 Gauss_pole = ROOT.RooRealVar("Gauss_pole","The gaussian pole", 73.,70.,80.)
@@ -46,7 +51,7 @@ Gauss_sigma = ROOT.RooRealVar("Gauss_sigma","The gaussian sigma",4,0.1,10.)
 Gauss_W = ROOT.RooGaussian("Gauss_W","The Gaussian",Wmass,Gauss_pole,Gauss_sigma)
 
 
-Gauss_pole_2 = ROOT.RooRealVar("Gauss_pole_2","The second gaussian pole", 80.,70.,90.)
+Gauss_pole_2 = ROOT.RooRealVar("Gauss_pole_2","The second gaussian pole", 81.,70.,90.)
 Gauss_sigma_2 = ROOT.RooRealVar("Gauss_sigma_2","The second gaussian sigma",5.,0.1,10.)
 Gauss_W_2 = ROOT.RooGaussian("Gauss_W_2","The second Gaussian",Wmass,Gauss_pole_2,Gauss_sigma_2)
 
@@ -75,8 +80,12 @@ totSignal.fitTo(data_Signal)
 massplot = Wmass.frame()
 massplot.SetTitle(" ")
 massplot.SetTitleOffset(1.5,"y")
-data_Signal.plotOn(massplot)
+data_Signal.plotOn(massplot)#,ROOT.RooFit.Rescale(8641./12150.)) #RESCALE to the number of 2017 events to check if the two signals are compatible
 totSignal.plotOn(massplot)
+
+#totSignal.fitTo(data_Signal_2017)#FIXME
+#data_Signal_2017.plotOn(massplot,ROOT.RooFit.MarkerColor(ROOT.kRed))#FIXME
+#totSignal.plotOn(massplot,ROOT.RooFit.LineColor(ROOT.kRed))#FIXME
 
 #totSignal.paramOn(massplot,ROOT.RooFit.Layout(0.55))
 #data_Signal.statOn(massplot,ROOT.RooFit.Layout(0.55,0.99,0.8))
@@ -95,6 +104,7 @@ getattr(workspace,'import')(totSignal)
 fOutput = ROOT.TFile("Signal_model.root","RECREATE")
 fOutput.cd()
 workspace.Write()
+massplot.Write("massplot")
 fOutput.Close()
 
 raw_input()

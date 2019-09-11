@@ -1,4 +1,3 @@
-
 mkdir histos
 mkdir histos/latest_production
 

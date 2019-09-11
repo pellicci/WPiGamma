@@ -66,10 +66,10 @@ def BDT_output():
 def rejB_vs_S():
 
     if isMuon:
-        f1 = TFile("outputs/" + year + "/Nominal_training_mu_deltaphi_lep_gamma.root")
+        f1 = TFile("outputs/" + year + "/Nominal_training_mu_with_deltaphi.root")
         f2 = TFile("outputs/" + year + "/Nominal_training_mu.root")
     else:
-        f1 = TFile("outputs/" + year + "/Nominal_training_ele_deltaphi_lep_gamma.root")
+        f1 = TFile("outputs/" + year + "/Nominal_training_ele_with_deltaphi.root")
         f2 = TFile("outputs/" + year + "/Nominal_training_ele.root")
 
     h_rejB_vs_S_1 = f1.Get("default/Method_BDT/BDT/MVA_BDT_rejBvsS")
@@ -87,7 +87,7 @@ def rejB_vs_S():
     leg2.AddEntry(h_rejB_vs_S_1,"with #Delta#varphi_{l,#gamma}","l")
     #leg2.AddEntry(h_rejB_vs_S_1,"with m_{W}","l")
     #leg2.AddEntry(h_rejB_vs_S_2,"with MC","l")
-    leg2.AddEntry(h_rejB_vs_S_2,"with #Delta#varphi_{l,#pi}","l")
+    leg2.AddEntry(h_rejB_vs_S_2,"without #Delta#varphi_{l,#gamma}","l")
     #leg2.AddEntry(h_rejB_vs_S_2,"without m_{W}","l")
 
     gStyle.SetOptStat(0)
@@ -102,9 +102,9 @@ def rejB_vs_S():
     leg2.Draw("SAME")
 
     if isMuon:
-        canvas2.Print("plots/" + year + "/rejBvsS_mu_deltaphi.pdf")
+        canvas2.Print("plots/" + year + "/rejBvsS_mu_deltaphi_or_not.pdf")
     else:
-        canvas2.Print("plots/" + year + "/rejBvsS_ele_deltaphi.pdf")
+        canvas2.Print("plots/" + year + "/rejBvsS_ele_deltaphi_or_not.pdf")
 
 if __name__ == "__main__":
 

@@ -25,7 +25,7 @@ runningEra = int(args.runningEra_option)
 ROOT.gROOT.SetBatch(True)
 
 isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
-isData   = False # Switch from DATA to MC and vice versa
+isData   = True # Switch from DATA to MC and vice versa
 split_MC = False # If True, MC signal sample is split in two for the training/testing of the BDT
 
 myWF = Simplified_Workflow_Handler("Signal","Data",create_mass_tree,isBDT_with_Wmass,runningEra)
@@ -52,12 +52,6 @@ ELE_GAMMA_INVMASS_MAX = 91.6
 #                                                                          #
 ############################################################################
 #Normalize to this luminsity, in fb-1
-# if runningEra == 0:
-#     luminosity_norm = 35.86
-# if runningEra == 1:
-#     luminosity_norm = 41.529
-#     #luminosity_norm = 27.13 #lumi for Ele32_WPTight only
-
 luminosity_norm_list = [35.86,41.529] #2016,2017
 
 luminosity_norm_2017_Ele32_WPTight = 27.13
@@ -66,11 +60,11 @@ _Nrandom_for_Ele_32_WPTight_exclusion = ROOT.TRandom3(64524)
 #############---------------- BDT score cut values ----------------#############
 
 BDT_OUT_MU  = 0.220
-BDT_OUT_ELE = 0.170
+BDT_OUT_ELE = 0.180
 
 ############################################################################
 #                                                                          #
-#------------------- Get rootfiles and name of samples  -------------------#
+#------------------- Get rootfiles and name of samples --------------------#
 #                                                                          #
 ############################################################################
 
@@ -139,7 +133,7 @@ nBkg_processed_ele = 0.
 if not isData:
 
     if create_mass_tree:
-        f = TFile('WmassAnalysis/Tree_input_massfit_MC.root','recreate')        
+        f = TFile('WmassAnalysis/Tree_input_massfit_MC_' + str(runningEra) + '.root','recreate')        
         t = TTree('minitree','tree with branches')
         t.Branch('Wmass',_Wmass_fit,'Wmass/D')
         t.Branch('isMuon',_isMuon_fit,'isMuon/I')
@@ -297,7 +291,7 @@ if not isData:
 if isData:
 
     if create_mass_tree:
-        f = TFile('WmassAnalysis/Tree_input_massfit_Data.root','recreate')
+        f = TFile('WmassAnalysis/Tree_input_massfit_Data_' + str(runningEra) + '.root','recreate')
         t = TTree('minitree','tree with branches')
         t.Branch('Wmass',_Wmass_fit,'Wmass/D')
         t.Branch('isMuon',_isMuon_fit,'isMuon/I')
@@ -369,10 +363,8 @@ def select_all_but_one(cutstring):
 
     return result
 
-##Here starts the program
-
-ttbar_sig_calib_file = ROOT.TFile.Open("ttbar_signal_ratio.root")
-ttbar_sig_calib = ttbar_sig_calib_file.Get("ttbar_signal_ratio")
+## ttbar-signal calibration ##
+ttbar_sig_calib = myWF.get_ttbar_signal_reweight()
 
 
 SignalTree_entries = 0
@@ -552,9 +544,11 @@ for full_sample_name in samplename_list:
             if isMuon:
                 MCT_lep_eta = mytree.MCT_HpT_mu_eta
                 MCT_lep_phi = mytree.MCT_HpT_mu_phi
+                MCT_lep_pT  = mytree.MCT_HpT_mu_pT
             else:
                 MCT_lep_eta = mytree.MCT_HpT_ele_eta
                 MCT_lep_phi = mytree.MCT_HpT_ele_phi
+                MCT_lep_pT  = mytree.MCT_HpT_ele_pT
                 
             MCT_deltaeta_lep_gamma = math.fabs(MCT_lep_eta - mytree.MCT_HeT_ph_eta)
             MCT_deltaphi_lep_gamma = math.fabs(MCT_lep_phi - mytree.MCT_HeT_ph_phi)
@@ -563,10 +557,8 @@ for full_sample_name in samplename_list:
                 MCT_deltaphi_lep_gamma = 6.28 - MCT_deltaphi_lep_gamma
 
             MCT_deltaR_lep_gamma = math.sqrt(MCT_deltaeta_lep_gamma*MCT_deltaeta_lep_gamma + MCT_deltaphi_lep_gamma*MCT_deltaphi_lep_gamma)
-            
-            # if MCT_deltaR_lep_gamma > 1.:
-            #     continue
-            if MCT_deltaR_lep_gamma > 1. and (isMuon and not (MCT_lep_eta == -1000. or MCT_lep_phi == -1000.) or not isMuon and not (MCT_lep_eta == -1000. or MCT_lep_phi == -1000.)) and not (mytree.MCT_HeT_ph_eta == -1000. or mytree.MCT_HeT_ph_phi == -1000. or mytree.MCT_HeT_ph_eT == -1000.):
+
+            if MCT_deltaR_lep_gamma > 0.5 and not MCT_lep_pT < 0. and not mytree.MCT_HeT_ph_eT < 0.:
                 continue
 
 
@@ -624,7 +616,7 @@ for full_sample_name in samplename_list:
                     
             ################ Correct for the difference in pT of the generated W in Pythia and Madgraph samples ################
 
-            if sample_era == 0 and sample_name == "Signal":
+            if sample_name == "Signal":
                 if is_signal_Wplus:
                     local_W_pT = Wplus_pT
                 else:
@@ -664,7 +656,7 @@ for full_sample_name in samplename_list:
         #---------Retrieve the BDT output----------#
 
         if create_mass_tree:
-            BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_pi,isMuon)
+            BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)
 
 
         #---------- Fill the tree ----------#
@@ -682,10 +674,11 @@ for full_sample_name in samplename_list:
                     _isSignalRegion_fit[0] = 1
                 else:
                     _isSignalRegion_fit[0] = 0
-                    
-                if isMuon and BDT_out < BDT_OUT_MU:
+
+                #------------------------ 2016 ------------------------#
+                if sample_era == 0 and isMuon and BDT_out < BDT_OUT_MU:
                     _Categorization_fit[0] = 0 # Control Region muon channel = 0
-                if isMuon and BDT_out >= BDT_OUT_MU:
+                if sample_era == 0 and isMuon and BDT_out >= BDT_OUT_MU:
                     _Categorization_fit[0] = 1 # Signal Region muon channel = 1
                     if not sample_name=="Signal":
                         Wmass_mu.Fill(Wmass,Event_Weight)
@@ -693,10 +686,31 @@ for full_sample_name in samplename_list:
                         if not Wmass == _Wmass_fit[0]:
                             print "WARNING!!! mu channel"
 
-                if (not isMuon) and BDT_out < BDT_OUT_ELE:
+                if sample_era == 0 and (not isMuon) and BDT_out < BDT_OUT_ELE:
                     _Categorization_fit[0] = 2 # Control Region electron channel = 2
-                if (not isMuon) and BDT_out >= BDT_OUT_ELE:
+                if sample_era == 0 and (not isMuon) and BDT_out >= BDT_OUT_ELE:
                     _Categorization_fit[0] = 3 # Signal Region electron channel = 3
+                    if not sample_name=="Signal":
+                        Wmass_ele.Fill(Wmass,Event_Weight)
+                        #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]
+                        if not Wmass == _Wmass_fit[0]:
+                            print "WARNING!!! ele channel"
+
+                #------------------------ 2017 ------------------------#
+                if sample_era == 1 and isMuon and BDT_out < BDT_OUT_MU:
+                    _Categorization_fit[0] = 4 # Control Region muon channel = 0
+                if sample_era == 1 and isMuon and BDT_out >= BDT_OUT_MU:
+                    _Categorization_fit[0] = 5 # Signal Region muon channel = 1
+                    if not sample_name=="Signal":
+                        Wmass_mu.Fill(Wmass,Event_Weight)
+                        #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]
+                        if not Wmass == _Wmass_fit[0]:
+                            print "WARNING!!! mu channel"
+
+                if sample_era == 1 and (not isMuon) and BDT_out < BDT_OUT_ELE:
+                    _Categorization_fit[0] = 6 # Control Region electron channel = 2
+                if sample_era == 1 and (not isMuon) and BDT_out >= BDT_OUT_ELE:
+                    _Categorization_fit[0] = 7 # Signal Region electron channel = 3
                     if not sample_name=="Signal":
                         Wmass_ele.Fill(Wmass,Event_Weight)
                         #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]
@@ -705,7 +719,7 @@ for full_sample_name in samplename_list:
 
                 if not isData:
                     _weight_fit[0] = Event_Weight
-                    if sample_name == myWF.sig_samplename :
+                    if sample_name == "Signal":
                         _isSignal_fit[0] = 1
                     else:
                         _isSignal_fit[0] = 0

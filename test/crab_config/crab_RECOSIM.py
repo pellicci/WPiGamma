@@ -30,11 +30,11 @@ if runningEra == 1:
     config.JobType.psetName = 'cmssw_config/WPiGamma_13TeV_pythia8_RAW2DIGIRECO_2017_cfg.py'
 
     if doPlus: 
-        config.General.requestName = 'WPlusPiGamma_Pythia8_RECOSIM_94X_2017_v5'
-        config.Data.inputDataset = '/WPlusPiGamma_GENSIM_94X_2017_v5/rselvati-WPlusPiGamma_DIGIHLT_94X_2017_v5-5b9cd2c7eef36524de7af1c8e43b0ebc/USER'
+        config.General.requestName = 'WPlusPiGamma_Pythia8_RECOSIM_94X_2017_v7'
+        config.Data.inputDataset = '/WPlusPiGamma_GENSIM_94X_2017_v7/rselvati-WPlusPiGamma_DIGIHLT_94X_2017_v7-80ee49574e9e2ea92e8268e286fe8a92/USER'
     else:
-        config.General.requestName = 'WMinusPiGamma_Pythia8_RECOSIM_94X_2017_v3'
-        config.Data.inputDataset = '/WMinusPiGamma_GENSIM_94X_2017_v3/rselvati-WMinusPiGamma_DIGIHLT_94X_2017_v3-5b9cd2c7eef36524de7af1c8e43b0ebc/USER'
+        config.General.requestName = 'WMinusPiGamma_Pythia8_RECOSIM_94X_2017_v7'
+        config.Data.inputDataset = '/WMinusPiGamma_GENSIM_94X_2017_v7/rselvati-WMinusPiGamma_DIGIHLT_94X_2017_v7-80ee49574e9e2ea92e8268e286fe8a92/USER'
 
 
 config.Data.inputDBS = 'phys03'
@@ -53,9 +53,9 @@ if runningEra == 0:
 if runningEra == 1:
 
     if doPlus:
-        config.Data.outputDatasetTag = 'WPlusPiGamma_RECOSIM_94X_2017_v5'
+        config.Data.outputDatasetTag = 'WPlusPiGamma_RECOSIM_94X_2017_v7'
     else:
-        config.Data.outputDatasetTag = 'WMinusPiGamma_RECOSIM_94X_2017_v3'
+        config.Data.outputDatasetTag = 'WMinusPiGamma_RECOSIM_94X_2017_v7'
 
 config.section_('Site')
-config.Site.storageSite = 'T2_IT_Bari'
+config.Site.storageSite = 'T2_IT_Legnaro'
