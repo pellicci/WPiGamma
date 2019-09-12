@@ -112,13 +112,10 @@ if isData:
 else:
     data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,weight,BDT_out,isSignal,isMuon), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
 
-if restricted_CR:
-    if runningEra == 0:
-        data = data_initial.reduce("(BDT_out > 0.155 && isMuon==isMuon::Muon) || (BDT_out > 0.107 && isMuon==isMuon::Electron)")
-    if runningEra == 1:
-        data = data_initial.reduce("(BDT_out > 0.184 && isMuon==isMuon::Muon) || (BDT_out > 0.122 && isMuon==isMuon::Electron)")
-else:
-    data = data_initial
+if runningEra == 0:
+    data = data_initial.reduce("(BDT_out > 0.155 && isMuon==isMuon::Muon) || (BDT_out > 0.107 && isMuon==isMuon::Electron)")
+if runningEra == 1:
+    data = data_initial.reduce("(BDT_out > 0.184 && isMuon==isMuon::Muon) || (BDT_out > 0.122 && isMuon==isMuon::Electron)")
 
 print "number of events mu 2016  - SR: ", data.sumEntries("Categorization==1")
 print "number of events ele 2016 - SR: ", data.sumEntries("Categorization==3")
@@ -443,19 +440,19 @@ totPDF_mu_2017 = ROOT.RooProdPdf("totPDF_mu_2017","totPDF_mu_2017", ROOT.RooArgL
 totPDF_el_2017 = ROOT.RooProdPdf("totPDF_el_2017","totPDF_el_2017", ROOT.RooArgList(totPDF_el_unconstr_2017,gauss_lumi_2017,gauss_W_xsec,gauss_eff_el_2017,gauss_W_resol,gauss_bkg_param_el_2017))
 
 
-#Now for the CR
-Nbkg_mu_CR_2016 = ROOT.RooRealVar("Nbkg_mu_CR_2016","Nbkg_mu_CR_2016",100.,1.,40000.)
-Nbkg_el_CR_2016 = ROOT.RooRealVar("Nbkg_el_CR_2016","Nbkg_el_CR_2016",100.,1.,40000.)
+# #Now for the CR
+# Nbkg_mu_CR_2016 = ROOT.RooRealVar("Nbkg_mu_CR_2016","Nbkg_mu_CR_2016",100.,1.,40000.)
+# Nbkg_el_CR_2016 = ROOT.RooRealVar("Nbkg_el_CR_2016","Nbkg_el_CR_2016",100.,1.,40000.)
 
-Nbkg_mu_CR_2017 = ROOT.RooRealVar("Nbkg_mu_CR_2017","Nbkg_mu_CR_2017",100.,1.,40000.)
-Nbkg_el_CR_2017 = ROOT.RooRealVar("Nbkg_el_CR_2017","Nbkg_el_CR_2017",100.,1.,40000.)
+# Nbkg_mu_CR_2017 = ROOT.RooRealVar("Nbkg_mu_CR_2017","Nbkg_mu_CR_2017",100.,1.,40000.)
+# Nbkg_el_CR_2017 = ROOT.RooRealVar("Nbkg_el_CR_2017","Nbkg_el_CR_2017",100.,1.,40000.)
 
 
-totPDF_mu_CR_2016 = ROOT.RooExtendPdf("totPDF_mu_CR_2016","Background PDF for the CR for mu (2016)",backPDF_mu_2016,Nbkg_mu_CR_2016)
-totPDF_el_CR_2016 = ROOT.RooExtendPdf("totPDF_el_CR_2016","Background PDF for the CR for el (2016)",backPDF_el_2016,Nbkg_el_CR_2016)
+# totPDF_mu_CR_2016 = ROOT.RooExtendPdf("totPDF_mu_CR_2016","Background PDF for the CR for mu (2016)",backPDF_mu_2016,Nbkg_mu_CR_2016)
+# totPDF_el_CR_2016 = ROOT.RooExtendPdf("totPDF_el_CR_2016","Background PDF for the CR for el (2016)",backPDF_el_2016,Nbkg_el_CR_2016)
 
-totPDF_mu_CR_2017 = ROOT.RooExtendPdf("totPDF_mu_CR_2017","Background PDF for the CR for mu (2017)",backPDF_mu_2017,Nbkg_mu_CR_2017)
-totPDF_el_CR_2017 = ROOT.RooExtendPdf("totPDF_el_CR_2017","Background PDF for the CR for el (2017)",backPDF_el_2017,Nbkg_el_CR_2017)
+# totPDF_mu_CR_2017 = ROOT.RooExtendPdf("totPDF_mu_CR_2017","Background PDF for the CR for mu (2017)",backPDF_mu_2017,Nbkg_mu_CR_2017)
+# totPDF_el_CR_2017 = ROOT.RooExtendPdf("totPDF_el_CR_2017","Background PDF for the CR for el (2017)",backPDF_el_2017,Nbkg_el_CR_2017)
 
 
 ################################################################
@@ -467,10 +464,10 @@ totPDF_el_CR_2017 = ROOT.RooExtendPdf("totPDF_el_CR_2017","Background PDF for th
 totPDF = ROOT.RooSimultaneous("totPDF","The total PDF",Categorization)
 constrained_params = ROOT.RooArgSet()
 
-if runningEra == 0 and restricted_CR and not isAlternativeBkgDescription: #Fit on 2016 restricted CR with background-only PDF (background description)
-    totPDF.addPdf(totPDF_mu_CR_2016,"MuonCR_2016")
-    totPDF.addPdf(totPDF_el_CR_2016,"ElectronCR_2016")
-if runningEra == 0 and restricted_CR and isAlternativeBkgDescription: #Fit on 2016 restricted CR with background+signal PDF (background systematic calculation)
+if runningEra == 0 and restricted_CR: #Fit on 2016 restricted CR with background-only PDF (background description)
+    totPDF.addPdf(backPDF_mu_2016,"MuonCR_2016")
+    totPDF.addPdf(backPDF_el_2016,"ElectronCR_2016")
+if runningEra == 0 and not restricted_CR: #Fit on 2016 signal region with background+signal PDF
     totPDF.addPdf(totPDF_mu_2016,"MuonSignal_2016")
     totPDF.addPdf(totPDF_el_2016,"ElectronSignal_2016")
     constrained_params.add(dCB_width)
@@ -481,10 +478,10 @@ if runningEra == 0 and restricted_CR and isAlternativeBkgDescription: #Fit on 20
     constrained_params.add(eff_mu_constr_2016)
     constrained_params.add(eff_el_constr_2016)
 
-if runningEra == 1 and restricted_CR and not isAlternativeBkgDescription: #Fit on 2017 restricted CR with background-only PDF (background description)
-    totPDF.addPdf(totPDF_mu_CR_2017,"MuonCR_2017")
-    totPDF.addPdf(totPDF_el_CR_2017,"ElectronCR_2017")
-if runningEra == 1 and restricted_CR and isAlternativeBkgDescription: #Fit on 2017 restricted CR with background+signal PDF (background systematic calculation)
+if runningEra == 1 and restricted_CR: #Fit on 2017 restricted CR with background-only PDF (background description)
+    totPDF.addPdf(backPDF_mu_2017,"MuonCR_2017")
+    totPDF.addPdf(backPDF_el_2017,"ElectronCR_2017")
+if runningEra == 1 and not restricted_CR: #Fit on 2017 signal region with background+signal PDF
     totPDF.addPdf(totPDF_mu_2017,"MuonSignal_2017")
     totPDF.addPdf(totPDF_el_2017,"ElectronSignal_2017")
     constrained_params.add(dCB_width)
@@ -495,29 +492,7 @@ if runningEra == 1 and restricted_CR and isAlternativeBkgDescription: #Fit on 20
     constrained_params.add(eff_mu_constr_2017)
     constrained_params.add(eff_el_constr_2017)
 
-if runningEra == 0 and not restricted_CR:
-    totPDF.addPdf(totPDF_mu_2016,"MuonSignal_2016")
-    totPDF.addPdf(totPDF_el_2016,"ElectronSignal_2016")
-    constrained_params.add(dCB_width)
-    constrained_params.add(eta_mu_2016)
-    constrained_params.add(eta_el_2016)
-    constrained_params.add(W_xsec_constr)
-    constrained_params.add(lumi_constr_2016)
-    constrained_params.add(eff_mu_constr_2016)
-    constrained_params.add(eff_el_constr_2016)
-
-if runningEra == 1 and not restricted_CR:
-    totPDF.addPdf(totPDF_mu_2017,"MuonSignal_2017")
-    totPDF.addPdf(totPDF_el_2017,"ElectronSignal_2017")
-    constrained_params.add(dCB_width)
-    constrained_params.add(eta_mu_2017)
-    constrained_params.add(eta_el_2017)
-    constrained_params.add(W_xsec_constr)
-    constrained_params.add(lumi_constr_2017)
-    constrained_params.add(eff_mu_constr_2017)
-    constrained_params.add(eff_el_constr_2017)
-
-if runningEra == 2 and not restricted_CR:
+if runningEra == 2: #Fit on 2016+2017 signal regions
     totPDF.addPdf(totPDF_mu_2016,"MuonSignal_2016")
     totPDF.addPdf(totPDF_el_2016,"ElectronSignal_2016")
     totPDF.addPdf(totPDF_mu_2017,"MuonSignal_2017")
@@ -543,7 +518,11 @@ if runningEra == 2 and not restricted_CR:
 ################################################################
 
 if isData:
-    result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )
+    if restricted_CR:
+        result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(0), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )
+    else:
+        result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
+
     print "minNll = ", result_dataFit.minNll()
     print "2Delta_minNll = ", 2*(-198.079940252-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
 else:
@@ -578,6 +557,21 @@ xframe_el_2017.SetTitle(" ")
 xframe_el_2017.SetTitleOffset(1.4,"y")
 xframe_el_2017.SetMaximum(60)
 
+
+if runningEra == 0 and restricted_CR:
+    data.plotOn(xframe_mu_2016, ROOT.RooFit.Cut("Categorization==0"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
+    data.plotOn(xframe_el_2016, ROOT.RooFit.Cut("Categorization==2"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
+    totPDF.plotOn(xframe_mu_2016, ROOT.RooFit.Slice(Categorization,"MuonCR_2016"), ROOT.RooFit.ProjWData(data))
+    totPDF.plotOn(xframe_el_2016, ROOT.RooFit.Slice(Categorization,"ElectronCR_2016"), ROOT.RooFit.ProjWData(data))
+
+if runningEra == 1 and restricted_CR:
+    data.plotOn(xframe_mu_2017, ROOT.RooFit.Cut("Categorization==4"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
+    data.plotOn(xframe_el_2017, ROOT.RooFit.Cut("Categorization==6"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
+    totPDF.plotOn(xframe_mu_2017, ROOT.RooFit.Slice(Categorization,"MuonCR_2017"), ROOT.RooFit.ProjWData(data))  
+    totPDF.plotOn(xframe_el_2017, ROOT.RooFit.Slice(Categorization,"ElectronCR_2017"), ROOT.RooFit.ProjWData(data))  
+
+#################################################
+
 if runningEra == 0 and not restricted_CR:
     data_reduced = data.reduce("Wmass < 65. || Wmass > 90.")
     data_reduced.plotOn(xframe_mu_2016, ROOT.RooFit.Cut("Categorization==1"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
@@ -590,27 +584,6 @@ if runningEra == 1 and not restricted_CR:
     totPDF.plotOn(xframe_mu_2017, ROOT.RooFit.Range("LowSideband,HighSideband"), ROOT.RooFit.Slice(Categorization,"MuonSignal_2017"), ROOT.RooFit.ProjWData(data))
     data_reduced.plotOn(xframe_el_2017, ROOT.RooFit.Cut("Categorization==7"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
     totPDF.plotOn(xframe_el_2017, ROOT.RooFit.Range("LowSideband,HighSideband"), ROOT.RooFit.Slice(Categorization,"ElectronSignal_2017"), ROOT.RooFit.ProjWData(data))
-
-#################################################
-
-if runningEra == 0 and restricted_CR:
-    data.plotOn(xframe_mu_2016, ROOT.RooFit.Cut("Categorization==0"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-    data.plotOn(xframe_el_2016, ROOT.RooFit.Cut("Categorization==2"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-    if not isAlternativeBkgDescription:
-        totPDF.plotOn(xframe_mu_2016, ROOT.RooFit.Slice(Categorization,"MuonCR_2016"), ROOT.RooFit.ProjWData(data))
-        totPDF.plotOn(xframe_el_2016, ROOT.RooFit.Slice(Categorization,"ElectronCR_2016"), ROOT.RooFit.ProjWData(data))
-    else:
-        totPDF.plotOn(xframe_mu_2016, ROOT.RooFit.Slice(Categorization,"MuonSignal_2016"), ROOT.RooFit.ProjWData(data))
-        totPDF.plotOn(xframe_el_2016, ROOT.RooFit.Slice(Categorization,"ElectronSignal_2016"), ROOT.RooFit.ProjWData(data))
-if runningEra == 1 and restricted_CR:
-    data.plotOn(xframe_mu_2017, ROOT.RooFit.Cut("Categorization==4"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-    data.plotOn(xframe_el_2017, ROOT.RooFit.Cut("Categorization==6"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-    if not isAlternativeBkgDescription:
-        totPDF.plotOn(xframe_mu_2017, ROOT.RooFit.Slice(Categorization,"MuonCR_2017"), ROOT.RooFit.ProjWData(data))  
-        totPDF.plotOn(xframe_el_2017, ROOT.RooFit.Slice(Categorization,"ElectronCR_2017"), ROOT.RooFit.ProjWData(data))  
-    else:
-        totPDF.plotOn(xframe_mu_2017, ROOT.RooFit.Slice(Categorization,"MuonSignal_2017"), ROOT.RooFit.ProjWData(data))
-        totPDF.plotOn(xframe_el_2017, ROOT.RooFit.Slice(Categorization,"ElectronSignal_2017"), ROOT.RooFit.ProjWData(data))
 
 #################################################
 
