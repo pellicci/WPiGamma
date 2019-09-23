@@ -12,11 +12,10 @@ p.add_argument('isData_option', help='Type <<data>> or <<MC>>')
 p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <<2>> for 2016+2017')
 args = p.parse_args()
 
-# Switch from muon to electron channel
+isData = False
+# Switch from MC to data channel
 if args.isData_option == "data":
     isData = True
-if args.isData_option == "MC":
-    isData = False
 
 runningEra = int(args.runningEra_option)
 #---------------------------------#
@@ -27,12 +26,20 @@ runningEra = int(args.runningEra_option)
 #                                                              #
 ################################################################
 
-#Fit to data signal regions (blind): useChebychev = 0 will use the nominal background parametrization; restricted_CR = False will perform the fit (and the plotting) on the signal regions; isAlternativeBkgDescription = False will make sure the W_pigamma_BR parameter is positive definite and the systematic on background parametrization is introduced
+########------- Fit to restricted CR to determine the best background parametrization -------########
+# useChebychev = 0 will use Chebychev PDFs to describe the backround (they can be replaced by other PDFs in the " if useChebychev == 0:" statement);
+# restricted_CR = True will perform the fit on restricted CRs, cuttin on a different BDT output according to channel and year
+# isAlternativeBkgDescription = False will make sure the Categorization has also MuonCR and ElectronCR for the two years
 
-#Fit to restricted CR to  determine the best background parametrization: useChebychev = 0 will use Chebychev PDFs to describe the backround (they can be replaced by other PDFs in the " if useChebychev == 0:" statement); restricted_CR = True will perform the fit on restricted CRs, cuttin on a different BDT output according to channel and year; isAlternativeBkgDescription = False will make sure the Categorization has also MuonCR and ElectronCR for the two years
+########------- Determine the systematic on bkg parametrization -------########
+# the useChebychev variable has to be put equal to 0, then to 1, 2, 3, and 4. This way, the PDFs used to describe the background will be changed one by one (per channel and per year), and it will be possible to obtain the value of W_pigamma_BR for each case
+# restricted_CR = False will make sure the fit is performed on the signal regions
+# isAlternativeBkgDescription = True will allow W_pigamma_BR to float negative, and will set the value of the systematic on the bkg parametrization to be negligible during the fit
 
-#Determine the systematic on bkg parametrization: the useChebychev variable has to be put equal to 0, then to 1, 2, 3, and 4. This way, the PDFs used to describe the background will be changed one by one (per channel and per year), and it will be possible to obtain the value of W_pigamma_BR for each case; restricted_CR = False will make sure the fit is performed on the signal regions; isAlternativeBkgDescription = True will allow W_pigamma_BR to float negative, and will set the value of the systematic on the bkg parametrization to be negligible during the fit
-
+########------- Fit to data signal regions -------########
+# useChebychev = 0 will use the nominal background parametrization
+# restricted_CR = False will perform the fit (and the plotting) on the signal regions
+# isAlternativeBkgDescription = False will make sure the W_pigamma_BR parameter is positive definite and the systematic on background parametrization is introduced
 
 useChebychev = 0 # 0: use Chebychev for ALL the bkg PDFs. 1: use Bernstein for mu 2016. 2: use Bernstein for ele 2016. 3: use Bernstein for mu 2017. 4: use Bernstein for ele 2017
 restricted_CR = False # If True, data will be reduced to have the content of the restricted control regions
@@ -72,10 +79,17 @@ mytree = fInput.Get("minitree")
 
 #Define the mu/ele category for 2016 and 2017
 Categorization = ROOT.RooCategory("Categorization","Categorization")
-Categorization.defineType("MuonSignal_2016",1)
-Categorization.defineType("ElectronSignal_2016",3)
-Categorization.defineType("MuonSignal_2017",5)
-Categorization.defineType("ElectronSignal_2017",7)
+if runningEra == 0:
+    Categorization.defineType("MuonSignal_2016",1)
+    Categorization.defineType("ElectronSignal_2016",3)
+if runningEra == 1:
+    Categorization.defineType("MuonSignal_2017",5)
+    Categorization.defineType("ElectronSignal_2017",7)
+if runningEra == 2:
+    Categorization.defineType("MuonSignal_2016",1)
+    Categorization.defineType("ElectronSignal_2016",3)
+    Categorization.defineType("MuonSignal_2017",5)
+    Categorization.defineType("ElectronSignal_2017",7)
 if restricted_CR and not isAlternativeBkgDescription:
     Categorization.defineType("MuonCR_2016",0)
     Categorization.defineType("ElectronCR_2016",2)
@@ -112,20 +126,23 @@ if isData:
 else:
     data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,weight,BDT_out,isSignal,isMuon), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
 
-if runningEra == 0:
-    data = data_initial.reduce("(BDT_out > 0.155 && isMuon==isMuon::Muon) || (BDT_out > 0.107 && isMuon==isMuon::Electron)")
-if runningEra == 1:
-    data = data_initial.reduce("(BDT_out > 0.184 && isMuon==isMuon::Muon) || (BDT_out > 0.122 && isMuon==isMuon::Electron)")
+if restricted_CR:
+    if runningEra == 0:
+        data = data_initial.reduce("(BDT_out > 0.155 && isMuon==isMuon::Muon) || (BDT_out > 0.107 && isMuon==isMuon::Electron)")
+    if runningEra == 1:
+        data = data_initial.reduce("(BDT_out > 0.184 && isMuon==isMuon::Muon) || (BDT_out > 0.122 && isMuon==isMuon::Electron)")
+else:
+    data = data_initial
 
 print "number of events mu 2016  - SR: ", data.sumEntries("Categorization==1")
 print "number of events ele 2016 - SR: ", data.sumEntries("Categorization==3")
-print "number of events mu 2016  - CR: ", data.sumEntries("Categorization==0")
-print "number of events ele 2016 - CR: ", data.sumEntries("Categorization==2")
 print "number of events mu 2017  - SR: ", data.sumEntries("Categorization==5")
 print "number of events ele 2017 - SR: ", data.sumEntries("Categorization==7")
-print "number of events mu 2017  - CR: ", data.sumEntries("Categorization==4")
-print "number of events ele 2017 - CR: ", data.sumEntries("Categorization==6")
-
+if restricted_CR:
+    print "number of events mu 2016  - CR: ", data.sumEntries("Categorization==0")
+    print "number of events ele 2016 - CR: ", data.sumEntries("Categorization==2")
+    print "number of events mu 2017  - CR: ", data.sumEntries("Categorization==4")
+    print "number of events ele 2017 - CR: ", data.sumEntries("Categorization==6")
 
 print "Using ", data.numEntries(), " events to fit"
 
@@ -143,16 +160,12 @@ workspace = fInput_sigmodel.Get("myworkspace")
 
 #Fix the signal parametrization
 workspace.var("dCB_pole").setConstant(1)
-#workspace.var("dCB_width").setConstant(1)
 workspace.var("dCB_aL").setConstant(1)
 workspace.var("dCB_nL").setConstant(1)
 workspace.var("dCB_aR").setConstant(1)
 workspace.var("dCB_nR").setConstant(1)
-#workspace.var("Gauss_pole").setConstant(1)
-#workspace.var("Gauss_sigma").setConstant(1)
 workspace.var("Gauss_pole_2").setConstant(1)
 workspace.var("Gauss_sigma_2").setConstant(1)
-#workspace.var("fracSig_prime").setConstant(1)
 workspace.var("fracSig").setConstant(1)
 
 totSignal = workspace.pdf("totSignal")
@@ -166,88 +179,42 @@ totSignal = workspace.pdf("totSignal")
 
 #Now describe the background
 
-#Parameters for muon Chebychev
-a0_mu_2016 = ROOT.RooRealVar("a0_mu_2016","a0_mu_2016",0.15,-5.,5.)
-a1_mu_2016 = ROOT.RooRealVar("a1_mu_2016","a1_mu_2016",-0.7,-5.,5.)
-a2_mu_2016 = ROOT.RooRealVar("a2_mu_2016","a2_mu_2016",-0.2,-5.,5.)
-a3_mu_2016 = ROOT.RooRealVar("a3_mu_2016","a3_mu_2016",-0.15,-5.,5.)
-a4_mu_2017 = ROOT.RooRealVar("a4_mu_2017","a4_mu_2017",0.15,-5.,5.)
-a5_mu_2017 = ROOT.RooRealVar("a5_mu_2017","a5_mu_2017",-0.7,-5.,5.)
-a6_mu_2017 = ROOT.RooRealVar("a6_mu_2017","a6_mu_2017",-0.2,-5.,5.)
-a7_mu_2017 = ROOT.RooRealVar("a7_mu_2017","a7_mu_2017",-0.15,-5.,5.)
-# a8_mu = ROOT.RooRealVar("a8_mu","a8_mu",0.,-5.,5.)
-# a5_mu = ROOT.RooRealVar("a5_mu","a5_mu",0.1,-5.,5.)
-# a6_mu = ROOT.RooRealVar("a6_mu","a6_mu",0.1,-5.,5.)
+fInput_bkg = ROOT.TFile("fitBackground.root")
+fInput_bkg.cd()
 
-#Parameters for electron Chebychev
-a0_el_2016 = ROOT.RooRealVar("a0_el_2016","a0_el_2016",0.1,-5.,5.)
-a1_el_2016 = ROOT.RooRealVar("a1_el_2016","a1_el_2016",-0.6,-5.,5.)
-a2_el_2016 = ROOT.RooRealVar("a2_el_2016","a2_el_2016",-0.05,-5.,5.)
-a3_el_2016 = ROOT.RooRealVar("a3_el_2016","a3_el_2016",-0.2,-5.,5.)
-a4_el_2017 = ROOT.RooRealVar("a4_el_2017","a4_el_2017",0.1,-5.,5.)
-a5_el_2017 = ROOT.RooRealVar("a5_el_2017","a5_el_2017",-0.6,-5.,5.)
-a6_el_2017 = ROOT.RooRealVar("a6_el_2017","a6_el_2017",-0.05,-5.,5.)
-a7_el_2017 = ROOT.RooRealVar("a7_el_2017","a7_el_2017",-0.2,-5.,5.)
-# a8_el = ROOT.RooRealVar("a8_el","a8_el",0.,-5.,5.)
-
-#Parameters for muon Bernstein
-b0_mu_2016 = ROOT.RooRealVar("b0_mu_2016","b0_mu_2016",2.5,0.,5)
-b1_mu_2016 = ROOT.RooRealVar("b1_mu_2016","b1_mu_2016",1.5,0.,3.8)
-b2_mu_2016 = ROOT.RooRealVar("b2_mu_2016","b2_mu_2016",7.,0.,10.)
-b3_mu_2016 = ROOT.RooRealVar("b3_mu_2016","b3_mu_2016",3.8,0.,7.5)
-b4_mu_2017 = ROOT.RooRealVar("b4_mu_2017","b4_mu_2017",1.7,0.,5)
-b5_mu_2017 = ROOT.RooRealVar("b5_mu_2017","b5_mu_2017",3.7,0.,5.)
-b6_mu_2017 = ROOT.RooRealVar("b6_mu_2017","b6_mu_2017",6.9,0.,11.)
-b7_mu_2017 = ROOT.RooRealVar("b7_mu","b7_mu",3.8,0.,7.5)
-#b8_mu = ROOT.RooRealVar("b8_mu","b8_mu",5.,0.,10.)
-
-#Parameters for electron Bernstein
-b0_el_2016 = ROOT.RooRealVar("b0_el_2016","b0_el_2016",2.5,0.,4.)
-b1_el_2016 = ROOT.RooRealVar("b1_el_2016","b1_el_2016",1.5,0.,4.)
-b2_el_2016 = ROOT.RooRealVar("b2_el_2016","b2_el_2016",7.,0.,10.)
-b3_el_2016 = ROOT.RooRealVar("b3_el_2016","b3_el_2016",4.5,0.,8.)
-b4_el_2016 = ROOT.RooRealVar("b4_el_2016","b4_el_2016",0.5,0.,3.)
-b5_el_2017 = ROOT.RooRealVar("b5_el_2017","b5_el_2017",0.5,0.,3.)
-b6_el_2017 = ROOT.RooRealVar("b6_el_2017","b6_el_2017",0.6,0.,2.)
-b7_el_2017 = ROOT.RooRealVar("b7_el_2017","b7_el_2017",3.,0.,6.)
-# b8_el = ROOT.RooRealVar("b8_el","b8_el",2.,0.,5.)
-# b9_el = ROOT.RooRealVar("b9_el","b9_el",5.,0.,10.)
+workspace_bkg = fInput_bkg.Get("workspace_bkg")
 
 if useChebychev == 0:
-    backPDF_mu_2016 = ROOT.RooChebychev("backPDF_mu_2016","backPDF_mu_2016",Wmass,ROOT.RooArgList(a0_mu_2016,a1_mu_2016,a2_mu_2016,a3_mu_2016))#,a4_mu))#,a5_mu,a6_mu))
-    backPDF_el_2016 = ROOT.RooChebychev("backPDF_el_2016","backPDF_el_2016",Wmass,ROOT.RooArgList(a0_el_2016,a1_el_2016,a2_el_2016,a3_el_2016))#,a4_el)) #,a5_el,a6_el))
-    backPDF_mu_2017 = ROOT.RooChebychev("backPDF_mu_2017","backPDF_mu_2017",Wmass,ROOT.RooArgList(a4_mu_2017,a5_mu_2017,a6_mu_2017,a7_mu_2017))#,a8_mu))#,a5_mu,a6_mu))
-    backPDF_el_2017 = ROOT.RooChebychev("backPDF_el_2017","backPDF_el_2017",Wmass,ROOT.RooArgList(a4_el_2017,a5_el_2017,a6_el_2017,a7_el_2017))#,a8_el)) #,a5_el,a6_el))
-
-
-    # backPDF_mu_2016 = ROOT.RooBernstein("backPDF_mu_2016","backPDF_mu_2016",Wmass,ROOT.RooArgList(b0_mu,b1_mu,b2_mu,b3_mu))#,b4_mu)) #,b5_mu,b6_mu))
-    # backPDF_el_2016 = ROOT.RooBernstein("backPDF_el_2016","backPDF_el_2016",Wmass,ROOT.RooArgList(b0_el,b1_el,b2_el,b3_el))#,b4_el))#,b5_el))#,b6_el))
-    # backPDF_mu_2017 = ROOT.RooBernstein("backPDF_mu_2017","backPDF_mu_2017",Wmass,ROOT.RooArgList(b4_mu,b5_mu,b6_mu,b7_mu))#,b8_mu)) #,b5_mu,b6_mu))
-    # backPDF_el_2017 = ROOT.RooBernstein("backPDF_el_2017","backPDF_el_2017",Wmass,ROOT.RooArgList(b4_el,b5_el,b6_el,b7_el))#,b8_el))#,b4_el))
+    backPDF_mu_2016 = workspace_bkg.pdf("backPDF_cheb_mu_2016")
+    backPDF_el_2016 = workspace_bkg.pdf("backPDF_cheb_el_2016")
+    backPDF_mu_2017 = workspace_bkg.pdf("backPDF_cheb_mu_2017")
+    backPDF_el_2017 = workspace_bkg.pdf("backPDF_cheb_el_2017")
 
 elif useChebychev == 1: #Use Bernstein for muon channel 2016 (calculation of systematic on background parametrization)
-    backPDF_mu_2016 = ROOT.RooBernstein("backPDF_mu_2016","backPDF_mu_2016",Wmass,ROOT.RooArgList(b0_mu_2016,b1_mu_2016,b2_mu_2016,b3_mu_2016))#,b4_mu)) #,b5_mu,b6_mu))
-    backPDF_el_2016 = ROOT.RooChebychev("backPDF_el_2016","backPDF_el_2016",Wmass,ROOT.RooArgList(a0_el_2016,a1_el_2016,a2_el_2016,a3_el_2016))#,a4_el)) #,a5_el,a6_el))
-    backPDF_mu_2017 = ROOT.RooChebychev("backPDF_mu_2017","backPDF_mu_2017",Wmass,ROOT.RooArgList(a4_mu_2017,a5_mu_2017,a6_mu_2017,a7_mu_2017))#,a8_mu))#,a5_mu,a6_mu))
-    backPDF_el_2017 = ROOT.RooChebychev("backPDF_el_2017","backPDF_el_2017",Wmass,ROOT.RooArgList(a4_el_2017,a5_el_2017,a6_el_2017,a7_el_2017))#,a8_el)) #,a5_el,a6_el))
+    # workspace_bkg.var("b0_mu_2016").setRange(0.,0.005)
+    # workspace_bkg.var("b0_mu_2016").setVal(0.0005)
+    backPDF_mu_2016 = workspace_bkg.pdf("backPDF_bern_mu_2016")
+    backPDF_el_2016 = workspace_bkg.pdf("backPDF_cheb_el_2016")
+    backPDF_mu_2017 = workspace_bkg.pdf("backPDF_cheb_mu_2017")
+    backPDF_el_2017 = workspace_bkg.pdf("backPDF_cheb_el_2017")
 
 elif useChebychev == 2: #Use Bernstein for electron channel 2016 (calculation of systematic on background parametrization)
-    backPDF_mu_2016 = ROOT.RooChebychev("backPDF_mu_2016","backPDF_mu_2016",Wmass,ROOT.RooArgList(a0_mu_2016,a1_mu_2016,a2_mu_2016,a3_mu_2016))#,a4_mu))#,a5_mu,a6_mu))
-    backPDF_el_2016 = ROOT.RooBernstein("backPDF_el_2016","backPDF_el_2016",Wmass,ROOT.RooArgList(b0_el_2016,b1_el_2016,b2_el_2016,b3_el_2016,b4_el_2016))#,b5_el))#,b6_el))
-    backPDF_mu_2017 = ROOT.RooChebychev("backPDF_mu_2017","backPDF_mu_2017",Wmass,ROOT.RooArgList(a4_mu_2017,a5_mu_2017,a6_mu_2017,a7_mu_2017))#,a8_mu))#,a5_mu,a6_mu))
-    backPDF_el_2017 = ROOT.RooChebychev("backPDF_el_2017","backPDF_el_2017",Wmass,ROOT.RooArgList(a4_el_2017,a5_el_2017,a6_el_2017,a7_el_2017))#,a8_el)) #,a5_el,a6_el))
+    backPDF_mu_2016 = workspace_bkg.pdf("backPDF_cheb_mu_2016")
+    backPDF_el_2016 = workspace_bkg.pdf("backPDF_bern_el_2016")
+    backPDF_mu_2017 = workspace_bkg.pdf("backPDF_cheb_mu_2017")
+    backPDF_el_2017 = workspace_bkg.pdf("backPDF_cheb_el_2017")
 
 elif useChebychev == 3: #Use Bernstein for muon channel 2017 (calculation of systematic on background parametrization)
-    backPDF_mu_2016 = ROOT.RooChebychev("backPDF_mu_2016","backPDF_mu_2016",Wmass,ROOT.RooArgList(a0_mu_2016,a1_mu_2016,a2_mu_2016,a3_mu_2016))#,a4_mu))#,a5_mu,a6_mu))
-    backPDF_el_2016 = ROOT.RooChebychev("backPDF_el_2016","backPDF_el_2016",Wmass,ROOT.RooArgList(a0_el_2016,a1_el_2016,a2_el_2016,a3_el_2016))#,a4_el)) #,a5_el,a6_el))
-    backPDF_mu_2017 = ROOT.RooBernstein("backPDF_mu_2017","backPDF_mu_2017",Wmass,ROOT.RooArgList(b4_mu_2017,b5_mu_2017,b6_mu_2017,b7_mu_2017))#,b4_mu)) #,b5_mu,b6_mu))
-    backPDF_el_2017 = ROOT.RooChebychev("backPDF_el_2017","backPDF_el_2017",Wmass,ROOT.RooArgList(a4_el_2017,a5_el_2017,a6_el_2017,a7_el_2017))#,a8_el)) #,a5_el,a6_el))
+    backPDF_mu_2016 = workspace_bkg.pdf("backPDF_cheb_mu_2016")
+    backPDF_el_2016 = workspace_bkg.pdf("backPDF_cheb_el_2016")
+    backPDF_mu_2017 = workspace_bkg.pdf("backPDF_bern_mu_2017")
+    backPDF_el_2017 = workspace_bkg.pdf("backPDF_cheb_el_2017")
 
 elif useChebychev == 4: #Use Bernstein for electron channel 2017 (calculation of systematic on background parametrization)
-    backPDF_mu_2016 = ROOT.RooChebychev("backPDF_mu_2016","backPDF_mu_2016",Wmass,ROOT.RooArgList(a0_mu_2016,a1_mu_2016,a2_mu_2016,a3_mu_2016))#,a4_mu))#,a5_mu,a6_mu))
-    backPDF_el_2016 = ROOT.RooChebychev("backPDF_el_2016","backPDF_el_2016",Wmass,ROOT.RooArgList(a0_el_2016,a1_el_2016,a2_el_2016,a3_el_2016))#,a4_el)) #,a5_el,a6_el))
-    backPDF_mu_2017 = ROOT.RooChebychev("backPDF_mu_2017","backPDF_mu_2017",Wmass,ROOT.RooArgList(a4_mu_2017,a5_mu_2017,a6_mu_2017,a7_mu_2017))#,a8_mu))#,a5_mu,a6_mu))
-    backPDF_el_2017 = ROOT.RooBernstein("backPDF_el_2017","backPDF_el_2017",Wmass,ROOT.RooArgList(b5_el,b6_el,b7_el))#,b7_el))#,b8_el))#,b4_el))
+    backPDF_mu_2016 = workspace_bkg.pdf("backPDF_cheb_mu_2016")
+    backPDF_el_2016 = workspace_bkg.pdf("backPDF_cheb_el_2016")
+    backPDF_mu_2017 = workspace_bkg.pdf("backPDF_cheb_mu_2017")
+    backPDF_el_2017 = workspace_bkg.pdf("backPDF_bern_el_2017")
 
 ################################################################
 #                                                              #
@@ -344,10 +311,10 @@ eta_mu_2017 = ROOT.RooRealVar("eta_mu_2017","eta_mu_2017", 1.,0.0001,3.)
 eta_el_2017 = ROOT.RooRealVar("eta_el_2017","eta_el_2017", 1.,0.0001,3.)
 
 if not isAlternativeBkgDescription:
-    bkg_syst_mu_2016 = 0.049 #Value of the systematic to use in the fit of the signal regions
-    bkg_syst_el_2016 = 0.118
-    bkg_syst_mu_2017 = 0.009
-    bkg_syst_el_2017 = 0.081
+    bkg_syst_mu_2016 = 0.004 #Value of the systematic to use in the fit of the signal regions
+    bkg_syst_el_2016 = 0.002
+    bkg_syst_mu_2017 = 0.001
+    bkg_syst_el_2017 = 0.001
 else:
     bkg_syst_mu_2016 = 0.0001 #In the AlternativeBkgDescription mode, one is supposed to not know yet this systematic. 0.0001 is a custom small value
     bkg_syst_el_2016 = 0.0001
@@ -440,21 +407,6 @@ totPDF_mu_2017 = ROOT.RooProdPdf("totPDF_mu_2017","totPDF_mu_2017", ROOT.RooArgL
 totPDF_el_2017 = ROOT.RooProdPdf("totPDF_el_2017","totPDF_el_2017", ROOT.RooArgList(totPDF_el_unconstr_2017,gauss_lumi_2017,gauss_W_xsec,gauss_eff_el_2017,gauss_W_resol,gauss_bkg_param_el_2017))
 
 
-# #Now for the CR
-# Nbkg_mu_CR_2016 = ROOT.RooRealVar("Nbkg_mu_CR_2016","Nbkg_mu_CR_2016",100.,1.,40000.)
-# Nbkg_el_CR_2016 = ROOT.RooRealVar("Nbkg_el_CR_2016","Nbkg_el_CR_2016",100.,1.,40000.)
-
-# Nbkg_mu_CR_2017 = ROOT.RooRealVar("Nbkg_mu_CR_2017","Nbkg_mu_CR_2017",100.,1.,40000.)
-# Nbkg_el_CR_2017 = ROOT.RooRealVar("Nbkg_el_CR_2017","Nbkg_el_CR_2017",100.,1.,40000.)
-
-
-# totPDF_mu_CR_2016 = ROOT.RooExtendPdf("totPDF_mu_CR_2016","Background PDF for the CR for mu (2016)",backPDF_mu_2016,Nbkg_mu_CR_2016)
-# totPDF_el_CR_2016 = ROOT.RooExtendPdf("totPDF_el_CR_2016","Background PDF for the CR for el (2016)",backPDF_el_2016,Nbkg_el_CR_2016)
-
-# totPDF_mu_CR_2017 = ROOT.RooExtendPdf("totPDF_mu_CR_2017","Background PDF for the CR for mu (2017)",backPDF_mu_2017,Nbkg_mu_CR_2017)
-# totPDF_el_CR_2017 = ROOT.RooExtendPdf("totPDF_el_CR_2017","Background PDF for the CR for el (2017)",backPDF_el_2017,Nbkg_el_CR_2017)
-
-
 ################################################################
 #                                                              #
 #------------- Create the global simultaneous PDF -------------#
@@ -524,9 +476,9 @@ if isData:
         result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
 
     print "minNll = ", result_dataFit.minNll()
-    print "2Delta_minNll = ", 2*(-198.079940252-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
+    print "2Delta_minNll = ", 2*(3250.96600396-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
 else:
-    totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(0), ROOT.RooFit.NumCPU(2), ROOT.RooFit.Constrain(constrained_params) )
+    totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(0), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
 
 
 ################################################################

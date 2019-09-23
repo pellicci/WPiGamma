@@ -50,8 +50,8 @@ luminosity_norm_2017_Ele32_WPTight = 27.13
 _Nrandom_for_Ele_32_WPTight_exclusion = ROOT.TRandom3(64524)
 
 #############---------------- BDT score cut values ----------------#############
-BDT_OUT_MU  = 0.220
-BDT_OUT_ELE = 0.180
+BDT_OUT_MU  = 0.240
+BDT_OUT_ELE = 0.190
 
 ############################################################################
 #                                                                          #
@@ -383,6 +383,9 @@ for jentry in xrange(mytree.GetEntriesFast()):
 
     else:
         Event_Weight = 1.
+
+    if "QCD" in sample_name and Event_Weight >= 4:
+        continue
 
     Nevts_expected += Event_Weight # Increment the number of events survived in the analyzed sample
     if isMuon:

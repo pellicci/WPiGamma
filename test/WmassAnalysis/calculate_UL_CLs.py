@@ -2,8 +2,15 @@ import ROOT
 
 ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
+#---------------------------------#
+p = argparse.ArgumentParser(description='Select whether to fit data or MC')
+p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <<2>> for 2016+2017')
+args = p.parse_args()
+
+runningEra = int(args.runningEra_option)
+#---------------------------------#
+
 #Get the model and the data
-#fInput = ROOT.TFile("fitMC.root")
 fInput = ROOT.TFile("fitData.root")
 fInput.cd()
 
@@ -17,7 +24,7 @@ poi = ROOT.RooArgSet(W_pigamma_BR)
 
 #Define observables
 Wmass = workspace.var("Wmass")
-Categorization = workspace.cat("Categorization")
+Categorization = workspace.cat("Categorization")#All the categories added with defineType in the fit MUST be used for the fit itself (in fitAll_withControlRegions.py), otherwise: SegFault in the UL calculation
 
 observables = ROOT.RooArgSet()
 observables.add(Wmass)
@@ -27,34 +34,60 @@ observables.add(Categorization)
 #Define nuisances
 constrained_params = ROOT.RooArgSet()
 constrained_params.add(workspace.var("dCB_width"))
-constrained_params.add(workspace.var("eta_mu_2016"))
-constrained_params.add(workspace.var("eta_el_2016"))
-constrained_params.add(workspace.var("eta_mu_2017"))
-constrained_params.add(workspace.var("eta_el_2017"))
 constrained_params.add(workspace.var("W_xsec_constr"))
-constrained_params.add(workspace.var("lumi_constr_2016"))
-constrained_params.add(workspace.var("lumi_constr_2017"))
-constrained_params.add(workspace.var("eff_mu_constr_2016"))
-constrained_params.add(workspace.var("eff_el_constr_2016"))
-constrained_params.add(workspace.var("eff_mu_constr_2017"))
-constrained_params.add(workspace.var("eff_el_constr_2017"))
+
+if runningEra == 0:
+    constrained_params.add(workspace.var("eta_mu_2016"))
+    constrained_params.add(workspace.var("eta_el_2016"))
+    constrained_params.add(workspace.var("lumi_constr_2016"))
+    constrained_params.add(workspace.var("eff_mu_constr_2016"))
+    constrained_params.add(workspace.var("eff_el_constr_2016"))
+if runningEra == 1:
+    constrained_params.add(workspace.var("eta_mu_2017"))
+    constrained_params.add(workspace.var("eta_el_2017"))
+    constrained_params.add(workspace.var("lumi_constr_2017"))
+    constrained_params.add(workspace.var("eff_mu_constr_2017"))
+    constrained_params.add(workspace.var("eff_el_constr_2017"))
+if runningEra == 2:
+    constrained_params.add(workspace.var("eta_mu_2016"))
+    constrained_params.add(workspace.var("eta_el_2016"))
+    constrained_params.add(workspace.var("lumi_constr_2016"))
+    constrained_params.add(workspace.var("eff_mu_constr_2016"))
+    constrained_params.add(workspace.var("eff_el_constr_2016"))
+    constrained_params.add(workspace.var("eta_mu_2017"))
+    constrained_params.add(workspace.var("eta_el_2017"))
+    constrained_params.add(workspace.var("lumi_constr_2017"))
+    constrained_params.add(workspace.var("eff_mu_constr_2017"))
+    constrained_params.add(workspace.var("eff_el_constr_2017"))
 
 #Define global observables
 global_params = ROOT.RooArgSet()
 global_params.add(workspace.var("dCB_width_constr"))
 global_params.add(workspace.var("glb_W_xsec"))
-global_params.add(workspace.var("glb_lumi_2016"))
-global_params.add(workspace.var("glb_lumi_2017"))
-global_params.add(workspace.var("glb_eff_mu_2016"))
-global_params.add(workspace.var("glb_eff_el_2016"))
-global_params.add(workspace.var("glb_eff_mu_2017"))
-global_params.add(workspace.var("glb_eff_el_2017"))
 
-global_params.add(workspace.var("glb_bkg_param_mu_2016"))#Bisogna metterli?
-global_params.add(workspace.var("glb_bkg_param_el_2016"))
-global_params.add(workspace.var("glb_bkg_param_mu_2017"))
-global_params.add(workspace.var("glb_bkg_param_el_2017"))
-
+if runningEra == 0:
+    global_params.add(workspace.var("glb_lumi_2016"))
+    global_params.add(workspace.var("glb_eff_mu_2016"))
+    global_params.add(workspace.var("glb_eff_el_2016"))
+    global_params.add(workspace.var("glb_bkg_param_mu_2016"))
+    global_params.add(workspace.var("glb_bkg_param_el_2016"))
+if runningEra == 1:
+    global_params.add(workspace.var("glb_lumi_2017"))
+    global_params.add(workspace.var("glb_eff_mu_2017"))
+    global_params.add(workspace.var("glb_eff_el_2017"))
+    global_params.add(workspace.var("glb_bkg_param_mu_2017"))
+    global_params.add(workspace.var("glb_bkg_param_el_2017"))
+if runningEra == 2:
+    global_params.add(workspace.var("glb_lumi_2016"))
+    global_params.add(workspace.var("glb_eff_mu_2016"))
+    global_params.add(workspace.var("glb_eff_el_2016"))
+    global_params.add(workspace.var("glb_bkg_param_mu_2016"))
+    global_params.add(workspace.var("glb_bkg_param_el_2016"))
+    global_params.add(workspace.var("glb_lumi_2017"))
+    global_params.add(workspace.var("glb_eff_mu_2017"))
+    global_params.add(workspace.var("glb_eff_el_2017"))
+    global_params.add(workspace.var("glb_bkg_param_mu_2017"))
+    global_params.add(workspace.var("glb_bkg_param_el_2017"))
 
 #Define the model container
 #First the S+B
