@@ -17,7 +17,7 @@ fInput.cd()
 
 workspace = fInput.Get("workspace")
 workspace.Print()
-workspace.var("W_pigamma_BR").setRange(0.0000001,0.0001)
+workspace.var("W_pigamma_BR").setRange(0.,0.0001)
 
 #Define the parameter of interest
 W_pigamma_BR = workspace.var("W_pigamma_BR")
@@ -98,6 +98,7 @@ sbModel.SetObservables(observables)
 sbModel.SetNuisanceParameters(constrained_params)
 sbModel.SetGlobalObservables(global_params)
 sbModel.SetPdf("totPDF")
+#sbModel.SetPdf("totPDF_el_2016")
 sbModel.SetName("S+B Model")
 sbModel.SetParametersOfInterest(poi)
 
@@ -106,12 +107,15 @@ bModel.SetObservables(observables)
 bModel.SetNuisanceParameters(constrained_params)
 bModel.SetGlobalObservables(global_params)
 bModel.SetPdf("totPDF")
+#bModel.SetPdf("totPDF_el_2016")
 bModel.SetName("B model")
 bModel.SetParametersOfInterest(poi)
 oldval = poi.find("W_pigamma_BR").getVal()
-poi.find("W_pigamma_BR").setVal(0)
+poi.find("W_pigamma_BR").setVal(0) #BEWARE that the range of the POI (W_pigamma_BR.setRange) has to contain zero!
 bModel.SetSnapshot(poi)
 poi.find("W_pigamma_BR").setVal(oldval)
+
+#workspace.var("a0_el_2016").setConstant(1)
 
 print "Number of events in data = ", workspace.data("data").numEntries()
 
@@ -120,56 +124,60 @@ print "Number of events in data = ", workspace.data("data").numEntries()
 #See here https://arxiv.org/pdf/1007.1727.pdf
 
 #----------------------------------------------------------------------------------#
-# fc = ROOT.RooStats.FrequentistCalculator(workspace.data("data"), bModel, sbModel)
-# fc.SetToys(500,500)
+fc = ROOT.RooStats.FrequentistCalculator(workspace.data("data"), bModel, sbModel)
+fc.SetToys(350,350)
 
-# #Create hypotest inverter passing desired calculator
-# calc = ROOT.RooStats.HypoTestInverter(fc)
+#Create hypotest inverter passing desired calculator
+calc = ROOT.RooStats.HypoTestInverter(fc)
 
-# calc.SetConfidenceLevel(0.95)
+calc.SetConfidenceLevel(0.95)
 
-# #Use CLs
-# calc.UseCLs(1)
+#Use CLs
+calc.UseCLs(1)
 
-# calc.SetVerbose(0)
+calc.SetVerbose(0)
 
-# #Configure ToyMC sampler
-# #toymc = calc.GetHypoTestCalculator().GetTestStatSampler()
-# toymc = fc.GetTestStatSampler()
+#Configure ToyMC sampler
+#toymc = calc.GetHypoTestCalculator().GetTestStatSampler()
+toymc = fc.GetTestStatSampler()
 
-# #Set profile likelihood test statistics
-# profl = ROOT.RooStats.ProfileLikelihoodTestStat(sbModel.GetPdf())
-# #For CLs (bounded intervals) use one-sided profile likelihood
-# profl.SetOneSided(1)
+#Set profile likelihood test statistics
+profl = ROOT.RooStats.ProfileLikelihoodTestStat(sbModel.GetPdf())
+#For CLs (bounded intervals) use one-sided profile likelihood
+profl.SetOneSided(1)
 
-# #Set the test statistic to use
-# toymc.SetTestStatistic(profl)
+#Set the test statistic to use
+toymc.SetTestStatistic(profl)
 
 #----------------------------------------------------------------------------------#
 
-data = workspace.data("data")
+#data = workspace.data("data")
 
-fc = ROOT.RooStats.AsymptoticCalculator(data, bModel, sbModel,0)
-fc.SetOneSided(1)
-#fc.UseSameAltToys()
+# #data = data_initial.reduce("Categorization==Categorization::ElectronSignal_2016")
 
-#Create hypotest inverter passing the desired calculator 
-calc = ROOT.RooStats.HypoTestInverter(fc)
+# fc = ROOT.RooStats.AsymptoticCalculator(data, bModel, sbModel,0)#,15)
+# fc.SetOneSided(1)
+# #fc.UseSameAltToys()
 
-#set confidence level (e.g. 95% upper limits)
-calc.SetConfidenceLevel(0.95)
-calc.SetVerbose(0)
+# #Create hypotest inverter passing the desired calculator 
+# calc = ROOT.RooStats.HypoTestInverter(fc)
 
-#use CLs
-calc.UseCLs(1)
+# #set confidence level (e.g. 95% upper limits)
+# calc.SetConfidenceLevel(0.95)
+# calc.SetVerbose(1)
 
-npoints = 30 #Number of points to scan
+# #use CLs
+# calc.UseCLs(1)
+
+npoints = 10 #Number of points to scan
 # min and max for the scan (better to choose smaller intervals)
 poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
-print "Doing a fixed scan  in interval : ", poimin, " , ", poimax
-calc.SetFixedScan(npoints,poimin,0.000006)
+min_scan = 0.0000001
+max_scan = 0.00001
+print "Doing a fixed scan  in interval : ",min_scan, " , ", max_scan
+calc.SetFixedScan(npoints,min_scan,max_scan)
 
 # In order to use PROOF, one should install the test statistic on the workers
 # pc = ROOT.RooStats.ProofConfig(workspace, 0, "workers=6",0)
@@ -183,7 +191,7 @@ result = calc.GetInterval() #This is a HypoTestInveter class object
 #                                                                #
 ##################################################################
 
-# upperLimit = result.UpperLimit()
+upperLimit = result.UpperLimit()
 
 #Now let's print the result of the two methods
 # print "################"

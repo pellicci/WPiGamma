@@ -113,14 +113,14 @@ if not isData:
     weight = ROOT.RooRealVar("weight","The event weight",minWeight_inMC,maxWeight_inMC)
 
 #Support variables
-BDT_out = ROOT.RooRealVar("BDT_out","Output of BDT",-1.,1.)
+#BDT_out = ROOT.RooRealVar("BDT_out","Output of BDT",-1.,1.)
 
 #Create the RooDataSet. No need to import weight for signal only analysis
 
 if isData:
-    data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,BDT_out), ROOT.RooFit.Import(mytree))
+    data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization), ROOT.RooFit.Import(mytree))
 else:
-    data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,weight,BDT_out,isSignal), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
+    data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,weight,isSignal), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
 
 if runningEra == 0:
     data = data_initial.reduce("(Categorization==Categorization::MuonSignal_2016) || (Categorization==Categorization::ElectronSignal_2016)")
@@ -379,11 +379,11 @@ Nsig_mu_2017 = ROOT.RooFormulaVar("Nsig_mu_2017","@0*@1*@2*@3*@4", ROOT.RooArgLi
 Nsig_el_2017 = ROOT.RooFormulaVar("Nsig_el_2017","@0*@1*@2*@3*@4", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, lumi_constr_2017, eff_el_constr_2017, eta_el_2017))
 
 
-Nbkg_mu_2016 = ROOT.RooRealVar("Nbkg_mu_2016","Nbkg_mu_2016",150.,1.,1000.)
-Nbkg_el_2016 = ROOT.RooRealVar("Nbkg_el_2016","Nbkg_el_2016",150.,1.,1000.)
+Nbkg_mu_2016 = ROOT.RooRealVar("Nbkg_mu_2016","Nbkg_mu_2016",300.,100.,1000.)
+Nbkg_el_2016 = ROOT.RooRealVar("Nbkg_el_2016","Nbkg_el_2016",300.,100.,1000.)
 
-Nbkg_mu_2017 = ROOT.RooRealVar("Nbkg_mu_2017","Nbkg_mu_2017",150.,1.,1000.)
-Nbkg_el_2017 = ROOT.RooRealVar("Nbkg_el_2017","Nbkg_el_2017",150.,1.,1000.)
+Nbkg_mu_2017 = ROOT.RooRealVar("Nbkg_mu_2017","Nbkg_mu_2017",300.,100.,1000.)
+Nbkg_el_2017 = ROOT.RooRealVar("Nbkg_el_2017","Nbkg_el_2017",300.,100.,1000.)
 
 
 totPDF_mu_unconstr_2016 = ROOT.RooAddPdf("totPDF_mu_unconstr_2016","Total PDF for the mu channel (2016)",ROOT.RooArgList(totSignal,backPDF_mu_2016),ROOT.RooArgList(Nsig_mu_2016,Nbkg_mu_2016))
@@ -457,6 +457,8 @@ if runningEra == 2: #Fit on 2016+2017 signal regions
 ################################################################
 
 if isData:
+    # W_pigamma_BR.setVal(0.000006)
+    # W_pigamma_BR.setConstant(1)
     result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
 
     print "minNll = ", result_dataFit.minNll()
