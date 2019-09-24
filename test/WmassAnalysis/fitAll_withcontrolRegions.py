@@ -90,19 +90,14 @@ if runningEra == 2:
     Categorization.defineType("ElectronSignal_2016",3)
     Categorization.defineType("MuonSignal_2017",5)
     Categorization.defineType("ElectronSignal_2017",7)
-if restricted_CR and not isAlternativeBkgDescription:
-    Categorization.defineType("MuonCR_2016",0)
-    Categorization.defineType("ElectronCR_2016",2)
-    Categorization.defineType("MuonCR_2017",4)
-    Categorization.defineType("ElectronCR_2017",6)
 
 isSignal = ROOT.RooCategory("isSignal","isSignal")
 isSignal.defineType("Signal",1)
 isSignal.defineType("Background",0)
 
-isMuon = ROOT.RooCategory("isMuon","isMuon")
-isMuon.defineType("Muon",1)
-isMuon.defineType("Electron",0)
+# isMuon = ROOT.RooCategory("isMuon","isMuon")
+# isMuon.defineType("Muon",1)
+# isMuon.defineType("Electron",0)
 
 ################################################################
 #                                                              #
@@ -114,7 +109,8 @@ minWeight_inMC = -50. # Set the minimum weight an event can have when processing
 maxWeight_inMC = 50.  # Set the maximum weight an event can have when processing MC. This is useful to remove spikes which cannot be fitted
 
 #Define the event weight
-weight = ROOT.RooRealVar("weight","The event weight",minWeight_inMC,maxWeight_inMC)
+if not isData:
+    weight = ROOT.RooRealVar("weight","The event weight",minWeight_inMC,maxWeight_inMC)
 
 #Support variables
 BDT_out = ROOT.RooRealVar("BDT_out","Output of BDT",-1.,1.)
@@ -122,27 +118,24 @@ BDT_out = ROOT.RooRealVar("BDT_out","Output of BDT",-1.,1.)
 #Create the RooDataSet. No need to import weight for signal only analysis
 
 if isData:
-    data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,BDT_out,isMuon), ROOT.RooFit.Import(mytree))
+    data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,BDT_out), ROOT.RooFit.Import(mytree))
 else:
-    data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,weight,BDT_out,isSignal,isMuon), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
+    data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,weight,BDT_out,isSignal), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
 
-if restricted_CR:
-    if runningEra == 0:
-        data = data_initial.reduce("(BDT_out > 0.155 && isMuon==isMuon::Muon) || (BDT_out > 0.107 && isMuon==isMuon::Electron)")
-    if runningEra == 1:
-        data = data_initial.reduce("(BDT_out > 0.184 && isMuon==isMuon::Muon) || (BDT_out > 0.122 && isMuon==isMuon::Electron)")
-else:
-    data = data_initial
-
-print "number of events mu 2016  - SR: ", data.sumEntries("Categorization==1")
-print "number of events ele 2016 - SR: ", data.sumEntries("Categorization==3")
-print "number of events mu 2017  - SR: ", data.sumEntries("Categorization==5")
-print "number of events ele 2017 - SR: ", data.sumEntries("Categorization==7")
-if restricted_CR:
-    print "number of events mu 2016  - CR: ", data.sumEntries("Categorization==0")
-    print "number of events ele 2016 - CR: ", data.sumEntries("Categorization==2")
-    print "number of events mu 2017  - CR: ", data.sumEntries("Categorization==4")
-    print "number of events ele 2017 - CR: ", data.sumEntries("Categorization==6")
+if runningEra == 0:
+    data = data_initial.reduce("(Categorization==Categorization::MuonSignal_2016) || (Categorization==Categorization::ElectronSignal_2016)")
+    print "number of events mu 2016  - SR: ", data.sumEntries("Categorization==1")
+    print "number of events ele 2016 - SR: ", data.sumEntries("Categorization==3")
+if runningEra == 1:
+    data = data_initial.reduce("(Categorization==Categorization::MuonSignal_2017) || (Categorization==Categorization::ElectronSignal_2017)")
+    print "number of events mu 2017  - SR: ", data.sumEntries("Categorization==5")
+    print "number of events ele 2017 - SR: ", data.sumEntries("Categorization==7")
+if runningEra == 2:
+    data = data_initial.reduce("(Categorization==Categorization::MuonSignal_2016) || (Categorization==Categorization::ElectronSignal_2016) || (Categorization==Categorization::MuonSignal_2017) || (Categorization==Categorization::ElectronSignal_2017)")
+    print "number of events mu 2016  - SR: ", data.sumEntries("Categorization==1")
+    print "number of events ele 2016 - SR: ", data.sumEntries("Categorization==3")
+    print "number of events mu 2017  - SR: ", data.sumEntries("Categorization==5")
+    print "number of events ele 2017 - SR: ", data.sumEntries("Categorization==7")
 
 print "Using ", data.numEntries(), " events to fit"
 
@@ -416,10 +409,7 @@ totPDF_el_2017 = ROOT.RooProdPdf("totPDF_el_2017","totPDF_el_2017", ROOT.RooArgL
 totPDF = ROOT.RooSimultaneous("totPDF","The total PDF",Categorization)
 constrained_params = ROOT.RooArgSet()
 
-if runningEra == 0 and restricted_CR: #Fit on 2016 restricted CR with background-only PDF (background description)
-    totPDF.addPdf(backPDF_mu_2016,"MuonCR_2016")
-    totPDF.addPdf(backPDF_el_2016,"ElectronCR_2016")
-if runningEra == 0 and not restricted_CR: #Fit on 2016 signal region with background+signal PDF
+if runningEra == 0: #Fit on 2016 signal region with background+signal PDF
     totPDF.addPdf(totPDF_mu_2016,"MuonSignal_2016")
     totPDF.addPdf(totPDF_el_2016,"ElectronSignal_2016")
     constrained_params.add(dCB_width)
@@ -430,10 +420,7 @@ if runningEra == 0 and not restricted_CR: #Fit on 2016 signal region with backgr
     constrained_params.add(eff_mu_constr_2016)
     constrained_params.add(eff_el_constr_2016)
 
-if runningEra == 1 and restricted_CR: #Fit on 2017 restricted CR with background-only PDF (background description)
-    totPDF.addPdf(backPDF_mu_2017,"MuonCR_2017")
-    totPDF.addPdf(backPDF_el_2017,"ElectronCR_2017")
-if runningEra == 1 and not restricted_CR: #Fit on 2017 signal region with background+signal PDF
+if runningEra == 1: #Fit on 2017 signal region with background+signal PDF
     totPDF.addPdf(totPDF_mu_2017,"MuonSignal_2017")
     totPDF.addPdf(totPDF_el_2017,"ElectronSignal_2017")
     constrained_params.add(dCB_width)
@@ -470,10 +457,7 @@ if runningEra == 2: #Fit on 2016+2017 signal regions
 ################################################################
 
 if isData:
-    if restricted_CR:
-        result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(0), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )
-    else:
-        result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
+    result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
 
     print "minNll = ", result_dataFit.minNll()
     print "2Delta_minNll = ", 2*(3250.96600396-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
@@ -510,27 +494,15 @@ xframe_el_2017.SetTitleOffset(1.4,"y")
 xframe_el_2017.SetMaximum(60)
 
 
-if runningEra == 0 and restricted_CR:
-    data.plotOn(xframe_mu_2016, ROOT.RooFit.Cut("Categorization==0"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-    data.plotOn(xframe_el_2016, ROOT.RooFit.Cut("Categorization==2"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-    totPDF.plotOn(xframe_mu_2016, ROOT.RooFit.Slice(Categorization,"MuonCR_2016"), ROOT.RooFit.ProjWData(data))
-    totPDF.plotOn(xframe_el_2016, ROOT.RooFit.Slice(Categorization,"ElectronCR_2016"), ROOT.RooFit.ProjWData(data))
-
-if runningEra == 1 and restricted_CR:
-    data.plotOn(xframe_mu_2017, ROOT.RooFit.Cut("Categorization==4"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-    data.plotOn(xframe_el_2017, ROOT.RooFit.Cut("Categorization==6"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-    totPDF.plotOn(xframe_mu_2017, ROOT.RooFit.Slice(Categorization,"MuonCR_2017"), ROOT.RooFit.ProjWData(data))  
-    totPDF.plotOn(xframe_el_2017, ROOT.RooFit.Slice(Categorization,"ElectronCR_2017"), ROOT.RooFit.ProjWData(data))  
-
 #################################################
 
-if runningEra == 0 and not restricted_CR:
+if runningEra == 0:
     data_reduced = data.reduce("Wmass < 65. || Wmass > 90.")
     data_reduced.plotOn(xframe_mu_2016, ROOT.RooFit.Cut("Categorization==1"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
     totPDF.plotOn(xframe_mu_2016, ROOT.RooFit.Range("LowSideband,HighSideband"), ROOT.RooFit.Slice(Categorization,"MuonSignal_2016"), ROOT.RooFit.ProjWData(data))
     data_reduced.plotOn(xframe_el_2016, ROOT.RooFit.Cut("Categorization==3"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
     totPDF.plotOn(xframe_el_2016, ROOT.RooFit.Range("LowSideband,HighSideband"), ROOT.RooFit.Slice(Categorization,"ElectronSignal_2016"), ROOT.RooFit.ProjWData(data))
-if runningEra == 1 and not restricted_CR:
+if runningEra == 1:
     data_reduced = data.reduce("Wmass < 65. || Wmass > 90.")
     data_reduced.plotOn(xframe_mu_2017, ROOT.RooFit.Cut("Categorization==5"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
     totPDF.plotOn(xframe_mu_2017, ROOT.RooFit.Range("LowSideband,HighSideband"), ROOT.RooFit.Slice(Categorization,"MuonSignal_2017"), ROOT.RooFit.ProjWData(data))
