@@ -115,7 +115,6 @@ poi.find("W_pigamma_BR").setVal(0) #BEWARE that the range of the POI (W_pigamma_
 bModel.SetSnapshot(poi)
 poi.find("W_pigamma_BR").setVal(oldval)
 
-#workspace.var("a0_el_2016").setConstant(1)
 
 print "Number of events in data = ", workspace.data("data").numEntries()
 
@@ -124,8 +123,13 @@ print "Number of events in data = ", workspace.data("data").numEntries()
 #See here https://arxiv.org/pdf/1007.1727.pdf
 
 #----------------------------------------------------------------------------------#
+
+# # In order to use PROOF, one should install the test statistic on the workers
+# pc = ROOT.RooStats.ProofConfig(workspace, 0, "workers=6",0)
+# toymc.SetProofConfig(pc)
+
 fc = ROOT.RooStats.FrequentistCalculator(workspace.data("data"), bModel, sbModel)
-fc.SetToys(350,350)
+fc.SetToys(500,500)
 
 #Create hypotest inverter passing desired calculator
 calc = ROOT.RooStats.HypoTestInverter(fc)
@@ -139,7 +143,9 @@ calc.SetVerbose(0)
 
 #Configure ToyMC sampler
 #toymc = calc.GetHypoTestCalculator().GetTestStatSampler()
+
 toymc = fc.GetTestStatSampler()
+
 
 #Set profile likelihood test statistics
 profl = ROOT.RooStats.ProfileLikelihoodTestStat(sbModel.GetPdf())
@@ -148,7 +154,6 @@ profl.SetOneSided(1)
 
 #Set the test statistic to use
 toymc.SetTestStatistic(profl)
-
 #----------------------------------------------------------------------------------#
 
 #data = workspace.data("data")
@@ -169,19 +174,15 @@ toymc.SetTestStatistic(profl)
 # #use CLs
 # calc.UseCLs(1)
 
-npoints = 10 #Number of points to scan
+npoints = 15 #Number of points to scan
 # min and max for the scan (better to choose smaller intervals)
 poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
-min_scan = 0.0000001
-max_scan = 0.00001
+min_scan = 0.000005
+max_scan = 0.00005
 print "Doing a fixed scan  in interval : ",min_scan, " , ", max_scan
 calc.SetFixedScan(npoints,min_scan,max_scan)
-
-# In order to use PROOF, one should install the test statistic on the workers
-# pc = ROOT.RooStats.ProofConfig(workspace, 0, "workers=6",0)
-# toymc.SetProofConfig(pc)
 
 result = calc.GetInterval() #This is a HypoTestInveter class object
 

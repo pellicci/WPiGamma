@@ -459,7 +459,7 @@ if runningEra == 2: #Fit on 2016+2017 signal regions
 if isData:
     # W_pigamma_BR.setVal(0.000006)
     # W_pigamma_BR.setConstant(1)
-    result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
+    result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save(1) )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
 
     print "minNll = ", result_dataFit.minNll()
     print "2Delta_minNll = ", 2*(3250.96600396-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
@@ -551,7 +551,7 @@ xframe_el_2017.Draw()
 if isData:
     canvas.SaveAs("plots/fitData_signalR.pdf")
 else:
- canvas.SaveAs("plots/fitMC_signalR.pdf")
+    canvas.SaveAs("plots/fitMC_signalR.pdf")
 
 # #Now plot the CR
 # xframe_mu_CR = Wmass.frame(55.,95.,15)
