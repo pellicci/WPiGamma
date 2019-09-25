@@ -16,7 +16,7 @@
 
 - In src, get the package
 
-   git clone -b WPiGamma_94X https://github.com/pellicci/WPiGamma.git StandardModel/WPiGamma
+   git clone https://github.com/pellicci/WPiGamma.git StandardModel/WPiGamma
 
 
 - Compile
