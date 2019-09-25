@@ -2,7 +2,7 @@
 # using: 
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: --filein file:WPiGamma_pythia8_DIGIL1HLT.root --fileout file:WPiGamma_pythia8_RECO.root --mc --eventcontent AODSIM --runUnscheduled --datatier AODSIM --conditions 80X_mcRun2_asymptotic_2016_TrancheIV_v6 --step RAW2DIGI,RECO --era Run2_2016 --python_filename WPiGamma_13TeV_pythia8_RAW2DIGIRECO_cfg.py --no_exec -n 5
+# with command line options: --filein file:WPiGamma_pythia8_DIGIL1HLT.root --fileout file:WPiGamma_pythia8_RECO.root --mc --eventcontent AODSIM --runUnscheduled --datatier AODSIM --conditions 80X_mcRun2_asymptotic_2016_TrancheIV_v6 --step RAW2DIGI,RECO --era Run2_2016 --python_filename WPiGamma_13TeV_pythia8_RAW2DIGIRECO_2016_cfg.py --no_exec -n 5
 import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
@@ -33,7 +33,7 @@ process.source = cms.Source("PoolSource",
 )
 
 process.options = cms.untracked.PSet(
-    allowUnscheduled = cms.untracked.bool(True)
+
 )
 
 # Production Info
@@ -52,7 +52,7 @@ process.AODSIMoutput = cms.OutputModule("PoolOutputModule",
         dataTier = cms.untracked.string('AODSIM'),
         filterName = cms.untracked.string('')
     ),
-    eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
+    eventAutoFlushCompressedSize = cms.untracked.int32(31457280),
     fileName = cms.untracked.string('file:WPiGamma_pythia8_RECO.root'),
     outputCommands = process.AODSIMEventContent.outputCommands
 )
@@ -71,10 +71,21 @@ process.AODSIMoutput_step = cms.EndPath(process.AODSIMoutput)
 
 # Schedule definition
 process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.endjob_step,process.AODSIMoutput_step)
+#from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask #Not functional in 8_0_28
+#associatePatAlgosToolsTask(process)
 
 #do not add changes to your config after this point (unless you know what you are doing)
 from FWCore.ParameterSet.Utilities import convertToUnscheduled
 process=convertToUnscheduled(process)
-from FWCore.ParameterSet.Utilities import cleanUnscheduled
-process=cleanUnscheduled(process)
 
+#Not functional in 8_0_28
+# # Customisation from command line
+
+# #Have logErrorHarvester wait for the same EDProducers to finish as those providing data for the OutputModule
+# from FWCore.Modules.logErrorHarvester_cff import customiseLogErrorHarvesterUsingOutputCommands
+# process = customiseLogErrorHarvesterUsingOutputCommands(process)
+
+# # Add early deletion of temporary data products to reduce peak memory need
+# from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
+# process = customiseEarlyDelete(process)
+# # End adding early deletion
