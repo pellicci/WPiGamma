@@ -10,7 +10,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 from Configuration.AlCa.GlobalTag import GlobalTag
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(20000)
+    input = cms.untracked.int32(2000)
 )
 
 import FWCore.ParameterSet.VarParsing as VarParsing
@@ -30,6 +30,11 @@ options.register('runningEra',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "2016-2017-2018 config flag")
+options.register('runningOn2018D',
+                 False, #False runs on 2018 eras A,B,C. True runs on 2018 era D
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "2018 era D config flag")
 options.parseArguments()
 
 ################################################################################################################
@@ -43,14 +48,13 @@ if options.runningEra == 0: #Add PostReco corrections for MC
 
    if not options.runningOnData:
       #ECAL prefiring corrections https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1ECALPrefiringWeightRecipe
-      process.prefiringweight = cms.EDProducer("L1ECALPrefiringWeightProducer",
-                                               ThePhotons = cms.InputTag("slimmedPhotons"),
-                                               TheJets = cms.InputTag("slimmedJets"),
-                                               L1Maps = cms.string("L1PrefiringMaps_new.root"), # update this line with the location of this file
-                                               DataEra = cms.string("2016BtoH"), #2016
-                                               UseJetEMPt = cms.bool(False), #can be set to true to use jet prefiring maps parametrized vs pt(em) instead of pt
-                                               PrefiringRateSystematicUncty = cms.double(0.2) #Minimum relative prefiring uncty per object
-                                            )
+      from PhysicsTools.PatUtils.l1ECALPrefiringWeightProducer_cfi import l1ECALPrefiringWeightProducer
+      process.prefiringweight = l1ECALPrefiringWeightProducer.clone(
+         DataEra = cms.string("2016BtoH"),
+         UseJetEMPt = cms.bool(False),
+         PrefiringRateSystematicUncty = cms.double(0.2),
+         SkipWarnings = False
+      )
 
 if options.runningEra == 1: #running on 2017
    setupEgammaPostRecoSeq(process,
@@ -59,46 +63,63 @@ if options.runningEra == 1: #running on 2017
 
    if not options.runningOnData:
       #ECAL prefiring corrections https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1ECALPrefiringWeightRecipe
-      process.prefiringweight = cms.EDProducer("L1ECALPrefiringWeightProducer",
-                                               ThePhotons = cms.InputTag("slimmedPhotons"),
-                                               TheJets = cms.InputTag("slimmedJets"),
-                                               L1Maps = cms.string("L1PrefiringMaps_new.root"), # update this line with the location of this file
-                                               DataEra = cms.string("2017BtoF"), #2017
-                                               UseJetEMPt = cms.bool(False), #can be set to true to use jet prefiring maps parametrized vs pt(em) instead of pt
-                                               PrefiringRateSystematicUncty = cms.double(0.2) #Minimum relative prefiring uncty per object
-                                            )
+      from PhysicsTools.PatUtils.l1ECALPrefiringWeightProducer_cfi import l1ECALPrefiringWeightProducer
+      process.prefiringweight = l1ECALPrefiringWeightProducer.clone(
+         DataEra = cms.string("2017BtoF"),
+         UseJetEMPt = cms.bool(False),
+         PrefiringRateSystematicUncty = cms.double(0.2),
+         SkipWarnings = False
+      )
+
+if options.runningEra == 2: #running on 2018
+    setupEgammaPostRecoSeq(process,
+                           era='2018-Prompt')
 
 ################################################################################################################
 
 #Input source
 if options.runningOnData:
 
-   if options.runningEra == 0: #test 2016 data
-      process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v10') #which conditions to use
-      print "Data Sample (2016) will be taken as input for check up of the code working "
-      inputFiles = {#"root://cms-xrd-global.cern.ch//store/data/Run2016E/SingleMuon/MINIAOD/17Jul2018-v1/20000/3A57508D-348B-E811-8F39-008CFA197E0C.root"}
-         "root://cms-xrd-global.cern.ch//store/data/Run2016B/SingleElectron/MINIAOD/17Jul2018_ver2-v1/80000/FEAB7D8A-048C-E811-A513-AC1F6B1AEFFC.root"}
+    if options.runningEra == 0: #test 2016 data
+        process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v10') #which conditions to use
+        print "Data Sample (2016) will be taken as input for check up of the code working "
+        inputFiles = {#"root://cms-xrd-global.cern.ch//store/data/Run2016E/SingleMuon/MINIAOD/17Jul2018-v1/20000/3A57508D-348B-E811-8F39-008CFA197E0C.root"}
+           "root://cms-xrd-global.cern.ch//store/data/Run2016B/SingleElectron/MINIAOD/17Jul2018_ver2-v1/80000/FEAB7D8A-048C-E811-A513-AC1F6B1AEFFC.root"}
+        
+    if options.runningEra == 1: #test 2017 data
+        process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v11') #which conditions to use (Mario dice di usare, a parita' di nome della tag, quella con la versione piu' alta. La versione piu' alta e' quella consigliata per le JEC)
+        print "Data Sample (2017) will be taken as input for check up of the code working "
+        inputFiles = {"root://cms-xrd-global.cern.ch//store/data/Run2017F/SingleElectron/MINIAOD/31Mar2018-v1/90002/EC099452-C938-E811-9922-0CC47A7C354C.root","root://cms-xrd-global.cern.ch//store/data/Run2017F/SingleElectron/MINIAOD/31Mar2018-v1/90002/B09F43EA-CD38-E811-9D77-0CC47A4C8EE8.root","root://cms-xrd-global.cern.ch//store/data/Run2017F/SingleElectron/MINIAOD/31Mar2018-v1/90002/A421D61D-B137-E811-9DE7-0CC47A4C8F06.root","root://cms-xrd-global.cern.ch//store/data/Run2017F/SingleElectron/MINIAOD/31Mar2018-v1/90002/A05A43B6-CA38-E811-B43A-0CC47A4D7644.root"}
+        #"/store/data/Run2017B/SingleMuon/MINIAOD/31Mar2018-v1/100000/481AD1C9-D538-E811-9B11-0025905B8600.root"}
 
-   if options.runningEra == 1: #test 2017 data
-      process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v11') #which conditions to use (Mario dice di usare, a parita' di nome della tag, quella con la versione piu' alta. La versione piu' alta e' quella consigliata per le JEC)
-      print "Data Sample (2017) will be taken as input for check up of the code working "
-      inputFiles = {"root://cms-xrd-global.cern.ch//store/data/Run2017F/SingleElectron/MINIAOD/31Mar2018-v1/90002/EC099452-C938-E811-9922-0CC47A7C354C.root","root://cms-xrd-global.cern.ch//store/data/Run2017F/SingleElectron/MINIAOD/31Mar2018-v1/90002/B09F43EA-CD38-E811-9D77-0CC47A4C8EE8.root","root://cms-xrd-global.cern.ch//store/data/Run2017F/SingleElectron/MINIAOD/31Mar2018-v1/90002/A421D61D-B137-E811-9DE7-0CC47A4C8F06.root","root://cms-xrd-global.cern.ch//store/data/Run2017F/SingleElectron/MINIAOD/31Mar2018-v1/90002/A05A43B6-CA38-E811-B43A-0CC47A4D7644.root"}
-         #"/store/data/Run2017B/SingleMuon/MINIAOD/31Mar2018-v1/100000/481AD1C9-D538-E811-9B11-0025905B8600.root"}
-
+    if options.runningEra == 2: #test 2018 data
+        if not options.runningOn2018D:
+            process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_v11')
+            print "Data Sample (2018, eras A, B or C) will be taken as input for check up of the code working "
+            inputFiles = {""}
+        if options.runningOn2018D:
+            process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Prompt_v14')
+            print "Data Sample (2018, era D) will be taken as input for check up of the code working "
+            inputFiles = {""}
 else:
 
-   if options.runningEra == 0: #test 2016 MC
-      process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mcRun2_asymptotic_v3')
-      print "MC Sample (2016) will be taken as input for check up of the code working "
-      inputFiles = {"root://cms-xrd-global.cern.ch//store/user/rselvati/WMinusPiGamma_GENSIM_80XV1/WMinusPiGamma_MINIAODSIM_94XV3/190129_151107/0000/WPiGamma_pythia8_MINIAOD_9.root","root://cms-xrd-global.cern.ch//store/user/rselvati/WPlusPiGamma_GENSIM_80XV1/WPlusPiGamma_MINIAODSIM_94XV3/190129_150618/0000/WPiGamma_pythia8_MINIAOD_80.root"}
-         #"/store/mc/RunIISummer16MiniAODv2/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/70000/CE408A70-56C1-E611-8187-FA163EDC366E.root"}
+    if options.runningEra == 0: #test 2016 MC
+        process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mcRun2_asymptotic_v3')
+        print "MC Sample (2016) will be taken as input for check up of the code working "
+        inputFiles = {"root://cms-xrd-global.cern.ch//store/user/rselvati/WMinusPiGamma_GENSIM_80XV1/WMinusPiGamma_MINIAODSIM_94XV3/190129_151107/0000/WPiGamma_pythia8_MINIAOD_9.root","root://cms-xrd-global.cern.ch//store/user/rselvati/WPlusPiGamma_GENSIM_80XV1/WPlusPiGamma_MINIAODSIM_94XV3/190129_150618/0000/WPiGamma_pythia8_MINIAOD_80.root"}
+        #"/store/mc/RunIISummer16MiniAODv2/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/70000/CE408A70-56C1-E611-8187-FA163EDC366E.root"}
 
-   if options.runningEra == 1: #test 2017 MC
-      process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mc2017_realistic_v17') 
-      print "MC Sample (2017) will be taken as input for check up of the code working "
-      inputFiles = {#"root://cms-xrd-global.cern.ch//store/user/rselvati/WMinusPiGamma_GENSIM_80XV1/WMinusPiGamma_MINIAODSIM_94XV3/190129_151107/0000/WPiGamma_pythia8_MINIAOD_9.root"}
-         #"/store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/60000/FCC2AFA9-4BBB-E811-B35F-0CC47AFB7D48.root"}
-         "/store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/20000/10928512-C04D-E811-AD45-F01FAFE5E4F8.root"}
+    if options.runningEra == 1: #test 2017 MC
+        process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mc2017_realistic_v17') 
+        print "MC Sample (2017) will be taken as input for check up of the code working "
+        inputFiles = {#"root://cms-xrd-global.cern.ch//store/user/rselvati/WMinusPiGamma_GENSIM_80XV1/WMinusPiGamma_MINIAODSIM_94XV3/190129_151107/0000/WPiGamma_pythia8_MINIAOD_9.root"}
+            "/store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/60000/FCC2AFA9-4BBB-E811-B35F-0CC47AFB7D48.root"}
+            #"/store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/20000/10928512-C04D-E811-AD45-F01FAFE5E4F8.root"}
+        
+    if options.runningEra == 2: #test 2018 MC
+        process.GlobalTag = GlobalTag(process.GlobalTag, '102X_upgrade2018_realistic_v15') 
+        print "MC Sample (2018) will be taken as input for check up of the code working "
+        inputFiles = {""}
 
 
 process.source = cms.Source ("PoolSource",
@@ -164,6 +185,9 @@ if options.runningEra == 0:
 if options.runningEra == 1:
    process.trigger_filter_data_mu.triggerConditions = cms.vstring('HLT_IsoMu27_v* OR HLT_Mu50_v*') #paths for 2017 data samples SingleMu. IsoMu27 is the lowest pT unprescaled for 2017
 
+if options.runningEra == 2:
+   process.trigger_filter_data_mu.triggerConditions = cms.vstring('HLT_IsoMu24_v* OR HLT_Mu50_v*') #paths for 2018 data samples SingleMu. IsoMu24 is the lowest pT unprescaled for 2018
+
 process.trigger_filter_data_mu.hltResults = cms.InputTag("TriggerResults", "", "HLT")
 process.trigger_filter_data_mu.l1tResults = cms.InputTag("")
 process.trigger_filter_data_mu.throw = cms.bool( False )
@@ -176,6 +200,9 @@ if options.runningEra == 0:
 
 if options.runningEra == 1:
    process.trigger_filter_data_ele.triggerConditions = cms.vstring('HLT_Ele32_WPTight_Gsf_L1DoubleEG_v* OR HLT_Ele32_WPTight_Gsf_v*') #paths for 2017 data samples SingleEle. The trigger WITHOUT L1DoubleEG is active only for around 27/fb. When both the triggers are on, L1DoubleEG is on ~2% times more than simple WPTight
+
+if options.runningEra == 2:
+   process.trigger_filter_data_ele.triggerConditions = cms.vstring('HLT_Ele32_WPTight_Gsf_v*') #paths for 2017 data samples SingleEle.
 
 process.trigger_filter_data_ele.hltResults = cms.InputTag("TriggerResults", "", "HLT")
 process.trigger_filter_data_ele.l1tResults = cms.InputTag("")
@@ -190,6 +217,9 @@ if options.runningEra == 0:
 
 if options.runningEra == 1:
    process.trigger_filter_MC.triggerConditions = cms.vstring('HLT_IsoMu27_v* OR HLT_Mu50_v* OR HLT_Ele32_WPTight_Gsf_L1DoubleEG_v* OR HLT_Ele32_WPTight_Gsf_v*') #paths for 2017 MC
+
+if options.runningEra == 2:
+   process.trigger_filter_MC.triggerConditions = cms.vstring('HLT_IsoMu24_v* OR HLT_Mu50_v* OR HLT_Ele32_WPTight_Gsf_v*') #paths for 2018 MC
 
 process.trigger_filter_MC.hltResults = cms.InputTag("TriggerResults", "", "HLT")
 process.trigger_filter_MC.l1tResults = cms.InputTag("")
@@ -212,3 +242,4 @@ if not options.runningOnData: # MC
    process.seq = cms.Path(process.trigger_filter_MC * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.prefiringweight * process.WPiGammaAnalysis)
 
 process.schedule = cms.Schedule(process.seq)
+

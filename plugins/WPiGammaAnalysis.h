@@ -74,6 +74,7 @@ private:
   float lepton_dxy_tree;
   float lepton_dz_tree;
   float lepton_iso_tree;
+  bool isTriggerMatched_tree;
   float Wplus_pT;
   float Wminus_pT;
 
@@ -192,6 +193,7 @@ private:
   edm::EDGetTokenT<std::vector<PileupSummaryInfo> > pileupSummaryToken_;
   edm::EDGetTokenT<GenEventInfoProduct> GenInfoToken_;
   edm::EDGetTokenT<edm::TriggerResults> triggerBitsToken_;
+  edm::EDGetTokenT<std::vector<pat::TriggerObjectStandAlone> > triggerObjectsToken_;
 
   //Ele ID decisions objects
   edm::EDGetToken electronsMiniAODToken_;
@@ -202,7 +204,7 @@ private:
 
   //rho (PU energy density)
   edm::EDGetTokenT<double> rhoToken_;
-  edm::EDGetTokenT<double> PrefiringWeight_Token;
+  edm::EDGetTokenT<double> PrefiringWeightToken_;
 
 
   bool verboseIdFlag_;
@@ -212,5 +214,6 @@ private:
   EffectiveAreas   effectiveAreas_ph_;
   double Bjets_WP_2016_;
   double Bjets_WP_2017_;
+  double Bjets_WP_2018_;
 
 };

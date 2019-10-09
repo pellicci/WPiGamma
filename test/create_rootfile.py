@@ -52,7 +52,7 @@ ELE_GAMMA_INVMASS_MAX = 91.6
 #                                                                          #
 ############################################################################
 #Normalize to this luminsity, in fb-1
-luminosity_norm_list = [35.86,41.529] #2016,2017
+luminosity_norm_list = [35.86,41.529,59.69] #2016,2017,2018
 
 luminosity_norm_2017_Ele32_WPTight = 27.13
 _Nrandom_for_Ele_32_WPTight_exclusion = ROOT.TRandom3(64524)

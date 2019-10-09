@@ -11,6 +11,7 @@
 
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
+#include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
@@ -60,7 +61,8 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   effectiveAreas_el_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile_el")).fullPath() ),
   effectiveAreas_ph_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile_ph")).fullPath() ),
   Bjets_WP_2016_(iConfig.getParameter<double>("Bjets_WP_2016")),
-  Bjets_WP_2017_(iConfig.getParameter<double>("Bjets_WP_2017"))
+  Bjets_WP_2017_(iConfig.getParameter<double>("Bjets_WP_2017")),
+  Bjets_WP_2018_(iConfig.getParameter<double>("Bjets_WP_2018"))
 
 {
   packedPFCandidatesToken_            = consumes<std::vector<pat::PackedCandidate> >(edm::InputTag("packedPFCandidates")); 
@@ -76,8 +78,9 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   pileupSummaryToken_                 = consumes<std::vector<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo"));
   GenInfoToken_                       = consumes<GenEventInfoProduct> (edm::InputTag("generator"));
   triggerBitsToken_                   = consumes<edm::TriggerResults> (edm::InputTag("TriggerResults","","HLT"));
+  triggerObjectsToken_                = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","PAT"));
   rhoToken_                           = consumes<double> (iConfig.getParameter <edm::InputTag>("rho"));
-  PrefiringWeight_Token               = consumes<double>(edm::InputTag("prefiringweight:NonPrefiringProb"));
+  PrefiringWeightToken_               = consumes<double>(edm::InputTag("prefiringweight:nonPrefiringProb"));
 
   h_Events = fs->make<TH1F>("h_Events", "Event counting in different steps", 8, 0., 8.);
   _Nevents_processed  = 0;
@@ -133,10 +136,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   edm::Handle<edm::TriggerResults> triggerBits;
   iEvent.getByToken(triggerBitsToken_, triggerBits);
 
+  edm::Handle<std::vector<pat::TriggerObjectStandAlone> > triggerObjects;
+  iEvent.getByToken(triggerObjectsToken_, triggerObjects);
+
   Prefiring_Weight = -10000;
   edm::Handle<double> PrefiringWeight;
   if(!runningOnData_ && (runningEra_ == 0 || runningEra_ == 1)){
-    iEvent.getByToken(PrefiringWeight_Token, PrefiringWeight);
+    iEvent.getByToken(PrefiringWeightToken_, PrefiringWeight);
     Prefiring_Weight = (*PrefiringWeight);
   }
 
@@ -529,6 +535,87 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     lepton_dz_tree    = el_dz;
     lepton_iso_tree   = best_el_iso;
   }
+ 
+
+  //*************************************************************//
+  //                                                             //
+  //---------------------- Trigger Matching ---------------------//
+  //                                                             //
+  //*************************************************************//
+  //https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2017#Trigger
+
+  float deltaR_lep_trigger_min = 0.5;
+  float deltapTrel_lep_trigger_min = 0.5;
+  bool isTriggerMatched = false;
+
+
+  const edm::TriggerNames &TNames = iEvent.triggerNames(*triggerBits);
+
+  for (pat::TriggerObjectStandAlone obj : *triggerObjects){ // note: not "const &" since we want to call unpackPathNames
+
+    bool isAcceptedPath = false;
+    obj.unpackPathNames(TNames);
+
+    std::vector pathNamesAll = obj.pathNames(false);
+
+    for (unsigned h = 0, n = pathNamesAll.size(); h < n; ++h) {
+      // Record also if the object is associated to a 'l3' filter (always true for the definition used
+      // in the PAT trigger producer) and if it's associated to the last filter of a successfull path (which means
+      // that this object did cause this trigger to succeed; however, it doesn't work on some multi-object triggers)
+      bool isSuccessfulTrigger = obj.hasPathName( pathNamesAll[h], true, true );
+      //std::cout << "   " << pathNamesAll[h];
+      if(!isSuccessfulTrigger) continue;
+      //std::cout << "(L,3)" << std::endl;
+
+      if((is_muon && runningEra_ == 0) && (pathNamesAll[h].find("HLT_IsoMu24_v") != std::string::npos || pathNamesAll[h].find("HLT_IsoTkMu24_v") != std::string::npos || pathNamesAll[h].find("HLT_Mu50_v") != std::string::npos)) {
+	isAcceptedPath = true;
+	continue; //Just to speed up a bit
+      }
+      
+      if((is_muon && runningEra_ == 1) && (pathNamesAll[h].find("HLT_IsoMu27_v") != std::string::npos || pathNamesAll[h].find("HLT_Mu50_v") != std::string::npos)) {
+	isAcceptedPath = true;
+	continue;
+      }
+      
+      if((is_muon && runningEra_ == 2) && (pathNamesAll[h].find("HLT_IsoMu24_v") != std::string::npos || pathNamesAll[h].find("HLT_Mu50_v") != std::string::npos)) {
+	isAcceptedPath = true;
+	continue;
+      }
+      
+      if((!is_muon && runningEra_ == 0) && (pathNamesAll[h].find("HLT_Ele25_eta2p1_WPTight_Gsf_v") != std::string::npos || pathNamesAll[h].find("HLT_Ele27_WPTight_Gsf_v") != std::string::npos)) {
+	isAcceptedPath = true;
+	continue;
+      }
+	    
+      if((!is_muon && runningEra_ == 1) && (pathNamesAll[h].find("HLT_Ele32_WPTight_Gsf_L1DoubleEG_v") != std::string::npos || pathNamesAll[h].find("HLT_Ele32_WPTight_Gsf_v") != std::string::npos)) {
+	isAcceptedPath = true;
+	continue;
+      }
+      
+      if((!is_muon && runningEra_ == 2) &&  pathNamesAll[h].find("HLT_Ele32_WPTight_Gsf_v") != std::string::npos) {
+	isAcceptedPath = true;
+	continue;
+      }
+    }
+    //std::cout << std::endl;
+
+    if(!isAcceptedPath) continue;
+    
+    float deltaEta_lep_trigger = fabs(lepton_eta_tree - obj.eta());
+    float deltaPhi_lep_trigger = fabs(lepton_phi_tree - obj.phi());
+    if(deltaPhi_lep_trigger > 3.14){
+      deltaPhi_lep_trigger = 6.28 - deltaPhi_lep_trigger;
+    }
+    float deltaR_lep_trigger = sqrt(deltaEta_lep_trigger*deltaEta_lep_trigger + deltaPhi_lep_trigger*deltaPhi_lep_trigger);
+    float deltapTrel_lep_trigger = fabs(lepton_pT_tree - obj.pt())/obj.pt();
+    if(deltaR_lep_trigger <= deltaR_lep_trigger_min && deltapTrel_lep_trigger <= deltapTrel_lep_trigger_min){
+      isTriggerMatched = true;
+      //std::cout << "\tTrigger object:  pt " << obj.pt() << ", eta " << obj.eta() << ", phi " << obj.phi() << std::endl;
+      break;
+    }
+  }
+  //if(!isTriggerMatched) return;
+  isTriggerMatched_tree = isTriggerMatched;
 
 
   //*************************************************************//
@@ -798,10 +885,11 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //                                                             //
   //*************************************************************//
 
-  nBjets = 0;
+  nBjets = 0; //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
   for (auto jet = slimmedJets->begin(); jet != slimmedJets->end(); ++jet){
     if(runningEra_ == 0 && jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") < Bjets_WP_2016_) continue;   //loose 2016
     if(runningEra_ == 1 && jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") < Bjets_WP_2017_) continue;   //loose 2017
+    if(runningEra_ == 2 && jet->bDiscriminator("pfDeepCSVJetTags:probb") < Bjets_WP_2018_) continue;                         //loose 2018
     if(jet->pt() < 25.) continue;
     nBjets_25++;
     if(jet->pt() < 30.) continue;
@@ -832,6 +920,7 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("isSingleEleTrigger_27",&isSingleEleTrigger_27);
   mytree->Branch("isSingleEleTrigger_32_DoubleEG",&isSingleEleTrigger_32_DoubleEG);
   mytree->Branch("isSingleEleTrigger_32",&isSingleEleTrigger_32);
+  mytree->Branch("isTriggerMatched",&isTriggerMatched_tree);
 
   //Save run number info when running on data
   if(runningOnData_){
@@ -922,6 +1011,10 @@ void WPiGammaAnalysis::beginJob()
   if (!runningOnData_ && runningEra_ == 1){ // PU reweighting for 2017
     //std::cout << "Using 2017 PU histos" << std::endl;
    Lumiweights_ = edm::LumiReWeighting("MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root", "MyDataPileupHistogram_2017.root", "pileup", "pileup");
+  }
+  if (!runningOnData_ && runningEra_ == 2){ // PU reweighting for 2018
+    //std::cout << "Using 2018 PU histos" << std::endl;
+   Lumiweights_ = edm::LumiReWeighting("MCpileUp_2018_25ns_JuneProjectionFull18_PoissonOOTPU.root", "MyDataPileupHistogram_2018.root", "pileup", "pileup");
   }
 }
 

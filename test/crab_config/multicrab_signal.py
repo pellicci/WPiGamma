@@ -25,6 +25,11 @@ if runningEra == 1:
     #config.General.workArea = 'crab_projects/samples_LeptonStudy_2017/'
     config.JobType.inputFiles = ['MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root','MyDataPileupHistogram_2017.root','L1PrefiringMaps_new.root'] #MC and data files for PileUp reweighting (2017)
 
+if runningEra == 2:
+    config.General.workArea = 'crab_projects/samples_MC_2018/'
+    #config.General.workArea = 'crab_projects/samples_LeptonStudy_2018/'
+    config.JobType.inputFiles = ['MCpileUp_2018_25ns_JuneProjectionFull18_PoissonOOTPU.root','MyDataPileupHistogram_2018.root','L1PrefiringMaps_new.root'] #MC and data files for PileUp reweighting (2017)
+
 
 config.section_('Data')
 config.Data.inputDBS = 'phys03'

@@ -43,6 +43,8 @@ if runningEra == 0:
 if runningEra == 1:
     luminosity_norm = 41.529
     #luminosity_norm = 27.13 #lumi for Ele32_WPTight only
+if runningEra == 2:
+    luminosity_norm = 59.69
 
 luminosity_norm_2017 = 41.529
 luminosity_norm_2017_Ele32_WPTight = 27.13

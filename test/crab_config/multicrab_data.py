@@ -19,13 +19,15 @@ config.section_('Data')
 
 if runningEra == 0:
     config.General.workArea = 'crab_projects/samples_data_2016/'
-    #config.JobType.inputFiles = ['PU/MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root','PU/MyDataPileupHistogram_2016.root'] #MC and data files for PileUp reweighting (2016)
     config.Data.lumiMask = 'json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
 
 if runningEra == 1:
     config.General.workArea = 'crab_projects/samples_data_2017/'
-    #config.JobType.inputFiles = ['PU/MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root','PU/MyDataPileupHistogram_2017.root'] #MC and data files for PileUp reweighting (2017)
     config.Data.lumiMask = 'json/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
+
+if runningEra == 2:
+    config.General.workArea = 'crab_projects/samples_data_2018/'
+    config.Data.lumiMask = 'json/Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt'
 
 
 config.Data.inputDBS = 'global'
@@ -57,9 +59,16 @@ if __name__ == '__main__':
 
     #First the muon datasets
 
+
+    ################################################
+    #                                              #
+    #----------------- Muons 2016 -----------------#
+    #                                              #
+    ################################################
+
     if runningEra == 0:
 
-        config.JobType.pyCfgParams = ['runningOnData=True','runningOnMuons=True','runningEra=0'] # Configure 2016 data jobs - muons
+        config.JobType.pyCfgParams = ['runningOnData=True','runningOnMuons=True','runningEra=0','runningOn2018D=False'] # Configure 2016 data jobs - muons
     
         config.General.requestName = '2016_WPiGammaAnalysis_SingleMu_B'
         config.Data.unitsPerJob = 50
@@ -110,9 +119,16 @@ if __name__ == '__main__':
         p.start()
         p.join()
 
+
+    ################################################
+    #                                              #
+    #----------------- Muons 2017 -----------------#
+    #                                              #
+    ################################################
+
     if runningEra == 1:
 
-        config.JobType.pyCfgParams = ['runningOnData=True','runningOnMuons=True','runningEra=1'] # Configure 2017 data jobs - muons
+        config.JobType.pyCfgParams = ['runningOnData=True','runningOnMuons=True','runningEra=1','runningOn2018D=False'] # Configure 2017 data jobs - muons
 
         config.General.requestName = '2017_WPiGammaAnalysis_SingleMu_B'
         config.Data.unitsPerJob = 50
@@ -150,11 +166,57 @@ if __name__ == '__main__':
         p.join()
 
 
-    #Now the electron datasets    
+    ################################################
+    #                                              #
+    #----------------- Muons 2018 -----------------#
+    #                                              #
+    ################################################
+
+    if runningEra == 2: 
+
+        config.JobType.pyCfgParams = ['runningOnData=True','runningOnMuons=True','runningEra=2','runningOn2018D=False'] # Configure 2018 data jobs - muons - eras A,B,C
+
+        config.General.requestName = '2018_WPiGammaAnalysis_SingleMu_A'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2018A-17Sep2018-v2/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+
+        config.General.requestName = '2018_WPiGammaAnalysis_SingleMu_B'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2018B-17Sep2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+
+        config.General.requestName = '2018_WPiGammaAnalysis_SingleMu_C'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2018C-17Sep2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+
+        #Muons 2018 - Era D
+        config.JobType.pyCfgParams = ['runningOnData=True','runningOnMuons=True','runningEra=2','runningOn2018D=True'] # Configure 2018 data jobs - muons - era D
+
+        config.General.requestName = '2018_WPiGammaAnalysis_SingleMu_D'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/SingleMuon/Run2018D-22Jan2019-v2/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+
+
+    ################################################
+    #                                              #
+    #--------------- Electrons 2016 ---------------#
+    #                                              #
+    ################################################
 
     if runningEra == 0:
 
-        config.JobType.pyCfgParams = ['runningOnData=True','runningOnMuons=False','runningEra=0'] # Configure 2016 data jobs - electrons
+        config.JobType.pyCfgParams = ['runningOnData=True','runningOnMuons=False','runningEra=0','runningOn2018D=False'] # Configure 2016 data jobs - electrons
     
         config.General.requestName = '2016_WPiGammaAnalysis_SingleEle_B'
         config.Data.unitsPerJob = 50
@@ -205,9 +267,16 @@ if __name__ == '__main__':
         p.start()
         p.join()
 
+
+    ################################################
+    #                                              #
+    #--------------- Electrons 2017 ---------------#
+    #                                              #
+    ################################################
+
     if runningEra == 1:
 
-        config.JobType.pyCfgParams = ['runningOnData=True','runningOnMuons=False','runningEra=1'] # Configure 2017 data jobs - electrons
+        config.JobType.pyCfgParams = ['runningOnData=True','runningOnMuons=False','runningEra=1','runningOn2018D=False'] # Configure 2017 data jobs - electrons
         
         config.General.requestName = '2017_WPiGammaAnalysis_SingleEle_B'
         config.Data.unitsPerJob = 50
@@ -240,6 +309,48 @@ if __name__ == '__main__':
         config.General.requestName = '2017_WPiGammaAnalysis_SingleEle_F'
         config.Data.unitsPerJob = 50
         config.Data.inputDataset = '/SingleElectron/Run2017F-31Mar2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+
+
+    ################################################
+    #                                              #
+    #--------------- Electrons 2018 ---------------#
+    #                                              #
+    ################################################
+
+    if runningEra == 2: 
+
+        config.JobType.pyCfgParams = ['runningOnData=True','runningOnMuons=False','runningEra=2','runningOn2018D=False'] # Configure 2018 data jobs - electrons - eras A,B,C
+
+        config.General.requestName = '2018_WPiGammaAnalysis_SingleEle_A'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/EGamma/Run2018A-17Sep2018-v2/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+
+        config.General.requestName = '2018_WPiGammaAnalysis_SingleEle_B'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/EGamma/Run2018B-17Sep2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+
+        config.General.requestName = '2018_WPiGammaAnalysis_SingleEle_C'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/EGamma/Run2018C-17Sep2018-v1/MINIAOD'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+
+        #Electrons 2018 - Era D
+        config.JobType.pyCfgParams = ['runningOnData=True','runningOnMuons=False','runningEra=2','runningOn2018D=True'] # Configure 2018 data jobs - electrons - era D
+
+        config.General.requestName = '2018_WPiGammaAnalysis_SingleEle_D'
+        config.Data.unitsPerJob = 50
+        config.Data.inputDataset = '/EGamma/Run2018D-22Jan2019-v2/MINIAOD'
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()

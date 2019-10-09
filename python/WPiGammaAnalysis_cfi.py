@@ -14,11 +14,13 @@ WPiGammaAnalysis = cms.EDAnalyzer('WPiGammaAnalysis',
                                   pvCollection       = cms.InputTag("offlineSlimmedPrimaryVertices"),
                                   bsCollection       = cms.InputTag("offlineBeamSpot"),
                                   PileupSrc          = cms.InputTag("slimmedAddPileupInfo"),
-                                  triggerbits        = cms.InputTag("TriggerResults","","HLT"),
+                                  triggerBits        = cms.InputTag("TriggerResults","","HLT"),
+
                                   rho                = cms.InputTag("fixedGridRhoFastjetAll"),
-                                  #Bjets_WP           = cms.double(0.46), # Working point for the Bjet discriminator (0.46 is loose)
-                                  Bjets_WP_2016      = cms.double(0.5426), # Working point for the Bjet discriminator (loose)
-                                  Bjets_WP_2017      = cms.double(0.5803), # Working point for the Bjet discriminator (loose)
+                                  #https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
+                                  Bjets_WP_2016      = cms.double(0.5426), # Working point for the 2016 Bjet discriminator (loose)
+                                  Bjets_WP_2017      = cms.double(0.5803), # Working point for the 2017 Bjet discriminator (loose)
+                                  Bjets_WP_2018      = cms.double(0.1241), # Working point for the 2018 Bjet discriminator (loose)
 
                                   # This is a fairly verbose mode if switched on, with full cut flow 
                                   # diagnostics for each candidate. Use it in a low event count test job.
