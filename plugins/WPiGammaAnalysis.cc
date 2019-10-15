@@ -78,7 +78,11 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   pileupSummaryToken_                 = consumes<std::vector<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo"));
   GenInfoToken_                       = consumes<GenEventInfoProduct> (edm::InputTag("generator"));
   triggerBitsToken_                   = consumes<edm::TriggerResults> (edm::InputTag("TriggerResults","","HLT"));
-  triggerObjectsToken_                = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","PAT"));
+  triggerObjectsTokenMC2016_          = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","PAT"));
+  triggerObjectsTokenData2016_        = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","DQM"));
+  triggerObjectsToken2017_            = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","PAT"));
+  triggerObjectsTokenMC2018_          = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","PAT"));
+  triggerObjectsTokenData2018_        = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","RECO"));
   rhoToken_                           = consumes<double> (iConfig.getParameter <edm::InputTag>("rho"));
   PrefiringWeightToken_               = consumes<double>(edm::InputTag("prefiringweight:nonPrefiringProb"));
 
@@ -137,7 +141,21 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   iEvent.getByToken(triggerBitsToken_, triggerBits);
 
   edm::Handle<std::vector<pat::TriggerObjectStandAlone> > triggerObjects;
-  iEvent.getByToken(triggerObjectsToken_, triggerObjects);
+  if(!runningOnData_ && runningEra_ == 0){
+    iEvent.getByToken(triggerObjectsTokenMC2016_, triggerObjects);
+  }
+  if(runningOnData_ && runningEra_ == 0){
+    iEvent.getByToken(triggerObjectsTokenData2016_, triggerObjects);
+  }
+  if(runningEra_ == 1){
+    iEvent.getByToken(triggerObjectsToken2017_, triggerObjects);
+  }
+  if(!runningOnData_ && runningEra_ == 2){
+    iEvent.getByToken(triggerObjectsTokenMC2018_, triggerObjects);
+  }
+  if(runningOnData_ && runningEra_ == 2){
+    iEvent.getByToken(triggerObjectsTokenData2018_, triggerObjects);
+  }
 
   Prefiring_Weight = -10000;
   edm::Handle<double> PrefiringWeight;
@@ -565,7 +583,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       bool isSuccessfulTrigger = obj.hasPathName( pathNamesAll[h], true, true );
       //std::cout << "   " << pathNamesAll[h];
       if(!isSuccessfulTrigger) continue;
-      //std::cout << "(L,3)" << std::endl;
+      //std::cout << pathNamesAll[h] << "(L,3)" << std::endl;
 
       if((is_muon && runningEra_ == 0) && (pathNamesAll[h].find("HLT_IsoMu24_v") != std::string::npos || pathNamesAll[h].find("HLT_IsoTkMu24_v") != std::string::npos || pathNamesAll[h].find("HLT_Mu50_v") != std::string::npos)) {
 	isAcceptedPath = true;
@@ -617,6 +635,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //if(!isTriggerMatched) return;
   isTriggerMatched_tree = isTriggerMatched;
 
+  //std::cout << "particella matchata. is_muon: " << is_muon << "  pt: " << lepton_pT_tree << "  eta: " << lepton_eta_tree << "  phi:" << lepton_phi_tree << std::endl;  
 
   //*************************************************************//
   //                                                             //

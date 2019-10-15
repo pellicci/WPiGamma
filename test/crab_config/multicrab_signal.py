@@ -33,8 +33,8 @@ if runningEra == 2:
 
 config.section_('Data')
 config.Data.inputDBS = 'phys03'
-config.Data.splitting = 'FileBased'
-config.Data.unitsPerJob = 5
+config.Data.splitting = 'Automatic'
+#config.Data.unitsPerJob = 5
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = False
 

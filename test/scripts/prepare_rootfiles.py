@@ -31,9 +31,9 @@ if isData:
 
 list_dirs = os.listdir(dir_input)
 
-complementary_samples_list_2016 = ["ttbarWlnu","ttbarZlnu","DY10to50","DY50","QCDHT200to300","QCDHT300to500","QCDHT500to700","QCDHT700to1000","QCDHT1000to1500","QCDHT1500to2000","QCDHT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG"]
+complementary_samples_list_2016 = ["ttbarWlnu","ttbarZlnu","WJetsToLNu","DY10to50","QCDHT200to300","QCDHT300to500","QCDHT500to700","QCDHT700to1000","QCDHT1000to1500","QCDHT1500to2000","QCDHT2000toInf","WZ","TTGJets"]
 
-complementary_samples_list_2017 = ["WJetsToLNu","DY50","TTGJets"]
+complementary_samples_list_2017 = ["WJetsToLNu1J","WJetsToLNu2J","DY50","TTGJets"]
 
 if year == "2016":
     complementary_samples_list = complementary_samples_list_2016

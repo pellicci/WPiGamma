@@ -19,53 +19,58 @@ year = args.year_option
 
 #xsec lookup in pb
 secs_table_2016 = dict()
-secs_table_2016["ttbar"] = 831.76 - 88.29
+#secs_table_2016["ttbar"] = 831.76 - 88.29
+secs_table_2017["ttbarToHadronic"] = 377.96
+secs_table_2017["ttbarToSemiLeptonic"] = 365.34 # accounting for the 2 possible charge signs of the W
+secs_table_2017["ttbarlnu"] = 88.29 #NNLO-2017
 secs_table_2016["ttbarlnu"] = 88.29 
 secs_table_2016["ttbarWQQ"] = 0.405
 secs_table_2016["ttbarWlnu"] = 0.2001
 secs_table_2016["ttbarZQQ"] = 0.5297
 secs_table_2016["ttbarZlnu"] = 0.2529
-secs_table_2016["SingleToptW"] = 35.85
-secs_table_2016["SingleAntiToptW"] = 35.85
+secs_table_2016["SingleToptW"] = 34.91 #It is like this in XSDB
+secs_table_2016["SingleAntiToptW"] = 34.97 #It is like this in XSDB
 secs_table_2016["WJetsToLNu"] = 60430.0
 secs_table_2016["DY10to50"] = 18810.0
 #secs_table_2016["DY50"] = 4963.0
 secs_table_2016["DY50"] = 2075.14*3 #https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#DY_Z
-secs_table_2016["QCDHT100to200"] = 27540000.0
-secs_table_2016["QCDHT200to300"] = 1717000.0
-secs_table_2016["QCDHT300to500"] = 351300.0
-secs_table_2016["QCDHT500to700"] = 31630.0
-secs_table_2016["QCDHT700to1000"] = 6802.0
-secs_table_2016["QCDHT1000to1500"] = 1206.0
-secs_table_2016["QCDHT1500to2000"] = 120.4
+secs_table_2016["QCDHT100to200"] = 28060000.0
+secs_table_2016["QCDHT200to300"] = 1710000.0
+secs_table_2016["QCDHT300to500"] = 347500.0
+secs_table_2016["QCDHT500to700"] = 32060.0
+secs_table_2016["QCDHT700to1000"] = 6829.0
+secs_table_2016["QCDHT1000to1500"] = 1207.0
+secs_table_2016["QCDHT1500to2000"] = 120.0
 secs_table_2016["QCDHT2000toInf"] = 25.25
 #secs_table_2016["ZZ"] = 6.912
-secs_table_2016["WW"] = 45.2
+secs_table_2016["WW"] = 45.15
 secs_table_2016["WZ"] = 23.43
 secs_table_2016["GammaJets20to40"] = 219.2
-secs_table_2016["GammaJets40toInf"] = 862.4
 secs_table_2016["GammaJets20toInf"] = 3255.0
+secs_table_2016["GammaJets40toInf"] = 862.4
 secs_table_2016["QCDDoubleEMEnriched30to40"] = 22180.0
 secs_table_2016["QCDDoubleEMEnriched30toInf"] = 247000.0
 secs_table_2016["QCDDoubleEMEnriched40toInf"] = 113100.0
-secs_table_2016["WGToLNuG"] = 510.6
+secs_table_2016["WGToLNuG01J"] = 178.4
 secs_table_2016["TTGJets"] = 3.795
 secs_table_2016["ZGTo2LG"] = 123.8
 secs_table_2016["Signal"] = 831.76*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
 
 #fraction of negative-weighted events in NLO samples (2016)
 frac_table_2016 = dict()
-frac_table_2016["ttbar"] = 0.
+#frac_table_2016["ttbar"] = 0.
+frac_table_2016["ttbarToHadronic"] = 0.
+frac_table_2016["ttbarToSemiLeptonic"] = 0.
 frac_table_2016["ttbarlnu"] = 0.
 frac_table_2016["ttbarWQQ"] = 0.2426
 frac_table_2016["ttbarWlnu"] = 0.2419
 frac_table_2016["ttbarZQQ"] = 0.2656
 frac_table_2016["ttbarZlnu"] = 0.2687
-frac_table_2016["SingleToptW"] = 0.
-frac_table_2016["SingleAntiToptW"] = 0.
+frac_table_2016["SingleToptW"] = 0.003708
+frac_table_2016["SingleAntiToptW"] = 0.00369
 frac_table_2016["WJetsToLNu"] = 0.1581
 frac_table_2016["DY10to50"] = 0.1367
-frac_table_2016["DY50"] = 0.
+frac_table_2016["DY50"] = 0.1661
 frac_table_2016["QCDHT100to200"] = 0.
 frac_table_2016["QCDHT200to300"] = 0.
 frac_table_2016["QCDHT300to500"] = 0.
@@ -75,15 +80,15 @@ frac_table_2016["QCDHT1000to1500"] = 0.
 frac_table_2016["QCDHT1500to2000"] = 0.
 frac_table_2016["QCDHT2000toInf"] = 0.
 #frac_table_2016["ZZ"] = 0.1894
-frac_table_2016["WW"] = 0.
+frac_table_2016["WW"] = 0.1866
 frac_table_2016["WZ"] = 0.
 frac_table_2016["GammaJets20to40"] = 0.
-frac_table_2016["GammaJets40toInf"] = 0.
 frac_table_2016["GammaJets20toInf"] = 0.
+frac_table_2016["GammaJets40toInf"] = 0.
 frac_table_2016["QCDDoubleEMEnriched30to40"] = 0.
 frac_table_2016["QCDDoubleEMEnriched30toInf"] = 0.
 frac_table_2016["QCDDoubleEMEnriched40toInf"] = 0.
-frac_table_2016["WGToLNuG"] = 0.1799
+frac_table_2016["WGToLNuG01J"] = 0.2038 #Calculated with calculateXSectionAndFilterEfficiency.sh
 frac_table_2016["TTGJets"] = 0.3381
 frac_table_2016["ZGTo2LG"] = 0.1584
 frac_table_2016["Signal"] = 0.
@@ -97,7 +102,7 @@ frac_table_2016["Signal"] = 0.
 
 
 secs_table_2017 = dict()
-secs_table_2017["ttbar"] = 831.76 - 88.29
+#secs_table_2017["ttbar"] = 831.76 - 88.29
 secs_table_2017["ttbarToHadronic"] = 377.96
 secs_table_2017["ttbarToSemiLeptonic"] = 365.34 # accounting for the 2 possible charge signs of the W
 secs_table_2017["ttbarlnu"] = 88.29 #NNLO-2017
@@ -138,7 +143,7 @@ secs_table_2017["Signal"] = 831.76*0.1086*2.*0.000001*2. #cross section taken fr
 
 #fraction of negative-weighted events in NLO samples (2017)
 frac_table_2017 = dict()
-frac_table_2017["ttbar"] = 0.31
+#frac_table_2017["ttbar"] = 0.31
 frac_table_2017["ttbarToHadronic"] = 0.
 frac_table_2017["ttbarToSemiLeptonic"] = 0.
 frac_table_2017["ttbarlnu"] = 0.
@@ -180,9 +185,8 @@ frac_table_2017["Signal"] = 0.
 secs_table = dict()
 frac_table = dict()
 
-complementary_samples_list_2016 = ["ttbarWlnu","ttbarZlnu","DY10to50","DY50","QCDHT200to300","QCDHT300to500","QCDHT500to700","QCDHT700to1000","QCDHT1000to1500","QCDHT1500to2000","QCDHT2000toInf","WZ","WGToLNuG","TTGJets","ZGTo2LG","Signal"]
+complementary_samples_list_2016 = ["ttbarWlnu","ttbarZlnu","WJetsToLNu","DY10to50","QCDHT200to300","QCDHT300to500","QCDHT500to700","QCDHT700to1000","QCDHT1000to1500","QCDHT1500to2000","QCDHT2000toInf","WZ","TTGJets","Signal"]
 
-# complementary_samples_list_2017 = ["WJetsToLNu","DY50","TTGJets","WJetsToLNu1J","WJetsToLNu2J","Signal"]
 complementary_samples_list_2017 = ["DY50","TTGJets","WJetsToLNu1J","WJetsToLNu2J","Signal"]
 
 if year == "2016":
@@ -216,9 +220,6 @@ def main():
         is_in_complementary_sample_list = False
         
         samplename = dirname.split("crab_" + year + "_WPiGammaAnalysis_")[1]
-
-        if year == "2017" and (samplename == "WJetsToLNu_1" or samplename == "WJetsToLNu_2"): #FIXME
-            continue
 
         print "Processing sample dir " + dirname
         crab_command = "crab report -d " + dir_input + dirname + " | grep read"

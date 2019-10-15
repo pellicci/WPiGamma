@@ -16,7 +16,7 @@ process.maxEvents = cms.untracked.PSet(
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing()
 options.register('runningOnData',
-                 False, #default value
+                 True, #default value
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "PU config flag")
@@ -26,7 +26,7 @@ options.register('runningOnMuons',
                  VarParsing.VarParsing.varType.bool,
                  "muon trigger config flag")
 options.register('runningEra',
-                 1, #default value. 0 is 2016, 1 is 2017, 2 is 2018
+                 2, #default value. 0 is 2016, 1 is 2017, 2 is 2018
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "2016-2017-2018 config flag")
@@ -96,11 +96,11 @@ if options.runningOnData:
         if not options.runningOn2018D:
             process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_v11')
             print "Data Sample (2018, eras A, B or C) will be taken as input for check up of the code working "
-            inputFiles = {""}
+            inputFiles = {"root://cms-xrd-global.cern.ch//store/data/Run2018A/EGamma/MINIAOD/17Sep2018-v2/60000/FFD234BD-747F-9242-9EC3-4D3BC8E564B0.root"}
         if options.runningOn2018D:
             process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Prompt_v14')
             print "Data Sample (2018, era D) will be taken as input for check up of the code working "
-            inputFiles = {""}
+            inputFiles = {"root://cms-xrd-global.cern.ch//store/data/Run2018D/EGamma/MINIAOD/22Jan2019-v2/70001/D46454A8-4A32-7E4C-8639-9A26238A05E4.root"}
 else:
 
     if options.runningEra == 0: #test 2016 MC
@@ -113,13 +113,13 @@ else:
         process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mc2017_realistic_v17') 
         print "MC Sample (2017) will be taken as input for check up of the code working "
         inputFiles = {#"root://cms-xrd-global.cern.ch//store/user/rselvati/WMinusPiGamma_GENSIM_80XV1/WMinusPiGamma_MINIAODSIM_94XV3/190129_151107/0000/WPiGamma_pythia8_MINIAOD_9.root"}
-            "/store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/60000/FCC2AFA9-4BBB-E811-B35F-0CC47AFB7D48.root"}
+            "root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/60000/FCC2AFA9-4BBB-E811-B35F-0CC47AFB7D48.root"}
             #"/store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/20000/10928512-C04D-E811-AD45-F01FAFE5E4F8.root"}
         
     if options.runningEra == 2: #test 2018 MC
         process.GlobalTag = GlobalTag(process.GlobalTag, '102X_upgrade2018_realistic_v15') 
         print "MC Sample (2018) will be taken as input for check up of the code working "
-        inputFiles = {""}
+        inputFiles = {"root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18MiniAOD/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v1/00000/38CB48DD-A494-4044-B9CD-64241707E25F.root"}
 
 
 process.source = cms.Source ("PoolSource",
@@ -238,8 +238,11 @@ if options.runningOnData and options.runningOnMuons: # Data, Muons
 if options.runningOnData and not options.runningOnMuons: # Data, Electrons
    process.seq = cms.Path(process.trigger_filter_data_ele * (~process.trigger_filter_data_mu) * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis) #Excluding events when both muon and electron triggers were lit
 
-if not options.runningOnData: # MC
+if not options.runningOnData and not options.runningEra == 2: # MC
    process.seq = cms.Path(process.trigger_filter_MC * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.prefiringweight * process.WPiGammaAnalysis)
+
+if not options.runningOnData and options.runningEra == 2: # MC
+   process.seq = cms.Path(process.trigger_filter_MC * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis)
 
 process.schedule = cms.Schedule(process.seq)
 
