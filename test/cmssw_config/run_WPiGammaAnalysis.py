@@ -16,7 +16,7 @@ process.maxEvents = cms.untracked.PSet(
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing()
 options.register('runningOnData',
-                 True, #default value
+                 False, #default value
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "PU config flag")
@@ -26,7 +26,7 @@ options.register('runningOnMuons',
                  VarParsing.VarParsing.varType.bool,
                  "muon trigger config flag")
 options.register('runningEra',
-                 2, #default value. 0 is 2016, 1 is 2017, 2 is 2018
+                 0, #default value. 0 is 2016, 1 is 2017, 2 is 2018
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "2016-2017-2018 config flag")

@@ -91,3 +91,19 @@ if __name__ == '__main__':
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()
+
+    if runningEra == 2: #2018
+
+        config.JobType.pyCfgParams = ['runningOnData=False','runningEra=2'] # Configure 2017 MC signal jobs 
+
+        config.General.requestName = '2018_WPiGammaAnalysis_Signal_WPlus'
+        config.Data.inputDataset = ''
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
+        
+        config.General.requestName = '2018_WPiGammaAnalysis_Signal_WMinus'
+        config.Data.inputDataset = ''
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
