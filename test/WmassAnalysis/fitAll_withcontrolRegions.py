@@ -27,23 +27,23 @@ runningEra = int(args.runningEra_option)
 ################################################################
 
 ########------- Fit to restricted CR to determine the best background parametrization -------########
-# useChebychev = 0 will use Chebychev PDFs to describe the backround (they can be replaced by other PDFs in the " if useChebychev == 0:" statement);
+# selectBkgFunction = 0 will use Chebychev PDFs to describe the backround (they can be replaced by other PDFs in the " if selectBkgFunction == 0:" statement);
 # restricted_CR = True will perform the fit on restricted CRs, cuttin on a different BDT output according to channel and year
-# isAlternativeBkgDescription = False will make sure the Categorization has also MuonCR and ElectronCR for the two years
+# suppressBkgSystematic = False will make sure the Categorization has also MuonCR and ElectronCR for the two years
 
 ########------- Determine the systematic on bkg parametrization -------########
-# the useChebychev variable has to be put equal to 0, then to 1, 2, 3, and 4. This way, the PDFs used to describe the background will be changed one by one (per channel and per year), and it will be possible to obtain the value of W_pigamma_BR for each case
+# the selectBkgFunction variable has to be put equal to 0, then to 1, 2, 3, and 4. This way, the PDFs used to describe the background will be changed one by one (per channel and per year), and it will be possible to obtain the value of W_pigamma_BR for each case
 # restricted_CR = False will make sure the fit is performed on the signal regions
-# isAlternativeBkgDescription = True will allow W_pigamma_BR to float negative, and will set the value of the systematic on the bkg parametrization to be negligible during the fit
+# suppressBkgSystematic = True will allow W_pigamma_BR to float negative, and will set the value of the systematic on the bkg parametrization to be negligible during the fit
 
 ########------- Fit to data signal regions -------########
-# useChebychev = 0 will use the nominal background parametrization
+# selectBkgFunction = 0 will use the nominal background parametrization
 # restricted_CR = False will perform the fit (and the plotting) on the signal regions
-# isAlternativeBkgDescription = False will make sure the W_pigamma_BR parameter is positive definite and the systematic on background parametrization is introduced
+# suppressBkgSystematic = False will make sure the W_pigamma_BR parameter is positive definite and the systematic on background parametrization is introduced
 
-useChebychev = 0 # 0: use Chebychev for ALL the bkg PDFs. 1: use Bernstein for mu 2016. 2: use Bernstein for ele 2016. 3: use Bernstein for mu 2017. 4: use Bernstein for ele 2017
+selectBkgFunction = 0 # 0: use Chebychev for ALL the bkg PDFs. 1: use Bernstein for mu 2016. 2: use Bernstein for ele 2016. 3: use Bernstein for mu 2017. 4: use Bernstein for ele 2017
 restricted_CR = False # If True, data will be reduced to have the content of the restricted control regions
-isAlternativeBkgDescription = True # To be used when trying to fit with alternative bkg description, in order to estimate a systematic. If True, it will allow W_pigamma_BR to float negative. Moreover, it will use Signal+Background in the totPDF, so that the fit to the restricted CRs will contain also the POI BR, which will be used to calculate the pull and hence to estimate the systematic
+suppressBkgSystematic = True # To be used when trying to fit with alternative bkg description, in order to estimate a systematic. If True, it will allow W_pigamma_BR to float negative. Moreover, it will use Signal+Background in the totPDF, so that the fit to the restricted CRs will contain also the POI BR, which will be used to calculate the pull and hence to estimate the systematic
 
 
 ################################################################
@@ -188,7 +188,7 @@ fInput_bkg.cd()
 
 workspace_bkg = fInput_bkg.Get("workspace_bkg")
 
-if useChebychev == 0:
+if selectBkgFunction == 0:
     backPDF_mu_2016 = workspace_bkg.pdf("backPDF_cheb_mu_2016")
     backPDF_el_2016 = workspace_bkg.pdf("backPDF_cheb_el_2016")
     backPDF_mu_2017 = workspace_bkg.pdf("backPDF_cheb_mu_2017")
@@ -198,7 +198,7 @@ if useChebychev == 0:
     backPDF_mu_2016_2017 = workspace_bkg.pdf("backPDF_cheb_mu_2017")
     backPDF_el_2016_2017 = workspace_bkg.pdf("backPDF_cheb_el_2017")
 
-elif useChebychev == 1: #Use Bernstein for muon channel 2016 (calculation of systematic on background parametrization)
+elif selectBkgFunction == 1: #Use Bernstein for muon channel 2016 (calculation of systematic on background parametrization)
     # workspace_bkg.var("b0_mu_2016").setRange(0.,0.005)
     # workspace_bkg.var("b0_mu_2016").setVal(0.0005)
     backPDF_mu_2016 = workspace_bkg.pdf("backPDF_bern_mu_2016")
@@ -206,19 +206,19 @@ elif useChebychev == 1: #Use Bernstein for muon channel 2016 (calculation of sys
     backPDF_mu_2017 = workspace_bkg.pdf("backPDF_cheb_mu_2017")
     backPDF_el_2017 = workspace_bkg.pdf("backPDF_cheb_el_2017")
 
-elif useChebychev == 2: #Use Bernstein for electron channel 2016 (calculation of systematic on background parametrization)
+elif selectBkgFunction == 2: #Use Bernstein for electron channel 2016 (calculation of systematic on background parametrization)
     backPDF_mu_2016 = workspace_bkg.pdf("backPDF_cheb_mu_2016")
     backPDF_el_2016 = workspace_bkg.pdf("backPDF_bern_el_2016")
     backPDF_mu_2017 = workspace_bkg.pdf("backPDF_cheb_mu_2017")
     backPDF_el_2017 = workspace_bkg.pdf("backPDF_cheb_el_2017")
 
-elif useChebychev == 3: #Use Bernstein for muon channel 2017 (calculation of systematic on background parametrization)
+elif selectBkgFunction == 3: #Use Bernstein for muon channel 2017 (calculation of systematic on background parametrization)
     backPDF_mu_2016 = workspace_bkg.pdf("backPDF_cheb_mu_2016")
     backPDF_el_2016 = workspace_bkg.pdf("backPDF_cheb_el_2016")
     backPDF_mu_2017 = workspace_bkg.pdf("backPDF_bern_mu_2017")
     backPDF_el_2017 = workspace_bkg.pdf("backPDF_cheb_el_2017")
 
-elif useChebychev == 4: #Use Bernstein for electron channel 2017 (calculation of systematic on background parametrization)
+elif selectBkgFunction == 4: #Use Bernstein for electron channel 2017 (calculation of systematic on background parametrization)
     backPDF_mu_2016 = workspace_bkg.pdf("backPDF_cheb_mu_2016")
     backPDF_el_2016 = workspace_bkg.pdf("backPDF_cheb_el_2016")
     backPDF_mu_2017 = workspace_bkg.pdf("backPDF_cheb_mu_2017")
@@ -322,7 +322,7 @@ eta_el_2017 = ROOT.RooRealVar("eta_el_2017","eta_el_2017", 1.,0.0001,3.)
 eta_mu_2016_2017 = ROOT.RooRealVar("eta_mu_2016_2017","eta_mu_2016_2017", 1.,0.0001,3.)
 eta_el_2016_2017 = ROOT.RooRealVar("eta_el_2016_2017","eta_el_2016_2017", 1.,0.0001,3.)
 
-if not isAlternativeBkgDescription:
+if not suppressBkgSystematic:
     bkg_syst_mu_2016 = 0.004 #Value of the systematic to use in the fit of the signal regions
     bkg_syst_el_2016 = 0.002
     bkg_syst_mu_2017 = 0.001
@@ -332,7 +332,7 @@ if not isAlternativeBkgDescription:
     bkg_syst_el_2016_2017 = 0.001
 
 else:
-    bkg_syst_mu_2016 = 0.0001 #In the AlternativeBkgDescription mode, one is supposed to not know yet this systematic. 0.0001 is a custom small value
+    bkg_syst_mu_2016 = 0.0001 #In the suppressBkgSystematic mode, one is supposed to not know yet this systematic. 0.0001 is a custom small value
     bkg_syst_el_2016 = 0.0001
     bkg_syst_mu_2017 = 0.0001
     bkg_syst_el_2017 = 0.0001
@@ -372,7 +372,7 @@ gauss_bkg_param_el_2016_2017  = ROOT.RooGaussian("gauss_bkg_param_el_2016_2017",
 #                                                              #
 ################################################################
 
-if isAlternativeBkgDescription:
+if suppressBkgSystematic:
     W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.000001,-0.1,0.01) # The parameter of interest can go negative when we try the alternative bkg description
 else:
     W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.000001,0.,0.01) # The parameter of interest
