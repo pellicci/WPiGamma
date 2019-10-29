@@ -9,7 +9,7 @@ ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 #---------------------------------#
 p = argparse.ArgumentParser(description='Select whether to fit muon or electron channels, and for which year')
 p.add_argument('isMuon_option', help='Type <<muon>> or <<electron>>')
-p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <<2>> for 2016+2017')
+p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <<2>> for 2018, <<3>> for summing 2016+2017')
 args = p.parse_args()
 
 # Switch from muon to electron channel
@@ -85,19 +85,32 @@ data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorizatio
 #Check the number of events contained in the signal regions before reducing the dataset
 if runningEra == 0 and isMuon:
     print "number of events mu 2016  - SR: ", data_initial.sumEntries("Categorization==1")
-    data = data_initial.reduce("(BDT_out > 0.155 && Categorization==Categorization::MuonCR_2016)")
+    data = data_initial.reduce("(BDT_out > 0.150 && Categorization==Categorization::MuonCR_2016)")
     print "number of events mu 2016  - CR: ", data.sumEntries("Categorization==0")
 if runningEra == 0 and not isMuon:
     print "number of events ele 2016 - SR: ", data_initial.sumEntries("Categorization==3")
-    data = data_initial.reduce("(BDT_out > 0.107 && Categorization==Categorization::ElectronCR_2016)")
+    data = data_initial.reduce("(BDT_out > 0.052 && Categorization==Categorization::ElectronCR_2016)")
     print "number of events ele 2016 - CR: ", data.sumEntries("Categorization==2")
 if runningEra == 1 and isMuon:
     print "number of events mu 2017  - SR: ", data_initial.sumEntries("Categorization==5")
-    data = data_initial.reduce("(BDT_out > 0.184 && Categorization==Categorization::MuonCR_2017)")
+    data = data_initial.reduce("(BDT_out > 0.160 && Categorization==Categorization::MuonCR_2017)")
     print "number of events mu 2017  - CR: ", data.sumEntries("Categorization==4")
 if runningEra == 1 and not isMuon:
     print "number of events ele 2017 - SR: ", data_initial.sumEntries("Categorization==7")
-    data = data_initial.reduce("(BDT_out > 0.122 && Categorization==Categorization::ElectronCR_2017)")
+    data = data_initial.reduce("(BDT_out > 0.110 && Categorization==Categorization::ElectronCR_2017)")
+    print "number of events ele 2017 - CR: ", data.sumEntries("Categorization==6")
+
+if runningEra == 3 and isMuon:
+    print "number of events mu 2016  - SR: ", data_initial.sumEntries("Categorization==1")
+    print "number of events mu 2017  - SR: ", data_initial.sumEntries("Categorization==5")
+    data = data_initial.reduce("(BDT_out > 0.150 && Categorization==Categorization::MuonCR_2016) || (BDT_out > 0.160 && Categorization==Categorization::MuonCR_2017)")
+    print "number of events mu 2016  - CR: ", data.sumEntries("Categorization==0")
+    print "number of events mu 2017  - CR: ", data.sumEntries("Categorization==4")
+if runningEra == 3 and not isMuon:
+    print "number of events ele 2016 - SR: ", data_initial.sumEntries("Categorization==3")
+    print "number of events ele 2017 - SR: ", data_initial.sumEntries("Categorization==7")
+    data = data_initial.reduce("(BDT_out > 0.052 && Categorization==Categorization::ElectronCR_2016) || (BDT_out > 0.110 && Categorization==Categorization::ElectronCR_2017)")
+    print "number of events ele 2016 - CR: ", data.sumEntries("Categorization==2")
     print "number of events ele 2017 - CR: ", data.sumEntries("Categorization==6")
 
 print "Using ", data.numEntries(), " events to fit"
@@ -160,9 +173,9 @@ b8_el_2017 = ROOT.RooRealVar("b8_el_3027","b8_el_2017",2.,0.,5.)
 
 
 backPDF_cheb_mu_2016 = ROOT.RooChebychev("backPDF_cheb_mu_2016","backPDF_cheb_mu_2016",Wmass,ROOT.RooArgList(a0_mu_2016))#,a1_mu_2016))#,a2_mu_2016))#,a3_mu_2016))#,a4_mu))#,a5_mu,a6_mu))
-backPDF_cheb_el_2016 = ROOT.RooChebychev("backPDF_cheb_el_2016","backPDF_cheb_el_2016",Wmass,ROOT.RooArgList(a0_el_2016))#,a1_el_2016,a2_el_2016,a3_el_2016))#,a4_el)) #,a5_el,a6_el))
+backPDF_cheb_el_2016 = ROOT.RooChebychev("backPDF_cheb_el_2016","backPDF_cheb_el_2016",Wmass,ROOT.RooArgList(a0_el_2016))#,a1_el_2016))#,a2_el_2016,a3_el_2016))#,a4_el)) #,a5_el,a6_el))
 backPDF_cheb_mu_2017 = ROOT.RooChebychev("backPDF_cheb_mu_2017","backPDF_cheb_mu_2017",Wmass,ROOT.RooArgList(a4_mu_2017))#,a5_mu_2017))#,a6_mu_2017,a7_mu_2017))#,a8_mu))#,a5_mu,a6_mu))
-backPDF_cheb_el_2017 = ROOT.RooChebychev("backPDF_cheb_el_2017","backPDF_cheb_el_2017",Wmass,ROOT.RooArgList(a4_el_2017,a5_el_2017,a6_el_2017))#,a7_el_2017))#,a8_el)) #,a5_el,a6_el))
+backPDF_cheb_el_2017 = ROOT.RooChebychev("backPDF_cheb_el_2017","backPDF_cheb_el_2017",Wmass,ROOT.RooArgList(a4_el_2017,a5_el_2017))#,a6_el_2017))#,a7_el_2017))#,a8_el)) #,a5_el,a6_el))
 
 
 backPDF_bern_mu_2016 = ROOT.RooBernstein("backPDF_bern_mu_2016","backPDF_bern_mu_2016",Wmass,ROOT.RooArgList(b0_mu_2016,b1_mu_2016))#,b2_mu,b3_mu))#,b4_mu)) #,b5_mu,b6_mu))
@@ -189,6 +202,17 @@ if runningEra == 1 and not useChebychev and isMuon:
 if runningEra == 1 and not useChebychev and not isMuon:
     backPDF = backPDF_bern_el_2017
 
+if runningEra == 3 and useChebychev and isMuon:
+    backPDF = backPDF_cheb_mu_2017
+if runningEra == 3 and useChebychev and not isMuon:
+    backPDF = backPDF_cheb_el_2017
+if runningEra == 3 and not useChebychev and isMuon:
+    backPDF = backPDF_bern_mu_2017
+if runningEra == 3 and not useChebychev and not isMuon:
+    backPDF = backPDF_bern_el_2017
+
+
+
 ################################################################
 #                                                              #
 #---------------------- Fit (and F-Test) ----------------------#
@@ -200,7 +224,7 @@ result_dataFit = backPDF.fitTo(data,ROOT.RooFit.Extended(0), ROOT.RooFit.NumCPU(
 #Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
 
 print "minNll = ", result_dataFit.minNll()
-print "2Delta_minNll = ", 2*(1355.64806856-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
+print "2Delta_minNll = ", 2*(1764.36027827-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
 
 
 ################################################################
@@ -216,18 +240,21 @@ xframe.SetTitle(" ")
 xframe.SetTitleOffset(1.4,"y")
 xframe.SetMaximum(60)
 
-if runningEra == 0 and isMuon:
-    data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-    backPDF.plotOn(xframe)
-if runningEra == 0 and not isMuon:
-    data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-    backPDF.plotOn(xframe)
-if runningEra == 1 and isMuon:
-    data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-    backPDF.plotOn(xframe)
-if runningEra == 1 and not isMuon:
-    data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-    backPDF.plotOn(xframe)  
+data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
+backPDF.plotOn(xframe)
+
+# if runningEra == 0 and isMuon:
+#     data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
+#     backPDF.plotOn(xframe)
+# if runningEra == 0 and not isMuon:
+#     data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
+#     backPDF.plotOn(xframe)
+# if runningEra == 1 and isMuon:
+#     data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
+#     backPDF.plotOn(xframe)
+# if runningEra == 1 and not isMuon:
+#     data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
+#     backPDF.plotOn(xframe)  
     
 canvas = ROOT.TCanvas()
 xframe.Draw()
