@@ -419,8 +419,9 @@ Nsig_mu_2017 = ROOT.RooFormulaVar("Nsig_mu_2017","@0*@1*@2*@3*@4", ROOT.RooArgLi
 Nsig_el_2017 = ROOT.RooFormulaVar("Nsig_el_2017","@0*@1*@2*@3*@4", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, lumi_constr_2017, eff_el_constr_2017, eta_el_2017))
 
 #FIXME
-Nsig_mu_2016_2017 = ROOT.RooFormulaVar("Nsig_mu_2016_2017","@0*@1*@2*@3*@4*@5*@6", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, lumi_constr_2016, lumi_constr_2017, eff_mu_constr_2016, eff_mu_constr_2017, eta_mu_2016_2017))
-Nsig_el_2016_2017 = ROOT.RooFormulaVar("Nsig_el_2016_2017","@0*@1*@2*@3*@4*@5*@6", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, lumi_constr_2016, lumi_constr_2017, eff_el_constr_2016, eff_el_constr_2017, eta_el_2016_2017))
+Nsig_mu_2016_2017 = ROOT.RooFormulaVar("Nsig_mu_2016_2017","@0*@1*@2*(@3*@4+@5*@6)", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, eta_mu_2016_2017, lumi_constr_2016, eff_mu_constr_2016, lumi_constr_2017, eff_mu_constr_2017))
+
+Nsig_el_2016_2017 = ROOT.RooFormulaVar("Nsig_el_2016_2017","@0*@1*@2*(@3*@4+@5*@6)", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, eta_el_2016_2017, lumi_constr_2016, eff_el_constr_2016, lumi_constr_2017, eff_el_constr_2017))
 
 
 Nbkg_mu_2016 = ROOT.RooRealVar("Nbkg_mu_2016","Nbkg_mu_2016",300.,100.,1000.)
