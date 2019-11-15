@@ -7,7 +7,7 @@ import argparse
 #---------------------------------#
 p = argparse.ArgumentParser(description='Select whether to download MC or data')
 p.add_argument('isData_option', help='Type <<MC>> or <<data>>')
-p.add_argument('year_option', help='Type <<2016>> or <<2017>>')
+p.add_argument('year_option', help='Type <<2016>>, <<2017>> or <<2018>>')
 args = p.parse_args()
 
 # Switch from muon to electron channel

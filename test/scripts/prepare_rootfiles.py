@@ -7,7 +7,7 @@ import argparse
 #---------------------------------#
 p = argparse.ArgumentParser(description='Select whether to download MC or data')
 p.add_argument('isData_option', help='Type <<MC>> or <<data>>')
-p.add_argument('year_option', help='Type <<2016>> or <<2017>>')
+p.add_argument('year_option', help='Type <<2016>>, <<2017>> or <<2018>>')
 args = p.parse_args()
 
 # Switch from muon to electron channel
@@ -35,10 +35,14 @@ complementary_samples_list_2016 = ["ttbarWlnu","ttbarZlnu","WJetsToLNu","DY10to5
 
 complementary_samples_list_2017 = ["WJetsToLNu1J","WJetsToLNu2J","DY50","TTGJets"]
 
+complementary_samples_list_2018 = ["ttbarZQQ","DY10to50","DY50"]
+
 if year == "2016":
     complementary_samples_list = complementary_samples_list_2016
 if year == "2017":
     complementary_samples_list = complementary_samples_list_2017
+if year == "2018":
+    complementary_samples_list = complementary_samples_list_2018
 
 
 if not os.path.exists("rootfiles"):

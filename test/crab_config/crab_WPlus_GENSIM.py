@@ -29,9 +29,9 @@ if runningEra == 2:
     config.General.requestName = 'WPlusPiGamma_Pythia8_GENSIM_102X_2018_v1'
     config.JobType.psetName = 'cmssw_config/WPlusPiGamma_13TeV_pythia8_GENSIM_2018_cfg.py'
     config.JobType.outputFiles = ['WPiGamma_pythia8_GENSIM_2018.root']
-    config.Data.outputPrimaryDataset = 'WPlusPiGamma_102X_2018'
+    config.Data.outputPrimaryDataset = 'WPlusPiGamma_102X_2018' #That is the name of the first "block": WPlusPiGamma_102X_2018/*/*
 
-config.Data.splitting = 'EventBased' # Can only be set to EventBased if pluginName = PrivateMC
+Config.Data.splitting = 'EventBased' # Can only be set to EventBased if pluginName = PrivateMC
 config.Data.unitsPerJob = 5
 NJOBS = 8000
 config.Data.totalUnits = config.Data.unitsPerJob * NJOBS

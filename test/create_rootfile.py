@@ -25,7 +25,7 @@ runningEra = int(args.runningEra_option)
 ROOT.gROOT.SetBatch(True)
 
 isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
-isData   = True # Switch from DATA to MC and vice versa
+isData   = False # Switch from DATA to MC and vice versa
 split_MC = False # If True, MC signal sample is split in two for the training/testing of the BDT
 
 myWF = Simplified_Workflow_Handler("Signal","Data",create_mass_tree,isBDT_with_Wmass,runningEra)
@@ -143,73 +143,8 @@ if not isData:
         t.Branch('isSignalRegion',_isSignalRegion_fit,'isSignalRegion/I')
         t.Branch('Categorization',_Categorization_fit,'Categorization/I')
 
-    if split_MC and not create_mass_tree:
-        fMVA_signal_mu_training = TFile('MVA/Tree_MC_Signal_mu_training.root','recreate')
-        tMVA_signal_mu_training = TTree('minitree_signal_mu_training','tree with branches')
-        tMVA_signal_mu_training.Branch('isMuon',_isMuon,'isMuon/I')
-        tMVA_signal_mu_training.Branch('weight',_weight,'weight/D')
-        tMVA_signal_mu_training.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
-        tMVA_signal_mu_training.Branch('pi_pT',_pi_pT,'pi_pT/D')
-        tMVA_signal_mu_training.Branch('lep_pT',_lep_pT,'lep_pT/D')
-        tMVA_signal_mu_training.Branch('lep_iso',_lep_iso,'lep_iso/D')
-        tMVA_signal_mu_training.Branch('nBjets',_nBjets,'nBjets/I')
-        tMVA_signal_mu_training.Branch('nBjets_25',_nBjets_25,'nBjets_25/I')
-        tMVA_signal_mu_training.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
-        tMVA_signal_mu_training.Branch('piRelIso_05_ch',_piRelIso_05_ch,'piRelIso_05_ch/D')
-        tMVA_signal_mu_training.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
-        tMVA_signal_mu_training.Branch('MET',_met,'MET/D')
-        tMVA_signal_mu_training.Branch('MET_puppi',_met_puppi,'MET_puppi/D')
-        
-        fMVA_signal_ele_training = TFile('MVA/Tree_MC_Signal_ele_training.root','recreate')
-        tMVA_signal_ele_training = TTree('minitree_signal_ele_training','tree with branches')
-        tMVA_signal_ele_training.Branch('isMuon',_isMuon,'isMuon/I')
-        tMVA_signal_ele_training.Branch('weight',_weight,'weight/D')
-        tMVA_signal_ele_training.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
-        tMVA_signal_ele_training.Branch('pi_pT',_pi_pT,'pi_pT/D')
-        tMVA_signal_ele_training.Branch('lep_pT',_lep_pT,'lep_pT/D')
-        tMVA_signal_ele_training.Branch('lep_iso',_lep_iso,'lep_iso/D')
-        tMVA_signal_ele_training.Branch('nBjets',_nBjets,'nBjets/I')
-        tMVA_signal_ele_training.Branch('nBjets_25',_nBjets_25,'nBjets_25/I')
-        tMVA_signal_ele_training.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
-        tMVA_signal_ele_training.Branch('piRelIso_05_ch',_piRelIso_05_ch,'piRelIso_05_ch/D')
-        tMVA_signal_ele_training.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
-        tMVA_signal_ele_training.Branch('MET',_met,'MET/D')
-        tMVA_signal_ele_training.Branch('MET_puppi',_met_puppi,'MET_puppi/D')
-        
-        fMVA_signal_mu_test = TFile('MVA/Tree_MC_Signal_mu_test.root','recreate')
-        tMVA_signal_mu_test = TTree('minitree_signal_mu_test','tree with branches')
-        tMVA_signal_mu_test.Branch('isMuon',_isMuon,'isMuon/I')
-        tMVA_signal_mu_test.Branch('weight',_weight,'weight/D')
-        tMVA_signal_mu_test.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
-        tMVA_signal_mu_test.Branch('pi_pT',_pi_pT,'pi_pT/D')
-        tMVA_signal_mu_test.Branch('lep_pT',_lep_pT,'lep_pT/D')
-        tMVA_signal_mu_test.Branch('lep_iso',_lep_iso,'lep_iso/D')
-        tMVA_signal_mu_test.Branch('nBjets',_nBjets,'nBjets/I')
-        tMVA_signal_mu_test.Branch('nBjets_25',_nBjets_25,'nBjets_25/I')
-        tMVA_signal_mu_test.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
-        tMVA_signal_mu_test.Branch('piRelIso_05_ch',_piRelIso_05_ch,'piRelIso_05_ch/D')
-        tMVA_signal_mu_test.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
-        tMVA_signal_mu_test.Branch('MET',_met,'MET/D')
-        tMVA_signal_mu_test.Branch('MET_puppi',_met_puppi,'MET_puppi/D')
-        
-        fMVA_signal_ele_test = TFile('MVA/Tree_MC_Signal_ele_test.root','recreate')
-        tMVA_signal_ele_test = TTree('minitree_signal_ele_test','tree with branches')
-        tMVA_signal_ele_test.Branch('isMuon',_isMuon,'isMuon/I')
-        tMVA_signal_ele_test.Branch('weight',_weight,'weight/D')
-        tMVA_signal_ele_test.Branch('gamma_eT',_gamma_eT,'gamma_eT/D')
-        tMVA_signal_ele_test.Branch('pi_pT',_pi_pT,'pi_pT/D')
-        tMVA_signal_ele_test.Branch('lep_pT',_lep_pT,'lep_pT/D')
-        tMVA_signal_ele_test.Branch('lep_iso',_lep_iso,'lep_iso/D')
-        tMVA_signal_ele_test.Branch('nBjets',_nBjets,'nBjets/I')
-        tMVA_signal_ele_test.Branch('nBjets_25',_nBjets_25,'nBjets_25/I')
-        tMVA_signal_ele_test.Branch('deltaphi_lep_pi',_deltaphi_lep_pi,'deltaphi_lep_pi/D')
-        tMVA_signal_ele_test.Branch('piRelIso_05_ch',_piRelIso_05_ch,'piRelIso_05_ch/D')
-        tMVA_signal_ele_test.Branch('piRelIso_05',_piRelIso_05,'piRelIso_05/D')
-        tMVA_signal_ele_test.Branch('MET',_met,'MET/D')
-        tMVA_signal_ele_test.Branch('MET_puppi',_met_puppi,'MET_puppi/D')
-
-    if not split_MC and not create_mass_tree:
-        fMVA_signal_mu = TFile('MVA/Tree_MC_Signal_mu.root','recreate')
+    else:
+        fMVA_signal_mu = TFile('MVA/Tree_MC_Signal_mu_' + str(runningEra) + '.root','recreate')
         tMVA_signal_mu = TTree('minitree_signal_mu','tree with branches')
         tMVA_signal_mu.Branch('isMuon',_isMuon,'isMuon/I')
         tMVA_signal_mu.Branch('weight',_weight,'weight/D')
@@ -228,7 +163,7 @@ if not isData:
         tMVA_signal_mu.Branch('MET_puppi',_met_puppi,'MET_puppi/D')
         tMVA_signal_mu.Branch('Wmass',_Wmass,'Wmass/D')
         
-        fMVA_signal_ele = TFile('MVA/Tree_MC_Signal_ele.root','recreate')
+        fMVA_signal_ele = TFile('MVA/Tree_MC_Signal_ele_' + str(runningEra) + '.root','recreate')
         tMVA_signal_ele = TTree('minitree_signal_ele','tree with branches')
         tMVA_signal_ele.Branch('isMuon',_isMuon,'isMuon/I')
         tMVA_signal_ele.Branch('weight',_weight,'weight/D')
@@ -247,9 +182,7 @@ if not isData:
         tMVA_signal_ele.Branch('MET_puppi',_met_puppi,'MET_puppi/D')
         tMVA_signal_ele.Branch('Wmass',_Wmass,'Wmass/D')
 
-
-    if not create_mass_tree:
-        fMVA_background_mu = TFile('MVA/Tree_MC_Background_mu.root','recreate')
+        fMVA_background_mu = TFile('MVA/Tree_MC_Background_mu_' + str(runningEra) + '.root','recreate')
         tMVA_background_mu = TTree('minitree_background_mu','tree with branches')
         tMVA_background_mu.Branch('isMuon',_isMuon,'isMuon/I')
         tMVA_background_mu.Branch('weight',_weight,'weight/D')
@@ -268,7 +201,7 @@ if not isData:
         tMVA_background_mu.Branch('MET_puppi',_met_puppi,'MET_puppi/D')
         tMVA_background_mu.Branch('Wmass',_Wmass,'Wmass/D')
         
-        fMVA_background_ele = TFile('MVA/Tree_MC_Background_ele.root','recreate')
+        fMVA_background_ele = TFile('MVA/Tree_MC_Background_ele_' + str(runningEra) + '.root','recreate')
         tMVA_background_ele = TTree('minitree_background_ele','tree with branches')
         tMVA_background_ele.Branch('isMuon',_isMuon,'isMuon/I')
         tMVA_background_ele.Branch('weight',_weight,'weight/D')
@@ -378,6 +311,8 @@ for full_sample_name in samplename_list:
         sample_era = 0
     if sample_era == "2017":
         sample_era = 1
+    if sample_era == "2018":
+        sample_era = 2
 
     print "full_sample_name: ", full_sample_name, "sample_era: ", sample_era
 
@@ -385,7 +320,7 @@ for full_sample_name in samplename_list:
         continue
     if runningEra == 1 and not sample_era == 1:
         continue
-    if runningEra == 2 and not (sample_era == 0 or sample_era == 1):
+    if runningEra == 2 and not sample_era == 2:
         continue
 
     Norm_Map = myWF.get_normalizations_map(sample_era)
@@ -423,8 +358,8 @@ for full_sample_name in samplename_list:
         if not isData and "Data" in sample_name:
             continue
         
-        if runningEra == 0 and sample_name == "ttbar" and mytree.isttbarlnu: # Avoid double-counting of the ttbarlnu background
-            continue
+        #if runningEra == 0 and sample_name == "ttbar" and mytree.isttbarlnu: # Avoid double-counting of the ttbarlnu background
+        #    continue
 
         if mytree.is_muon and sample_name == "QCDDoubleEMEnriched30toInf":
             continue
@@ -581,7 +516,7 @@ for full_sample_name in samplename_list:
         ################ MUON SFs ################
 
         if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
-            if sample_era == 0:
+            if sample_era == 0 or sample_era == 2:
                 isSingleMuTrigger_LOW = isSingleMuTrigger_24
             if sample_era == 1:
                 isSingleMuTrigger_LOW = isSingleMuTrigger_27
@@ -602,8 +537,13 @@ for full_sample_name in samplename_list:
         if not "Data" in sample_name:
             MC_Weight = mytree.MC_Weight # Add MC weight        
             PU_Weight = mytree.PU_Weight # Add Pile Up weight
-            Prefiring_Weight = mytree.Prefiring_Weight # Add prefiring weight  
-            Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight)*Prefiring_Weight # Just take the sign of the gen weight
+
+            if not runningEra == 2: # Prefiring weight not to be applied to 2018 MC
+                Prefiring_Weight = mytree.Prefiring_Weight # Add prefiring weight 
+                Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight)*Prefiring_Weight # Just take the sign of the gen weight
+            else:
+                Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
+
 
             Event_Weight = Event_Weight*lep_weight
 

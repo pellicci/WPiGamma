@@ -16,6 +16,10 @@ if runningEra == 0:
     output_dir = "plots/latest_production/2016/"
 elif runningEra == 1:
     output_dir = "plots/latest_production/2017/"
+elif runningEra == 2:
+    output_dir = "plots/latest_production/2018/"
+elif runningEra == 3:
+    output_dir = "plots/latest_production/2016_2017_2018/"
 
 hstack  = dict()
 hsignal = dict()
@@ -88,8 +92,8 @@ for filename in list_inputfiles:
             hstack[histo_name].Add(histo_container[-1])
 
         if histo_name == "h_gammaet": #Add the legend only once (gammaet is just a random variable)
-            #if histo.Integral() > 800. or sample_name == "Signal": #Only plot in the legend those samples which have some contribution
-            if histo.Integral() > 15. or sample_name == "Signal": #Only plot in the legend those samples which have some contribution
+
+            if histo.Integral() > float(signal_magnify)/12. or sample_name == "Signal": #Only plot in the legend those samples which have some contribution
                 if not sample_name == "Data" and not sample_name == "Signal":
                     leg1.AddEntry(histo_container[-1],sample_name,"f")
                 elif sample_name == "Data":
@@ -131,7 +135,7 @@ for histo_name in list_histos:
     if histo_name == "h_Wmass" or histo_name == "h_Wmass_flag_mu" or histo_name == "h_Wmass_flag_ele":
         hstack[histo_name].GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
         #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),5000))
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),150))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),220.))
 
     if histo_name == "h_mupt":
         hstack[histo_name].GetXaxis().SetTitle("p_{T}^{#mu} (GeV)")
@@ -157,7 +161,8 @@ for histo_name in list_histos:
 
     if histo_name == "h_mueta":
         hstack[histo_name].GetXaxis().SetTitle("#eta^{#mu}")
-        hstack[histo_name].SetMaximum(60)
+        #hstack[histo_name].SetMaximum(60)
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),60))
 
     if histo_name == "h_eleeta":
         hstack[histo_name].GetXaxis().SetTitle("#eta^{e}")

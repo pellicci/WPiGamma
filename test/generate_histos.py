@@ -162,8 +162,8 @@ for jentry in xrange(mytree.GetEntriesFast()):
     #                                                                          #
     ############################################################################
 
-    if runningEra == 0 and sample_name == "ttbar" and mytree.isttbarlnu: # Avoid double-counting of the ttbarlnu background
-        continue
+    #if runningEra == 0 and sample_name == "ttbar" and mytree.isttbarlnu: # Avoid double-counting of the ttbarlnu background
+    #    continue
 
     if mytree.is_muon and sample_name == "QCDDoubleEMEnriched30toInf":
         continue
@@ -285,7 +285,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
 
         MCT_deltaR_lep_gamma = math.sqrt(MCT_deltaeta_lep_gamma*MCT_deltaeta_lep_gamma + MCT_deltaphi_lep_gamma*MCT_deltaphi_lep_gamma)
 
-        if MCT_deltaR_lep_gamma > 0.5 and not MCT_lep_pT < 0. and not mytree.MCT_HeT_ph_eT < 0.:
+        if MCT_deltaR_lep_gamma > 0.2 and not MCT_lep_pT < 0. and not mytree.MCT_HeT_ph_eT < 0.:
             continue
         # if not MCT_lep_pT < 0. and not mytree.MCT_HeT_ph_eT < 0.:
         #     continue
@@ -327,7 +327,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
     ################ MUON SFs ################
 
     if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
-        if runningEra == 0:
+        if runningEra == 0 or runningEra == 2:
             isSingleMuTrigger_LOW = isSingleMuTrigger_24
         if runningEra == 1:
             isSingleMuTrigger_LOW = isSingleMuTrigger_27
@@ -358,8 +358,12 @@ for jentry in xrange(mytree.GetEntriesFast()):
     if not "Data" in sample_name:
         MC_Weight = mytree.MC_Weight # Add MC weight        
         PU_Weight = mytree.PU_Weight # Add Pile Up weight
-        Prefiring_Weight = mytree.Prefiring_Weight # Add prefiring weight  
-        Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight)*Prefiring_Weight # Just take the sign of the gen weight
+
+        if not runningEra == 2: # Prefiring weight not to be applied to 2018 MC
+            Prefiring_Weight = mytree.Prefiring_Weight # Add prefiring weight 
+            Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight)*Prefiring_Weight # Just take the sign of the gen weight
+        else:
+            Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
 
         Event_Weight = Event_Weight*lep_weight
 
@@ -401,10 +405,8 @@ for jentry in xrange(mytree.GetEntriesFast()):
     #                                                                          #
     ############################################################################
     if isBDT_with_Wmass:
-        #BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_gamma,isMuon)
         BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)
     elif isBDT:
-        #BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,deltaphi_lep_gamma,isMuon)
         BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)
    
     ############################################################################
@@ -506,7 +508,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
 #     fOut_signal.Close()
 
 # if sample_name == "ttbarToSemiLeptonic":
-#     fOut_ttbar = ROOT.TFile("ttbar_SemiLeptonic_pT.root","RECREATE")
+#     fOut_ttbar = ROOT.TFile("ttbar_pT.root","RECREATE")
 #     fOut_ttbar.cd()
 #     W_ttbar_hist.Write()
 #     fOut_ttbar.Close()

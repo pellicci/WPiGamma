@@ -122,7 +122,7 @@ ph_ID_scale_file_2018  = ROOT.TFile(ph_ID_scale_name_2018)
 ph_ID_scale_histo_2018 = ROOT.TH2F()
 ph_ID_scale_histo_2018 = ph_ID_scale_file_2018.Get("EGamma_SF2D")
 
-ph_pixVeto_scale_name_2018  = "scale_factors/HasPix2018.root"
+ph_pixVeto_scale_name_2018  = "scale_factors/HasPix_2018.root"
 ph_pixVeto_scale_file_2018  = ROOT.TFile(ph_pixVeto_scale_name_2018)
 ph_pixVeto_scale_histo_2018 = ROOT.TH1F()
 ph_pixVeto_scale_histo_2018 = ph_pixVeto_scale_file_2018.Get("eleVeto_SF")
@@ -138,18 +138,18 @@ mu_Iso_scale_histo_2018 = ROOT.TH2F()
 mu_Iso_scale_histo_2018 = mu_Iso_scale_file_2018.Get("NUM_LooseRelIso_DEN_MediumID_pt_abseta")
 
 mu_Trigger_scale_name_BeforeHLTUpdate_2018       = "scale_factors/EfficienciesAndSF_2018Data_BeforeMuonHLTUpdate.root"
-mu_Trigger_scale_file_BeforeHLTUpdate_2018       = ROOT.TFile(mu_Trigger_scale_name_2018)
+mu_Trigger_scale_file_BeforeHLTUpdate_2018       = ROOT.TFile(mu_Trigger_scale_name_BeforeHLTUpdate_2018)
 mu_Trigger_scale_histo_BeforeHLTUpdate_2018_Mu24 = ROOT.TH2F()
-mu_Trigger_scale_histo_BeforeHLTUpdate_2018_Mu24 = mu_Trigger_scale_file_2018.Get("IsoMu24_PtEtaBins/abseta_pt_ratio")
+mu_Trigger_scale_histo_BeforeHLTUpdate_2018_Mu24 = mu_Trigger_scale_file_BeforeHLTUpdate_2018.Get("IsoMu24_PtEtaBins/abseta_pt_ratio")
 mu_Trigger_scale_histo_BeforeHLTUpdate_2018_Mu50 = ROOT.TH2F()
-mu_Trigger_scale_histo_BeforeHLTUpdate_2018_Mu50 = mu_Trigger_scale_file_2018.Get("Mu50_OR_OldMu100_OR_TkMu100_PtEtaBins/abseta_pt_ratio")
+mu_Trigger_scale_histo_BeforeHLTUpdate_2018_Mu50 = mu_Trigger_scale_file_BeforeHLTUpdate_2018.Get("Mu50_OR_OldMu100_OR_TkMu100_PtEtaBins/abseta_pt_ratio")
 
 mu_Trigger_scale_name_AfterHLTUpdate_2018       = "scale_factors/EfficienciesAndSF_2018Data_AfterMuonHLTUpdate.root"
-mu_Trigger_scale_file_AfterHLTUpdate_2018       = ROOT.TFile(mu_Trigger_scale_name_2018)
+mu_Trigger_scale_file_AfterHLTUpdate_2018       = ROOT.TFile(mu_Trigger_scale_name_AfterHLTUpdate_2018)
 mu_Trigger_scale_histo_AfterHLTUpdate_2018_Mu24 = ROOT.TH2F()
-mu_Trigger_scale_histo_AfterHLTUpdate_2018_Mu24 = mu_Trigger_scale_file_2018.Get("IsoMu24_PtEtaBins/abseta_pt_ratio")
+mu_Trigger_scale_histo_AfterHLTUpdate_2018_Mu24 = mu_Trigger_scale_file_AfterHLTUpdate_2018.Get("IsoMu24_PtEtaBins/abseta_pt_ratio")
 mu_Trigger_scale_histo_AfterHLTUpdate_2018_Mu50 = ROOT.TH2F()
-mu_Trigger_scale_histo_AfterHLTUpdate_2018_Mu50 = mu_Trigger_scale_file_2018.Get("Mu50_OR_OldMu100_OR_TkMu100_PtEtaBins/abseta_pt_ratio")
+mu_Trigger_scale_histo_AfterHLTUpdate_2018_Mu50 = mu_Trigger_scale_file_AfterHLTUpdate_2018.Get("Mu50_OR_OldMu100_OR_TkMu100_PtEtaBins/abseta_pt_ratio")
 
 
 ###############################################
@@ -217,8 +217,8 @@ class Simplified_Workflow_Handler:
             reader.BookMVA("BDT_ele","MVA/default/weights/" + year + "/TMVAClassification_BDT.weights_ele_Wmass.xml")
 
         if isBDT and not isBDT_with_Wmass:
-            reader.BookMVA("BDT_mu","MVA/default/weights/" + year + "/TMVAClassification_BDT.weights_mu.xml")
-            reader.BookMVA("BDT_ele","MVA/default/weights/" + year + "/TMVAClassification_BDT.weights_ele.xml")
+            reader.BookMVA("BDT_mu","MVA/default/weights/TMVAClassification_BDT.weights_mu.xml")
+            reader.BookMVA("BDT_ele","MVA/default/weights/TMVAClassification_BDT.weights_ele.xml")
 
 
     ###############################################################################################################################################
@@ -644,10 +644,10 @@ class Simplified_Workflow_Handler:
             # Use a random number to select which muon scale factor to use for trigger, depending on the respective lumi fraction (only for 2018)
             Nrandom_for_SF = ROOT.TRandom3(92562).Rndm()
             
-            scale_factor_ID       = mu_ID_scale_histo_BCDEF_2018.GetBinContent( mu_ID_scale_histo_BCDEF_2018.GetXaxis().FindBin(local_lep_pt), mu_ID_scale_histo_BCDEF_2018.GetYaxis().FindBin(math.fabs(local_lep_eta)) )
-            mu_ID_err             = mu_ID_scale_histo_BCDEF_2018.GetBinError( mu_ID_scale_histo_BCDEF_2018.GetXaxis().FindBin(local_lep_pt), mu_ID_scale_histo_BCDEF_2018.GetYaxis().FindBin(math.fabs(local_lep_eta)) )
-            scale_factor_Iso      = mu_Iso_scale_histo_BCDEF_2018.GetBinContent( mu_Iso_scale_histo_BCDEF_2018.GetXaxis().FindBin(local_lep_pt), mu_Iso_scale_histo_BCDEF_2018.GetYaxis().FindBin(math.fabs(local_lep_eta)) )
-            mu_Iso_err            = mu_Iso_scale_histo_BCDEF_2018.GetBinError( mu_Iso_scale_histo_BCDEF_2018.GetXaxis().FindBin(local_lep_pt), mu_Iso_scale_histo_BCDEF_2018.GetYaxis().FindBin(math.fabs(local_lep_eta)) )
+            scale_factor_ID       = mu_ID_scale_histo_2018.GetBinContent( mu_ID_scale_histo_2018.GetXaxis().FindBin(local_lep_pt), mu_ID_scale_histo_2018.GetYaxis().FindBin(math.fabs(local_lep_eta)) )
+            mu_ID_err             = mu_ID_scale_histo_2018.GetBinError( mu_ID_scale_histo_2018.GetXaxis().FindBin(local_lep_pt), mu_ID_scale_histo_2018.GetYaxis().FindBin(math.fabs(local_lep_eta)) )
+            scale_factor_Iso      = mu_Iso_scale_histo_2018.GetBinContent( mu_Iso_scale_histo_2018.GetXaxis().FindBin(local_lep_pt), mu_Iso_scale_histo_2018.GetYaxis().FindBin(math.fabs(local_lep_eta)) )
+            mu_Iso_err            = mu_Iso_scale_histo_2018.GetBinError( mu_Iso_scale_histo_2018.GetXaxis().FindBin(local_lep_pt), mu_Iso_scale_histo_2018.GetYaxis().FindBin(math.fabs(local_lep_eta)) )
 
             if Nrandom_for_SF <= (luminosity_BeforeHLTUpdate/luminosity_norm): # Access muon Trigger SF: Before HLT Update
 
@@ -663,7 +663,7 @@ class Simplified_Workflow_Handler:
 
                 else: # Trigger SF go up to higher energies than 120 GeV, so no local_lep_pt is used for those
 
-                    local_lep_pt_forTrigger = lep_pt # Corrections related to this trigger start from 26 GeV
+                    local_lep_pt_forTrigger = lep_pt # Corrections related to this trigger start from 52 GeV
                     if local_lep_pt_forTrigger < 52.:
                         local_lep_pt_forTrigger = 52.
                 
@@ -685,7 +685,7 @@ class Simplified_Workflow_Handler:
 
                 else: # Trigger SF go up to higher energies than 120 GeV, so no local_lep_pt is used for those
 
-                    local_lep_pt_forTrigger = lep_pt # Corrections related to this trigger start from 26 GeV
+                    local_lep_pt_forTrigger = lep_pt # Corrections related to this trigger start from 52 GeV
                     if local_lep_pt_forTrigger < 52.:
                         local_lep_pt_forTrigger = 52.
                 

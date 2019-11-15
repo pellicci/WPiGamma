@@ -22,9 +22,7 @@ python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGa
 python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_SingleAntiToptW_2017.root histos/latest_production/WPiGammaHistos_SingleAntiToptW_2017.root
 python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_SingleToptW_2017.root histos/latest_production/WPiGammaHistos_SingleToptW_2017.root
 python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_TTGJets_2017.root histos/latest_production/WPiGammaHistos_TTGJets_2017.root
-# python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WGToLNuG_2017.root histos/latest_production/WPiGammaHistos_WGToLNuG_2017.root
 python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WGToLNuG01J_2017.root histos/latest_production/WPiGammaHistos_WGToLNuG_2017.root
-# python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WJetsToLNu_2017.root histos/latest_production/WPiGammaHistos_WJetsToLNu_2017.root
 python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WJetsToLNu0J_2017.root histos/latest_production/WPiGammaHistos_WJetsToLNu0J_2017.root
 python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WJetsToLNu1J_2017.root histos/latest_production/WPiGammaHistos_WJetsToLNu1J_2017.root
 python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WJetsToLNu2J_2017.root histos/latest_production/WPiGammaHistos_WJetsToLNu2J_2017.root
@@ -38,7 +36,6 @@ python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGa
 python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarlnu_2017.root histos/latest_production/WPiGammaHistos_ttbarlnu_2017.root
 python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarToHadronic_2017.root histos/latest_production/WPiGammaHistos_ttbarToHadronic_2017.root
 python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarToSemiLeptonic_2017.root histos/latest_production/WPiGammaHistos_ttbarToSemiLeptonic_2017.root
-# python generate_histos.py BDT 1 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbar_2017.root histos/latest_production/WPiGammaHistos_ttbar_2017.root
 
 python generate_histos.py BDT 1 rootfiles/latest_production/MC/signals/WPiGammaAnalysis_Signal_2017.root histos/latest_production/WPiGammaHistos_Signal_2017.root
 

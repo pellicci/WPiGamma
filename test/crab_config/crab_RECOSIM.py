@@ -1,7 +1,7 @@
 from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
  
-doPlus = True
+doPlus = False
 runningEra = 2 # 0 = 2016, 1 = 2017, 2 = 2018 
 
 config.section_('General')
@@ -42,10 +42,10 @@ if runningEra == 2:
 
     if doPlus: 
         config.General.requestName = 'WPlusPiGamma_Pythia8_RECOSIM_102X_2018_v1'
-        config.Data.inputDataset = ''
+        config.Data.inputDataset = '/WPlusPiGamma_102X_2018/rselvati-WPlusPiGamma_DIGIHLT_102X_2018_v1-561697a7e1ccc674784d5e0d3e6ef789/USER'
     else:
-        config.General.requestName = 'WMinusPiGamma_Pythia8_RECOSIM_102X_2018_v1'
-        config.Data.inputDataset = ''
+        config.General.requestName = 'WMinusPiGamma_Pythia8_RECOSIM_102X_2018_v2'
+        config.Data.inputDataset = '/WMinusPiGamma_102X_2018/rselvati-WMinusPiGamma_DIGIHLT_102X_2018_v2-561697a7e1ccc674784d5e0d3e6ef789/USER'
 
 
 config.Data.inputDBS = 'phys03'
@@ -73,7 +73,7 @@ if runningEra == 2:
     if doPlus:
         config.Data.outputDatasetTag = 'WPlusPiGamma_RECOSIM_102X_2018_v1'
     else:
-        config.Data.outputDatasetTag = 'WMinusPiGamma_RECOSIM_102X_2018_v1'
+        config.Data.outputDatasetTag = 'WMinusPiGamma_RECOSIM_102X_2018_v2'
 
 config.section_('Site')
 config.Site.storageSite = 'T2_IT_Legnaro'

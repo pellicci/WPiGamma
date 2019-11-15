@@ -5,7 +5,7 @@ config = Configuration()
 config.section_('General')
 config.General.transferOutputs = True
 
-runningEra = 1 # 0 = 2016, 1 = 2017, 2 = 2018
+runningEra = 2 # 0 = 2016, 1 = 2017, 2 = 2018
 
 config.section_('JobType')
 config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
@@ -94,16 +94,16 @@ if __name__ == '__main__':
 
     if runningEra == 2: #2018
 
-        config.JobType.pyCfgParams = ['runningOnData=False','runningEra=2'] # Configure 2017 MC signal jobs 
+        config.JobType.pyCfgParams = ['runningOnData=False','runningEra=2'] # Configure 2018 MC signal jobs 
 
         config.General.requestName = '2018_WPiGammaAnalysis_Signal_WPlus'
-        config.Data.inputDataset = ''
+        config.Data.inputDataset = '/WPlusPiGamma_102X_2018/rselvati-WPlusPiGamma_MINIAODSIM_102X_2018_v1-9caaa56992b50a7cf6d420a9959af8e5/USER'
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()
         
         config.General.requestName = '2018_WPiGammaAnalysis_Signal_WMinus'
-        config.Data.inputDataset = ''
+        config.Data.inputDataset = '/WMinusPiGamma_102X_2018/rselvati-WMinusPiGamma_MINIAODSIM_102X_2018_v1-9caaa56992b50a7cf6d420a9959af8e5/USER'
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()

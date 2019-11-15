@@ -11,7 +11,7 @@ h_signal.Scale(1./h_signal.Integral())
 
 h_ttbar.Divide(h_signal)
 
-fOut = TFile.Open("ttbar_signal_ratio.root","RECREATE")
+fOut = TFile.Open("ttbar_signal_ratio_2018.root","RECREATE")
 fOut.cd()
 h_ttbar.Write("ttbar_signal_ratio")
 fOut.Close()

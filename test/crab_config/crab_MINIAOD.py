@@ -1,7 +1,7 @@
 from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
-doPlus = True
+doPlus = False
 runningEra = 2 # 0 = 2016, 1 = 2017, 2 = 2018 
 
 config.section_('General')
@@ -42,15 +42,15 @@ if runningEra == 2:
 
     if doPlus:
         config.General.requestName = 'WPlusPiGamma_Pythia8_MINIAODSIM_102X_2018_v1'
-        config.Data.inputDataset = ''
+        config.Data.inputDataset = '/WPlusPiGamma_102X_2018/rselvati-WPlusPiGamma_RECOSIM_102X_2018_v1-f640515c3dc7ddab735258ddeb1359c7/USER'
     else:
-        config.General.requestName = 'WMinusPiGamma_Pythia8_MINIAODSIM_102X_2018_v1'
-        config.Data.inputDataset = ''
+        config.General.requestName = 'WMinusPiGamma_Pythia8_MINIAODSIM_102X_2018_v2'
+        config.Data.inputDataset = '/WMinusPiGamma_102X_2018/rselvati-WMinusPiGamma_RECOSIM_102X_2018_v2-f640515c3dc7ddab735258ddeb1359c7/USER'
 
 
 config.Data.inputDBS = 'phys03'
-config.Data.splitting = 'Automatic'
-#config.Data.unitsPerJob = 1
+config.Data.splitting = 'FileBased'
+config.Data.unitsPerJob = 1
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = True
 
@@ -73,7 +73,7 @@ if runningEra == 2:
     if doPlus:
         config.Data.outputDatasetTag = 'WPlusPiGamma_MINIAODSIM_102X_2018_v1'
     else:
-        config.Data.outputDatasetTag = 'WMinusPiGamma_MINIAODSIM_102X_2018_v1'
+        config.Data.outputDatasetTag = 'WMinusPiGamma_MINIAODSIM_102X_2018_v2'
 
 config.section_('Site')
 config.Site.storageSite = 'T2_IT_Legnaro'
