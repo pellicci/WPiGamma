@@ -52,8 +52,8 @@ luminosity_norm_2017_Ele32_WPTight = 27.13
 _Nrandom_for_Ele_32_WPTight_exclusion = ROOT.TRandom3(64524)
 
 #############---------------- BDT score cut values ----------------#############
-BDT_OUT_MU  = 0.240
-BDT_OUT_ELE = 0.190
+BDT_OUT_MU  = 0.220
+BDT_OUT_ELE = 0.170
 
 ############################################################################
 #                                                                          #
@@ -327,8 +327,8 @@ for jentry in xrange(mytree.GetEntriesFast()):
     ################ MUON SFs ################
 
     if isMuon: # Get muon scale factors, which are different for two groups of datasets, and weight them for the respective integrated lumi 
-        if runningEra == 0 or runningEra == 2:
-            isSingleMuTrigger_LOW = isSingleMuTrigger_24
+
+        isSingleMuTrigger_LOW = isSingleMuTrigger_24
         if runningEra == 1:
             isSingleMuTrigger_LOW = isSingleMuTrigger_27
 
