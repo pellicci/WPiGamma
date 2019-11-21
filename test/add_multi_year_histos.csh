@@ -1,3 +1,4 @@
+rm -r histos/latest_production/mergedYearsSelection
 mkdir histos/latest_production/mergedYearsSelection
 
 hadd histos/latest_production/mergedYearsSelection/WPiGammaHistos_DY_201620172018.root histos/latest_production/WPiGammaHistos_DY_2016.root histos/latest_production/WPiGammaHistos_DY_2017.root histos/latest_production/WPiGammaHistos_DY_2018.root 

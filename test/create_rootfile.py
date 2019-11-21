@@ -24,8 +24,8 @@ runningEra = int(args.runningEra_option)
 #Supress the opening of many Canvas's
 ROOT.gROOT.SetBatch(True)
 
-isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
 isData   = False # Switch from DATA to MC and vice versa
+isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
 split_MC = False # If True, MC signal sample is split in two for the training/testing of the BDT
 
 myWF = Simplified_Workflow_Handler("Signal","Data",create_mass_tree,isBDT_with_Wmass,runningEra)
@@ -380,6 +380,7 @@ for full_sample_name in samplename_list:
         isMuon = mytree.is_muon
         LepPiOppositeCharge = mytree.LepPiOppositeCharge
 
+        isTriggerMatched = mytree.isTriggerMatched
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
         isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
 
@@ -493,7 +494,7 @@ for full_sample_name in samplename_list:
 
             MCT_deltaR_lep_gamma = math.sqrt(MCT_deltaeta_lep_gamma*MCT_deltaeta_lep_gamma + MCT_deltaphi_lep_gamma*MCT_deltaphi_lep_gamma)
 
-            if MCT_deltaR_lep_gamma > 0.5 and not MCT_lep_pT < 0. and not mytree.MCT_HeT_ph_eT < 0.:
+            if MCT_deltaR_lep_gamma > 0.2 and not MCT_lep_pT < 0. and not mytree.MCT_HeT_ph_eT < 0.:
                 continue
 
 
@@ -503,7 +504,7 @@ for full_sample_name in samplename_list:
         #                                                                          #
         ############################################################################
 
-        if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge,deltaphi_lep_gamma,sample_era):
+        if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge,deltaphi_lep_gamma,isTriggerMatched,sample_era):
             continue
 
 
@@ -584,6 +585,10 @@ for full_sample_name in samplename_list:
 
         else:
             Event_Weight = 1.
+
+        # Remove QCD events with abnormal weight
+        if "QCD" in sample_name and Event_Weight >= 1600:
+            continue
 
 
         ############################################################################

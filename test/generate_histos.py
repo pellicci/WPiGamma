@@ -184,6 +184,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
 
     nPV = mytree.nPV
 
+    isTriggerMatched = mytree.isTriggerMatched
     isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
     isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
     if runningEra == 1:
@@ -313,7 +314,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
     #                                                                          #
     ############################################################################
 
-    if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge,deltaphi_lep_gamma,runningEra):
+    if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge,deltaphi_lep_gamma,isTriggerMatched,runningEra):
         continue
         
     Nevts_selected = Nevts_selected + 1
@@ -359,7 +360,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
         MC_Weight = mytree.MC_Weight # Add MC weight        
         PU_Weight = mytree.PU_Weight # Add Pile Up weight
 
-        if not runningEra == 2: # Prefiring weight not to be applied to 2018 MC
+        if not runningEra == 2: # Prefiring weight NOT to be applied to 2018 MC
             Prefiring_Weight = mytree.Prefiring_Weight # Add prefiring weight 
             Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight)*Prefiring_Weight # Just take the sign of the gen weight
         else:
@@ -390,7 +391,9 @@ for jentry in xrange(mytree.GetEntriesFast()):
     else:
         Event_Weight = 1.
 
-    if "QCD" in sample_name and Event_Weight >= 4:
+
+    # Remove QCD events with abnormal weight
+    if "QCD" in sample_name and Event_Weight >= 1600:
         continue
 
     Nevts_expected += Event_Weight # Increment the number of events survived in the analyzed sample
