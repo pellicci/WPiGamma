@@ -135,7 +135,7 @@ for histo_name in list_histos:
     if histo_name == "h_Wmass" or histo_name == "h_Wmass_flag_mu" or histo_name == "h_Wmass_flag_ele":
         hstack[histo_name].GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
         #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),5000))
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),220.))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),550.))
 
     if histo_name == "h_mupt":
         hstack[histo_name].GetXaxis().SetTitle("p_{T}^{#mu} (GeV)")

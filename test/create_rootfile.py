@@ -24,7 +24,7 @@ runningEra = int(args.runningEra_option)
 #Supress the opening of many Canvas's
 ROOT.gROOT.SetBatch(True)
 
-isData   = False # Switch from DATA to MC and vice versa
+isData   = True # Switch from DATA to MC and vice versa
 isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
 split_MC = False # If True, MC signal sample is split in two for the training/testing of the BDT
 
@@ -60,7 +60,7 @@ _Nrandom_for_Ele_32_WPTight_exclusion = ROOT.TRandom3(64524)
 #############---------------- BDT score cut values ----------------#############
 
 BDT_OUT_MU  = 0.220
-BDT_OUT_ELE = 0.180
+BDT_OUT_ELE = 0.170
 
 ############################################################################
 #                                                                          #
@@ -587,7 +587,9 @@ for full_sample_name in samplename_list:
             Event_Weight = 1.
 
         # Remove QCD events with abnormal weight
-        if "QCD" in sample_name and Event_Weight >= 1600:
+        if not create_mass_tree and "QCD" in sample_name and Event_Weight >= 1600.:
+            continue
+        if create_mass_tree and "QCD" in sample_name and Event_Weight >= 30.:
             continue
 
 
@@ -620,10 +622,10 @@ for full_sample_name in samplename_list:
                 else:
                     _isSignalRegion_fit[0] = 0
 
-                #------------------------ 2016 ------------------------#
-                if sample_era == 0 and isMuon and BDT_out < BDT_OUT_MU:
+                #------------------------ Fill Tree ------------------------#
+                if isMuon and BDT_out < BDT_OUT_MU:
                     _Categorization_fit[0] = 0 # Control Region muon channel = 0
-                if sample_era == 0 and isMuon and BDT_out >= BDT_OUT_MU:
+                if isMuon and BDT_out >= BDT_OUT_MU:
                     _Categorization_fit[0] = 1 # Signal Region muon channel = 1
                     if not sample_name=="Signal":
                         Wmass_mu.Fill(Wmass,Event_Weight)
@@ -631,31 +633,10 @@ for full_sample_name in samplename_list:
                         if not Wmass == _Wmass_fit[0]:
                             print "WARNING!!! mu channel"
 
-                if sample_era == 0 and (not isMuon) and BDT_out < BDT_OUT_ELE:
+                if not isMuon and BDT_out < BDT_OUT_ELE:
                     _Categorization_fit[0] = 2 # Control Region electron channel = 2
-                if sample_era == 0 and (not isMuon) and BDT_out >= BDT_OUT_ELE:
+                if not isMuon and BDT_out >= BDT_OUT_ELE:
                     _Categorization_fit[0] = 3 # Signal Region electron channel = 3
-                    if not sample_name=="Signal":
-                        Wmass_ele.Fill(Wmass,Event_Weight)
-                        #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]
-                        if not Wmass == _Wmass_fit[0]:
-                            print "WARNING!!! ele channel"
-
-                #------------------------ 2017 ------------------------#
-                if sample_era == 1 and isMuon and BDT_out < BDT_OUT_MU:
-                    _Categorization_fit[0] = 4 # Control Region muon channel = 0
-                if sample_era == 1 and isMuon and BDT_out >= BDT_OUT_MU:
-                    _Categorization_fit[0] = 5 # Signal Region muon channel = 1
-                    if not sample_name=="Signal":
-                        Wmass_mu.Fill(Wmass,Event_Weight)
-                        #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]
-                        if not Wmass == _Wmass_fit[0]:
-                            print "WARNING!!! mu channel"
-
-                if sample_era == 1 and (not isMuon) and BDT_out < BDT_OUT_ELE:
-                    _Categorization_fit[0] = 6 # Control Region electron channel = 2
-                if sample_era == 1 and (not isMuon) and BDT_out >= BDT_OUT_ELE:
-                    _Categorization_fit[0] = 7 # Signal Region electron channel = 3
                     if not sample_name=="Signal":
                         Wmass_ele.Fill(Wmass,Event_Weight)
                         #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]

@@ -18,14 +18,14 @@ for files in source_list:
         shutil.copy(fullpath,destination)
     if files == "h_gammaet.pdf": 
         shutil.copy(fullpath,destination)
-    if files == "h_ele_gamma_InvMass.pdf": 
-        shutil.copy(fullpath,destination)
-    if files == "h_deltaphi_ele_gamma.pdf": 
-        shutil.copy(fullpath,destination)
-    if files == "h_mu_gamma_InvMass.pdf": 
-        shutil.copy(fullpath,destination)
-    if files == "h_deltaphi_mu_gamma.pdf": 
-        shutil.copy(fullpath,destination)
+    # if files == "h_ele_gamma_InvMass.pdf": 
+    #     shutil.copy(fullpath,destination)
+    # if files == "h_deltaphi_ele_gamma.pdf": 
+    #     shutil.copy(fullpath,destination)
+    # if files == "h_mu_gamma_InvMass.pdf": 
+    #     shutil.copy(fullpath,destination)
+    # if files == "h_deltaphi_mu_gamma.pdf": 
+    #     shutil.copy(fullpath,destination)
     if files.startswith("h_met") and (files.endswith("_mu.pdf") or files.endswith("_ele.pdf")):
         shutil.copy(fullpath,destination)
     if files.startswith("h_nPV") and (files.endswith("_mu.pdf") or files.endswith("_ele.pdf")):

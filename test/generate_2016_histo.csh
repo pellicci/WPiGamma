@@ -1,13 +1,13 @@
 mkdir histos
 mkdir histos/latest_production
 
-rm histos/latest_production/*2016*.root
+# rm histos/latest_production/*2016*.root
 
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_DY10to50_2016.root histos/latest_production/WPiGammaHistos_DY10to50_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_DY50_2016.root histos/latest_production/WPiGammaHistos_DY50_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_GammaJets20to40_2016.root histos/latest_production/WPiGammaHistos_GammaJets20to40_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_GammaJets20toInf_2016.root histos/latest_production/WPiGammaHistos_GammaJets20toInf_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_GammaJets40toInf_2016.root histos/latest_production/WPiGammaHistos_GammaJets40toInf_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_DY10to50_2016.root histos/latest_production/WPiGammaHistos_DY10to50_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_DY50_2016.root histos/latest_production/WPiGammaHistos_DY50_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_GammaJets20to40_2016.root histos/latest_production/WPiGammaHistos_GammaJets20to40_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_GammaJets20toInf_2016.root histos/latest_production/WPiGammaHistos_GammaJets20toInf_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_GammaJets40toInf_2016.root histos/latest_production/WPiGammaHistos_GammaJets40toInf_2016.root
 python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_QCDDoubleEMEnriched30to40_2016.root histos/latest_production/WPiGammaHistos_QCDDoubleEMEnriched30to40_2016.root
 python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_QCDDoubleEMEnriched30toInf_2016.root histos/latest_production/WPiGammaHistos_QCDDoubleEMEnriched30toInf_2016.root
 python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_QCDDoubleEMEnriched40toInf_2016.root histos/latest_production/WPiGammaHistos_QCDDoubleEMEnriched40toInf_2016.root
@@ -19,39 +19,39 @@ python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGa
 python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_QCDHT1000to1500_2016.root histos/latest_production/WPiGammaHistos_QCDHT1000to1500_2016.root
 python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_QCDHT1500to2000_2016.root histos/latest_production/WPiGammaHistos_QCDHT1500to2000_2016.root
 python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_QCDHT2000toInf_2016.root histos/latest_production/WPiGammaHistos_QCDHT2000toInf_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_SingleAntiToptW_2016.root histos/latest_production/WPiGammaHistos_SingleAntiToptW_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_SingleToptW_2016.root histos/latest_production/WPiGammaHistos_SingleToptW_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_TTGJets_2016.root histos/latest_production/WPiGammaHistos_TTGJets_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WGToLNuG01J_2016.root histos/latest_production/WPiGammaHistos_WGToLNuG_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WJetsToLNu_2016.root histos/latest_production/WPiGammaHistos_WJetsToLNu_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WW_2016.root histos/latest_production/WPiGammaHistos_WW_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WZ_2016.root histos/latest_production/WPiGammaHistos_WZ_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ZGTo2LG_2016.root histos/latest_production/WPiGammaHistos_ZGTo2LG_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarWQQ_2016.root histos/latest_production/WPiGammaHistos_ttbarWQQ_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarWlnu_2016.root histos/latest_production/WPiGammaHistos_ttbarWlnu_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarZQQ_2016.root histos/latest_production/WPiGammaHistos_ttbarZQQ_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarZlnu_2016.root histos/latest_production/WPiGammaHistos_ttbarZlnu_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarToHadronic_2016.root histos/latest_production/WPiGammaHistos_ttbarToHadronic_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarToSemiLeptonic_2016.root histos/latest_production/WPiGammaHistos_ttbarToSemiLeptonic_2016.root
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarlnu_2016.root histos/latest_production/WPiGammaHistos_ttbarlnu_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_SingleAntiToptW_2016.root histos/latest_production/WPiGammaHistos_SingleAntiToptW_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_SingleToptW_2016.root histos/latest_production/WPiGammaHistos_SingleToptW_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_TTGJets_2016.root histos/latest_production/WPiGammaHistos_TTGJets_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WGToLNuG01J_2016.root histos/latest_production/WPiGammaHistos_WGToLNuG_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WJetsToLNu_2016.root histos/latest_production/WPiGammaHistos_WJetsToLNu_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WW_2016.root histos/latest_production/WPiGammaHistos_WW_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_WZ_2016.root histos/latest_production/WPiGammaHistos_WZ_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ZGTo2LG_2016.root histos/latest_production/WPiGammaHistos_ZGTo2LG_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarWQQ_2016.root histos/latest_production/WPiGammaHistos_ttbarWQQ_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarWlnu_2016.root histos/latest_production/WPiGammaHistos_ttbarWlnu_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarZQQ_2016.root histos/latest_production/WPiGammaHistos_ttbarZQQ_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarZlnu_2016.root histos/latest_production/WPiGammaHistos_ttbarZlnu_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarToHadronic_2016.root histos/latest_production/WPiGammaHistos_ttbarToHadronic_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarToSemiLeptonic_2016.root histos/latest_production/WPiGammaHistos_ttbarToSemiLeptonic_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/backgrounds/WPiGammaAnalysis_ttbarlnu_2016.root histos/latest_production/WPiGammaHistos_ttbarlnu_2016.root
 
-python generate_histos.py BDT 0 rootfiles/latest_production/MC/signals/WPiGammaAnalysis_Signal_2016.root histos/latest_production/WPiGammaHistos_Signal_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/MC/signals/WPiGammaAnalysis_Signal_2016.root histos/latest_production/WPiGammaHistos_Signal_2016.root
 
-python generate_histos.py BDT 0 rootfiles/latest_production/dataprocess/WPiGammaAnalysis_Data_2016.root histos/latest_production/WPiGammaHistos_Data_2016.root
+# python generate_histos.py BDT 0 rootfiles/latest_production/dataprocess/WPiGammaAnalysis_Data_2016.root histos/latest_production/WPiGammaHistos_Data_2016.root
 
 #Merge samples
 hadd histos/latest_production/WPiGammaHistos_QCD_2016.root histos/latest_production/WPiGammaHistos_QCDHT*_2016.root histos/latest_production/WPiGammaHistos_QCDDouble*_2016.root
 rm histos/latest_production/WPiGammaHistos_QCDHT*_2016.root
 rm histos/latest_production/WPiGammaHistos_QCDDouble*_2016.root
 
-hadd histos/latest_production/WPiGammaHistos_GammaJets_2016.root histos/latest_production/WPiGammaHistos_GammaJets*to*_2016.root
-rm histos/latest_production/WPiGammaHistos_GammaJets*to*_2016.root
+# hadd histos/latest_production/WPiGammaHistos_GammaJets_2016.root histos/latest_production/WPiGammaHistos_GammaJets*to*_2016.root
+# rm histos/latest_production/WPiGammaHistos_GammaJets*to*_2016.root
 
-hadd histos/latest_production/WPiGammaHistos_STtW_2016.root histos/latest_production/WPiGammaHistos_Single*ToptW_2016.root
-rm histos/latest_production/WPiGammaHistos_Single*ToptW_2016.root
+# hadd histos/latest_production/WPiGammaHistos_STtW_2016.root histos/latest_production/WPiGammaHistos_Single*ToptW_2016.root
+# rm histos/latest_production/WPiGammaHistos_Single*ToptW_2016.root
 
-hadd histos/latest_production/WPiGammaHistos_DY_2016.root histos/latest_production/WPiGammaHistos_DY*50_2016.root
-rm histos/latest_production/WPiGammaHistos_DY*50_2016.root
+# hadd histos/latest_production/WPiGammaHistos_DY_2016.root histos/latest_production/WPiGammaHistos_DY*50_2016.root
+# rm histos/latest_production/WPiGammaHistos_DY*50_2016.root
 
-hadd histos/latest_production/WPiGammaHistos_ttbar_2016.root histos/latest_production/WPiGammaHistos_ttbarTo*nic_2016.root
-rm histos/latest_production/WPiGammaHistos_ttbarTo*nic_2016.root
+# hadd histos/latest_production/WPiGammaHistos_ttbar_2016.root histos/latest_production/WPiGammaHistos_ttbarTo*nic_2016.root
+# rm histos/latest_production/WPiGammaHistos_ttbarTo*nic_2016.root

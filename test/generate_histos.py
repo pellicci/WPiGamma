@@ -393,7 +393,9 @@ for jentry in xrange(mytree.GetEntriesFast()):
 
 
     # Remove QCD events with abnormal weight
-    if "QCD" in sample_name and Event_Weight >= 1600:
+    if not isBDT and "QCD" in sample_name and Event_Weight >= 1600.:
+        continue
+    if isBDT and "QCD" in sample_name and Event_Weight >= 30.:
         continue
 
     Nevts_expected += Event_Weight # Increment the number of events survived in the analyzed sample
@@ -428,12 +430,18 @@ for jentry in xrange(mytree.GetEntriesFast()):
         continue
     if isBDT and (Wmass < 50. or Wmass > 100.): # General Wmass condition
         continue
-    if isBDT and sample_name == "Data" and (Wmass >= 65. and Wmass <= 90.): # Exclude data in the Blind Window
-        continue
+    # if isBDT and sample_name == "Data" and (Wmass >= 65. and Wmass <= 90.): # Exclude data in the Blind Window
+    #     continue
+
+    if isBDT and sample_name == "Data" and (Wmass < 65. or Wmass > 90.):
+        h_base["h_Wmass"].Fill(Wmass,Event_Weight)
+    if isBDT and not sample_name == "Data":
+        h_base["h_Wmass"].Fill(Wmass,Event_Weight)
+    if not isBDT:
+        h_base["h_Wmass"].Fill(Wmass,Event_Weight)
 
     h_base["h_nBjets_25"].Fill(nBjets_25,Event_Weight)
     h_base["h_met_puppi"].Fill(met_puppi,Event_Weight)
-    h_base["h_Wmass"].Fill(Wmass,Event_Weight)
     h_base["h_pipt"].Fill(pi_pT,Event_Weight)
     h_base["h_pieta"].Fill(pi_eta,Event_Weight)
     h_base["h_gammaet"].Fill(gamma_eT,Event_Weight)
@@ -443,7 +451,12 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_PUdistrib.Fill(nPV,Event_Weight)      
 
     if isMuon:
-        h_base["h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+        if isBDT and sample_name == "Data" and (Wmass < 65. or Wmass > 90.):
+            h_base["h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+        if isBDT and not sample_name == "Data":
+            h_base["h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+        if not isBDT:
+            h_base["h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
         h_base["h_mupt"].Fill(lep_pT,Event_Weight)
         h_base["h_mueta"].Fill(lep_eta,Event_Weight)
         h_base["h_nPV_mu"].Fill(nPV,Event_Weight)
@@ -459,7 +472,12 @@ for jentry in xrange(mytree.GetEntriesFast()):
             h_base["h_deltaR_mu_gamma"].Fill(MCT_deltaR_lep_gamma,Event_Weight)
 
     else:
-        h_base["h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+        if isBDT and sample_name == "Data" and (Wmass < 65. or Wmass > 90.):
+            h_base["h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+        if isBDT and not sample_name == "Data":
+            h_base["h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
+        if not isBDT:
+            h_base["h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
         h_base["h_elept"].Fill(lep_pT,Event_Weight)
         h_base["h_eleeta"].Fill(lep_eta,Event_Weight)
         h_base["h_nPV_ele"].Fill(nPV,Event_Weight)

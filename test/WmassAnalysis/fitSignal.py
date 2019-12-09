@@ -23,16 +23,16 @@ isSignal.defineType("Background",0)
 
 #Define the mu/ele category
 Categorization = ROOT.RooCategory("Categorization","Categorization")
-Categorization.defineType("MuonCR_2016",0)
-Categorization.defineType("MuonSignal_2016",1)
-Categorization.defineType("ElectronCR_2016",2)
-Categorization.defineType("ElectronSignal_2016",3)
-Categorization.defineType("MuonCR_2017",4)
-Categorization.defineType("MuonSignal_2017",5)
-Categorization.defineType("ElectronCR_2017",6)
-Categorization.defineType("ElectronSignal_2017",7)
+Categorization.defineType("MuonCR",0)
+Categorization.defineType("MuonSignal",1)
+Categorization.defineType("ElectronCR",2)
+Categorization.defineType("ElectronSignal",3)
+# Categorization.defineType("MuonCR_2017",4)
+# Categorization.defineType("MuonSignal_2017",5)
+# Categorization.defineType("ElectronCR_2017",6)
+# Categorization.defineType("ElectronSignal_2017",7)
 
-Categorization.setRange("SignalRegion","MuonSignal_2016,ElectronSignal_2016,MuonSignal_2017,ElectronSignal_2017")
+Categorization.setRange("SignalRegion","MuonSignal,ElectronSignal")
 #Categorization.setRange("SignalRegion_2017","MuonSignal_2017,ElectronSignal_2017")#FIXME
 
 #Create the RooDataSet. No need to import weight for signal only analysis
@@ -45,15 +45,15 @@ data_Signal = sample.reduce(ROOT.RooFit.CutRange("SignalRegion"))
 print "Using ", data_Signal.numEntries(), " events to fit the signal shape"
 #print "Using ", data_Signal_2017.numEntries(), " events to fit the signal shape (2017)"#FIXME
 
-#Define the signal lineshape
-Gauss_pole = ROOT.RooRealVar("Gauss_pole","The gaussian pole", 73.,70.,80.)
-Gauss_sigma = ROOT.RooRealVar("Gauss_sigma","The gaussian sigma",4,0.1,10.)
+# #Define the signal lineshape
+# Gauss_pole = ROOT.RooRealVar("Gauss_pole","The gaussian pole", 73.,70.,80.)
+# Gauss_sigma = ROOT.RooRealVar("Gauss_sigma","The gaussian sigma",4,0.1,10.)
+# Gauss_W = ROOT.RooGaussian("Gauss_W","The Gaussian",Wmass,Gauss_pole,Gauss_sigma)
+
+
+Gauss_pole = ROOT.RooRealVar("Gauss_pole","The gaussian pole", 81.,70.,90.)
+Gauss_sigma = ROOT.RooRealVar("Gauss_sigma","The gaussian sigma",5.,0.1,10.)
 Gauss_W = ROOT.RooGaussian("Gauss_W","The Gaussian",Wmass,Gauss_pole,Gauss_sigma)
-
-
-Gauss_pole_2 = ROOT.RooRealVar("Gauss_pole_2","The second gaussian pole", 81.,70.,90.)
-Gauss_sigma_2 = ROOT.RooRealVar("Gauss_sigma_2","The second gaussian sigma",5.,0.1,10.)
-Gauss_W_2 = ROOT.RooGaussian("Gauss_W_2","The second Gaussian",Wmass,Gauss_pole_2,Gauss_sigma_2)
 
 
 fracSig_prime = ROOT.RooRealVar("fracSig_prime","Partial fraction",0.5,0.,1.)
@@ -71,7 +71,7 @@ dCB       = ROOT.RooDoubleCBFast("dCB", "Double Crystal Ball", Wmass, dCB_pole, 
 
 #totSignal_prime = ROOT.RooAddPdf("totSignal_prime","Partial signal PDF",ROOT.RooArgList(dCB,Gauss_W),ROOT.RooArgList(fracSig_prime))
 #totSignal = ROOT.RooAddPdf("totSignal","Total signal PDF",ROOT.RooArgList(totSignal_prime,Gauss_W_2),ROOT.RooArgList(fracSig))
-totSignal = ROOT.RooAddPdf("totSignal","Total signal PDF",ROOT.RooArgList(dCB,Gauss_W_2),ROOT.RooArgList(fracSig))
+totSignal = ROOT.RooAddPdf("totSignal","Total signal PDF",ROOT.RooArgList(dCB,Gauss_W),ROOT.RooArgList(fracSig))
 
 
 totSignal.fitTo(data_Signal)
