@@ -117,31 +117,20 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
     }
   } 
 
-  //PileUp code for examining the Pileup information
-  PU_Weight = 1.;
-  float npT = -1.;
-
-  if(!runningOnData_){ 
-    edm::Handle<std::vector< PileupSummaryInfo>>  PupInfo;
-    iEvent.getByToken(pileupSummaryToken_, PupInfo);
-  
-    std::vector<PileupSummaryInfo>::const_iterator PVI; 
- 
-    for(PVI = PupInfo->begin(); PVI != PupInfo->end(); ++PVI) {
-      const int BX = PVI->getBunchCrossing();
-      if(BX == 0) {
-	npT  = PVI->getTrueNumInteractions();
-      }
-    }
-
-    // calculate weight using above code
-    PU_Weight = Lumiweights_.weight(npT);
-  }
+  //*************************************************************//
+  //                                                             //
+  //--------------------------- Trigger -------------------------//
+  //                                                             //
+  //*************************************************************//
 
   //Examine the trigger information
   isSingleMuTrigger_24 = false;
+  isSingleMuTrigger_27 = false;
   isSingleMuTrigger_50 = false;
-  isSingleEleTrigger   = false;
+  isSingleEleTrigger_25 = false;
+  isSingleEleTrigger_27 = false;
+  isSingleEleTrigger_32_DoubleEG = false;
+  isSingleEleTrigger_32 = false;
 
   const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
   for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i){
@@ -151,12 +140,23 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
 	tmp_triggername.find("HLT_IsoTkMu24_v") != std::string::npos){
       isSingleMuTrigger_24 = true;
     }
-    if( tmp_triggername.find("HLT_Mu50_v") != std::string::npos){
+    if( tmp_triggername.find("HLT_IsoMu27_v") != std::string::npos ){
+      isSingleMuTrigger_27 = true;
+    }
+    if( tmp_triggername.find("HLT_Mu50_v") != std::string::npos ){
       isSingleMuTrigger_50 = true;
     }
-    if( tmp_triggername.find("HLT_Ele25_eta2p1_WPTight_Gsf_v") != std::string::npos ||
-	tmp_triggername.find("HLT_Ele27_WPTight_Gsf_v") != std::string::npos){
-      isSingleEleTrigger = true;
+    if( tmp_triggername.find("HLT_Ele25_eta2p1_WPTight_Gsf_v") != std::string::npos){
+      isSingleEleTrigger_25 = true;
+    }
+    if( tmp_triggername.find("HLT_Ele27_WPTight_Gsf_v") != std::string::npos){
+      isSingleEleTrigger_27 = true;
+    }
+    if( tmp_triggername.find("HLT_Ele32_WPTight_Gsf_L1DoubleEG_v") != std::string::npos){
+      isSingleEleTrigger_32_DoubleEG = true;
+    }
+    if( tmp_triggername.find("HLT_Ele32_WPTight_Gsf_v") != std::string::npos){
+      isSingleEleTrigger_32 = true;
     }
   }
 
@@ -205,13 +205,13 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
   //Loop over electrons
   for(auto el = slimmedElectrons->begin(); el != slimmedElectrons->end(); ++el){
 
-    if(el->pt() < 20. || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
+    if(el->pt() < 20. || fabs(el->eta()) > 2.5 || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
     if(el->electronID("mvaEleID-Fall17-iso-V2-wp90") == 0) continue;
 
-    float abseta =  abs(el->superCluster()->eta());
-    float eA = effectiveAreas_el_.getEffectiveArea(abseta);
-    el_iso = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
-    if(el_iso > 0.35) continue;
+    // float abseta =  abs(el->superCluster()->eta());
+    // float eA = effectiveAreas_el_.getEffectiveArea(abseta);
+    // el_iso = (el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt();
+    // if(el_iso > 0.35) continue;
 
     is_ele      = true;
     el_eta      = el->eta();
@@ -224,13 +224,13 @@ void LeptonMultiplicity::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   for(auto el = slimmedElectrons->begin(); el != slimmedElectrons->end(); ++el){
  
-    if(el->pt() < 20. || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
+    if(el->pt() < 20. || fabs(el->eta()) > 2.5 || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
  
     if(el->electronID("mvaEleID-Fall17-iso-V2-wpLoose") == 0) continue;
 
-    float abseta =  abs(el->superCluster()->eta());
-    float eA = effectiveAreas_el_.getEffectiveArea(abseta);
-    if((el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt() > 0.35) continue;
+    // float abseta =  abs(el->superCluster()->eta());
+    // float eA = effectiveAreas_el_.getEffectiveArea(abseta);
+    // if((el->pfIsolationVariables().sumChargedHadronPt + std::max( 0.0f, el->pfIsolationVariables().sumNeutralHadronEt + el->pfIsolationVariables().sumPhotonEt - eA*rho_))/el->pt() > 0.35) continue;
 
     nElectronsLoose++;
 
@@ -259,8 +259,12 @@ void LeptonMultiplicity::create_trees()
 
   mytree->Branch("nPV",&nPV);
   mytree->Branch("isSingleMuTrigger_24",&isSingleMuTrigger_24);
+  mytree->Branch("isSingleMuTrigger_27",&isSingleMuTrigger_27);
   mytree->Branch("isSingleMuTrigger_50",&isSingleMuTrigger_50);
-  mytree->Branch("isSingleEleTrigger",&isSingleEleTrigger);
+  mytree->Branch("isSingleEleTrigger_25",&isSingleEleTrigger_25);
+  mytree->Branch("isSingleEleTrigger_27",&isSingleEleTrigger_27);
+  mytree->Branch("isSingleEleTrigger_32_DoubleEG",&isSingleEleTrigger_32_DoubleEG);
+  mytree->Branch("isSingleEleTrigger_32",&isSingleEleTrigger_32);
 
   mytree->Branch("mu_pT",&mu_pT);
   mytree->Branch("mu_eta",&mu_eta);
@@ -286,13 +290,9 @@ void LeptonMultiplicity::create_trees()
 
 }
 
-void LeptonMultiplicity::beginJob()
-{
-  //Flag for PileUp reweighting
-  if (!runningOnData_){
-   Lumiweights_ = edm::LumiReWeighting("MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root", "MyDataPileupHistogram.root", "pileup", "pileup");
-  }
-}
+// void LeptonMultiplicity::beginJob()
+// {
+// }
 
 
 //define this as a plug-in

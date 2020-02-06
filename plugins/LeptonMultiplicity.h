@@ -7,7 +7,7 @@ public:
   ~LeptonMultiplicity();
 
 private:
-  virtual void beginJob() override;
+  //virtual void beginJob() override;
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   //virtual void endJob() override;
 
@@ -24,8 +24,6 @@ private:
   const edm::InputTag bsCollection_;  
   const edm::InputTag PileupSrc_;
   const edm::InputTag GenInfo_;
-
-  edm::LumiReWeighting Lumiweights_;
 
   edm::Service<TFileService> fs;
 
@@ -61,9 +59,15 @@ private:
 
   bool is_muon;
   bool is_ele;
+
   bool isSingleMuTrigger_24;
+  bool isSingleMuTrigger_27;
   bool isSingleMuTrigger_50;
-  bool isSingleEleTrigger;
+  bool isSingleEleTrigger_25;
+  bool isSingleEleTrigger_27;
+  bool isSingleEleTrigger_32_DoubleEG;
+  bool isSingleEleTrigger_32;
+
   float mu_pT = 0.;
   float mu_eta = 0.;
   float mu_phi = 0.;

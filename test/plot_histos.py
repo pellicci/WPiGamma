@@ -27,7 +27,7 @@ hdata   = dict()
 canvas  = dict()
 histo_container = [] #just for memory management
 
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch"]
 
 for hname in list_histos:
     hstack[hname] = ROOT.THStack("hstack_" + hname,"")
@@ -105,7 +105,7 @@ for filename in list_inputfiles:
 
 for histo_name in list_histos:
 
-    canvas[histo_name] = ROOT.TCanvas("Cavas_" + histo_name,"",200,106,600,600)
+    canvas[histo_name] = ROOT.TCanvas("Canvas_" + histo_name,"",200,106,600,600)
     canvas[histo_name].cd()
 
     ##########################################
@@ -146,10 +146,20 @@ for histo_name in list_histos:
         hstack[histo_name].GetXaxis().SetTitle("p_{T}^{e} (GeV)")
         #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),4000))
         hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),60.))
+
+    if histo_name == "h_lepton_eta":
+        hstack[histo_name].GetXaxis().SetTitle("\eta^{l}")
+        #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),4000))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),300.))
+
+    if histo_name == "h_lepton_pt":
+        hstack[histo_name].GetXaxis().SetTitle("p_{T}^{l} (GeV)")
+        #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),4000))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),280.))
     
     if histo_name == "h_pipt":
         hstack[histo_name].GetXaxis().SetTitle("p_{T}^{#pi} (GeV)")
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),100))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),300.))
 
     if histo_name == "h_gammaet":
         hstack[histo_name].GetXaxis().SetTitle("E_{T}^{#gamma} (GeV)")
@@ -171,7 +181,7 @@ for histo_name in list_histos:
 
     if histo_name == "h_pieta":
         hstack[histo_name].GetXaxis().SetTitle("#eta^{#pi}")
-        #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),60))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),350.))
 
     if histo_name == "h_deltaphi_mu_pi":
         hstack[histo_name].GetXaxis().SetTitle("#Delta#varphi_{#mu-#pi}")
@@ -207,7 +217,8 @@ for histo_name in list_histos:
 
     if "h_piRelIso" in histo_name:
         hstack[histo_name].GetXaxis().SetTitle("#pi_{Iso}/p_{T}^{#pi}")
-    
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),50000.))    
+
     if signal_magnify != 1:
         hsignal[histo_name].Scale(signal_magnify)      
 
@@ -308,4 +319,37 @@ for histo_name in list_histos:
     ################################################
 
     canvas[histo_name].SaveAs(output_dir + histo_name + ".pdf")
+
+Wmass_nominal_cut_mu = copy.deepcopy(hstack["h_Wmass_flag_mu"].GetStack().Last())
+Wmass_alternative_cut_mu = copy.deepcopy(hstack["h_Wmass_alternative_mu"].GetStack().Last())
+
+Wmass_nominal_cut_ele = copy.deepcopy(hstack["h_Wmass_flag_ele"].GetStack().Last())
+Wmass_alternative_cut_ele = copy.deepcopy(hstack["h_Wmass_alternative_ele"].GetStack().Last())
+
+Wmass_nominal_cut_mu.Scale(1./Wmass_nominal_cut_mu.Integral())
+Wmass_alternative_cut_mu.Scale(1./Wmass_alternative_cut_mu.Integral())
+
+Wmass_nominal_cut_ele.Scale(1./Wmass_nominal_cut_ele.Integral())
+Wmass_alternative_cut_ele.Scale(1./Wmass_alternative_cut_ele.Integral())
+
+Wmass_nominal_cut_mu.Divide(Wmass_nominal_cut_mu,Wmass_alternative_cut_mu,1.,1.,"B")
+Wmass_nominal_cut_ele.Divide(Wmass_nominal_cut_ele,Wmass_alternative_cut_ele,1.,1.,"B")
+
+canvas_Wmass_1 = ROOT.TCanvas()
+Wmass_nominal_cut_mu.SetMarkerStyle(21)
+Wmass_nominal_cut_mu.GetYaxis().SetRangeUser(0.,2.)
+Wmass_nominal_cut_mu.SetTitle("")
+Wmass_nominal_cut_mu.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
+Wmass_nominal_cut_mu.Draw("Pe")
+canvas_Wmass_1.SaveAs(output_dir + "Wmass_ratio_mu_Wmass.pdf")
+
+canvas_Wmass_2 = ROOT.TCanvas()
+Wmass_nominal_cut_ele.SetMarkerStyle(21)
+Wmass_nominal_cut_ele.GetYaxis().SetRangeUser(0.,2.)
+Wmass_nominal_cut_ele.SetTitle("")
+Wmass_nominal_cut_ele.GetXaxis().SetTitle("m_{(#pi#gamma#)} (GeV)")
+Wmass_nominal_cut_ele.Draw("Pe")
+canvas_Wmass_2.SaveAs(output_dir + "Wmass_ratio_ele_Wmass.pdf")
+
+
 

@@ -54,6 +54,8 @@ _Nrandom_for_Ele_32_WPTight_exclusion = ROOT.TRandom3(64524)
 #############---------------- BDT score cut values ----------------#############
 BDT_OUT_MU  = 0.220
 BDT_OUT_ELE = 0.170
+#BDT_OUT_MU  = 0.217 #Wmass
+#BDT_OUT_ELE = 0.148 #Wmass
 
 ############################################################################
 #                                                                          #
@@ -88,7 +90,7 @@ ttbar_sig_calib = myWF.get_ttbar_signal_reweight()
 ##Get the handlers for all the histos and graphics
 h_base  = dict()
 
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_ratio_mu","h_Wmass_ratio_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi"]
 
 h_base[list_histos[0]]  = ROOT.TH1F(list_histos[0], "p_{T} of the muon", 15, 25, 100.)
 h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 15, 28, 100.)
@@ -129,6 +131,11 @@ h_base[list_histos[33]] = ROOT.TH1F(list_histos[33], "deltaphi mu-gamma", 100, 0
 h_base[list_histos[34]] = ROOT.TH1F(list_histos[34], "deltaphi ele-gamma", 100, 0., 0.5)
 h_base[list_histos[35]] = ROOT.TH1F(list_histos[35], "deltaR mu-gamma", 50, 0., 5.)
 h_base[list_histos[36]] = ROOT.TH1F(list_histos[36], "deltaR ele-gamma", 50, 0., 5.)
+h_base[list_histos[37]] = ROOT.TH1F(list_histos[37], "lepton eta", 20, -3., 3.)
+h_base[list_histos[38]] = ROOT.TH1F(list_histos[38], "p_{T} of the lepton", 15, 25., 100.)
+h_base[list_histos[39]] = ROOT.TH1F(list_histos[39], "Pion rel. isolation 05 - ch", 50, 0, 10)
+h_base[list_histos[40]] = ROOT.TH1F(list_histos[40], "deltaR mu-pi", 50, 0., 5.)
+h_base[list_histos[41]] = ROOT.TH1F(list_histos[41], "deltaR ele-pi", 50, 0., 5.)
 
 _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 
@@ -143,7 +150,8 @@ mytree = root_file.Get("WPiGammaAnalysis/mytree")
 print "Processing Sample ", sample_name
 
 Nevts_per_sample   = 0. # Count the number of events in input per each sample processed
-Nevts_selected     = 0. # Count the number of events survived per each sample processed
+Nevts_selected_mu  = 0. # Count the number of events survived per each sample processed (muon channel)
+Nevts_selected_ele = 0. # Count the number of events survived per each sample processed (electron channel)
 Nevts_expected     = 0. # Number of expected events from weights
 Nevts_expected_mu  = 0. # Number of expected events from weights
 Nevts_expected_ele = 0. # Number of expected events from weights
@@ -258,6 +266,8 @@ for jentry in xrange(mytree.GetEntriesFast()):
         deltaphi_lep_gamma = 6.28 - deltaphi_lep_gamma
 
     deltaeta_lep_gamma = math.fabs(lep_eta - gamma_eta)
+
+    deltaR_lep_pi    = math.sqrt(deltaphi_lep_pi*deltaphi_lep_pi + deltaeta_lep_pi*deltaeta_lep_pi)
     deltaR_lep_gamma = math.sqrt(deltaphi_lep_gamma*deltaphi_lep_gamma + deltaeta_lep_gamma*deltaeta_lep_gamma)
 
     #Avoid double counting between WJetsToLNu and WGToLNuG, based on the DeltaR(lepton,photon)
@@ -316,8 +326,6 @@ for jentry in xrange(mytree.GetEntriesFast()):
 
     if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge,deltaphi_lep_gamma,isTriggerMatched,runningEra):
         continue
-        
-    Nevts_selected = Nevts_selected + 1
 
     ############################################################################
     #                                                                          #
@@ -362,7 +370,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
 
         if not runningEra == 2: # Prefiring weight NOT to be applied to 2018 MC
             Prefiring_Weight = mytree.Prefiring_Weight # Add prefiring weight 
-            Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight)*Prefiring_Weight # Just take the sign of the gen weight
+            Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight*Prefiring_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
         else:
             Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
 
@@ -398,12 +406,6 @@ for jentry in xrange(mytree.GetEntriesFast()):
     if isBDT and "QCD" in sample_name and Event_Weight >= 30.:
         continue
 
-    Nevts_expected += Event_Weight # Increment the number of events survived in the analyzed sample
-    if isMuon:
-        Nevts_expected_mu += Event_Weight
-    else:
-        Nevts_expected_ele += Event_Weight
-
     ############################################################################
     #                                                                          #
     #-------------------------- Retrieve BDT output  --------------------------#
@@ -422,9 +424,9 @@ for jentry in xrange(mytree.GetEntriesFast()):
 
     if isBDT and ((isMuon and BDT_out > -0.1 and BDT_out < BDT_OUT_MU) or (not isMuon and BDT_out > -0.1 and BDT_out < BDT_OUT_ELE)): # Alternative cut on BDT score. Two histos will be filled. Eventually, they will be the ratio of Wmass distributions: one with pi_pT and gamma_ET normalized to Wmass, one not
         if (Wmass >= 50. and Wmass <= 100.) and isMuon:
-            h_base["h_Wmass_ratio_mu"].Fill(Wmass,Event_Weight)
+            h_base["h_Wmass_alternative_mu"].Fill(Wmass,Event_Weight)
         if (Wmass >= 50. and Wmass <= 100.) and not isMuon:
-            h_base["h_Wmass_ratio_ele"].Fill(Wmass,Event_Weight)
+            h_base["h_Wmass_alternative_ele"].Fill(Wmass,Event_Weight)
 
     if (isBDT and isMuon and BDT_out < BDT_OUT_MU) or (isBDT and not isMuon and BDT_out < BDT_OUT_ELE): # Cut on BDT output
         continue
@@ -432,6 +434,18 @@ for jentry in xrange(mytree.GetEntriesFast()):
         continue
     # if isBDT and sample_name == "Data" and (Wmass >= 65. and Wmass <= 90.): # Exclude data in the Blind Window
     #     continue
+
+    Nevts_expected += Event_Weight # Increment the number of events survived in the analyzed sample
+
+    if isMuon:
+        Nevts_selected_mu = Nevts_selected_mu + 1
+        #if Wmass >= 65. and Wmass <= 90.:
+        Nevts_expected_mu += Event_Weight
+    else:
+        Nevts_selected_ele = Nevts_selected_ele + 1
+        #if Wmass >= 65. and Wmass <= 90.:
+        Nevts_expected_ele += Event_Weight
+
 
     if isBDT and sample_name == "Data" and (Wmass < 65. or Wmass > 90.):
         h_base["h_Wmass"].Fill(Wmass,Event_Weight)
@@ -446,6 +460,9 @@ for jentry in xrange(mytree.GetEntriesFast()):
     h_base["h_pieta"].Fill(pi_eta,Event_Weight)
     h_base["h_gammaet"].Fill(gamma_eT,Event_Weight)
     h_base["h_gammaeta"].Fill(gamma_eta,Event_Weight)
+    h_base["h_lepton_eta"].Fill(lep_eta,Event_Weight)
+    h_base["h_lepton_pt"].Fill(lep_pT,Event_Weight)
+    h_base["h_piRelIso_05_ch"].Fill(piRelIso_05_ch,Event_Weight)
 
     if sample_name == "Data":
         h_PUdistrib.Fill(nPV,Event_Weight)      
@@ -468,8 +485,10 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_base["h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
         h_base["h_deltaphi_mu_pi"].Fill(deltaphi_lep_pi,Event_Weight)
         h_base["h_deltaphi_mu_gamma"].Fill(deltaphi_lep_gamma,Event_Weight)
+        h_base["h_deltaR_mu_pi"].Fill(deltaR_lep_pi,Event_Weight)
         if "WJetsToLNu" in sample_name:
             h_base["h_deltaR_mu_gamma"].Fill(MCT_deltaR_lep_gamma,Event_Weight)
+
 
     else:
         if isBDT and sample_name == "Data" and (Wmass < 65. or Wmass > 90.):
@@ -489,6 +508,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_base["h_deltaphi_ele_pi"].Fill(deltaphi_lep_pi,Event_Weight)
         h_base["h_deltaphi_ele_gamma"].Fill(deltaphi_lep_gamma,Event_Weight)
         h_base["h_deltaphi_ele_W"].Fill(deltaphi_lep_W,Event_Weight)
+        h_base["h_deltaR_ele_pi"].Fill(deltaR_lep_pi,Event_Weight)
         if "WJetsToLNu" in sample_name:
             h_base["h_deltaR_ele_gamma"].Fill(MCT_deltaR_lep_gamma,Event_Weight)
 
@@ -544,7 +564,8 @@ fOut.Close()
 print "###################"
 print "Number of expected events for ", luminosity_norm, " in fb-1, for sample " , sample_name
 print "Number of events processed = ", Nevts_per_sample
-print "Number of events selected = ", Nevts_selected
+print "Number of events selected in muon channel = ", Nevts_selected_mu
+print "Number of events selected in electron channel = ", Nevts_selected_ele
 print "Number of events expected = ", Nevts_expected
 print "Number of events expected in muon channel = ", Nevts_expected_mu
 print "Number of events expected in electron channel = ", Nevts_expected_ele

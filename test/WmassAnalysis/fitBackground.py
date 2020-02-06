@@ -103,7 +103,7 @@ if runningEra == 3 and isMuon:
     print "number of events mu - CR: ", data.sumEntries("Categorization==0")
 if runningEra == 3 and not isMuon:
     print "number of events ele - SR: ", data_initial.sumEntries("Categorization==3")
-    data = data_initial.reduce("BDT_out > 0.088 && Categorization==Categorization::ElectronCR")
+    data = data_initial.reduce("BDT_out > 0.090 && Categorization==Categorization::ElectronCR")
     print "number of events ele - CR: ", data.sumEntries("Categorization==2")
 
 print "Using ", data.numEntries(), " events to fit"
@@ -142,8 +142,8 @@ a7_el = ROOT.RooRealVar("a7_el","a7_el",-0.2,-5.,5.)
 a8_el = ROOT.RooRealVar("a8_el","a8_el",0.,-5.,5.)
 
 #Parameters for muon Bernstein
-b0_mu = ROOT.RooRealVar("b0_mu","b0_mu",0.04,0.,2.0)
-b1_mu = ROOT.RooRealVar("b1_mu","b1_mu",1.5,0.,3.8)
+b0_mu = ROOT.RooRealVar("b0_mu","b0_mu",0.06,0.,2.0)
+b1_mu = ROOT.RooRealVar("b1_mu","b1_mu",0.09,0.,3.8)
 b2_mu = ROOT.RooRealVar("b2_mu","b2_mu",7.,0.,10.)
 b3_mu = ROOT.RooRealVar("b3_mu","b3_mu",3.8,0.,7.5)
 b4_mu = ROOT.RooRealVar("b4_mu","b4_mu",1.7,0.,5)
@@ -161,16 +161,16 @@ b4_el = ROOT.RooRealVar("b4_el","b4_el",0.5,0.,3.)
 b5_el = ROOT.RooRealVar("b5_el","b5_el",0.5,0.,3.)
 b6_el = ROOT.RooRealVar("b6_el","b6_el",0.6,0.,2.)
 b7_el = ROOT.RooRealVar("b7_el","b7_el",3.,0.,6.)
-b8_el = ROOT.RooRealVar("b8_el_3027","b8_el",2.,0.,5.)
+b8_el = ROOT.RooRealVar("b8_el","b8_el",2.,0.,5.)
 # b9_el = ROOT.RooRealVar("b9_el","b9_el",5.,0.,10.)
 
 
 backPDF_cheb_mu = ROOT.RooChebychev("backPDF_cheb_mu","backPDF_cheb_mu",Wmass,ROOT.RooArgList(a0_mu))#,a1_mu))#,a2_mu))#,a3_mu))#,a4_mu))#,a5_mu,a6_mu))
-backPDF_cheb_el = ROOT.RooChebychev("backPDF_cheb_el","backPDF_cheb_el",Wmass,ROOT.RooArgList(a0_el,a1_el,a2_el,a3_el,a4_el))#,a6_el))
+backPDF_cheb_el = ROOT.RooChebychev("backPDF_cheb_el","backPDF_cheb_el",Wmass,ROOT.RooArgList(a0_el))#,a1_el))#,a2_el,a3_el))#,a4_el))#,a6_el))
 
 
-backPDF_bern_mu = ROOT.RooBernstein("backPDF_bern_mu","backPDF_bern_mu",Wmass,ROOT.RooArgList(b0_mu))#,b1_mu))#,b2_mu,b3_mu))#,b4_mu)) #,b5_mu,b6_mu))
-backPDF_bern_el = ROOT.RooBernstein("backPDF_bern_el","backPDF_bern_el",Wmass,ROOT.RooArgList(b0_el,b1_el,b2_el,b3_el))#,b4_el))#,b5_el))#,b6_el))
+backPDF_bern_mu = ROOT.RooBernstein("backPDF_bern_mu","backPDF_bern_mu",Wmass,ROOT.RooArgList(b0_mu,b1_mu))#,b2_mu))#,b3_mu))#,b4_mu)) #,b5_mu,b6_mu))
+backPDF_bern_el = ROOT.RooBernstein("backPDF_bern_el","backPDF_bern_el",Wmass,ROOT.RooArgList(b0_el,b1_el))#,b2_el))#,b3_el,b4_el))#,b5_el))#,b6_el))
 
 
 
@@ -214,7 +214,7 @@ result_dataFit = backPDF.fitTo(data,ROOT.RooFit.Extended(0), ROOT.RooFit.NumCPU(
 #Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
 
 print "minNll = ", result_dataFit.minNll()
-print "2Delta_minNll = ", 2*(5793.26162047-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
+print "2Delta_minNll = ", 2*(5417.81160974-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
 
 
 ################################################################
@@ -237,7 +237,10 @@ canvas = ROOT.TCanvas()
 xframe.Draw()
 
 # Save the plot
-canvas.SaveAs("plots/fitBackground.pdf")
+if isMuon:
+    canvas.SaveAs("plots/fitBackground_muon.pdf")
+else:
+    canvas.SaveAs("plots/fitBackground_electron.pdf")
 
 ################################################################
 #                                                              #

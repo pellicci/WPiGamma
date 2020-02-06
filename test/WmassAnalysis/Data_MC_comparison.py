@@ -3,17 +3,17 @@ import math
 
 ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
-fData = ROOT.TFile("fitData.root")
+# fData = ROOT.TFile("fitData.root")
 
-Data = fData.Get("data")
+# Data = fData.Get("data")
 
 #Define the observable
 Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV")
 
 #Retrive the sample
-fInput_data = ROOT.TFile("Tree_input_massfit_Data.root")
+fInput_data = ROOT.TFile("Tree_input_massfit_Data_3.root")
 
-fInput_MC = ROOT.TFile("Tree_input_massfit_MC.root")
+fInput_MC = ROOT.TFile("Tree_input_massfit_MC_3.root")
 
 #Define the mu/ele category
 Categorization = ROOT.RooCategory("Categorization","Categorization")
@@ -55,8 +55,8 @@ mytree_MC = fInput_MC.Get("minitree")
 data_initial_MC = ROOT.RooDataSet("MC","MC", ROOT.RooArgSet(Wmass,Categorization,weight,BDT_out,isSignal,isMuon), ROOT.RooFit.Import(mytree_MC), ROOT.RooFit.WeightVar("weight"))
 #MC = ROOT.RooDataSet("MC","MC", ROOT.RooArgSet(Wmass,Categorization,weight,BDT_out,isSignal,isMuon), ROOT.RooFit.Import(mytree_MC), ROOT.RooFit.WeightVar("weight"))
 
-data = data_initial_data.reduce("(BDT_out > 0.168 && isMuon==isMuon::Muon) || (BDT_out > 0.112 && isMuon==isMuon::Electron)")
-MC = data_initial_MC.reduce("(BDT_out > 0.168 && isMuon==isMuon::Muon) || (BDT_out > 0.112 && isMuon==isMuon::Electron)")
+data = data_initial_data.reduce("(BDT_out > 0.150 && isMuon==isMuon::Muon) || (BDT_out > 0.090 && isMuon==isMuon::Electron)")
+MC = data_initial_MC.reduce("(BDT_out > 0.150 && isMuon==isMuon::Muon) || (BDT_out > 0.090 && isMuon==isMuon::Electron)")
 #data = data_initial_data.reduce("BDT_out > -3")
 #MC = data_initial_MC.reduce("BDT_out > -3")
 
@@ -67,7 +67,7 @@ xframe_data_comp_mu.SetTitle(" ")
 xframe_data_comp_mu.SetTitleOffset(1.5,"y")
 data.plotOn(xframe_data_comp_mu, ROOT.RooFit.Cut("Categorization==0"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson),ROOT.RooFit.MarkerColor(ROOT.kRed))
 MC.plotOn(xframe_data_comp_mu, ROOT.RooFit.Cut("Categorization==0"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-xframe_data_comp_mu.SetMaximum(80)
+xframe_data_comp_mu.SetMaximum(300)
 # data.plotOn(xframe_data_comp_mu, ROOT.RooFit.Cut("isMuon==1"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson),ROOT.RooFit.MarkerColor(ROOT.kRed))
 # MC.plotOn(xframe_data_comp_mu, ROOT.RooFit.Cut("isMuon==1"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
 
@@ -78,7 +78,7 @@ xframe_data_comp_ele.SetTitle(" ")
 xframe_data_comp_ele.SetTitleOffset(1.5,"y")
 data.plotOn(xframe_data_comp_ele, ROOT.RooFit.Cut("Categorization==2"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson),ROOT.RooFit.MarkerColor(ROOT.kRed))
 MC.plotOn(xframe_data_comp_ele, ROOT.RooFit.Cut("Categorization==2"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-xframe_data_comp_ele.SetMaximum(80)
+xframe_data_comp_ele.SetMaximum(300)
 # data.plotOn(xframe_data_comp_ele, ROOT.RooFit.Cut("isMuon==0"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson),ROOT.RooFit.MarkerColor(ROOT.kRed))
 # MC.plotOn(xframe_data_comp_ele, ROOT.RooFit.Cut("isMuon==0"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
 

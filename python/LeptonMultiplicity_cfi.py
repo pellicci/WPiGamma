@@ -8,6 +8,7 @@ LeptonMultiplicity = cms.EDAnalyzer('LeptonMultiplicity',
                                   slimmedElectrons   = cms.InputTag("slimmedElectrons"),
                                   slimmedJets        = cms.InputTag("slimmedJets"),
                                   runningOnData      = cms.bool(False),
+                                  runningEra         = cms.int32(0), # One of the possible python types for the C++ type "int" 
                                   pvCollection       = cms.InputTag("offlineSlimmedPrimaryVertices"), #New Stuff 
                                   bsCollection       = cms.InputTag("offlineBeamSpot"),
                                   PileupSrc          = cms.InputTag("slimmedAddPileupInfo"),

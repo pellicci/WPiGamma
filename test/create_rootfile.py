@@ -541,7 +541,7 @@ for full_sample_name in samplename_list:
 
             if not runningEra == 2: # Prefiring weight not to be applied to 2018 MC
                 Prefiring_Weight = mytree.Prefiring_Weight # Add prefiring weight 
-                Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight)*Prefiring_Weight # Just take the sign of the gen weight
+                Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight*Prefiring_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
             else:
                 Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
 

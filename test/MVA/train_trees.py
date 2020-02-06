@@ -114,8 +114,8 @@ if data_sidebands:
 else:
     weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu.xml"
     weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele.xml"
-    #weightfile_mu  = "default/weights/" + year + "/TMVAClassification_BDT.weights_mu_Wmass.xml"
-    #weightfile_ele = "default/weights/" + year + "/TMVAClassification_BDT.weights_ele_Wmass.xml"
+    #weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_Wmass.xml"
+    #weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_Wmass.xml"
 
 if isMuon:
     rename_weightfile = "mv " + weightfile_dir + " " + weightfile_mu

@@ -16,7 +16,7 @@ process.maxEvents = cms.untracked.PSet(
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing()
 options.register('runningOnData',
-                 False, #default value
+                 True, #default value
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "PU config flag")
@@ -26,7 +26,7 @@ options.register('runningOnMuons',
                  VarParsing.VarParsing.varType.bool,
                  "muon trigger config flag")
 options.register('runningEra',
-                 0, #default value. 0 is 2016, 1 is 2017, 2 is 2018
+                 2, #default value. 0 is 2016, 1 is 2017, 2 is 2018
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "2016-2017-2018 config flag")
@@ -134,12 +134,41 @@ process.TFileService = cms.Service("TFileService",
 
 ###############################################################################################################################
 #                                                                                                                             #
-#-------------------------------------------------------- Jet corrections ----------------------------------------------------#
+#-------------------------------------------------------- Jet ID and JECs ----------------------------------------------------#
 #                                                                                                                             #
 #                                      https://twiki.cern.ch/twiki/bin/view/CMS/JECDataMC                                     #
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?redirectedfrom=CMS.WorkBookJetEnergyCorrections #
 #                                                                                                                             #
 ###############################################################################################################################
+
+#Implement jet ID filter
+from PhysicsTools.SelectorUtils.pfJetIDSelector_cfi import pfJetIDSelector
+
+if options.runningEra == 0:
+   process.goodPatJetsPFlow = cms.EDFilter("PFJetIDSelectionFunctorFilter",
+                                           filterParams = pfJetIDSelector.clone(
+                                           version = cms.string('WINTER16'),
+                                           quality = cms.string('TIGHTLEPVETO')),
+                                           src = cms.InputTag("slimmedJets"),
+                                           filter = cms.bool(True)
+   )
+if options.runningEra == 1:
+   process.goodPatJetsPFlow = cms.EDFilter("PFJetIDSelectionFunctorFilter",
+                                           filterParams = pfJetIDSelector.clone(
+                                           version = cms.string('WINTER17'),
+                                           quality = cms.string('TIGHTLEPVETO')),
+                                           src = cms.InputTag("slimmedJets"),
+                                           filter = cms.bool(True)
+   )
+if options.runningEra == 2:
+   process.goodPatJetsPFlow = cms.EDFilter("PFJetIDSelectionFunctorFilter",
+                                           filterParams = pfJetIDSelector.clone(
+                                           version = cms.string('SUMMER18'),
+                                           quality = cms.string('TIGHTLEPVETO')),
+                                           src = cms.InputTag("slimmedJets"),
+                                           filter = cms.bool(True)
+   )
+
 
 #Use the latest JECs
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
@@ -196,13 +225,13 @@ process.trigger_filter_data_mu.throw = cms.bool( False )
 process.trigger_filter_data_ele = hlt.triggerResultsFilter.clone()
 
 if options.runningEra == 0:
-   process.trigger_filter_data_ele.triggerConditions = cms.vstring('HLT_Ele25_eta2p1_WPTight_Gsf_v* OR HLT_Ele27_WPTight_Gsf_v*') #paths for 2016 data samples SingleEle
+   process.trigger_filter_data_ele.triggerConditions = cms.vstring('HLT_Ele27_WPTight_Gsf_v*') #paths for 2016 data samples SingleEle
 
 if options.runningEra == 1:
-   process.trigger_filter_data_ele.triggerConditions = cms.vstring('HLT_Ele32_WPTight_Gsf_L1DoubleEG_v* OR HLT_Ele32_WPTight_Gsf_v*') #paths for 2017 data samples SingleEle. The trigger WITHOUT L1DoubleEG is active only for around 27/fb. When both the triggers are on, L1DoubleEG is on ~2% times more than simple WPTight
+   process.trigger_filter_data_ele.triggerConditions = cms.vstring('HLT_Ele32_WPTight_Gsf_L1DoubleEG_v*') #paths for 2017 data samples SingleEle. The trigger WITHOUT L1DoubleEG is active only for around 27/fb. When both the triggers are on, L1DoubleEG is on ~2% times more than simple WPTight
 
 if options.runningEra == 2:
-   process.trigger_filter_data_ele.triggerConditions = cms.vstring('HLT_Ele32_WPTight_Gsf_v*') #paths for 2017 data samples SingleEle.
+   process.trigger_filter_data_ele.triggerConditions = cms.vstring('HLT_Ele32_WPTight_Gsf_v*') #paths for 2018 data samples SingleEle.
 
 process.trigger_filter_data_ele.hltResults = cms.InputTag("TriggerResults", "", "HLT")
 process.trigger_filter_data_ele.l1tResults = cms.InputTag("")
@@ -213,10 +242,10 @@ process.trigger_filter_data_ele.throw = cms.bool( False )
 process.trigger_filter_MC = hlt.triggerResultsFilter.clone()
 
 if options.runningEra == 0:
-   process.trigger_filter_MC.triggerConditions = cms.vstring('HLT_IsoMu24_v* OR HLT_IsoTkMu24_v* OR HLT_Mu50_v* OR HLT_Ele25_eta2p1_WPTight_Gsf_v* OR HLT_Ele27_WPTight_Gsf_v*') #paths for 2016 MC
+   process.trigger_filter_MC.triggerConditions = cms.vstring('HLT_IsoMu24_v* OR HLT_IsoTkMu24_v* OR HLT_Mu50_v* OR HLT_Ele27_WPTight_Gsf_v*') #paths for 2016 MC
 
 if options.runningEra == 1:
-   process.trigger_filter_MC.triggerConditions = cms.vstring('HLT_IsoMu27_v* OR HLT_Mu50_v* OR HLT_Ele32_WPTight_Gsf_L1DoubleEG_v* OR HLT_Ele32_WPTight_Gsf_v*') #paths for 2017 MC
+   process.trigger_filter_MC.triggerConditions = cms.vstring('HLT_IsoMu27_v* OR HLT_Mu50_v* OR HLT_Ele32_WPTight_Gsf_L1DoubleEG_v*') #paths for 2017 MC
 
 if options.runningEra == 2:
    process.trigger_filter_MC.triggerConditions = cms.vstring('HLT_IsoMu24_v* OR HLT_Mu50_v* OR HLT_Ele32_WPTight_Gsf_v*') #paths for 2018 MC
@@ -233,16 +262,16 @@ process.trigger_filter_MC.throw = cms.bool( False )
 ###############################################
 
 if options.runningOnData and options.runningOnMuons: # Data, Muons
-   process.seq = cms.Path(process.trigger_filter_data_mu  * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis) 
+   process.seq = cms.Path(process.trigger_filter_data_mu  * process.egammaPostRecoSeq * process.goodPatJetsPFlow * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis) 
 
 if options.runningOnData and not options.runningOnMuons: # Data, Electrons
-   process.seq = cms.Path(process.trigger_filter_data_ele * (~process.trigger_filter_data_mu) * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis) #Excluding events when both muon and electron triggers were lit
+   process.seq = cms.Path(process.trigger_filter_data_ele * (~process.trigger_filter_data_mu) * process.egammaPostRecoSeq * process.goodPatJetsPFlow* process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis) #Excluding events when both muon and electron triggers were lit
 
 if not options.runningOnData and not options.runningEra == 2: # MC
-   process.seq = cms.Path(process.trigger_filter_MC * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.prefiringweight * process.WPiGammaAnalysis)
+   process.seq = cms.Path(process.trigger_filter_MC * process.egammaPostRecoSeq * process.goodPatJetsPFlow * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.prefiringweight * process.WPiGammaAnalysis)
 
 if not options.runningOnData and options.runningEra == 2: # MC
-   process.seq = cms.Path(process.trigger_filter_MC * process.egammaPostRecoSeq * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis)
+   process.seq = cms.Path(process.trigger_filter_MC * process.egammaPostRecoSeq * process.goodPatJetsPFlow * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis)
 
 process.schedule = cms.Schedule(process.seq)
 

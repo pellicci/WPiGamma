@@ -5,7 +5,7 @@ ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
 #---------------------------------#
 p = argparse.ArgumentParser(description='Select whether to fit data or MC')
-p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <<2>> for 2016+2017')
+p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <<2>> for 2016+2017, <<3>> for 2016+2017+2018')
 args = p.parse_args()
 
 runningEra = int(args.runningEra_option)
@@ -60,6 +60,18 @@ if runningEra == 2:
     constrained_params.add(workspace.var("lumi_constr_2017"))
     constrained_params.add(workspace.var("eff_mu_constr_2017"))
     constrained_params.add(workspace.var("eff_el_constr_2017"))
+if runningEra == 3:
+    constrained_params.add(workspace.var("eta_mu_2016_2017_2018"))
+    constrained_params.add(workspace.var("eta_el_2016_2017_2018"))
+    constrained_params.add(workspace.var("lumi_constr_2016"))
+    constrained_params.add(workspace.var("eff_mu_constr_2016"))
+    constrained_params.add(workspace.var("eff_el_constr_2016"))
+    constrained_params.add(workspace.var("lumi_constr_2017"))
+    constrained_params.add(workspace.var("eff_mu_constr_2017"))
+    constrained_params.add(workspace.var("eff_el_constr_2017"))
+    constrained_params.add(workspace.var("lumi_constr_2018"))
+    constrained_params.add(workspace.var("eff_mu_constr_2018"))
+    constrained_params.add(workspace.var("eff_el_constr_2018"))
 
 #Define global observables
 global_params = ROOT.RooArgSet()
@@ -89,6 +101,18 @@ if runningEra == 2:
     global_params.add(workspace.var("glb_eff_el_2017"))
     global_params.add(workspace.var("glb_bkg_param_mu_2017"))
     global_params.add(workspace.var("glb_bkg_param_el_2017"))
+if runningEra == 3:
+    global_params.add(workspace.var("glb_lumi_2016"))
+    global_params.add(workspace.var("glb_eff_mu_2016"))
+    global_params.add(workspace.var("glb_eff_el_2016"))
+    global_params.add(workspace.var("glb_lumi_2017"))
+    global_params.add(workspace.var("glb_eff_mu_2017"))
+    global_params.add(workspace.var("glb_eff_el_2017"))
+    global_params.add(workspace.var("glb_lumi_2018"))
+    global_params.add(workspace.var("glb_eff_mu_2018"))
+    global_params.add(workspace.var("glb_eff_el_2018"))
+    global_params.add(workspace.var("glb_bkg_param_mu_2016_2017_2018"))
+    global_params.add(workspace.var("glb_bkg_param_el_2016_2017_2018"))
 
 #Define the model container
 #First the S+B
@@ -115,8 +139,6 @@ poi.find("W_pigamma_BR").setVal(0) #BEWARE that the range of the POI (W_pigamma_
 bModel.SetSnapshot(poi)
 poi.find("W_pigamma_BR").setVal(oldval)
 
-#workspace.var("a0_el_2016").setConstant(1)
-
 print "Number of events in data = ", workspace.data("data").numEntries()
 
 
@@ -125,7 +147,7 @@ print "Number of events in data = ", workspace.data("data").numEntries()
 
 #----------------------------------------------------------------------------------#
 fc = ROOT.RooStats.FrequentistCalculator(workspace.data("data"), bModel, sbModel)
-fc.SetToys(350,350)
+fc.SetToys(800,800)
 
 #Create hypotest inverter passing desired calculator
 calc = ROOT.RooStats.HypoTestInverter(fc)
@@ -169,13 +191,13 @@ toymc.SetTestStatistic(profl)
 # #use CLs
 # calc.UseCLs(1)
 
-npoints = 10 #Number of points to scan
+npoints = 25 #Number of points to scan
 # min and max for the scan (better to choose smaller intervals)
 poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
-min_scan = 0.0000001
-max_scan = 0.00001
+min_scan = 0.000005
+max_scan = 0.000035
 print "Doing a fixed scan  in interval : ",min_scan, " , ", max_scan
 calc.SetFixedScan(npoints,min_scan,max_scan)
 

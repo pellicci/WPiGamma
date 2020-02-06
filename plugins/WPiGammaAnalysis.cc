@@ -100,12 +100,31 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   inv_mass_2 = fs->make<TH1F>("Mw - match with MC Truth", "Mw match", 200,0,120);
   h_pileup   = fs->make<TH1F>("pileup", "pileup", 75,0,75);
 
+  h2_BTaggingEff_Num_b   = fs->make<TH2D>("h2_BTaggingEff_Num_b", ";p_{T} [GeV];#eta", 75, 25., 1000., 50, -2.5, 2.5);
+  h2_BTaggingEff_Denom_b = fs->make<TH2D>("h2_BTaggingEff_Denom_b", ";p_{T} [GeV];#eta", 75, 25., 1000., 50, -2.5, 2.5);
+
+
   create_trees();
 }
 
 WPiGammaAnalysis::~WPiGammaAnalysis()
 {
 }
+
+//--------- match reco electron with trigger object (for 2017 trigger) ---------//
+namespace{
+  std::vector<const pat::TriggerObjectStandAlone*> getMatchedObjs(const float eta,const float phi,const std::vector<pat::TriggerObjectStandAlone>& trigObjs,const float maxDeltaR=0.1)
+  {
+    std::vector<const pat::TriggerObjectStandAlone*> matchedObjs;
+    const float maxDR2 = maxDeltaR*maxDeltaR;
+    for(auto& trigObj : trigObjs){
+      const float dR2 = reco::deltaR2(eta,phi,trigObj.eta(),trigObj.phi());
+      if(dR2<maxDR2) matchedObjs.push_back(&trigObj);
+    }
+    return matchedObjs;
+  }
+}
+//------------------------------------------------------------------------------//
 
 // ------------ method called for each event  ------------
 void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -147,8 +166,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   if(runningOnData_ && runningEra_ == 0){
     iEvent.getByToken(triggerObjectsTokenData2016_, triggerObjects);
   }
+  std::vector<pat::TriggerObjectStandAlone> unpackedTrigObjs;
   if(runningEra_ == 1){
     iEvent.getByToken(triggerObjectsToken2017_, triggerObjects);
+    //Create unpacked filter names to convert Ele32_DoubleEG trigger into Ele32_WPTight
+    for(auto& trigObj : *triggerObjects){
+      unpackedTrigObjs.push_back(trigObj);
+      unpackedTrigObjs.back().unpackFilterLabels(iEvent,*triggerBits);
+    }
   }
   if(!runningOnData_ && runningEra_ == 2){
     iEvent.getByToken(triggerObjectsTokenMC2018_, triggerObjects);
@@ -276,9 +301,9 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     if( tmp_triggername.find("HLT_Mu50_v") != std::string::npos ){
       isSingleMuTrigger_50 = true;
     }
-    if( tmp_triggername.find("HLT_Ele25_eta2p1_WPTight_Gsf_v") != std::string::npos){
-      isSingleEleTrigger_25 = true;
-    }
+    // if( tmp_triggername.find("HLT_Ele25_eta2p1_WPTight_Gsf_v") != std::string::npos){
+    //   isSingleEleTrigger_25 = true;
+    // }
     if( tmp_triggername.find("HLT_Ele27_WPTight_Gsf_v") != std::string::npos){
       isSingleEleTrigger_27 = true;
     }
@@ -456,6 +481,11 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       mu_dxy  = mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position());
       mu_dz   = mu->muonBestTrack()->dz((&slimmedPV->at(0))->position());
       best_mu_iso = mu_iso; //Save the value of mu_iso of the best candidate (highest pT) muon passing the selection
+
+      // // //Now check muon trigger matching
+      // // if(runningEra_ == 0 && (mu->triggered("HLT_IsoMu24_v*") || mu->triggered("HLT_IsoTkMu24_v*") || mu->triggered("HLT_Mu50_v*"))) isTriggerMatched = true;
+      // // if(runningEra_ == 1 && (mu->triggered("HLT_IsoMu27_v*") || mu->triggered("HLT_Mu50_v*"))) isTriggerMatched = true;
+      // // if(runningEra_ == 2 && (mu->triggered("HLT_IsoMu24_v*") || mu->triggered("HLT_Mu50_v*"))) isTriggerMatched = true;
       
       pTmuMax = mu_pT;
     }
@@ -509,6 +539,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       el_ID    = el->pdgId();
       el_eta   = el->eta();
       el_etaSC = el->superCluster()->eta();
+      el_phiSC = el->superCluster()->phi();
       el_phi   = el->phi();
       el_pT    = corr_pt;
       el_dxy   = el->gsfTrack()->dxy((&slimmedPV->at(0))->position());
@@ -548,34 +579,36 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     lepton_pT_tree    = el_pT;
     lepton_eta_tree   = el_eta;
     lepton_etaSC_tree = el_etaSC;
+    lepton_phiSC_tree = el_phiSC;
     lepton_phi_tree   = el_phi;
     lepton_dxy_tree   = el_dxy;
     lepton_dz_tree    = el_dz;
     lepton_iso_tree   = best_el_iso;
   }
- 
 
-  //*************************************************************//
-  //                                                             //
-  //---------------------- Trigger Matching ---------------------//
-  //                                                             //
-  //*************************************************************//
+  //Cut events with lepton pT lower than 25 GeV, since the lowest offline cut will be 25 GeV anyway
+  if(lepton_pT_tree < 25.) return;
+
+  //**********************************************************************//
+  //                                                                      //
+  //---------------------- Electron Trigger Matching ---------------------//
+  //                                                                      //
+  //**********************************************************************//
   //https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2017#Trigger
 
-  float deltaR_lep_trigger_min = 0.5;
-  float deltapTrel_lep_trigger_min = 0.5;
+  float deltaR_lep_trigger_min = 0.1;
+  bool isEle32_WPTight_equivalent = false;
   bool isTriggerMatched = false;
-
 
   const edm::TriggerNames &TNames = iEvent.triggerNames(*triggerBits);
 
   for (pat::TriggerObjectStandAlone obj : *triggerObjects){ // note: not "const &" since we want to call unpackPathNames
-
+    
     bool isAcceptedPath = false;
     obj.unpackPathNames(TNames);
-
+    
     std::vector pathNamesAll = obj.pathNames(false);
-
+    
     for (unsigned h = 0, n = pathNamesAll.size(); h < n; ++h) {
       // Record also if the object is associated to a 'l3' filter (always true for the definition used
       // in the PAT trigger producer) and if it's associated to the last filter of a successfull path (which means
@@ -583,31 +616,49 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       bool isSuccessfulTrigger = obj.hasPathName( pathNamesAll[h], true, true );
       //std::cout << "   " << pathNamesAll[h];
       if(!isSuccessfulTrigger) continue;
-      //std::cout << pathNamesAll[h] << "(L,3)" << std::endl;
+      //std::cout << pathNamesAll[h] << "(L,3)" << std::endl; 
 
-      if((is_muon && runningEra_ == 0) && (pathNamesAll[h].find("HLT_IsoMu24_v") != std::string::npos || pathNamesAll[h].find("HLT_IsoTkMu24_v") != std::string::npos || pathNamesAll[h].find("HLT_Mu50_v") != std::string::npos)) {
+      if((is_muon && runningEra_ == 0) && (pathNamesAll[h].find("HLT_IsoMu24_v") != std::string::npos || pathNamesAll[h].find("HLT_IsoTkMu24_v") != std::string::npos || pathNamesAll[h].find("HLT_Mu50_v") != std::string::npos )) {
 	isAcceptedPath = true;
-	continue; //Just to speed up a bit
+	continue;
       }
-      
+
       if((is_muon && runningEra_ == 1) && (pathNamesAll[h].find("HLT_IsoMu27_v") != std::string::npos || pathNamesAll[h].find("HLT_Mu50_v") != std::string::npos)) {
 	isAcceptedPath = true;
 	continue;
       }
-      
+
       if((is_muon && runningEra_ == 2) && (pathNamesAll[h].find("HLT_IsoMu24_v") != std::string::npos || pathNamesAll[h].find("HLT_Mu50_v") != std::string::npos)) {
 	isAcceptedPath = true;
 	continue;
+      } 
+      
+      if((!is_muon && runningEra_ == 0) && pathNamesAll[h].find("HLT_Ele27_WPTight_Gsf_v") != std::string::npos) {
+	isAcceptedPath = true;
+	continue;
       }
       
-      if((!is_muon && runningEra_ == 0) && (pathNamesAll[h].find("HLT_Ele25_eta2p1_WPTight_Gsf_v") != std::string::npos || pathNamesAll[h].find("HLT_Ele27_WPTight_Gsf_v") != std::string::npos)) {
-	isAcceptedPath = true;
-	continue;
-      }
-	    
-      if((!is_muon && runningEra_ == 1) && (pathNamesAll[h].find("HLT_Ele32_WPTight_Gsf_L1DoubleEG_v") != std::string::npos || pathNamesAll[h].find("HLT_Ele32_WPTight_Gsf_v") != std::string::npos)) {
-	isAcceptedPath = true;
-	continue;
+      if((!is_muon && runningEra_ == 1) && pathNamesAll[h].find("HLT_Ele32_WPTight_Gsf_L1DoubleEG_v") != std::string::npos) {
+	//now match ALL objects in a cone of DR<0.1
+	//it is important to match all objects as there are different ways to reconstruct the same electron
+	//eg, L1 seeded, unseeded, as a jet etc
+	//and so you want to be sure you get all possible objects
+	std::vector<const pat::TriggerObjectStandAlone*> matchedTrigObjs = getMatchedObjs(lepton_etaSC_tree,lepton_phiSC_tree,unpackedTrigObjs,0.1);
+	for(const auto trigObj : matchedTrigObjs){
+	  //now just check if it passes the two filters
+	  if(trigObj->hasFilterLabel("hltEle32L1DoubleEGWPTightGsfTrackIsoFilter") && trigObj->hasFilterLabel("hltEGL1SingleEGOrFilter") ) {
+	    isEle32_WPTight_equivalent = true;
+	    break;
+	  }
+	}
+	if(isEle32_WPTight_equivalent){
+	  //std::cout << "Ele32 EMULATED" << std::endl;
+	  isAcceptedPath = true;
+	  continue;
+	}
+	else{
+	  return;
+	}
       }
       
       if((!is_muon && runningEra_ == 2) &&  pathNamesAll[h].find("HLT_Ele32_WPTight_Gsf_v") != std::string::npos) {
@@ -616,17 +667,28 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       }
     }
     //std::cout << std::endl;
-
+    
     if(!isAcceptedPath) continue;
     
-    float deltaEta_lep_trigger = fabs(lepton_eta_tree - obj.eta());
-    float deltaPhi_lep_trigger = fabs(lepton_phi_tree - obj.phi());
+    float deltaEta_lep_trigger;
+    float deltaPhi_lep_trigger;
+
+    if(is_muon){
+    deltaEta_lep_trigger = fabs(lepton_eta_tree - obj.eta());
+    deltaPhi_lep_trigger = fabs(lepton_phi_tree - obj.phi());
+    }
+    else{//Use SC eta and phi for electrons
+    deltaEta_lep_trigger = fabs(lepton_etaSC_tree - obj.eta());
+    deltaPhi_lep_trigger = fabs(lepton_phiSC_tree - obj.phi());
+    }
+    
     if(deltaPhi_lep_trigger > 3.14){
       deltaPhi_lep_trigger = 6.28 - deltaPhi_lep_trigger;
     }
+    
     float deltaR_lep_trigger = sqrt(deltaEta_lep_trigger*deltaEta_lep_trigger + deltaPhi_lep_trigger*deltaPhi_lep_trigger);
-    float deltapTrel_lep_trigger = fabs(lepton_pT_tree - obj.pt())/obj.pt();
-    if(deltaR_lep_trigger <= deltaR_lep_trigger_min && deltapTrel_lep_trigger <= deltapTrel_lep_trigger_min){
+    //float deltapTrel_lep_trigger = fabs(lepton_pT_tree - obj.pt())/obj.pt();
+    if(deltaR_lep_trigger <= deltaR_lep_trigger_min){
       isTriggerMatched = true;
       //std::cout << "\tTrigger object:  pt " << obj.pt() << ", eta " << obj.eta() << ", phi " << obj.phi() << std::endl;
       break;
@@ -635,7 +697,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //if(!isTriggerMatched) return;
   isTriggerMatched_tree = isTriggerMatched;
 
-  //std::cout << "particella matchata. is_muon: " << is_muon << "  pt: " << lepton_pT_tree << "  eta: " << lepton_eta_tree << "  phi:" << lepton_phi_tree << std::endl;  
 
   //*************************************************************//
   //                                                             //
@@ -883,7 +944,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   if(!runningOnData_){
     for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
-      if(gen->pdgId() != 22 || gen->pt() < 20. || fabs(gen->mother()->pdgId()) == 11) continue;
+      if(gen->pdgId() != 22 || gen->pt() < 20. || fabs(gen->mother()->pdgId()) == 11 || !gen->isPromptFinalState()) continue;
       if(gen->pt() < gen_ph_pT_min) continue;
       gen_ph_pT_min = gen->pt();
       gen_ph_pT = gen->pt();
@@ -905,10 +966,24 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //*************************************************************//
 
   nBjets = 0; //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation
+
   for (auto jet = slimmedJets->begin(); jet != slimmedJets->end(); ++jet){
-    if(runningEra_ == 0 && jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") < Bjets_WP_2016_) continue;   //loose 2016
-    if(runningEra_ == 1 && jet->bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") < Bjets_WP_2017_) continue;   //loose 2017
-    if(runningEra_ == 2 && jet->bDiscriminator("pfDeepCSVJetTags:probb") < Bjets_WP_2018_) continue;                         //loose 2018
+
+    if(!runningOnData_){
+      int hadronFlavour = jet->hadronFlavour();
+      
+      if(fabs(hadronFlavour) == 5){
+    	h2_BTaggingEff_Denom_b->Fill(jet->pt(), jet->eta());
+      }
+      if(runningEra_ == 0 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP_2016_ && jet->pt() >= 25.) h2_BTaggingEff_Num_b->Fill(jet->pt(), jet->eta());
+      if(runningEra_ == 1 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP_2017_ && jet->pt() >= 25.) h2_BTaggingEff_Num_b->Fill(jet->pt(), jet->eta());
+      if(runningEra_ == 2 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP_2018_ && jet->pt() >= 25.) h2_BTaggingEff_Num_b->Fill(jet->pt(), jet->eta());
+    }
+
+    if(runningEra_ == 0 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) < Bjets_WP_2016_) continue; //loose 2016
+    if(runningEra_ == 1 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) < Bjets_WP_2017_) continue; //loose 2017
+    if(runningEra_ == 2 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) < Bjets_WP_2018_) continue; //loose 2018	
+
     if(jet->pt() < 25.) continue;
     nBjets_25++;
     if(jet->pt() < 30.) continue;
@@ -969,11 +1044,11 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("photon_etaSC",&ph_etaSC);
   mytree->Branch("photon_phi",&ph_phi);
   mytree->Branch("photon_energy",&ph_energy);
-  mytree->Branch("photon_iso_ChargedHadron",&ph_iso_ChargedHadron);
-  mytree->Branch("photon_iso_NeutralHadron",&ph_iso_NeutralHadron);
-  mytree->Branch("photon_iso_Photon",&ph_iso_Photon);
-  //mytree->Branch("photon_iso_Track",&ph_iso_Track);
-  mytree->Branch("photon_iso_eArho",&ph_iso_eArho);
+  // mytree->Branch("photon_iso_ChargedHadron",&ph_iso_ChargedHadron);
+  // mytree->Branch("photon_iso_NeutralHadron",&ph_iso_NeutralHadron);
+  // mytree->Branch("photon_iso_Photon",&ph_iso_Photon);
+  // mytree->Branch("photon_iso_Track",&ph_iso_Track);
+  // mytree->Branch("photon_iso_eArho",&ph_iso_eArho);
 
   mytree->Branch("Wmass",&_Wmass);
 

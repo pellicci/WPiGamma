@@ -17,18 +17,18 @@ if args.isMuon_option == "electron":
 #---------------------------------#
 
 if isMuon:
-    Nsig_passed = 1.26 # Number of signal and background events from the sum of the weights (before applying BDT cuts)
-    Nbkg_passed = 86898.70
+    Nsig_passed = 1.39 + 1.55 + 2.32# Number of signal and background events from the sum of the weights (before applying BDT cuts)
+    Nbkg_passed = 63466.67 + 79368.25 + 125410.99
 else:
-    Nsig_passed = 0.83
-    Nbkg_passed = 44931.54
+    Nsig_passed = 0.91 + 1.05 + 1.47
+    Nbkg_passed = 38031.97 + 42042.19 + 81374.82
 
 if isMuon:
-    BDT_file = ROOT.TFile("outputs/Nominal_training_mu.root")
-    #BDT_file = ROOT.TFile("outputs/Nominal_training_mu_Wmass.root")
+    #BDT_file = ROOT.TFile("outputs/Nominal_training_mu.root")
+    BDT_file = ROOT.TFile("outputs/Nominal_training_mu_Wmass.root")
 else:
-    BDT_file = ROOT.TFile("outputs/Nominal_training_ele.root")
-    #BDT_file = ROOT.TFile("outputs/Nominal_training_ele_Wmass.root")
+    #BDT_file = ROOT.TFile("outputs/Nominal_training_ele.root")
+    BDT_file = ROOT.TFile("outputs/Nominal_training_ele_Wmass.root")
 
 h_BDT_effB_effS = BDT_file.Get("default/Method_BDT/BDT/MVA_BDT_effBvsS")
 
@@ -67,7 +67,7 @@ sign = ROOT.TGraph(70,sig_eff_array,signif_array)
 sign.SetTitle("")
 sign.GetXaxis().SetTitle("Signal efficiency")
 sign.GetYaxis().SetTitle("Significance")
-sign.SetMaximum(0.10)
+sign.SetMaximum(0.20)
 sign.SetMarkerStyle(8)
 sign.SetMarkerColor(4)
 sign.Draw("AP")
@@ -90,7 +90,7 @@ for entry in xrange(h_BDT_effS.GetNbinsX()):
     signif_maximizing_eff = float(format(signif_maximizing_eff, '.3f'))
     #print "effS: ", effS#, "signif_max_eff: ", signif_maximizing_eff
     #if effS == signif_maximizing_eff:
-    if effS == 0.685:
+    if effS == 0.645:
         BDT_output =  h_BDT_effS.GetBinCenter(entry)
         _effS = effS
 

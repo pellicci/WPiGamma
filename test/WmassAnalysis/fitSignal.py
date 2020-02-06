@@ -1,14 +1,23 @@
 #This code only fits the signal lineshape from MC and saves it into a RooWorkspace in a ROOT file
 
 import ROOT
+import argparse
 
 ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
+
+#---------------------------------#
+p = argparse.ArgumentParser(description='Select whether to fit data or MC')
+p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <<2>> for 2016+2017, <<3>> for 2016+2017+2018')
+args = p.parse_args()
+
+runningEra = args.runningEra_option
+#---------------------------------#
 
 #Define the observable
 Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV")
 
 #Retrive the sample
-fInput = ROOT.TFile("Tree_input_massfit_MC.root")
+fInput = ROOT.TFile("Tree_input_massfit_MC_" + runningEra + ".root")
 fInput.cd()
 
 mytree = fInput.Get("minitree")
@@ -80,7 +89,7 @@ totSignal.fitTo(data_Signal)
 massplot = Wmass.frame()
 massplot.SetTitle(" ")
 massplot.SetTitleOffset(1.5,"y")
-data_Signal.plotOn(massplot)#,ROOT.RooFit.Rescale(8641./12150.)) #RESCALE to the number of 2017 events to check if the two signals are compatible
+data_Signal.plotOn(massplot)#,ROOT.RooFit.MarkerColor(ROOT.kRed),ROOT.RooFit.Rescale(9740./9652.)) #RESCALE to the number of 2017 events to check if the two signals are compatible
 totSignal.plotOn(massplot)
 
 #totSignal.fitTo(data_Signal_2017)#FIXME
@@ -100,8 +109,7 @@ canvas.SaveAs("plots/SignalFit.pdf")
 workspace = ROOT.RooWorkspace("myworkspace")
 getattr(workspace,'import')(totSignal)
 
-
-fOutput = ROOT.TFile("Signal_model.root","RECREATE")
+fOutput = ROOT.TFile("Signal_model_" + runningEra + ".root","RECREATE")
 fOutput.cd()
 workspace.Write()
 massplot.Write("massplot")

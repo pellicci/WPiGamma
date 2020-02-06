@@ -20,9 +20,9 @@ year = args.year_option
 #---------------------------------#
 
 if isData:
-    dir_input = "crab_projects/samples_data_" + year + "/"
+    dir_input = "crab_projects/samples_data_" + year + "_bTagEfficiency/"
 else:
-    dir_input = "crab_projects/samples_MC_" + year + "/"
+    dir_input = "crab_projects/samples_MC_" + year + "_bTagEfficiency/"
 
 list_dirs = os.listdir(dir_input)
 

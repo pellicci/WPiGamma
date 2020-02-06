@@ -20,6 +20,11 @@ el_ID_scale_file_2016  = ROOT.TFile(el_ID_scale_name_2016)
 el_ID_scale_histo_2016 = ROOT.TH2F()
 el_ID_scale_histo_2016 = el_ID_scale_file_2016.Get("EGamma_SF2D")
 
+el_reco_scale_name_2016  = "scale_factors/EGM2D_BtoH_GT20GeV_RecoSF_Legacy2016.root"
+el_reco_scale_file_2016  = ROOT.TFile(el_reco_scale_name_2016)
+el_reco_scale_histo_2016 = ROOT.TH2F()
+el_reco_scale_histo_2016 = el_reco_scale_file_2016.Get("EGamma_SF2D")
+
 ph_ID_scale_name_2016  = "scale_factors/Fall17V2_2016_MVAwp90_photons.root"
 ph_ID_scale_file_2016  = ROOT.TFile(ph_ID_scale_name_2016)
 ph_ID_scale_histo_2016 = ROOT.TH2F()
@@ -213,8 +218,8 @@ class Simplified_Workflow_Handler:
         #reader.AddVariable("deltaphi_lep_gamma",deltaphi_lep_gamma_array)
 
         if isBDT_with_Wmass:
-            reader.BookMVA("BDT_mu","MVA/default/weights/" + year + "/TMVAClassification_BDT.weights_mu_Wmass.xml")# First argument is arbitrary. To be chosen in order to distinguish among methods
-            reader.BookMVA("BDT_ele","MVA/default/weights/" + year + "/TMVAClassification_BDT.weights_ele_Wmass.xml")
+            reader.BookMVA("BDT_mu","MVA/default/weights/TMVAClassification_BDT.weights_mu_Wmass.xml")# First argument is arbitrary. To be chosen in order to distinguish among methods
+            reader.BookMVA("BDT_ele","MVA/default/weights/TMVAClassification_BDT.weights_ele_Wmass.xml")
 
         if isBDT and not isBDT_with_Wmass:
             reader.BookMVA("BDT_mu","MVA/default/weights/TMVAClassification_BDT.weights_mu.xml")
@@ -324,7 +329,7 @@ class Simplified_Workflow_Handler:
     def post_preselection_cuts(self, lep_eta, lep_pT, isMuon, LepPiOppositeCharge, deltaphi_lep_gamma, isTriggerMatched, runningEra):
 
         if runningEra == 0:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 28.) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge or not isTriggerMatched:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 30.) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge or not isTriggerMatched:
                 return True
 
         if runningEra == 1:
@@ -332,7 +337,7 @@ class Simplified_Workflow_Handler:
                 return True
 
         if runningEra == 2:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 28.) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge or not isTriggerMatched:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge or not isTriggerMatched:
                 return True
 
         return False
@@ -347,6 +352,10 @@ class Simplified_Workflow_Handler:
             if local_lep_pt > 150.: # This is because corrections are up to 150 GeV
                 local_lep_pt = 150.
 
+            local_lep_pt_4reco = lep_pt
+            if local_lep_pt_4reco > 499.:
+                local_lep_pt_4reco = 499.
+
             local_lep_eta = lep_eta
             if local_lep_eta >= 2.5:
                 local_lep_eta = 2.49
@@ -356,9 +365,12 @@ class Simplified_Workflow_Handler:
 
             scale_factor_ID   = el_ID_scale_histo_2016.GetBinContent( el_ID_scale_histo_2016.GetXaxis().FindBin(local_lep_eta), el_ID_scale_histo_2016.GetYaxis().FindBin(local_lep_pt) )
             el_ID_err         = el_ID_scale_histo_2016.GetBinError( el_ID_scale_histo_2016.GetXaxis().FindBin(local_lep_eta), el_ID_scale_histo_2016.GetYaxis().FindBin(local_lep_pt) )
+
+            scale_factor_reco   = el_reco_scale_histo_2016.GetBinContent( el_reco_scale_histo_2016.GetXaxis().FindBin(local_lep_eta), el_reco_scale_histo_2016.GetYaxis().FindBin(local_lep_pt_4reco) )
+            el_reco_err         = el_reco_scale_histo_2016.GetBinError( el_reco_scale_histo_2016.GetXaxis().FindBin(local_lep_eta), el_reco_scale_histo_2016.GetYaxis().FindBin(local_lep_pt_4reco) )
             
-            scale_factor = scale_factor_ID
-            tot_err      = el_ID_err
+            scale_factor = scale_factor_ID * scale_factor_reco
+            tot_err      = math.sqrt( scale_factor_ID * scale_factor_ID * el_reco_err * el_reco_err + scale_factor_reco * scale_factor_reco * el_ID_err * el_ID_err)
 
 
         if runningEra == 1: # Scale factors for 2017

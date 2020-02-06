@@ -41,6 +41,9 @@ private:
 
   TH1F* h_pileup;
 
+  TH2D* h2_BTaggingEff_Num_b;
+  TH2D* h2_BTaggingEff_Denom_b;
+
   //Counters
   int nPV;
 
@@ -70,6 +73,7 @@ private:
   float lepton_pT_tree;
   float lepton_eta_tree;
   float lepton_etaSC_tree;
+  float lepton_phiSC_tree;
   float lepton_phi_tree;
   float lepton_dxy_tree;
   float lepton_dz_tree;
@@ -90,6 +94,7 @@ private:
   float el_pT;
   float el_eta;
   float el_etaSC;
+  float el_phiSC;
   float el_phi;
   int   el_ID;
   float el_dxy;
