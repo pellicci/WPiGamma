@@ -62,7 +62,7 @@ process.PREMIXRAWoutput = cms.OutputModule("PoolOutputModule",
 
 # Additional output definition
 
-from WPiGamma_MixingModule import MixingModule_list #List of files to open to get the correct mixing module (pile up)
+from WPiGamma_MixingModule_2016 import MixingModule_list #List of files to open to get the correct mixing module (pile up)
 
 # Other statements
 process.mix.digitizers = cms.PSet(process.theDigitizersMixPreMix)

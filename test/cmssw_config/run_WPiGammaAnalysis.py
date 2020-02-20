@@ -16,7 +16,7 @@ process.maxEvents = cms.untracked.PSet(
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing()
 options.register('runningOnData',
-                 True, #default value
+                 False, #default value
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "PU config flag")
@@ -26,7 +26,7 @@ options.register('runningOnMuons',
                  VarParsing.VarParsing.varType.bool,
                  "muon trigger config flag")
 options.register('runningEra',
-                 2, #default value. 0 is 2016, 1 is 2017, 2 is 2018
+                 1, #default value. 0 is 2016, 1 is 2017, 2 is 2018
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "2016-2017-2018 config flag")
@@ -113,8 +113,9 @@ else:
         process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mc2017_realistic_v17') 
         print "MC Sample (2017) will be taken as input for check up of the code working "
         inputFiles = {#"root://cms-xrd-global.cern.ch//store/user/rselvati/WMinusPiGamma_GENSIM_80XV1/WMinusPiGamma_MINIAODSIM_94XV3/190129_151107/0000/WPiGamma_pythia8_MINIAOD_9.root"}
-            "root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/60000/FCC2AFA9-4BBB-E811-B35F-0CC47AFB7D48.root"}
-            #"/store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/20000/10928512-C04D-E811-AD45-F01FAFE5E4F8.root"}
+            #"root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/60000/FCC2AFA9-4BBB-E811-B35F-0CC47AFB7D48.root"}
+            "root://cms-xrd-global.cern.ch//store/user/rselvati/WPlusPiGamma_GENSIM_94X_2017_v7/WPlusPiGamma_MINIAODSIM_94X_2017_v7/190826_151434/0002/WPiGamma_pythia8_MINIAOD_2017_2435.root"}
+
         
     if options.runningEra == 2: #test 2018 MC
         process.GlobalTag = GlobalTag(process.GlobalTag, '102X_upgrade2018_realistic_v15') 
@@ -160,6 +161,26 @@ if options.runningEra == 1:
                                            src = cms.InputTag("slimmedJets"),
                                            filter = cms.bool(True)
    )
+
+   from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
+   
+   if options.runningOnData:
+      runMetCorAndUncFromMiniAOD (
+         process,
+         isData = True, # True for Data
+         fixEE2017 = True,
+         fixEE2017Params = {'userawPt': True, 'ptThreshold':50.0, 'minEtaThreshold':2.65, 'maxEtaThreshold': 3.139} ,
+         postfix = "ModifiedMET"
+      )
+   else:
+      runMetCorAndUncFromMiniAOD (
+         process,
+         isData = False, # False for MC
+         fixEE2017 = True,
+         fixEE2017Params = {'userawPt': True, 'ptThreshold':50.0, 'minEtaThreshold':2.65, 'maxEtaThreshold': 3.139} ,
+         postfix = "ModifiedMET"
+      )
+
 if options.runningEra == 2:
    process.goodPatJetsPFlow = cms.EDFilter("PFJetIDSelectionFunctorFilter",
                                            filterParams = pfJetIDSelector.clone(
@@ -261,14 +282,25 @@ process.trigger_filter_MC.throw = cms.bool( False )
 #                                             #
 ###############################################
 
-if options.runningOnData and options.runningOnMuons: # Data, Muons
+if options.runningOnData and options.runningOnMuons and not options.runningEra == 1: # Data, Muons
    process.seq = cms.Path(process.trigger_filter_data_mu  * process.egammaPostRecoSeq * process.goodPatJetsPFlow * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis) 
 
-if options.runningOnData and not options.runningOnMuons: # Data, Electrons
+if options.runningOnData and not options.runningOnMuons and not options.runningEra == 1: # Data, Electrons
    process.seq = cms.Path(process.trigger_filter_data_ele * (~process.trigger_filter_data_mu) * process.egammaPostRecoSeq * process.goodPatJetsPFlow* process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis) #Excluding events when both muon and electron triggers were lit
 
-if not options.runningOnData and not options.runningEra == 2: # MC
+if options.runningOnData and options.runningOnMuons and options.runningEra == 1: # Data, Muons. Add EE MET corrections for 2017
+   process.seq = cms.Path(process.trigger_filter_data_mu  * process.egammaPostRecoSeq * process.goodPatJetsPFlow * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.fullPatMetSequenceModifiedMET * process.WPiGammaAnalysis) 
+
+if options.runningOnData and not options.runningOnMuons and options.runningEra == 1: # Data, Electrons. Add EE MET corrections for 2017
+   process.seq = cms.Path(process.trigger_filter_data_ele * (~process.trigger_filter_data_mu) * process.egammaPostRecoSeq * process.goodPatJetsPFlow* process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.fullPatMetSequenceModifiedMET * process.WPiGammaAnalysis) #Excluding events when both muon and electron triggers were lit
+
+
+
+if not options.runningOnData and options.runningEra == 0: # MC. Add prefiring weight for 2016
    process.seq = cms.Path(process.trigger_filter_MC * process.egammaPostRecoSeq * process.goodPatJetsPFlow * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.prefiringweight * process.WPiGammaAnalysis)
+
+if not options.runningOnData and options.runningEra == 1: # MC. Add prefiring weight and EE MET corrections for 2017
+   process.seq = cms.Path(process.trigger_filter_MC * process.egammaPostRecoSeq * process.goodPatJetsPFlow * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.prefiringweight * process.fullPatMetSequenceModifiedMET * process.WPiGammaAnalysis)
 
 if not options.runningOnData and options.runningEra == 2: # MC
    process.seq = cms.Path(process.trigger_filter_MC * process.egammaPostRecoSeq * process.goodPatJetsPFlow * process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC * process.WPiGammaAnalysis)

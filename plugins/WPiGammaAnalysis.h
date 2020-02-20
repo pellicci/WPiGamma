@@ -54,6 +54,7 @@ private:
   int nPhotons;
   int nBjets;
   int nBjets_25;
+  int nBjets_scaled;
 
   int _Nevents_processed;
   int _Nevents_muVeto;
@@ -133,6 +134,7 @@ private:
   float _Wmass;
 
   float met_pT;
+  float met_pT_scaled;
   float metpuppi_pT;
   
   bool is_muon;
