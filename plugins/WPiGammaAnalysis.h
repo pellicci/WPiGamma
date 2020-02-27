@@ -32,6 +32,7 @@ private:
   edm::Service<TFileService> fs;
 
   void create_trees();
+  float read_bTagEfficiency(int, float, float);
 
   // ----------member data ---------------------------
   TH1F* h_Events;
@@ -52,7 +53,7 @@ private:
   int nElectronsLoose;
   int nPions;
   int nPhotons;
-  int nBjets;
+  int nBjets_30;
   int nBjets_25;
   int nBjets_scaled;
 
@@ -64,6 +65,20 @@ private:
   int _Nevents_isPion;
   int _Nevents_isPhotons;
   int _Nevents_isWmass;
+
+  bool is_one_bJet_found;
+  bool bJet_outside_eta_bounds;
+  char const *bTag_SF_name;
+  std::shared_ptr<TFile> efficiencyFile_;
+  std::shared_ptr<TH2> h_bTagEfficiency_;
+  float bTagEfficiency_;
+  double jetSF;
+  float jet_pT_temp;
+  float prod_1_minus_eff;
+  float prod_1_minus_eff_SF;
+  float prod_eff;
+  float prod_eff_SF;
+  float bTag_Weight;
 
   //TTree and TTree variables
   TTree *mytree;

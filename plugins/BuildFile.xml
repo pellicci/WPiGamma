@@ -6,5 +6,7 @@
 <use name="PhysicsTools/UtilAlgos"/>
 <use name="PhysicsTools/PatAlgos"/>
 <use name="RecoEgamma/EgammaTools" />
-<use name="RecoEgamma/ElectronIdentification" />
+<use name="RecoEgamma/ElectronIdentification"/>
+<use   name="CondFormats/BTauObjects"/>
+<use   name="CondTools/BTau"/>
 <flags EDM_PLUGIN="1"/>

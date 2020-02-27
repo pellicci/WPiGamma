@@ -10,7 +10,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 from Configuration.AlCa.GlobalTag import GlobalTag
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(2000)
+    input = cms.untracked.int32(-1)
 )
 
 import FWCore.ParameterSet.VarParsing as VarParsing
@@ -106,15 +106,17 @@ else:
     if options.runningEra == 0: #test 2016 MC
         process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mcRun2_asymptotic_v3')
         print "MC Sample (2016) will be taken as input for check up of the code working "
-        inputFiles = {"root://cms-xrd-global.cern.ch//store/user/rselvati/WMinusPiGamma_GENSIM_80XV1/WMinusPiGamma_MINIAODSIM_94XV3/190129_151107/0000/WPiGamma_pythia8_MINIAOD_9.root","root://cms-xrd-global.cern.ch//store/user/rselvati/WPlusPiGamma_GENSIM_80XV1/WPlusPiGamma_MINIAODSIM_94XV3/190129_150618/0000/WPiGamma_pythia8_MINIAOD_80.root"}
-        #"/store/mc/RunIISummer16MiniAODv2/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/70000/CE408A70-56C1-E611-8187-FA163EDC366E.root"}
+        inputFiles = {# "root://cms-xrd-global.cern.ch//store/user/rselvati/WMinusPiGamma_GENSIM_80XV1/WMinusPiGamma_MINIAODSIM_94XV3/190129_151107/0000/WPiGamma_pythia8_MINIAOD_9.root","root://cms-xrd-global.cern.ch//store/user/rselvati/WPlusPiGamma_GENSIM_80XV1/WPlusPiGamma_MINIAODSIM_94XV3/190129_150618/0000/WPiGamma_pythia8_MINIAOD_80.root"}
+        "/store/mc/RunIISummer16MiniAODv2/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/70000/CE408A70-56C1-E611-8187-FA163EDC366E.root"}
 
     if options.runningEra == 1: #test 2017 MC
         process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mc2017_realistic_v17') 
         print "MC Sample (2017) will be taken as input for check up of the code working "
-        inputFiles = {#"root://cms-xrd-global.cern.ch//store/user/rselvati/WMinusPiGamma_GENSIM_80XV1/WMinusPiGamma_MINIAODSIM_94XV3/190129_151107/0000/WPiGamma_pythia8_MINIAOD_9.root"}
-            #"root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/60000/FCC2AFA9-4BBB-E811-B35F-0CC47AFB7D48.root"}
-            "root://cms-xrd-global.cern.ch//store/user/rselvati/WPlusPiGamma_GENSIM_94X_2017_v7/WPlusPiGamma_MINIAODSIM_94X_2017_v7/190826_151434/0002/WPiGamma_pythia8_MINIAOD_2017_2435.root"}
+        inputFiles = {
+            "root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/60000/FCC2AFA9-4BBB-E811-B35F-0CC47AFB7D48.root",
+           "root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_2J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/110000/04874802-E793-E911-9FCA-506B4BB134CE.root",
+           "root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_2J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/110000/0ED74680-1693-E911-B288-0242AC130002.root"}
+            #"root://cms-xrd-global.cern.ch//store/user/rselvati/WPlusPiGamma_GENSIM_94X_2017_v7/WPlusPiGamma_MINIAODSIM_94X_2017_v7/190826_151434/0002/WPiGamma_pythia8_MINIAOD_2017_2435.root"}
 
         
     if options.runningEra == 2: #test 2018 MC

@@ -31,14 +31,14 @@ year = args.year_option
 #---------------------------------#
 
 if not isData:
-    dir_input = "crab_projects/samples_MC_" + year + "_bTagEfficiency/"
+    dir_input = "crab_projects/samples_MC_" + year + "/"
     # dir_output_bkg = "rootfiles/latest_production/MC/backgrounds/"
     # dir_output_sig = "rootfiles/latest_production/MC/signals/" 
     dir_output_bkg = "rootfiles/bTagEfficiency/MC/backgrounds/"
     dir_output_sig = "rootfiles/bTagEfficiency/MC/signals/" 
 
 if isData:
-    dir_input = "crab_projects/samples_data_" + year + "_bTagEfficiency/"
+    dir_input = "crab_projects/samples_data_" + year + "/"
     dir_output_data = "rootfiles/latest_production/dataprocess/"
 
 
