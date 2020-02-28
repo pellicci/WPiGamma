@@ -319,25 +319,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
 
 
-  if(runningEra_ == 0){
-    bTag_SF_name = "DeepCSV_2016LegacySF_WP_V1.csv";
-  }
-  else if(runningEra_ == 1){
-    bTag_SF_name = "DeepCSV_94XSF_WP_V4_B_F.csv";
-  }
-  else if(runningEra_ == 2){
-    bTag_SF_name = "DeepCSV_102XSF_WP_V1.csv";
-  }
-  
-  BTagCalibration calib("DeepCSV", bTag_SF_name);
-  BTagCalibrationReader reader(BTagEntry::OP_LOOSE,  // operating point
-			       "central",            // central sys type
-			       {"up", "down"});      // other sys types
-  
-  reader.load(calib,              // calibration instance
-	      BTagEntry::FLAV_B,  // btag flavour
-	      "comb");            // measurement type
-
   //*************************************************************//
   //                                                             //
   //------------------ Variable initialization ------------------//
@@ -996,6 +977,34 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //*************************************************************//
   //                                                             //
+  //-------------------- b-tagging SF reader --------------------//
+  //                                                             //
+  //*************************************************************//
+
+
+  if(runningEra_ == 0){
+    bTag_SF_name = "DeepCSV_2016LegacySF_WP_V1.csv";
+  }
+  else if(runningEra_ == 1){
+    bTag_SF_name = "DeepCSV_94XSF_WP_V4_B_F.csv";
+  }
+  else if(runningEra_ == 2){
+    bTag_SF_name = "DeepCSV_102XSF_WP_V1.csv";
+  }
+  
+  BTagCalibration calib("DeepCSV", bTag_SF_name);
+  BTagCalibrationReader reader(BTagEntry::OP_LOOSE,  // operating point
+			       "central",            // central sys type
+			       {"up", "down"});      // other sys types
+  
+  reader.load(calib,              // calibration instance
+	      BTagEntry::FLAV_B,  // btag flavour
+	      "comb");            // measurement type
+
+
+
+  //*************************************************************//
+  //                                                             //
   //--------------------------- b-jets --------------------------//
   //                                                             //
   //*************************************************************//
@@ -1030,7 +1039,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     }
     //-----------------------------------------------------------------//
 
-    if(!runningOnData_){//Accesso b-tagging SFs
+    if(!runningOnData_){//Access b-tagging SFs
       jetSF = reader.eval_auto_bounds("central", 
 				      BTagEntry::FLAV_B, 
 				      fabs(jet->eta()), // absolute value of eta
@@ -1047,12 +1056,11 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	prod_1_minus_eff    *= (1 - read_bTagEfficiency(runningEra_,jet->pt(),jet->eta())); //Non b-tagged object*(1-efficiency)
 	prod_1_minus_eff_SF *= (1 - jetSF*read_bTagEfficiency(runningEra_,jet->pt(),jet->eta())); //Non b-tagged object*(1-SF*efficiency)
 	
+	//SFs are available in alimited eta range. Do the same for efficiencies: outside the eta range, efficiency = 1
 	if((runningEra_ == 0 && fabs(jet->eta()) > 2.4) || (runningEra_ == 1 && fabs(jet->eta()) > 2.5) || (runningEra_ == 2 && fabs(jet->eta()) > 2.5)){
 	  prod_1_minus_eff    = 1.;
 	  prod_1_minus_eff_SF = 1.;
 	}
-
-	//std::cout << "eta: " << jet->eta() << "  pT: " << jet->pt() << "  efficiency: " << read_bTagEfficiency(runningEra_,jet->pt(),jet->eta()) << std::endl;
       }
     }
 
@@ -1071,16 +1079,16 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 	bJet_outside_eta_bounds = true;
       }
       
-      if(!runningOnData_){
-	prod_eff    *= read_bTagEfficiency(runningEra_,jet->pt(),jet->eta()); //Non b-tagged object*(1-efficiency)
-	prod_eff_SF *= jetSF*read_bTagEfficiency(runningEra_,jet->pt(),jet->eta()); //Non b-tagged object*(1-SF*efficiency)
+      if(!runningOnData_){//Calculate efficiencies for b-tagged objects
+	prod_eff    *= read_bTagEfficiency(runningEra_,jet->pt(),jet->eta()); //Non b-tagged object*(efficiency)
+	prod_eff_SF *= jetSF*read_bTagEfficiency(runningEra_,jet->pt(),jet->eta()); //Non b-tagged object*(SF*efficiency)
 
+
+	//SFs are available in alimited eta range. Do the same for efficiencies: outside the eta range, efficiency = 1
 	if((runningEra_ == 0 && fabs(jet->eta()) > 2.4) || (runningEra_ == 1 && fabs(jet->eta()) > 2.5) || (runningEra_ == 2 && fabs(jet->eta()) > 2.5)){
 	  prod_eff    = 1.;
 	  prod_eff_SF = 1.;
 	}
-
-	//std::cout << "eta_PASS: " << jet->eta() << "  pT_PASS: " << jet->pt() << "  efficiency_PASS: " << read_bTagEfficiency(runningEra_,jet->pt(),jet->eta()) << std::endl;
       }
       
 
@@ -1107,7 +1115,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   if(!is_one_bJet_found) return;
 
-  if(!runningOnData_){
+  if(!runningOnData_){//Calculate event weight based on b-tagging efficiency and SFs
     bTag_Weight = (prod_eff_SF*prod_1_minus_eff_SF)/(prod_eff*prod_1_minus_eff);
   }
 
