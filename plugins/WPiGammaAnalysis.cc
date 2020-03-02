@@ -97,39 +97,18 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   h_pileup   = fs->make<TH1F>("pileup", "pileup", 75,0,75);
 
   //Btag stuff
-  std::shared_ptr<TFile> Btag_efficiencyFile_;
   if(runningEra_ == 0){
-    bTag_SF_name = "DeepCSV_2016LegacySF_WP_V1.csv";
     Bjets_WP = iConfig.getParameter<double>("Bjets_WP_2016");
-    Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2016.root");
   }
   else if(runningEra_ == 1){
-    bTag_SF_name = "DeepCSV_94XSF_WP_V4_B_F.csv";
     Bjets_WP = iConfig.getParameter<double>("Bjets_WP_2017");
-    Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2017.root");
   }
   else{
-    bTag_SF_name = "DeepCSV_102XSF_WP_V1.csv";
     Bjets_WP = iConfig.getParameter<double>("Bjets_WP_2018");
-    Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2018.root");
   }
-  h_bTagEfficiency_ = std::shared_ptr<TH2>((static_cast<TH2*>(Btag_efficiencyFile_->Get("bTagEfficiency")->Clone()))); 
+
   h2_BTaggingEff_Num_b   = fs->make<TH2D>("h2_BTaggingEff_Num_b", ";p_{T} [GeV];#eta", 75, 25., 1000., 50, -2.5, 2.5);
   h2_BTaggingEff_Denom_b = fs->make<TH2D>("h2_BTaggingEff_Denom_b", ";p_{T} [GeV];#eta", 75, 25., 1000., 50, -2.5, 2.5);
-
-  //*************************************************************//
-  //                                                             //
-  //-------------------- b-tagging SF reader --------------------//
-  //                                                             //
-  //*************************************************************//
-  BTagCalibration calib("DeepCSV", bTag_SF_name);
-  reader = BTagCalibrationReader(BTagEntry::OP_LOOSE,  // operating point
-                                  "central",            // central sys type
-                                  {"up", "down"});      // other sys types
-  
-  reader.load(calib,              // calibration instance
-              BTagEntry::FLAV_B,  // btag flavour
-              "comb");            // measurement type
 
   create_trees();
 }
@@ -1012,7 +991,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
       //std::cout << "jetSF: " << jetSF << std::endl;
 
-      float btag_efficiency = read_bTagEfficiency(jet->pt(),jet->eta());
+      float btag_efficiency = h_bTagEfficiency_->GetBinContent(h_bTagEfficiency_->GetXaxis()->FindBin(jet->pt()),h_bTagEfficiency_->GetYaxis()->FindBin(jet->eta()));
       //SFs are available in alimited eta range. Do the same for efficiencies: outside the eta range, efficiency = 1
       if(fabs(jet->eta()) < 2.4  || (fabs(jet->eta()) < 2.5 && runningEra_ > 0)){
 
@@ -1170,26 +1149,46 @@ void WPiGammaAnalysis::create_trees()
 
 }
 
-float WPiGammaAnalysis::read_bTagEfficiency(float pT, float eta)
-{
-  bTagEfficiency_ = h_bTagEfficiency_->GetBinContent(h_bTagEfficiency_->GetXaxis()->FindBin(pT),h_bTagEfficiency_->GetYaxis()->FindBin(eta));
-  return bTagEfficiency_;
-}
-
 void WPiGammaAnalysis::beginJob()
 {
-  //Flag for PileUp reweighting
-  if (!runningOnData_ && runningEra_ == 0){ // PU reweighting
-   Lumiweights_ = edm::LumiReWeighting("MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root", "MyDataPileupHistogram_2016.root", "pileup", "pileup");
-  }
-  if (!runningOnData_ && runningEra_ == 1){ // PU reweighting
-   Lumiweights_ = edm::LumiReWeighting("MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root", "MyDataPileupHistogram_2017.root", "pileup", "pileup");
-  }
-  if (!runningOnData_ && runningEra_ == 2){ // PU reweighting
-   Lumiweights_ = edm::LumiReWeighting("MCpileUp_2018_25ns_JuneProjectionFull18_PoissonOOTPU.root", "MyDataPileupHistogram_2018.root", "pileup", "pileup");
-  }
-}
 
+  if(runningOnData_) return;
+
+  std::shared_ptr<TFile> Btag_efficiencyFile_;
+  char const *bTag_SF_name;
+  if(runningEra_ == 0){ // PU reweighting
+   Lumiweights_ = edm::LumiReWeighting("MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root", "MyDataPileupHistogram_2016.root", "pileup", "pileup");
+   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2016.root");
+   bTag_SF_name = "DeepCSV_2016LegacySF_WP_V1.csv";
+  }
+  if (runningEra_ == 1){ // PU reweighting
+   Lumiweights_ = edm::LumiReWeighting("MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root", "MyDataPileupHistogram_2017.root", "pileup", "pileup");
+   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2017.root");
+   bTag_SF_name = "DeepCSV_94XSF_WP_V4_B_F.csv";
+  }
+  if (runningEra_ == 2){ // PU reweighting
+   Lumiweights_ = edm::LumiReWeighting("MCpileUp_2018_25ns_JuneProjectionFull18_PoissonOOTPU.root", "MyDataPileupHistogram_2018.root", "pileup", "pileup");
+   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2018.root");
+   bTag_SF_name = "DeepCSV_102XSF_WP_V1.csv";
+  }
+
+  h_bTagEfficiency_ = std::shared_ptr<TH2>((static_cast<TH2*>(Btag_efficiencyFile_->Get("bTagEfficiency")->Clone()))); 
+
+  //*************************************************************//
+  //                                                             //
+  //-------------------- b-tagging SF reader --------------------//
+  //                                                             //
+  //*************************************************************//
+  BTagCalibration calib("DeepCSV", bTag_SF_name);
+  reader = BTagCalibrationReader(BTagEntry::OP_LOOSE,  // operating point
+                                  "central",            // central sys type
+                                  {"up", "down"});      // other sys types
+  
+  reader.load(calib,              // calibration instance
+              BTagEntry::FLAV_B,  // btag flavour
+              "comb");            // measurement type
+
+}
 
 //*************************************************************//
 //                                                             //
