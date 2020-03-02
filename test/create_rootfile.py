@@ -378,7 +378,6 @@ for full_sample_name in samplename_list:
             entry_index += 1
 
         isMuon = mytree.is_muon
-        LepPiOppositeCharge = mytree.LepPiOppositeCharge
 
         isTriggerMatched = mytree.isTriggerMatched
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
@@ -504,7 +503,7 @@ for full_sample_name in samplename_list:
         #                                                                          #
         ############################################################################
 
-        if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge,deltaphi_lep_gamma,isTriggerMatched,sample_era):
+        if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,deltaphi_lep_gamma,isTriggerMatched,sample_era):
             continue
 
 

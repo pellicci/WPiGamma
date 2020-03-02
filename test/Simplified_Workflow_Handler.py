@@ -326,14 +326,14 @@ class Simplified_Workflow_Handler:
 
     ###############################################################################################################################################
 
-    def post_preselection_cuts(self, lep_eta, lep_pT, isMuon, LepPiOppositeCharge, deltaphi_lep_gamma, isTriggerMatched, runningEra):
+    def post_preselection_cuts(self, lep_eta, lep_pT, isMuon, deltaphi_lep_gamma, isTriggerMatched, runningEra):
 
         if runningEra == 0:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 30.) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge or not isTriggerMatched:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 30.) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or not isTriggerMatched:
                 return True
 
         if runningEra == 1:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 28.) or not LepPiOppositeCharge or not isTriggerMatched:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 28.) or not isTriggerMatched:
                 return True
 
         if runningEra == 2:

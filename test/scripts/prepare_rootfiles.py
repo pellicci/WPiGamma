@@ -89,13 +89,22 @@ for dirname in list_dirs:
             os.system(crab_command)
             crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-" + str(n_jobs) # Because it is impossible to concatenate str and int objects
             os.system(crab_command_1)
-        else:
+        elif (n_jobs > 1000 and n_jobs <= 1500):
             crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
             os.system(crab_command)
             crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-1000"
             os.system(crab_command_1)
-            crab_command_2 = "crab getoutput -d " + dir_input + dirname + " --jobids 1001-" + str(n_jobs) # Because it is impossible to concatenate str and int objects
+            crab_command_2 = "crab getoutput -d " + dir_input + dirname + " --jobids 1001" + str(n_jobs) 
             os.system(crab_command_2)
+        elif (n_jobs > 1500):
+            crab_command = "crab getoutput -d " + dir_input + dirname + " --jobids 1-500"
+            os.system(crab_command)
+            crab_command_1 = "crab getoutput -d " + dir_input + dirname + " --jobids 501-1000"
+            os.system(crab_command_1)
+            crab_command_2 = "crab getoutput -d " + dir_input + dirname + " --jobids 1001-1500" 
+            os.system(crab_command_2)
+            crab_command_3 = "crab getoutput -d " + dir_input + dirname + " --jobids 1501-" + str(n_jobs) # Because it is impossible to concatenate str and int objects
+            os.system(crab_command_3)
 
     if doHadd or doBoth:
 

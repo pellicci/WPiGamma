@@ -809,8 +809,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     }
   }
 
-  //Do NOT continue if you didn't find a pion
-  if(!cand_pion_found) return;
+  //Do NOT continue if you didn't find a pion, or if the pion found has same sign wrt the lepton
+  if(!cand_pion_found || !are_lep_pi_opposite_charge) return;
   _Nevents_isPion++;
 
   //*************************************************************//
@@ -992,12 +992,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       //std::cout << "jetSF: " << jetSF << std::endl;
 
       float btag_efficiency = h_bTagEfficiency_->GetBinContent(h_bTagEfficiency_->GetXaxis()->FindBin(jet->pt()),h_bTagEfficiency_->GetYaxis()->FindBin(jet->eta()));
-      //SFs are available in alimited eta range. Do the same for efficiencies: outside the eta range, efficiency = 1
-      if(fabs(jet->eta()) < 2.4  || (fabs(jet->eta()) < 2.5 && runningEra_ > 0)){
+      //SFs are available in a limited eta range. Do the same for efficiencies: outside the eta range, efficiency = 1
+      if(fabs(jet->eta()) <= 2.4  || (fabs(jet->eta()) <= 2.5 && runningEra_ > 0)){
 
         if(!Bjetscore){//Calculate efficiencies for non b-tagged objects
-  	       prod_1_minus_eff    *= (1 - btag_efficiency); //Non b-tagged object*(1-efficiency)
-           prod_1_minus_eff_SF *= (1 - jetSF*btag_efficiency); //Non b-tagged object*(1-SF*efficiency)
+	  prod_1_minus_eff    *= (1 - btag_efficiency); //Non b-tagged object*(1-efficiency)
+	  prod_1_minus_eff_SF *= (1 - jetSF*btag_efficiency); //Non b-tagged object*(1-SF*efficiency)
         }
         else{//Calculate efficiencies for b-tagged objects
           prod_eff    *= btag_efficiency; //b-tagged object*(efficiency)
@@ -1076,7 +1076,7 @@ void WPiGammaAnalysis::create_trees()
     mytree->Branch("run_number",&run_number);
   }
   
-  mytree->Branch("LepPiOppositeCharge",&are_lep_pi_opposite_charge);
+  //mytree->Branch("LepPiOppositeCharge",&are_lep_pi_opposite_charge);
   mytree->Branch("lepton_pT",&lepton_pT_tree);
   mytree->Branch("lepton_eta",&lepton_eta_tree);
   mytree->Branch("lepton_etaSC",&lepton_etaSC_tree);

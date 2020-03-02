@@ -188,7 +188,6 @@ for jentry in xrange(mytree.GetEntriesFast()):
     Nevts_per_sample = Nevts_per_sample + 1
 
     isMuon = mytree.is_muon
-    LepPiOppositeCharge = mytree.LepPiOppositeCharge
 
     nPV = mytree.nPV
 
@@ -324,7 +323,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
     #                                                                          #
     ############################################################################
 
-    if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,LepPiOppositeCharge,deltaphi_lep_gamma,isTriggerMatched,runningEra):
+    if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,deltaphi_lep_gamma,isTriggerMatched,runningEra):
         continue
 
     ############################################################################

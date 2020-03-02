@@ -5,7 +5,7 @@ config = Configuration()
 config.section_('General')
 config.General.transferOutputs = True
 
-runningEra = 1 # 0 = 2016, 1 = 2017, 2 = 2018
+runningEra = 0 # 0 = 2016, 1 = 2017, 2 = 2018
 
 config.section_('JobType')
 config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
@@ -33,8 +33,8 @@ if runningEra == 2:
 
 
 config.section_('Data')
-#config.Data.splitting = 'FileBased'
-config.Data.splitting = 'Automatic'
+config.Data.splitting = 'FileBased'
+#config.Data.splitting = 'Automatic'
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = False
 
@@ -372,19 +372,19 @@ if __name__ == '__main__':
         p.start()
         p.join()
         
-        config.General.requestName = '2016_WPiGammaAnalysis_TTGJets_1'
-        #config.Data.unitsPerJob = 5
+        config.General.requestName = '2016_WPiGammaAnalysis_TTGJets_1' #Requires FileBased splitting
+        config.Data.unitsPerJob = 1
         config.Data.inputDataset = '/TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM'
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()
         
-        # config.General.requestName = '2016_WPiGammaAnalysis_TTGJets_2' #Requires FileBased splitting
-        # config.Data.unitsPerJob = 5
-        # config.Data.inputDataset = '/TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
-        # p = Process(target=submit, args=(config,))
-        # p.start()
-        # p.join()
+        config.General.requestName = '2016_WPiGammaAnalysis_TTGJets_2' #Requires FileBased splitting
+        config.Data.unitsPerJob = 1
+        config.Data.inputDataset = '/TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM'
+        p = Process(target=submit, args=(config,))
+        p.start()
+        p.join()
         
         config.General.requestName = '2016_WPiGammaAnalysis_ZGTo2LG' 
         #config.Data.unitsPerJob = 5
@@ -601,22 +601,22 @@ if __name__ == '__main__':
         p.start()
         p.join()
         
-        config.General.requestName = '2017_WPiGammaAnalysis_TTGJets_1'
-        #config.Data.unitsPerJob = 5
+        config.General.requestName = '2017_WPiGammaAnalysis_TTGJets_1' #Requires FileBased splitting
+        config.Data.unitsPerJob = 1
         config.Data.inputDataset = '/TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/MINIAODSIM'
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()
         
-        config.General.requestName = '2017_WPiGammaAnalysis_TTGJets_2'
-        #config.Data.unitsPerJob = 5
+        config.General.requestName = '2017_WPiGammaAnalysis_TTGJets_2' #Requires FileBased splitting
+        config.Data.unitsPerJob = 1
         config.Data.inputDataset = '/TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/MINIAODSIM'
         p = Process(target=submit, args=(config,))
         p.start()
         p.join()
 
-        config.General.requestName = '2017_WPiGammaAnalysis_TTGJets_3'
-        #config.Data.unitsPerJob = 5
+        config.General.requestName = '2017_WPiGammaAnalysis_TTGJets_3' #Requires FileBased splitting
+        config.Data.unitsPerJob = 1
         config.Data.inputDataset = '/TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM'
         p = Process(target=submit, args=(config,))
         p.start()
@@ -895,8 +895,8 @@ if __name__ == '__main__':
         p.start()
         p.join()
         
-        config.General.requestName = '2018_WPiGammaAnalysis_TTGJets'
-        #config.Data.unitsPerJob = 5
+        config.General.requestName = '2018_WPiGammaAnalysis_TTGJets' #Requires FileBased splitting
+        config.Data.unitsPerJob = 1
         config.Data.inputDataset = '/TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
         p = Process(target=submit, args=(config,))
         p.start()
