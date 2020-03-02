@@ -32,7 +32,7 @@ private:
   edm::Service<TFileService> fs;
 
   void create_trees();
-  float read_bTagEfficiency(int, float, float);
+  float read_bTagEfficiency(float, float);
 
   // ----------member data ---------------------------
   TH1F* h_Events;
@@ -69,8 +69,8 @@ private:
   bool is_one_bJet_found;
   bool bJet_outside_eta_bounds;
   char const *bTag_SF_name;
-  std::shared_ptr<TFile> efficiencyFile_;
   std::shared_ptr<TH2> h_bTagEfficiency_;
+  BTagCalibrationReader reader;
   float bTagEfficiency_;
   double jetSF;
   float jet_pT_temp;
@@ -215,10 +215,9 @@ private:
   edm::EDGetTokenT<std::vector<PileupSummaryInfo> > pileupSummaryToken_;
   edm::EDGetTokenT<GenEventInfoProduct> GenInfoToken_;
   edm::EDGetTokenT<edm::TriggerResults> triggerBitsToken_;
-  edm::EDGetTokenT<std::vector<pat::TriggerObjectStandAlone> > triggerObjectsTokenMC2016_;
+  edm::EDGetTokenT<std::vector<pat::TriggerObjectStandAlone> > triggerObjectsTokenMC_;
   edm::EDGetTokenT<std::vector<pat::TriggerObjectStandAlone> > triggerObjectsTokenData2016_;
-  edm::EDGetTokenT<std::vector<pat::TriggerObjectStandAlone> > triggerObjectsToken2017_;
-  edm::EDGetTokenT<std::vector<pat::TriggerObjectStandAlone> > triggerObjectsTokenMC2018_;
+  edm::EDGetTokenT<std::vector<pat::TriggerObjectStandAlone> > triggerObjectsTokenData2017_;
   edm::EDGetTokenT<std::vector<pat::TriggerObjectStandAlone> > triggerObjectsTokenData2018_;
 
   //Ele ID decisions objects
@@ -238,8 +237,6 @@ private:
   //Effective areas for isolation
   EffectiveAreas   effectiveAreas_el_;
   EffectiveAreas   effectiveAreas_ph_;
-  double Bjets_WP_2016_;
-  double Bjets_WP_2017_;
-  double Bjets_WP_2018_;
+  double Bjets_WP;
 
 };

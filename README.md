@@ -20,7 +20,7 @@
 
    rm EgammaAnalysis/ElectronTools/data -rf
 
-   git clone https://github.com:cms-data/EgammaAnalysis-ElectronTools.git EgammaAnalysis/ElectronTools/data
+   git clone https://github.com/cms-data/EgammaAnalysis-ElectronTools.git EgammaAnalysis/ElectronTools/data
 
 - In src, get the package
 

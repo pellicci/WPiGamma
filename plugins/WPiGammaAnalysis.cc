@@ -1,6 +1,5 @@
 //ROOT includes
 #include <TH1F.h>
-#include <TH2F.h>
 #include <TH2D.h>
 #include <TFile.h>
 #include <TLorentzVector.h>
@@ -50,7 +49,6 @@
 #include "DataFormats/EgammaCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/VIDCutFlowResult.h"
-//#include "RecoEgamma/PhotonIdentification/interface/PhotonMVAEstimator.h"
 
 typedef math::XYZTLorentzVector LorentzVector;
  
@@ -62,11 +60,7 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   runningEra_(iConfig.getParameter<int>("runningEra")),
   verboseIdFlag_(iConfig.getParameter<bool>("phoIdVerbose")),
   effectiveAreas_el_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile_el")).fullPath() ),
-  effectiveAreas_ph_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile_ph")).fullPath() ),
-  Bjets_WP_2016_(iConfig.getParameter<double>("Bjets_WP_2016")),
-  Bjets_WP_2017_(iConfig.getParameter<double>("Bjets_WP_2017")),
-  Bjets_WP_2018_(iConfig.getParameter<double>("Bjets_WP_2018"))
-
+  effectiveAreas_ph_( (iConfig.getParameter<edm::FileInPath>("effAreasConfigFile_ph")).fullPath() )
 {
   packedPFCandidatesToken_            = consumes<std::vector<pat::PackedCandidate> >(edm::InputTag("packedPFCandidates")); 
   slimmedMuonsToken_                  = consumes<std::vector<pat::Muon> >(edm::InputTag("slimmedMuons"));
@@ -81,10 +75,9 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   pileupSummaryToken_                 = consumes<std::vector<PileupSummaryInfo> >(edm::InputTag("slimmedAddPileupInfo"));
   GenInfoToken_                       = consumes<GenEventInfoProduct> (edm::InputTag("generator"));
   triggerBitsToken_                   = consumes<edm::TriggerResults> (edm::InputTag("TriggerResults","","HLT"));
-  triggerObjectsTokenMC2016_          = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","PAT"));
+  triggerObjectsTokenMC_              = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","PAT"));
   triggerObjectsTokenData2016_        = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","DQM"));
-  triggerObjectsToken2017_            = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","PAT"));
-  triggerObjectsTokenMC2018_          = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","PAT"));
+  triggerObjectsTokenData2017_        = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","PAT"));
   triggerObjectsTokenData2018_        = consumes<std::vector<pat::TriggerObjectStandAlone> > (edm::InputTag("slimmedPatTrigger","","RECO"));
   rhoToken_                           = consumes<double> (iConfig.getParameter <edm::InputTag>("rho"));
   PrefiringWeightToken_               = consumes<double>(edm::InputTag("prefiringweight:nonPrefiringProb"));
@@ -103,9 +96,40 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   inv_mass_2 = fs->make<TH1F>("Mw - match with MC Truth", "Mw match", 200,0,120);
   h_pileup   = fs->make<TH1F>("pileup", "pileup", 75,0,75);
 
+  //Btag stuff
+  std::shared_ptr<TFile> Btag_efficiencyFile_;
+  if(runningEra_ == 0){
+    bTag_SF_name = "DeepCSV_2016LegacySF_WP_V1.csv";
+    Bjets_WP = iConfig.getParameter<double>("Bjets_WP_2016");
+    Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2016.root");
+  }
+  else if(runningEra_ == 1){
+    bTag_SF_name = "DeepCSV_94XSF_WP_V4_B_F.csv";
+    Bjets_WP = iConfig.getParameter<double>("Bjets_WP_2016");
+    Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2017.root");
+  }
+  else{
+    bTag_SF_name = "DeepCSV_102XSF_WP_V1.csv";
+    Bjets_WP = iConfig.getParameter<double>("Bjets_WP_2016");
+    Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2018.root");
+  }
+  h_bTagEfficiency_ = std::shared_ptr<TH2>((static_cast<TH2*>(Btag_efficiencyFile_->Get("bTagEfficiency")->Clone()))); 
   h2_BTaggingEff_Num_b   = fs->make<TH2D>("h2_BTaggingEff_Num_b", ";p_{T} [GeV];#eta", 75, 25., 1000., 50, -2.5, 2.5);
   h2_BTaggingEff_Denom_b = fs->make<TH2D>("h2_BTaggingEff_Denom_b", ";p_{T} [GeV];#eta", 75, 25., 1000., 50, -2.5, 2.5);
 
+  //*************************************************************//
+  //                                                             //
+  //-------------------- b-tagging SF reader --------------------//
+  //                                                             //
+  //*************************************************************//
+  BTagCalibration calib("DeepCSV", bTag_SF_name);
+  reader = BTagCalibrationReader(BTagEntry::OP_LOOSE,  // operating point
+                                  "central",            // central sys type
+                                  {"up", "down"});      // other sys types
+  
+  reader.load(calib,              // calibration instance
+              BTagEntry::FLAV_B,  // btag flavour
+              "comb");            // measurement type
 
   create_trees();
 }
@@ -163,26 +187,28 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   iEvent.getByToken(triggerBitsToken_, triggerBits);
 
   edm::Handle<std::vector<pat::TriggerObjectStandAlone> > triggerObjects;
-  if(!runningOnData_ && runningEra_ == 0){
-    iEvent.getByToken(triggerObjectsTokenMC2016_, triggerObjects);
+  if(!runningOnData_){
+    iEvent.getByToken(triggerObjectsTokenMC_, triggerObjects);
   }
-  if(runningOnData_ && runningEra_ == 0){
+  else {
+    if(runningEra_ == 0){
     iEvent.getByToken(triggerObjectsTokenData2016_, triggerObjects);
+    }
+    else if(runningEra_ == 1){
+    iEvent.getByToken(triggerObjectsTokenData2017_, triggerObjects);
+    }
+    else{
+    iEvent.getByToken(triggerObjectsTokenData2018_, triggerObjects);
+    }
   }
+
   std::vector<pat::TriggerObjectStandAlone> unpackedTrigObjs;
   if(runningEra_ == 1){
-    iEvent.getByToken(triggerObjectsToken2017_, triggerObjects);
     //Create unpacked filter names to convert Ele32_DoubleEG trigger into Ele32_WPTight
     for(auto& trigObj : *triggerObjects){
       unpackedTrigObjs.push_back(trigObj);
       unpackedTrigObjs.back().unpackFilterLabels(iEvent,*triggerBits);
     }
-  }
-  if(!runningOnData_ && runningEra_ == 2){
-    iEvent.getByToken(triggerObjectsTokenMC2018_, triggerObjects);
-  }
-  if(runningOnData_ && runningEra_ == 2){
-    iEvent.getByToken(triggerObjectsTokenData2018_, triggerObjects);
   }
 
   Prefiring_Weight = -10000;
@@ -192,9 +218,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     Prefiring_Weight = (*PrefiringWeight);
   }
 
-
   _Nevents_processed++;
-
 
   //Retrieve the run number
   if(runningOnData_){
@@ -206,10 +230,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //-------------------------- Vertices -------------------------//
   //                                                             //
   //*************************************************************//
-
   //Count the number of vertices
   nPV = -1;
-
   if(slimmedPV->size()<=0) return;
   for(reco::VertexCollection::const_iterator vtx=slimmedPV->begin();vtx!=slimmedPV->end();++vtx) {
     // check that the primary vertex is not a fake one, that is the beamspot (it happens when no primary vertex is reconstructed)
@@ -224,7 +246,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //--------------------------- Pile Up -------------------------//
   //                                                             //
   //*************************************************************//
-
   PU_Weight = -1.;
   float npT = -1.;
 
@@ -237,7 +258,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     for(PVI = PupInfo->begin(); PVI != PupInfo->end(); ++PVI) {
       const int BX = PVI->getBunchCrossing();
       if(BX == 0) {
-	npT  = PVI->getTrueNumInteractions();
+      	npT  = PVI->getTrueNumInteractions();
       }
     }
 
@@ -257,7 +278,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //-------------------------- MC Weight ------------------------//
   //                                                             //
   //*************************************************************//
-
   MC_Weight = -10000000.;
 
   if(!runningOnData_){
@@ -272,8 +292,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       abort();
     }
   }
-
-
 
   //*************************************************************//
   //                                                             //
@@ -293,10 +311,11 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
   for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i){
     if(!triggerBits->accept(i)) continue;
+
     std::string tmp_triggername = names.triggerName(i);
     if( tmp_triggername.find("HLT_IsoMu24_v") != std::string::npos ||
-	tmp_triggername.find("HLT_IsoTkMu24_v") != std::string::npos){
-      isSingleMuTrigger_24 = true;
+      	tmp_triggername.find("HLT_IsoTkMu24_v") != std::string::npos){
+          isSingleMuTrigger_24 = true;
     }
     if( tmp_triggername.find("HLT_IsoMu27_v") != std::string::npos ){
       isSingleMuTrigger_27 = true;
@@ -318,13 +337,11 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     }
   }
 
-
   //*************************************************************//
   //                                                             //
   //------------------ Variable initialization ------------------//
   //                                                             //
   //*************************************************************//
-
   nMuons          = 0;
   nElectrons      = 0;
   nElectronsLoose = 0;
@@ -395,16 +412,15 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   is_muon = false;
   is_ele  = false;
 
-  lepton_pT_tree  = 0.;
-  lepton_eta_tree = 0.;
+  lepton_pT_tree    = 0.;
+  lepton_eta_tree   = 0.;
   lepton_etaSC_tree = 0.;
-  lepton_phi_tree = 0.;
-  lepton_dxy_tree = 0.;
-  lepton_dz_tree  = 0.;
+  lepton_phi_tree   = 0.;
+  lepton_dxy_tree   = 0.;
+  lepton_dz_tree    = 0.;
 
   gen_ph_pT_tree     = 0.;
   gen_ph_mother_tree = 0;
-
 
   //*************************************************************//
   //                                                             //
@@ -428,22 +444,22 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   if(!runningOnData_){
     for(auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
       if(fabs(gen->pdgId()) == 13 && gen->status() == 1 && gen->pt() > MCT_HpT_mu_pT_Max){
-	MCT_HpT_mu_pT  = gen->pt();
-	MCT_HpT_mu_eta = gen->eta();
-	MCT_HpT_mu_phi = gen->phi();
-	MCT_HpT_mu_pT_Max = MCT_HpT_mu_pT;
+        MCT_HpT_mu_pT  = gen->pt();
+	      MCT_HpT_mu_eta = gen->eta();
+	      MCT_HpT_mu_phi = gen->phi();
+	      MCT_HpT_mu_pT_Max = MCT_HpT_mu_pT;
       }
       if(fabs(gen->pdgId()) == 11 && gen->status() == 1 && gen->pt() > MCT_HpT_ele_pT_Max){
-	MCT_HpT_ele_pT  = gen->pt();
-	MCT_HpT_ele_eta = gen->eta();
-	MCT_HpT_ele_phi = gen->phi();
-	MCT_HpT_ele_pT_Max = MCT_HpT_ele_pT;
+	     MCT_HpT_ele_pT  = gen->pt();
+	     MCT_HpT_ele_eta = gen->eta();
+	     MCT_HpT_ele_phi = gen->phi();
+	     MCT_HpT_ele_pT_Max = MCT_HpT_ele_pT;
       }
       if(fabs(gen->pdgId()) == 22 && gen->status() == 1 && gen->et() > MCT_HeT_ph_eT_Max){
-	MCT_HeT_ph_eT  = gen->et();
-	MCT_HeT_ph_eta = gen->eta();
-	MCT_HeT_ph_phi = gen->phi();
-	MCT_HeT_ph_eT_Max = MCT_HeT_ph_eT;
+	     MCT_HeT_ph_eT  = gen->et();
+	     MCT_HeT_ph_eta = gen->eta();
+	     MCT_HeT_ph_phi = gen->phi();
+	     MCT_HeT_ph_eT_Max = MCT_HeT_ph_eT;
       }
     }
   }
@@ -482,7 +498,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   for(auto mu = slimmedMuons->begin(); mu != slimmedMuons->end(); ++mu){
     if(mu->pt() < 20. || !mu->CutBasedIdMedium || fabs(mu->eta()) > 2.4 || fabs(mu->muonBestTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(mu->muonBestTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
-    //mu_iso = (mu->chargedHadronIso() + std::max(0., mu->neutralHadronIso() + mu->photonIso() - 0.5*mu->puChargedHadronIso()))/mu->pt();
     if(!mu->PFIsoLoose) continue;
 
     is_muon = true;
@@ -510,7 +525,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   if(nMuons > 1) return;
   _Nevents_muVeto++;
 
-
   //*************************************************************//
   //                                                             //
   //-------------------------- Electrons ------------------------//
@@ -529,7 +543,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     el_p4 = el->p4() * el->userFloat("ecalTrkEnergyPostCorr")/el->energy();
     corr_pt = el_p4.pt();
 
-      if(corr_pt < 20. || fabs(el->eta()) > 2.5 || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
+    if(corr_pt < 20. || fabs(el->eta()) > 2.5 || fabs(el->gsfTrack()->dxy((&slimmedPV->at(0))->position())) >= 0.2 || fabs(el->gsfTrack()->dz((&slimmedPV->at(0))->position())) >= 0.5) continue;
 
     //PflowIsolationVariables pfIso = el->pfIsolationVariables();
     float abseta = fabs(el->superCluster()->eta());
@@ -571,9 +585,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //                                                             //
   //*************************************************************//
   
-
   if((!is_muon && nElectronsLoose > 1) || (!is_muon && nElectronsLoose==1 && nElectrons!=1)) return;
-     _Nevents_eleVeto++;
+  _Nevents_eleVeto++;
 
   //Do NOT continue if you didn't find either a muon or an electron
   if(!is_muon && !is_ele) return;
@@ -590,8 +603,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     lepton_dz_tree  = mu_dz;
     lepton_iso_tree = best_mu_iso;
   }
-
-  if(!is_muon && is_ele){
+  else {
     lepton_pT_tree    = el_pT;
     lepton_eta_tree   = el_eta;
     lepton_etaSC_tree = el_etaSC;
@@ -607,7 +619,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //**********************************************************************//
   //                                                                      //
-  //---------------------- Electron Trigger Matching ---------------------//
+  //---------------------- Trigger Matching          ---------------------//
   //                                                                      //
   //**********************************************************************//
   //https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2017#Trigger
@@ -616,12 +628,10 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   bool isEle32_WPTight_equivalent = false;
   bool isTriggerMatched = false;
 
-  const edm::TriggerNames &TNames = iEvent.triggerNames(*triggerBits);
-
   for (pat::TriggerObjectStandAlone obj : *triggerObjects){ // note: not "const &" since we want to call unpackPathNames
     
     bool isAcceptedPath = false;
-    obj.unpackPathNames(TNames);
+    obj.unpackPathNames(names);
     
     std::vector pathNamesAll = obj.pathNames(false);
     
@@ -635,51 +645,51 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       //std::cout << pathNamesAll[h] << "(L,3)" << std::endl; 
 
       if((is_muon && runningEra_ == 0) && (pathNamesAll[h].find("HLT_IsoMu24_v") != std::string::npos || pathNamesAll[h].find("HLT_IsoTkMu24_v") != std::string::npos || pathNamesAll[h].find("HLT_Mu50_v") != std::string::npos )) {
-	isAcceptedPath = true;
-	continue;
+    	 isAcceptedPath = true;
+	     continue;
       }
 
       if((is_muon && runningEra_ == 1) && (pathNamesAll[h].find("HLT_IsoMu27_v") != std::string::npos || pathNamesAll[h].find("HLT_Mu50_v") != std::string::npos)) {
-	isAcceptedPath = true;
-	continue;
+	     isAcceptedPath = true;
+	     continue;
       }
 
       if((is_muon && runningEra_ == 2) && (pathNamesAll[h].find("HLT_IsoMu24_v") != std::string::npos || pathNamesAll[h].find("HLT_Mu50_v") != std::string::npos)) {
-	isAcceptedPath = true;
-	continue;
+	     isAcceptedPath = true;
+	     continue;
       } 
       
       if((!is_muon && runningEra_ == 0) && pathNamesAll[h].find("HLT_Ele27_WPTight_Gsf_v") != std::string::npos) {
-	isAcceptedPath = true;
-	continue;
+	     isAcceptedPath = true;
+	     continue;
       }
       
       if((!is_muon && runningEra_ == 1) && pathNamesAll[h].find("HLT_Ele32_WPTight_Gsf_L1DoubleEG_v") != std::string::npos) {
-	//now match ALL objects in a cone of DR<0.1
-	//it is important to match all objects as there are different ways to reconstruct the same electron
-	//eg, L1 seeded, unseeded, as a jet etc
-	//and so you want to be sure you get all possible objects
-	std::vector<const pat::TriggerObjectStandAlone*> matchedTrigObjs = getMatchedObjs(lepton_etaSC_tree,lepton_phiSC_tree,unpackedTrigObjs,0.1);
-	for(const auto trigObj : matchedTrigObjs){
-	  //now just check if it passes the two filters
-	  if(trigObj->hasFilterLabel("hltEle32L1DoubleEGWPTightGsfTrackIsoFilter") && trigObj->hasFilterLabel("hltEGL1SingleEGOrFilter") ) {
-	    isEle32_WPTight_equivalent = true;
-	    break;
-	  }
-	}
-	if(isEle32_WPTight_equivalent){
-	  //std::cout << "Ele32 EMULATED" << std::endl;
-	  isAcceptedPath = true;
-	  continue;
-	}
-	else{
-	  return;
-	}
+	     //now match ALL objects in a cone of DR<0.1
+	     //it is important to match all objects as there are different ways to reconstruct the same electron
+	     //eg, L1 seeded, unseeded, as a jet etc
+	     //and so you want to be sure you get all possible objects
+	     std::vector<const pat::TriggerObjectStandAlone*> matchedTrigObjs = getMatchedObjs(lepton_etaSC_tree,lepton_phiSC_tree,unpackedTrigObjs,0.1);
+	     for(const auto trigObj : matchedTrigObjs){
+	       //now just check if it passes the two filters
+	       if(trigObj->hasFilterLabel("hltEle32L1DoubleEGWPTightGsfTrackIsoFilter") && trigObj->hasFilterLabel("hltEGL1SingleEGOrFilter") ) {
+	         isEle32_WPTight_equivalent = true;
+	         break;
+    	   }
+        }
+    	 if(isEle32_WPTight_equivalent){
+	       //std::cout << "Ele32 EMULATED" << std::endl;
+	       isAcceptedPath = true;
+	       continue;
+    	 }
+	     else{
+	       return;
+    	 }
       }
       
       if((!is_muon && runningEra_ == 2) &&  pathNamesAll[h].find("HLT_Ele32_WPTight_Gsf_v") != std::string::npos) {
-	isAcceptedPath = true;
-	continue;
+	     isAcceptedPath = true;
+	     continue;
       }
     }
     //std::cout << std::endl;
@@ -698,9 +708,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     deltaPhi_lep_trigger = fabs(lepton_phiSC_tree - obj.phi());
     }
     
-    if(deltaPhi_lep_trigger > 3.14){
-      deltaPhi_lep_trigger = 6.28 - deltaPhi_lep_trigger;
-    }
+    if(deltaPhi_lep_trigger > 3.14) deltaPhi_lep_trigger = 6.28 - deltaPhi_lep_trigger;
     
     float deltaR_lep_trigger = sqrt(deltaEta_lep_trigger*deltaEta_lep_trigger + deltaPhi_lep_trigger*deltaPhi_lep_trigger);
     //float deltapTrel_lep_trigger = fabs(lepton_pT_tree - obj.pt())/obj.pt();
@@ -712,7 +720,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
   //if(!isTriggerMatched) return;
   isTriggerMatched_tree = isTriggerMatched;
-
 
   //*************************************************************//
   //                                                             //
@@ -730,7 +737,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   is_signal_Wplus     = false;
   is_signal_Wminus    = false;
   is_ttbar_lnu        = false;
-  Wplus_pT = -999.;
+  Wplus_pT  = -999.;
   Wminus_pT = -999.;
 
   if(!runningOnData_){
@@ -739,12 +746,12 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       if(fabs(gen->pdgId() ) == 13 && fabs(gen->mother()->pdgId()) == 24) is_Mu_signal = true;
       if(gen->numberOfDaughters() != 2) continue; //Avoid Ws <<decaying>> into another W (especially in Signal)
       if(gen->pdgId() == 24){// && gen->mother()->pdgId() == 6){
-	is_Wplus_from_t = true;
-	Wplus_pT = gen->pt();
+        is_Wplus_from_t = true;
+        Wplus_pT = gen->pt();
       }
       if(gen->pdgId() == -24){// && gen->mother()->pdgId() == -6){
-	is_Wminus_from_tbar = true;
-	Wminus_pT = gen->pt();
+	     is_Wminus_from_tbar = true;
+	     Wminus_pT = gen->pt();
       }
       //if(fabs(gen->pdgId() != 24) || gen->numberOfDaughters() != 2) continue;
       for (int i=0; i<2; i++){
@@ -776,7 +783,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     //if(cand->pdgId()*mu_ID < 0 || cand->pdgId()*el_ID < 0) continue; // WARNING: this condition works only if paired with muon/electron veto
     
     if(cand->pt() < 20. || !cand->trackHighPurity() || fabs(cand->dxy()) >= 0.2 || fabs(cand->dz()) >= 0.5 ) continue;
-
     if(cand->pt() < pTpiMax) continue;
 
     deltaphi_lep_pi = fabs(lepton_phi_tree-cand->phi());
@@ -806,30 +812,27 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     int   gen_ID = 0;
 
     if(!runningOnData_){
-      for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){ // Matching candidate for W reconstruction with MC truth
-	float deltaPhi = fabs(pi_phi - gen->phi());
-	if(deltaPhi > 3.14){
-	  deltaPhi = 6.28 - deltaPhi;
-	}
-	float deltaR = sqrt((pi_eta - gen->eta())*(pi_eta - gen->eta()) + deltaPhi*deltaPhi);
-	float deltapT = fabs(pi_pT - gen->pt());
+      for(auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){ // Matching candidate for W reconstruction with MC truth
+      	float deltaPhi = fabs(pi_phi - gen->phi());
+        if(deltaPhi > 3.14) deltaPhi = 6.28 - deltaPhi;
 
-	if(deltaR > deltaRMax || deltapT > deltapTMax) continue;
-	deltapTMax = deltapT;
-	gen_ID = gen->pdgId();
-	gen_mother = gen->mother()->pdgId();
+        float deltaR = sqrt((pi_eta - gen->eta())*(pi_eta - gen->eta()) + deltaPhi*deltaPhi);
+        float deltapT = fabs(pi_pT - gen->pt());
+
+        if(deltaR > deltaRMax || deltapT > deltapTMax) continue;
+	       deltapTMax = deltapT;
+	       gen_ID = gen->pdgId();
+	       gen_mother = gen->mother()->pdgId();
       }
 
       if(fabs(gen_ID) == 211) is_pi_a_pi = true;
       if(fabs(gen_mother) == 24) is_pi_matched = true;
-
     }
   }
 
   //Do NOT continue if you didn't find a pion
   if(!cand_pion_found) return;
   _Nevents_isPion++;
-
 
   //*************************************************************//
   //                                                             //
@@ -839,16 +842,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   for(auto cand_iso = PFCandidates->begin(); cand_iso != PFCandidates->end(); ++cand_iso){
     float deltaPhi = fabs(pi_phi - cand_iso->phi());
-    if(deltaPhi > 3.14){
-      deltaPhi = 6.28 - deltaPhi;
-    }
+    if(deltaPhi > 3.14) deltaPhi = 6.28 - deltaPhi;
+
     float deltaR = sqrt((pi_eta - cand_iso->eta())*(pi_eta - cand_iso->eta()) + deltaPhi*deltaPhi);
     if(deltaR <= 0.3 && deltaR >= 0.02) sum_pT_03 += cand_iso->pt();
     if(deltaR <= 0.5 && deltaR >= 0.02) sum_pT_05 += cand_iso->pt();
     if(cand_iso->charge() != 0 && (fabs(cand_iso->dxy()) >= 0.2 || fabs(cand_iso->dz()) >= 0.5) ) continue; // Requesting charged particles to come from PV
     if(deltaR <= 0.5 && deltaR >= 0.02) sum_pT_05_ch += cand_iso->pt();
   }
-
 
   //*************************************************************//
   //                                                             //
@@ -904,18 +905,17 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     is_photon_matched = false;
 
     if(!runningOnData_){
-      for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
-	float deltaPhi = fabs(ph_phi - gen->phi());
-	if(deltaPhi > 3.14){
-	  deltaPhi = 6.28 - deltaPhi;
-	}
-	float deltaR = sqrt((ph_eta - gen->eta())*(ph_eta - gen->eta()) + deltaPhi*deltaPhi);
-	float deltapT = fabs(ph_eT - gen->pt());
+      for(auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
+        float deltaPhi = fabs(ph_phi - gen->phi());
+        if(deltaPhi > 3.14) deltaPhi = 6.28 - deltaPhi;
 
-	if(deltaR > deltaRMax || deltapT > deltapTMax) continue;
-	deltapTMax = deltapT;
-	gen_ID = gen->pdgId();
-	gen_mother = gen->mother()->pdgId();
+        float deltaR = sqrt((ph_eta - gen->eta())*(ph_eta - gen->eta()) + deltaPhi*deltaPhi);
+        float deltapT = fabs(ph_eT - gen->pt());
+
+        if(deltaR > deltaRMax || deltapT > deltapTMax) continue;
+	       deltapTMax = deltapT;
+	       gen_ID = gen->pdgId();
+	       gen_mother = gen->mother()->pdgId();
       }
             
       if(gen_ID == 22) is_photon_a_photon = true;
@@ -936,7 +936,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   if(_Wmass < 20. || _Wmass > 120.) return;
   _Nevents_isWmass++;
 
-
   if (!is_pi_a_pi || !is_photon_a_photon){
     inv_mass_1->SetLineColor(3);
     inv_mass_1->Fill(_Wmass);
@@ -945,7 +944,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     inv_mass_2->SetLineColor(2);
     inv_mass_2->Fill(_Wmass);
   }
-
 
   //*************************************************************//
   //                                                             //
@@ -974,35 +972,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     gen_ph_mother_tree = gen_ph_mother;
   }
 
-
-  //*************************************************************//
-  //                                                             //
-  //-------------------- b-tagging SF reader --------------------//
-  //                                                             //
-  //*************************************************************//
-
-
-  if(runningEra_ == 0){
-    bTag_SF_name = "DeepCSV_2016LegacySF_WP_V1.csv";
-  }
-  else if(runningEra_ == 1){
-    bTag_SF_name = "DeepCSV_94XSF_WP_V4_B_F.csv";
-  }
-  else if(runningEra_ == 2){
-    bTag_SF_name = "DeepCSV_102XSF_WP_V1.csv";
-  }
-  
-  BTagCalibration calib("DeepCSV", bTag_SF_name);
-  BTagCalibrationReader reader(BTagEntry::OP_LOOSE,  // operating point
-			       "central",            // central sys type
-			       {"up", "down"});      // other sys types
-  
-  reader.load(calib,              // calibration instance
-	      BTagEntry::FLAV_B,  // btag flavour
-	      "comb");            // measurement type
-
-
-
   //*************************************************************//
   //                                                             //
   //--------------------------- b-jets --------------------------//
@@ -1023,94 +992,71 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     
     if(jet->pt() < 25.) continue;
     if(runningEra_ == 1 && jet->eta() > 2.65 && jet->eta() < 3.139 && jet->pt() < 50.) continue; //Exclude noisy region in EE in 2017
-    //std::cout << "efficiency at fixed point: " << read_bTagEfficiency(runningEra_,30.,2.) << std::endl;
 
     //---------------Fill b-tagging efficiency histograms---------------//
+
+    bool Bjetscore = (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP;
+
     if(!runningOnData_){
       int hadronFlavour = jet->hadronFlavour();
       
       if(fabs(hadronFlavour) == 5){
-    	h2_BTaggingEff_Denom_b->Fill(jet->pt(), jet->eta());
-      
-	if(runningEra_ == 0 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP_2016_) h2_BTaggingEff_Num_b->Fill(jet->pt(), jet->eta());
-	if(runningEra_ == 1 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP_2017_) h2_BTaggingEff_Num_b->Fill(jet->pt(), jet->eta());
-	if(runningEra_ == 2 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP_2018_) h2_BTaggingEff_Num_b->Fill(jet->pt(), jet->eta());
+        h2_BTaggingEff_Denom_b->Fill(jet->pt(), jet->eta());
+        if(Bjetscore) h2_BTaggingEff_Num_b->Fill(jet->pt(), jet->eta());
       }
-    }
-    //-----------------------------------------------------------------//
 
-    if(!runningOnData_){//Access b-tagging SFs
       jetSF = reader.eval_auto_bounds("central", 
-				      BTagEntry::FLAV_B, 
-				      fabs(jet->eta()), // absolute value of eta
-				      jet->pt()); 
+				        BTagEntry::FLAV_B, 
+				        fabs(jet->eta()), // absolute value of eta
+				        jet->pt()); 
 
       //std::cout << "jetSF: " << jetSF << std::endl;
-    }
 
-    if(!runningOnData_){//Calculate efficiencies for non b-tagged objects
-      if((runningEra_ == 0 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) < Bjets_WP_2016_) || 
-	 (runningEra_ == 1 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) < Bjets_WP_2017_) ||
-	 (runningEra_ == 2 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) < Bjets_WP_2018_)){
-	
-	prod_1_minus_eff    *= (1 - read_bTagEfficiency(runningEra_,jet->pt(),jet->eta())); //Non b-tagged object*(1-efficiency)
-	prod_1_minus_eff_SF *= (1 - jetSF*read_bTagEfficiency(runningEra_,jet->pt(),jet->eta())); //Non b-tagged object*(1-SF*efficiency)
-	
-	//SFs are available in alimited eta range. Do the same for efficiencies: outside the eta range, efficiency = 1
-	if((runningEra_ == 0 && fabs(jet->eta()) > 2.4) || (runningEra_ == 1 && fabs(jet->eta()) > 2.5) || (runningEra_ == 2 && fabs(jet->eta()) > 2.5)){
-	  prod_1_minus_eff    = 1.;
-	  prod_1_minus_eff_SF = 1.;
-	}
+      float btag_efficiency = read_bTagEfficiency(jet->pt(),jet->eta());
+      //SFs are available in alimited eta range. Do the same for efficiencies: outside the eta range, efficiency = 1
+      if(fabs(jet->eta()) < 2.4  || (fabs(jet->eta()) < 2.5 && runningEra_ > 0)){
+
+        if(!Bjetscore){//Calculate efficiencies for non b-tagged objects
+  	       prod_1_minus_eff    *= (1 - btag_efficiency); //Non b-tagged object*(1-efficiency)
+           prod_1_minus_eff_SF *= (1 - jetSF*btag_efficiency); //Non b-tagged object*(1-SF*efficiency)
+        }
+        else{//Calculate efficiencies for b-tagged objects
+          prod_eff    *= btag_efficiency; //b-tagged object*(efficiency)
+          prod_eff_SF *= jetSF*btag_efficiency; //b-tagged object*(SF*efficiency)
+        }
       }
     }
 
-    if((runningEra_ == 0 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP_2016_) || 
-       (runningEra_ == 1 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP_2017_) ||  
-       (runningEra_ == 2 && (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP_2018_)){
+    if(Bjetscore){
 
       if(jet->pt() >= 30.){
-	nBjets_30++;
+      	nBjets_30++;
       }
 
       nBjets_25++;
       is_one_bJet_found = true;
       
-      if((runningEra_ == 0 && fabs(jet->eta()) > 2.4) || (runningEra_ == 1 && fabs(jet->eta()) > 2.5) || (runningEra_ == 2 && fabs(jet->eta()) > 2.5)){
-	bJet_outside_eta_bounds = true;
+      if((runningEra_ == 0 && fabs(jet->eta()) > 2.4) || fabs(jet->eta()) > 2.5){
+      	bJet_outside_eta_bounds = true;
       }
-      
-      if(!runningOnData_){//Calculate efficiencies for b-tagged objects
-	prod_eff    *= read_bTagEfficiency(runningEra_,jet->pt(),jet->eta()); //Non b-tagged object*(efficiency)
-	prod_eff_SF *= jetSF*read_bTagEfficiency(runningEra_,jet->pt(),jet->eta()); //Non b-tagged object*(SF*efficiency)
-
-
-	//SFs are available in alimited eta range. Do the same for efficiencies: outside the eta range, efficiency = 1
-	if((runningEra_ == 0 && fabs(jet->eta()) > 2.4) || (runningEra_ == 1 && fabs(jet->eta()) > 2.5) || (runningEra_ == 2 && fabs(jet->eta()) > 2.5)){
-	  prod_eff    = 1.;
-	  prod_eff_SF = 1.;
-	}
-      }
-      
 
       //----Scale down jet pT for 2018 HEM16/17 issue----//
       if(jet->phi() > -1.57 && jet->phi() < 0.87 && jet->eta() > -2.5 && jet->eta() < -1.3){
-	jet_pT_temp = 0.8*jet->pt();
-	if(jet_pT_temp >= 25.){
-	  nBjets_scaled++;
-	}
+        jet_pT_temp = 0.8*jet->pt();
+        if(jet_pT_temp >= 25.){
+          nBjets_scaled++;
+        }
       }      
       if(jet->phi() > -1.57 && jet->phi() < 0.87 && jet->eta() > -3.0 && jet->eta() < -2.5){
-	jet_pT_temp = 0.65*jet->pt();
-	if(jet_pT_temp >= 25.){
-	  nBjets_scaled++;
-	}
+        jet_pT_temp = 0.65*jet->pt();
+        if(jet_pT_temp >= 25.){
+          nBjets_scaled++;
+        }
       }
       if( (jet->phi() > -1.57 && jet->phi() < 0.87 && (jet->eta() <= -3.0 || jet->eta() >= -1.3)) || jet->phi() <= -1.57 || jet->phi() >= 0.87){
-	nBjets_scaled++;
+        nBjets_scaled++;
       }
-      //------------------------------------------------//
     }
-
   }
 
   if(!is_one_bJet_found) return;
@@ -1122,7 +1068,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //std::cout << "bTag_Weight: " << bTag_Weight << std::endl;
 
   mytree->Fill();
-
 }
 
 
@@ -1175,11 +1120,6 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("photon_etaSC",&ph_etaSC);
   mytree->Branch("photon_phi",&ph_phi);
   mytree->Branch("photon_energy",&ph_energy);
-  // mytree->Branch("photon_iso_ChargedHadron",&ph_iso_ChargedHadron);
-  // mytree->Branch("photon_iso_NeutralHadron",&ph_iso_NeutralHadron);
-  // mytree->Branch("photon_iso_Photon",&ph_iso_Photon);
-  // mytree->Branch("photon_iso_Track",&ph_iso_Track);
-  // mytree->Branch("photon_iso_eArho",&ph_iso_eArho);
 
   mytree->Branch("Wmass",&_Wmass);
 
@@ -1230,28 +1170,9 @@ void WPiGammaAnalysis::create_trees()
 
 }
 
-float WPiGammaAnalysis::read_bTagEfficiency(int runningEra, float pT, float eta)
+float WPiGammaAnalysis::read_bTagEfficiency(float pT, float eta)
 {
-  // TFile *efficiencyFile_     = new TFile();
-  // TFile *efficiencyFile_2016 = new TFile("bTagEff_2016.root","READ");
-  // TFile *efficiencyFile_2017 = new TFile("bTagEff_2017.root","READ");
-  // TFile *efficiencyFile_2018 = new TFile("bTagEff_2018.root","READ");
-  // h_bTagEfficiency = efficiencyFile_->Get("bTagEfficiency");
-
-  if(runningEra == 0){
-    efficiencyFile_ = std::make_shared<TFile>("bTagEff_2016.root");
-  }
-  if(runningEra == 1){
-    efficiencyFile_ = std::make_shared<TFile>("bTagEff_2017.root");
-  }
-  if(runningEra == 2){
-    efficiencyFile_ = std::make_shared<TFile>("bTagEff_2018.root");
-  }    
-
-  h_bTagEfficiency_ = std::shared_ptr<TH2>((static_cast<TH2*>(efficiencyFile_->Get("bTagEfficiency")->Clone())));
-
   bTagEfficiency_ = h_bTagEfficiency_->GetBinContent(h_bTagEfficiency_->GetXaxis()->FindBin(pT),h_bTagEfficiency_->GetYaxis()->FindBin(eta));
-
   return bTagEfficiency_;
 }
 
