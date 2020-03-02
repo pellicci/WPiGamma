@@ -105,12 +105,12 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
   }
   else if(runningEra_ == 1){
     bTag_SF_name = "DeepCSV_94XSF_WP_V4_B_F.csv";
-    Bjets_WP = iConfig.getParameter<double>("Bjets_WP_2016");
+    Bjets_WP = iConfig.getParameter<double>("Bjets_WP_2017");
     Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2017.root");
   }
   else{
     bTag_SF_name = "DeepCSV_102XSF_WP_V1.csv";
-    Bjets_WP = iConfig.getParameter<double>("Bjets_WP_2016");
+    Bjets_WP = iConfig.getParameter<double>("Bjets_WP_2018");
     Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2018.root");
   }
   h_bTagEfficiency_ = std::shared_ptr<TH2>((static_cast<TH2*>(Btag_efficiencyFile_->Get("bTagEfficiency")->Clone()))); 
