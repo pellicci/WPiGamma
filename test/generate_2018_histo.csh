@@ -1,4 +1,4 @@
-mkdir histos
+Mkdir histos
 mkdir histos/latest_production
 
 rm histos/latest_production/*2018*.root
@@ -56,8 +56,9 @@ rm histos/latest_production/WPiGammaHistos_Single*ToptW_2018.root
 hadd histos/latest_production/WPiGammaHistos_DY_2018.root histos/latest_production/WPiGammaHistos_DY*50_2018.root
 rm histos/latest_production/WPiGammaHistos_DY*50_2018.root
 
-hadd histos/latest_production/WPiGammaHistos_ttbar_2018.root histos/latest_production/WPiGammaHistos_ttbarTo*nic_2018.root
+hadd histos/latest_production/WPiGammaHistos_ttbar_2018.root histos/latest_production/WPiGammaHistos_ttbarTo*nic_2018.root histos/latest_production/WPiGammaHistos_ttbarlnu_2018.root
 rm histos/latest_production/WPiGammaHistos_ttbarTo*nic_2018.root
+rm histos/latest_production/WPiGammaHistos_ttbarlnu_2018.root
 
 hadd histos/latest_production/WPiGammaHistos_WJetsToLNu_2018.root histos/latest_production/WPiGammaHistos_WJetsToLNu*J_2018.root
 rm histos/latest_production/WPiGammaHistos_WJetsToLNu*J_2018.root

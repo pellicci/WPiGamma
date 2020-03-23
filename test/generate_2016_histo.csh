@@ -53,5 +53,6 @@ rm histos/latest_production/WPiGammaHistos_Single*ToptW_2016.root
 hadd histos/latest_production/WPiGammaHistos_DY_2016.root histos/latest_production/WPiGammaHistos_DY*50_2016.root
 rm histos/latest_production/WPiGammaHistos_DY*50_2016.root
 
-hadd histos/latest_production/WPiGammaHistos_ttbar_2016.root histos/latest_production/WPiGammaHistos_ttbarTo*nic_2016.root
+hadd histos/latest_production/WPiGammaHistos_ttbar_2016.root histos/latest_production/WPiGammaHistos_ttbarTo*nic_2016.root histos/latest_production/WPiGammaHistos_ttbarlnu_2016.root
 rm histos/latest_production/WPiGammaHistos_ttbarTo*nic_2016.root
+rm histos/latest_production/WPiGammaHistos_ttbarlnu_2016.root

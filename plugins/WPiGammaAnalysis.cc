@@ -326,6 +326,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   nElectronsLoose = 0;
   nPions          = 0;
   nPhotons        = 0;
+  njets           = 0;
   nBjets_30       = 0;
   nBjets_25       = 0;
   nBjets_scaled   = 0;
@@ -964,7 +965,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   prod_1_minus_eff_SF = 1.;
   prod_eff = 1.;
   prod_eff_SF = 1.;
-  is_one_bJet_found = false;
+  //is_one_bJet_found = false;
   bJet_outside_eta_bounds = false;
 
   for (auto jet = slimmedJets->begin(); jet != slimmedJets->end(); ++jet){
@@ -972,6 +973,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     if(jet->pt() < 25.) continue;
     if(runningEra_ == 1 && jet->eta() > 2.65 && jet->eta() < 3.139 && jet->pt() < 50.) continue; //Exclude noisy region in EE in 2017
 
+    njets += 1;
     //---------------Fill b-tagging efficiency histograms---------------//
 
     bool Bjetscore = (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP;
@@ -995,13 +997,17 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       //SFs are available in a limited eta range. Do the same for efficiencies: outside the eta range, efficiency = 1
       if(fabs(jet->eta()) <= 2.4  || (fabs(jet->eta()) <= 2.5 && runningEra_ > 0)){
 
+	//std::cout << "btag_efficiency: " << btag_efficiency << std::endl;
+
         if(!Bjetscore){//Calculate efficiencies for non b-tagged objects
 	  prod_1_minus_eff    *= (1 - btag_efficiency); //Non b-tagged object*(1-efficiency)
 	  prod_1_minus_eff_SF *= (1 - jetSF*btag_efficiency); //Non b-tagged object*(1-SF*efficiency)
+	  //std::cout << "SF untagged: " << jetSF << std::endl;
         }
         else{//Calculate efficiencies for b-tagged objects
           prod_eff    *= btag_efficiency; //b-tagged object*(efficiency)
           prod_eff_SF *= jetSF*btag_efficiency; //b-tagged object*(SF*efficiency)
+	  //std:cout << "SF tagged: " << jetSF << std::endl;
         }
       }
     }
@@ -1013,7 +1019,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       }
 
       nBjets_25++;
-      is_one_bJet_found = true;
+      //is_one_bJet_found = true;
       
       if((runningEra_ == 0 && fabs(jet->eta()) > 2.4) || fabs(jet->eta()) > 2.5){
       	bJet_outside_eta_bounds = true;
@@ -1038,13 +1044,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     }
   }
 
-  if(!is_one_bJet_found) return;
+  //if(!is_one_bJet_found) return;
 
   if(!runningOnData_){//Calculate event weight based on b-tagging efficiency and SFs
     bTag_Weight = (prod_eff_SF*prod_1_minus_eff_SF)/(prod_eff*prod_1_minus_eff);
   }
 
   //std::cout << "bTag_Weight: " << bTag_Weight << std::endl;
+  //std::cout << "/////////////////////" << std::endl;
 
   mytree->Fill();
 }
@@ -1106,6 +1113,7 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("nElectrons",&nElectrons);
   mytree->Branch("nPions",&nPions);
   mytree->Branch("nPhotons",&nPhotons);
+  mytree->Branch("njets",&njets);
   mytree->Branch("nBjets_30",&nBjets_30);
   mytree->Branch("nBjets_25",&nBjets_25);
   mytree->Branch("nBjets_scaled",&nBjets_scaled);
@@ -1158,17 +1166,17 @@ void WPiGammaAnalysis::beginJob()
   char const *bTag_SF_name;
   if(runningEra_ == 0){ // PU reweighting
    Lumiweights_ = edm::LumiReWeighting("MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root", "MyDataPileupHistogram_2016.root", "pileup", "pileup");
-   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2016.root");
+   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_medium_2016.root");
    bTag_SF_name = "DeepCSV_2016LegacySF_WP_V1.csv";
   }
   if (runningEra_ == 1){ // PU reweighting
    Lumiweights_ = edm::LumiReWeighting("MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root", "MyDataPileupHistogram_2017.root", "pileup", "pileup");
-   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2017.root");
+   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_medium_2017.root");
    bTag_SF_name = "DeepCSV_94XSF_WP_V4_B_F.csv";
   }
   if (runningEra_ == 2){ // PU reweighting
    Lumiweights_ = edm::LumiReWeighting("MCpileUp_2018_25ns_JuneProjectionFull18_PoissonOOTPU.root", "MyDataPileupHistogram_2018.root", "pileup", "pileup");
-   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2018.root");
+   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_medium_2018.root");
    bTag_SF_name = "DeepCSV_102XSF_WP_V1.csv";
   }
 
@@ -1180,7 +1188,7 @@ void WPiGammaAnalysis::beginJob()
   //                                                             //
   //*************************************************************//
   BTagCalibration calib("DeepCSV", bTag_SF_name);
-  reader = BTagCalibrationReader(BTagEntry::OP_LOOSE,  // operating point
+  reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM,  // operating point
                                   "central",            // central sys type
                                   {"up", "down"});      // other sys types
   

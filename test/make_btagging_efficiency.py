@@ -1,7 +1,7 @@
 from ROOT import *
 
-fileIn  = TFile("totalMC_2017.root")
-fileOut = TFile("bTagEff_2017.root","RECREATE")
+fileIn  = TFile("totalMC_medium_2018.root")
+fileOut = TFile("bTagEff_medium_2018.root","RECREATE")
 
 h2_Num = fileIn.Get("WPiGammaAnalysis/h2_BTaggingEff_Num_b")
 h2_Den = fileIn.Get("WPiGammaAnalysis/h2_BTaggingEff_Denom_b")

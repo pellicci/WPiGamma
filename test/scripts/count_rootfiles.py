@@ -20,9 +20,9 @@ year = args.year_option
 #---------------------------------#
 
 if isData:
-    dir_input = "crab_projects/samples_data_" + year + "/"
+    dir_input = "crab_projects/samples_data_" + year + "_medium/"
 else:
-    dir_input = "crab_projects/samples_MC_" + year + "/"
+    dir_input = "crab_projects/samples_MC_" + year + "_medium/"
 
 list_dirs = os.listdir(dir_input)
 
@@ -30,7 +30,6 @@ for dirname in list_dirs:
 
     print
     print "Verifying sample dir " + dirname
-    #if dirname == "crab_2016_WPiGammaAnalysis_ttbarWQQ" or dirname == "crab_2016_WPiGammaAnalysis_QCDHT200to300_1": continue# or dirname == "crab_2016_WPiGammaAnalysis_QCDHT500to700_2" or dirname == "crab_2016_WPiGammaAnalysis_QCDHT1000to1500_2": continue
     
     n_jobs_total_command = "crab status -d " + dir_input + dirname + " | grep status: " + "| awk " + """'{split($0,array,"/") ; print array[2]}'""" + "| sed 's/.$//'"
     n_jobs_finished_command = "crab status -d " + dir_input + dirname + " | grep finished " + "| awk " + """'{split($0,array,"/") ; print array[1]}'""" + "| awk " + """'{split($0,array,"(") ; print array[2]}'"""

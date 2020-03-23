@@ -4,11 +4,11 @@ import math
 import numpy as np
 import shutil
 
-source = "plots/latest_production/2018/"
+source = "plots/latest_production/2016_2017_2018/"
 
 source_list = os.listdir(source)
-#destination = "/afs/cern.ch/user/r/rselvati/www/WPiGamma/InterestingVariables/01_07_2019/2017/with_ele_gamma_deltaPhi_cut/"
-destination = "/afs/cern.ch/user/r/rselvati/www/WPiGamma/InterestingVariables/BDT/29_10_2019/2018/"
+
+destination = "/afs/cern.ch/user/r/rselvati/www/WPiGamma/InterestingVariables/BDT/13_03_2020/2016_2017_2018/"
 
 for files in source_list:
     fullpath = os.path.join(source, files)
@@ -42,9 +42,13 @@ for files in source_list:
         shutil.copy(fullpath,destination)
     if files == "h_piRelIso_05_ele_ch.pdf": 
         shutil.copy(fullpath,destination)
+    if files == "h_piRelIso_05_ch.pdf": 
+        shutil.copy(fullpath,destination)
     if files == "h_deltaR_mu_gamma.pdf": 
         shutil.copy(fullpath,destination)
     if files == "h_deltaR_ele_gamma.pdf": 
+        shutil.copy(fullpath,destination)
+    if files == "h_nBjets_25.pdf": 
         shutil.copy(fullpath,destination)
 
 print "All histos copied!"

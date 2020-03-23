@@ -31,15 +31,18 @@ year = args.year_option
 #---------------------------------#
 
 if not isData:
-    dir_input = "crab_projects/samples_MC_" + year + "/"
-    # dir_output_bkg = "rootfiles/latest_production/MC/backgrounds/"
-    # dir_output_sig = "rootfiles/latest_production/MC/signals/" 
-    dir_output_bkg = "rootfiles/bTagEfficiency/MC/backgrounds/"
-    dir_output_sig = "rootfiles/bTagEfficiency/MC/signals/" 
+    dir_input = "crab_projects/samples_MC_" + year + "_medium/"
+    #dir_output_bkg = "rootfiles/latest_production/MC/backgrounds/"
+    #dir_output_sig = "rootfiles/latest_production/MC/signals/" 
+    #dir_output_bkg = "rootfiles/modified_production/MC/backgrounds/"
+    #dir_output_sig = "rootfiles/modified_production/MC/signals/" 
+    dir_output_bkg = "rootfiles/bTagEfficiency_medium/MC/backgrounds/"
+    dir_output_sig = "rootfiles/bTagEfficiency_medium/MC/signals/" 
 
 if isData:
-    dir_input = "crab_projects/samples_data_" + year + "/"
+    dir_input = "crab_projects/samples_data_" + year + "_medium/"
     dir_output_data = "rootfiles/latest_production/dataprocess/"
+    #dir_output_data = "rootfiles/modified_production/dataprocess/"
 
 
 list_dirs = os.listdir(dir_input)
@@ -119,33 +122,33 @@ for dirname in list_dirs:
             
         os.system(hadd_command)
 
-
-        # Now add samples with different names but same xsec
-        if not isData:
-            list_signals = os.listdir(dir_output_sig)
-            if len(list_signals) > 1:
-                hadd_command = "hadd -f " + dir_output_sig + "WPiGammaAnalysis_Signal_" + year + ".root " + dir_output_sig + "WPiGammaAnalysis_Signal_*_" + year + ".root "
-                rm_command = "rm -rf " + dir_output_sig + "WPiGammaAnalysis_Signal_*" + "_" + year + ".root "
-                
-                os.system(hadd_command)
-                os.system(rm_command)
-
-            for sample in complementary_samples_list:
-                hadd_command = "hadd -f " + dir_output_bkg + "WPiGammaAnalysis_" + sample + "_" + year + ".root " + dir_output_bkg + "WPiGammaAnalysis_" + sample + "_*_" + year + ".root "
-                rm_command = "rm -rf " + dir_output_bkg + "WPiGammaAnalysis_" + sample + "_?" + "_" + year + ".root "
-                
-                os.system(hadd_command)
-                os.system(rm_command)        
-
+if doHadd or doBoth:
+    # Now add samples with different names but same xsec
+    if not isData:
+        list_signals = os.listdir(dir_output_sig)
+        if len(list_signals) > 1:
+            hadd_command = "hadd -f " + dir_output_sig + "WPiGammaAnalysis_Signal_" + year + ".root " + dir_output_sig + "WPiGammaAnalysis_Signal_*_" + year + ".root "
+            rm_command = "rm -rf " + dir_output_sig + "WPiGammaAnalysis_Signal_*" + "_" + year + ".root "
             
-        if isData:
-            list_data = os.listdir(dir_output_data)
-            if len(list_data) > 1:
-                hadd_command = "hadd -f " + dir_output_data + "WPiGammaAnalysis_Data_" + year + ".root " + dir_output_data + "WPiGammaAnalysis_*_" + year + ".root "
-                rm_command = "rm -rf " + dir_output_data + "WPiGammaAnalysis_Single*.root "
+            os.system(hadd_command)
+            os.system(rm_command)
+
+        for sample in complementary_samples_list:
+            hadd_command = "hadd -f " + dir_output_bkg + "WPiGammaAnalysis_" + sample + "_" + year + ".root " + dir_output_bkg + "WPiGammaAnalysis_" + sample + "_?_" + year + ".root "
+            rm_command = "rm -rf " + dir_output_bkg + "WPiGammaAnalysis_" + sample + "_?_" + year + ".root "
                 
-                os.system(hadd_command)
-                os.system(rm_command)
+            os.system(hadd_command)
+            os.system(rm_command)        
+            
+            
+    if isData:
+        list_data = os.listdir(dir_output_data)
+        if len(list_data) > 1:
+            hadd_command = "hadd -f " + dir_output_data + "WPiGammaAnalysis_Data_" + year + ".root " + dir_output_data + "WPiGammaAnalysis_*_" + year + ".root "
+            rm_command = "rm -rf " + dir_output_data + "WPiGammaAnalysis_Single*.root "
+            
+            os.system(hadd_command)
+            os.system(rm_command)
 
 if doDownload:
     print "Download done!"

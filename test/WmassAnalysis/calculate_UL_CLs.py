@@ -9,6 +9,8 @@ p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <
 args = p.parse_args()
 
 runningEra = int(args.runningEra_option)
+
+suppressAllSystematics = True
 #---------------------------------#
 
 #Get the model and the data
@@ -33,49 +35,52 @@ observables.add(Categorization)
 
 
 #Define nuisances
-constrained_params = ROOT.RooArgSet()
-constrained_params.add(workspace.var("dCB_width"))
-constrained_params.add(workspace.var("W_xsec_constr"))
-
-if runningEra == 0:
-    constrained_params.add(workspace.var("eta_mu_2016"))
-    constrained_params.add(workspace.var("eta_el_2016"))
-    constrained_params.add(workspace.var("lumi_constr_2016"))
-    constrained_params.add(workspace.var("eff_mu_constr_2016"))
-    constrained_params.add(workspace.var("eff_el_constr_2016"))
-if runningEra == 1:
-    constrained_params.add(workspace.var("eta_mu_2017"))
-    constrained_params.add(workspace.var("eta_el_2017"))
-    constrained_params.add(workspace.var("lumi_constr_2017"))
-    constrained_params.add(workspace.var("eff_mu_constr_2017"))
-    constrained_params.add(workspace.var("eff_el_constr_2017"))
-if runningEra == 2:
-    constrained_params.add(workspace.var("eta_mu_2016"))
-    constrained_params.add(workspace.var("eta_el_2016"))
-    constrained_params.add(workspace.var("lumi_constr_2016"))
-    constrained_params.add(workspace.var("eff_mu_constr_2016"))
-    constrained_params.add(workspace.var("eff_el_constr_2016"))
-    constrained_params.add(workspace.var("eta_mu_2017"))
-    constrained_params.add(workspace.var("eta_el_2017"))
-    constrained_params.add(workspace.var("lumi_constr_2017"))
-    constrained_params.add(workspace.var("eff_mu_constr_2017"))
-    constrained_params.add(workspace.var("eff_el_constr_2017"))
-if runningEra == 3:
-    constrained_params.add(workspace.var("eta_mu_2016_2017_2018"))
-    constrained_params.add(workspace.var("eta_el_2016_2017_2018"))
-    constrained_params.add(workspace.var("lumi_constr_2016"))
-    constrained_params.add(workspace.var("eff_mu_constr_2016"))
-    constrained_params.add(workspace.var("eff_el_constr_2016"))
-    constrained_params.add(workspace.var("lumi_constr_2017"))
-    constrained_params.add(workspace.var("eff_mu_constr_2017"))
-    constrained_params.add(workspace.var("eff_el_constr_2017"))
-    constrained_params.add(workspace.var("lumi_constr_2018"))
-    constrained_params.add(workspace.var("eff_mu_constr_2018"))
-    constrained_params.add(workspace.var("eff_el_constr_2018"))
-
+if not suppressAllSystematics:
+    constrained_params = ROOT.RooArgSet()
+    constrained_params.add(workspace.var("dCB_width"))
+    constrained_params.add(workspace.var("dCB_pole"))
+    constrained_params.add(workspace.var("W_xsec_constr"))
+    
+    if runningEra == 0:
+        constrained_params.add(workspace.var("eta_mu_2016"))
+        constrained_params.add(workspace.var("eta_el_2016"))
+        constrained_params.add(workspace.var("lumi_constr_2016"))
+        constrained_params.add(workspace.var("eff_mu_constr_2016"))
+        constrained_params.add(workspace.var("eff_el_constr_2016"))
+    if runningEra == 1:
+        constrained_params.add(workspace.var("eta_mu_2017"))
+        constrained_params.add(workspace.var("eta_el_2017"))
+        constrained_params.add(workspace.var("lumi_constr_2017"))
+        constrained_params.add(workspace.var("eff_mu_constr_2017"))
+        constrained_params.add(workspace.var("eff_el_constr_2017"))
+    if runningEra == 2:
+        constrained_params.add(workspace.var("eta_mu_2016"))
+        constrained_params.add(workspace.var("eta_el_2016"))
+        constrained_params.add(workspace.var("lumi_constr_2016"))
+        constrained_params.add(workspace.var("eff_mu_constr_2016"))
+        constrained_params.add(workspace.var("eff_el_constr_2016"))
+        constrained_params.add(workspace.var("eta_mu_2017"))
+        constrained_params.add(workspace.var("eta_el_2017"))
+        constrained_params.add(workspace.var("lumi_constr_2017"))
+        constrained_params.add(workspace.var("eff_mu_constr_2017"))
+        constrained_params.add(workspace.var("eff_el_constr_2017"))
+    if runningEra == 3:
+        constrained_params.add(workspace.var("eta_mu_2016_2017_2018"))
+        constrained_params.add(workspace.var("eta_el_2016_2017_2018"))
+        constrained_params.add(workspace.var("lumi_constr_2016"))
+        constrained_params.add(workspace.var("eff_mu_constr_2016"))
+        constrained_params.add(workspace.var("eff_el_constr_2016"))
+        constrained_params.add(workspace.var("lumi_constr_2017"))
+        constrained_params.add(workspace.var("eff_mu_constr_2017"))
+        constrained_params.add(workspace.var("eff_el_constr_2017"))
+        constrained_params.add(workspace.var("lumi_constr_2018"))
+        constrained_params.add(workspace.var("eff_mu_constr_2018"))
+        constrained_params.add(workspace.var("eff_el_constr_2018"))
+        
 #Define global observables
 global_params = ROOT.RooArgSet()
 global_params.add(workspace.var("dCB_width_constr"))
+global_params.add(workspace.var("dCB_pole_constr"))
 global_params.add(workspace.var("glb_W_xsec"))
 
 if runningEra == 0:
@@ -119,7 +124,8 @@ if runningEra == 3:
 sbModel = ROOT.RooStats.ModelConfig()
 sbModel.SetWorkspace(workspace)
 sbModel.SetObservables(observables)
-sbModel.SetNuisanceParameters(constrained_params)
+if not suppressAllSystematics:
+    sbModel.SetNuisanceParameters(constrained_params)
 sbModel.SetGlobalObservables(global_params)
 sbModel.SetPdf("totPDF")
 #sbModel.SetPdf("totPDF_el_2016")
@@ -128,7 +134,8 @@ sbModel.SetParametersOfInterest(poi)
 
 bModel = sbModel.Clone()
 bModel.SetObservables(observables)
-bModel.SetNuisanceParameters(constrained_params)
+if not suppressAllSystematics:
+    bModel.SetNuisanceParameters(constrained_params)
 bModel.SetGlobalObservables(global_params)
 bModel.SetPdf("totPDF")
 #bModel.SetPdf("totPDF_el_2016")
@@ -197,7 +204,7 @@ poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
 min_scan = 0.000005
-max_scan = 0.000035
+max_scan = 0.000030
 print "Doing a fixed scan  in interval : ",min_scan, " , ", max_scan
 calc.SetFixedScan(npoints,min_scan,max_scan)
 

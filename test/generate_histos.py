@@ -1,6 +1,7 @@
 import ROOT
 import math
 import argparse
+import numpy as np
 from Simplified_Workflow_Handler import Simplified_Workflow_Handler
 
 ############################################################################
@@ -46,16 +47,11 @@ if runningEra == 1:
 if runningEra == 2:
     luminosity_norm = 59.69
 
-luminosity_norm_2017 = 41.529
-luminosity_norm_2017_Ele32_WPTight = 27.13
-
-_Nrandom_for_Ele_32_WPTight_exclusion = ROOT.TRandom3(64524)
-
 #############---------------- BDT score cut values ----------------#############
-BDT_OUT_MU  = 0.220
-BDT_OUT_ELE = 0.170
-#BDT_OUT_MU  = 0.217 #Wmass
-#BDT_OUT_ELE = 0.148 #Wmass
+BDT_OUT_MU  = 0.299
+BDT_OUT_ELE = 0.246
+# BDT_OUT_MU  = 0.277 #Wmass
+# BDT_OUT_ELE = 0.247 #Wmass
 
 ############################################################################
 #                                                                          #
@@ -90,7 +86,7 @@ ttbar_sig_calib = myWF.get_ttbar_signal_reweight()
 ##Get the handlers for all the histos and graphics
 h_base  = dict()
 
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled"]
 
 h_base[list_histos[0]]  = ROOT.TH1F(list_histos[0], "p_{T} of the muon", 15, 25, 100.)
 h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 15, 28, 100.)
@@ -101,8 +97,8 @@ h_base[list_histos[5]]  = ROOT.TH1F(list_histos[5], "eta of the electron", 20, -
 h_base[list_histos[6]]  = ROOT.TH1F(list_histos[6], "eta of the pion", 20, -3, 3)
 h_base[list_histos[7]]  = ROOT.TH1F(list_histos[7], "eta of the photon", 20, -3, 3)
 h_base[list_histos[8]]  = ROOT.TH1F(list_histos[8], "n Bjets 25", 6, 0, 6.)
-h_base[list_histos[9]]  = ROOT.TH1F(list_histos[9], "deltaphi mu-pi", 10, 0, 3.14)
-h_base[list_histos[10]] = ROOT.TH1F(list_histos[10], "deltaphi ele-pi", 10, 0, 3.14)
+h_base[list_histos[9]]  = ROOT.TH1F(list_histos[9], "deltaphi mu-pi", 100, 0, 0.5)
+h_base[list_histos[10]] = ROOT.TH1F(list_histos[10], "deltaphi ele-pi", 100, 0, 0.5)
 h_base[list_histos[11]] = ROOT.TH1F(list_histos[11], "deltaphi mu-W", 10, 0, 3.14)
 h_base[list_histos[12]] = ROOT.TH1F(list_histos[12], "deltaphi ele-W", 10, 0, 3.14)
 h_base[list_histos[13]] = ROOT.TH1F(list_histos[13], "deltaeta mu-pi", 20, -5, 5)
@@ -136,6 +132,9 @@ h_base[list_histos[38]] = ROOT.TH1F(list_histos[38], "p_{T} of the lepton", 15, 
 h_base[list_histos[39]] = ROOT.TH1F(list_histos[39], "Pion rel. isolation 05 - ch", 50, 0, 10)
 h_base[list_histos[40]] = ROOT.TH1F(list_histos[40], "deltaR mu-pi", 50, 0., 5.)
 h_base[list_histos[41]] = ROOT.TH1F(list_histos[41], "deltaR ele-pi", 50, 0., 5.)
+h_base[list_histos[42]] = ROOT.TH1F(list_histos[42], "n Bjets scaled", 6, 0, 6.)
+h_base[list_histos[43]] = ROOT.TH1F(list_histos[43], "met mu scaled", 20, 0, 200)
+h_base[list_histos[44]] = ROOT.TH1F(list_histos[44], "met ele scaled", 20, 0, 200)
 
 _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 
@@ -194,21 +193,9 @@ for jentry in xrange(mytree.GetEntriesFast()):
     isTriggerMatched = mytree.isTriggerMatched
     isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
     isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
-    if runningEra == 1:
-        isSingleMuTrigger_27 = mytree.isSingleMuTrigger_27
-        isSingleEleTrigger_32 = mytree.isSingleEleTrigger_32
-        isSingleEleTrigger_32_DoubleEG = mytree.isSingleEleTrigger_32_DoubleEG
-
-        if sample_name == "Data":
-            run_number = mytree.run_number
-            #Use only Ele32_WPTight trigger for the period it is on
-            if run_number > 302026 and not isSingleMuTrigger_27 and not isSingleMuTrigger_50 and not isSingleEleTrigger_32:
-                continue
-        else: #Use only Ele32_WPTight trigger for the fraction of luminosity it is on
-            if not isSingleMuTrigger_27 and not isSingleMuTrigger_50:
-                if _Nrandom_for_Ele_32_WPTight_exclusion.Rndm() <= (luminosity_norm_2017_Ele32_WPTight/luminosity_norm_2017):
-                    if not isSingleEleTrigger_32:
-                        continue
+    isSingleMuTrigger_27 = mytree.isSingleMuTrigger_27
+    isSingleEleTrigger_32 = mytree.isSingleEleTrigger_32
+    isSingleEleTrigger_32_DoubleEG = mytree.isSingleEleTrigger_32_DoubleEG
 
 
     lep_pT  = mytree.lepton_pT
@@ -233,12 +220,13 @@ for jentry in xrange(mytree.GetEntriesFast()):
     gamma_E = mytree.photon_energy
     gamma_FourMomentum = ROOT.TLorentzVector()
     gamma_FourMomentum.SetPtEtaPhiE(gamma_eT,gamma_eta,gamma_phi,gamma_E)
-    gamma_iso_ChHad = mytree.photon_iso_ChargedHadron
-    gamma_iso_NeuHad = mytree.photon_iso_NeutralHadron
-    gamma_iso_Ph = mytree.photon_iso_Photon
-    gamma_iso_eArho = mytree.photon_iso_eArho
+    # gamma_iso_ChHad = mytree.photon_iso_ChargedHadron
+    # gamma_iso_NeuHad = mytree.photon_iso_NeutralHadron
+    # gamma_iso_Ph = mytree.photon_iso_Photon
+    # gamma_iso_eArho = mytree.photon_iso_eArho
 
     met = mytree.met_pT
+    met_scaled = mytree.met_pT_scaled
     met_puppi = mytree.metpuppi_pT
        
     Wmass = mytree.Wmass
@@ -247,8 +235,9 @@ for jentry in xrange(mytree.GetEntriesFast()):
     lep_FourMomentum = ROOT.TLorentzVector()
     lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
 
-    nBjets = mytree.nBjets
+    nBjets_30 = mytree.nBjets_30
     nBjets_25 = mytree.nBjets_25
+    nBjets_scaled = mytree.nBjets_scaled
 
     deltaeta_lep_pi = math.fabs(lep_eta-pi_eta)
         
@@ -323,7 +312,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
     #                                                                          #
     ############################################################################
 
-    if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,deltaphi_lep_gamma,isTriggerMatched,runningEra):
+    if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,deltaphi_lep_pi,deltaphi_lep_gamma,isTriggerMatched,runningEra):
         continue
 
     ############################################################################
@@ -364,23 +353,32 @@ for jentry in xrange(mytree.GetEntriesFast()):
     ############### Multiply weights and SFs for MC. Set weight to 1 for data ###############
 
     if not "Data" in sample_name:
-        MC_Weight = mytree.MC_Weight # Add MC weight        
-        PU_Weight = mytree.PU_Weight # Add Pile Up weight
+        MC_Weight   = mytree.MC_Weight # Add MC weight        
+        PU_Weight   = mytree.PU_Weight # Add Pile Up weight
+        bTag_Weight = mytree.bTag_Weight # Add b-tagging weight
+        if math.isnan(bTag_Weight) or bTag_Weight == np.inf or bTag_Weight == -np.inf: #FIXME
+            bTag_Weight = 1.
 
+        #if nBjets_25 == 0:
+        #    print "bTag_Weight: ", bTag_Weight
+
+        # if bTag_Weight < 1:
+        #     print "bTag_Weight: ", bTag_Weight
+        
+        #print "bTag_Weight ancora scazzato: ", bTag_Weight
+        #Event_Weight = norm_factor*MC_Weight*lep_weight*ph_weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
+        Event_Weight = norm_factor*lep_weight*ph_weight*MC_Weight*PU_Weight*bTag_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
         if not runningEra == 2: # Prefiring weight NOT to be applied to 2018 MC
             Prefiring_Weight = mytree.Prefiring_Weight # Add prefiring weight 
-            Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight*Prefiring_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
-        else:
-            Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
+            Event_Weight *= Prefiring_Weight
 
-        Event_Weight = Event_Weight*lep_weight
 
         ################ Zvtx inefficiency weight for 2017 MC ################
         #https://twiki.cern.ch/twiki/bin/view/CMS/Egamma2017DataRecommendations
 
         if runningEra == 1:
-            if (isSingleEleTrigger_32_DoubleEG or isSingleEleTrigger_32) and not isSingleMuTrigger_27 and not isSingleMuTrigger_50:
-                Event_Weight = Event_Weight*0.991 #uniform penalty for all the 2017 eras
+            if isSingleEleTrigger_32_DoubleEG and not isSingleMuTrigger_27 and not isSingleMuTrigger_50:
+                Event_Weight *= 0.991 #uniform penalty for all the 2017 eras
 
         ################ Correct for the difference in pT of the generated W in Pythia and Madgraph samples ################
 
@@ -397,7 +395,6 @@ for jentry in xrange(mytree.GetEntriesFast()):
 
     else:
         Event_Weight = 1.
-
 
     # Remove QCD events with abnormal weight
     if not isBDT and "QCD" in sample_name and Event_Weight >= 1600.:
@@ -454,6 +451,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_base["h_Wmass"].Fill(Wmass,Event_Weight)
 
     h_base["h_nBjets_25"].Fill(nBjets_25,Event_Weight)
+    h_base["h_nBjets_scaled"].Fill(nBjets_scaled,Event_Weight)
     h_base["h_met_puppi"].Fill(met_puppi,Event_Weight)
     h_base["h_pipt"].Fill(pi_pT,Event_Weight)
     h_base["h_pieta"].Fill(pi_eta,Event_Weight)
@@ -479,6 +477,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_base["h_piRelIso_05_mu"].Fill(piRelIso_05,Event_Weight)
         h_base["h_piRelIso_05_mu_ch"].Fill(piRelIso_05_ch,Event_Weight)
         h_base["h_met_mu"].Fill(met,Event_Weight)
+        h_base["h_met_mu_scaled"].Fill(met_scaled,Event_Weight)
         h_base["h_deltaphi_mu_W"].Fill(deltaphi_lep_W,Event_Weight)
         h_base["h_mu_gamma_InvMass"].Fill(mu_gamma_InvMass,Event_Weight)  
         h_base["h_deltaeta_mu_pi"].Fill(deltaeta_lep_pi,Event_Weight)
@@ -503,6 +502,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_base["h_piRelIso_05_ele_ch"].Fill(piRelIso_05_ch,Event_Weight)
         h_base["h_ele_gamma_InvMass"].Fill(ele_gamma_InvMass,Event_Weight)
         h_base["h_met_ele"].Fill(met,Event_Weight)
+        h_base["h_met_ele_scaled"].Fill(met_scaled,Event_Weight)
         h_base["h_deltaeta_ele_pi"].Fill(deltaeta_lep_pi,Event_Weight)
         h_base["h_deltaphi_ele_pi"].Fill(deltaphi_lep_pi,Event_Weight)
         h_base["h_deltaphi_ele_gamma"].Fill(deltaphi_lep_gamma,Event_Weight)
@@ -518,7 +518,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
     #                                                                          #
     ############################################################################
     ########----------- To be filled in "preselection" mode! -----------########
-#     if sample_name == "Signal":
+ #    if sample_name == "Signal":
 #         if is_signal_Wplus:
 #             local_pT = Wplus_pT
 #         else:

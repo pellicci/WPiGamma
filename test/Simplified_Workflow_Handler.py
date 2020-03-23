@@ -25,6 +25,11 @@ el_reco_scale_file_2016  = ROOT.TFile(el_reco_scale_name_2016)
 el_reco_scale_histo_2016 = ROOT.TH2F()
 el_reco_scale_histo_2016 = el_reco_scale_file_2016.Get("EGamma_SF2D")
 
+el_trigger_scale_name_2016  = "scale_factors/egammaTriggerEfficiency_2016.root"
+el_trigger_scale_file_2016  = ROOT.TFile(el_trigger_scale_name_2016)
+el_trigger_scale_histo_2016 = ROOT.TH2F()
+el_trigger_scale_histo_2016 = el_trigger_scale_file_2016.Get("EGamma_SF2D")
+
 ph_ID_scale_name_2016  = "scale_factors/Fall17V2_2016_MVAwp90_photons.root"
 ph_ID_scale_file_2016  = ROOT.TFile(ph_ID_scale_name_2016)
 ph_ID_scale_histo_2016 = ROOT.TH2F()
@@ -82,6 +87,11 @@ el_reco_scale_file_2017  = ROOT.TFile(el_reco_scale_name_2017)
 el_reco_scale_histo_2017 = ROOT.TH2F()
 el_reco_scale_histo_2017 = el_reco_scale_file_2017.Get("EGamma_SF2D")
 
+el_trigger_scale_name_2017  = "scale_factors/egammaTriggerEfficiency_2017.root"
+el_trigger_scale_file_2017  = ROOT.TFile(el_trigger_scale_name_2017)
+el_trigger_scale_histo_2017 = ROOT.TH2F()
+el_trigger_scale_histo_2017 = el_trigger_scale_file_2017.Get("EGamma_SF2D")
+
 ph_ID_scale_name_2017  = "scale_factors/2017_PhotonsMVAwp90.root"
 ph_ID_scale_file_2017  = ROOT.TFile(ph_ID_scale_name_2017)
 ph_ID_scale_histo_2017 = ROOT.TH2F()
@@ -121,6 +131,11 @@ el_reco_scale_name_2018  = "scale_factors/egammaEffi.txt_EGM2D_updatedAll_2018.r
 el_reco_scale_file_2018  = ROOT.TFile(el_reco_scale_name_2018)
 el_reco_scale_histo_2018 = ROOT.TH2F()
 el_reco_scale_histo_2018 = el_reco_scale_file_2018.Get("EGamma_SF2D")
+
+el_trigger_scale_name_2018  = "scale_factors/egammaTriggerEfficiency_2018.root"
+el_trigger_scale_file_2018  = ROOT.TFile(el_trigger_scale_name_2018)
+el_trigger_scale_histo_2018 = ROOT.TH2F()
+el_trigger_scale_histo_2018 = el_trigger_scale_file_2018.Get("EGamma_SF2D")
 
 ph_ID_scale_name_2018  = "scale_factors/2018_PhotonsMVAwp90.root"
 ph_ID_scale_file_2018  = ROOT.TFile(ph_ID_scale_name_2018)
@@ -326,18 +341,18 @@ class Simplified_Workflow_Handler:
 
     ###############################################################################################################################################
 
-    def post_preselection_cuts(self, lep_eta, lep_pT, isMuon, deltaphi_lep_gamma, isTriggerMatched, runningEra):
+    def post_preselection_cuts(self, lep_eta, lep_pT, isMuon, deltaphi_lep_pi, deltaphi_lep_gamma, isTriggerMatched, runningEra):
 
         if runningEra == 0:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 30.) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or not isTriggerMatched:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 30.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or not isTriggerMatched:
                 return True
 
         if runningEra == 1:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 28.) or not isTriggerMatched:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 28.) or not isTriggerMatched:
                 return True
 
         if runningEra == 2:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or not LepPiOppositeCharge or not isTriggerMatched:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or not isTriggerMatched:
                 return True
 
         return False
@@ -368,9 +383,12 @@ class Simplified_Workflow_Handler:
 
             scale_factor_reco   = el_reco_scale_histo_2016.GetBinContent( el_reco_scale_histo_2016.GetXaxis().FindBin(local_lep_eta), el_reco_scale_histo_2016.GetYaxis().FindBin(local_lep_pt_4reco) )
             el_reco_err         = el_reco_scale_histo_2016.GetBinError( el_reco_scale_histo_2016.GetXaxis().FindBin(local_lep_eta), el_reco_scale_histo_2016.GetYaxis().FindBin(local_lep_pt_4reco) )
+
+            scale_factor_trigger   = el_trigger_scale_histo_2016.GetBinContent( el_trigger_scale_histo_2016.GetXaxis().FindBin(local_lep_eta), el_trigger_scale_histo_2016.GetYaxis().FindBin(local_lep_pt_4reco) ) #trigger SFs have the same pT maximum of reco SFs
+            el_trigger_err         = el_trigger_scale_histo_2016.GetBinError( el_trigger_scale_histo_2016.GetXaxis().FindBin(local_lep_eta), el_trigger_scale_histo_2016.GetYaxis().FindBin(local_lep_pt_4reco) ) #trigger SFs have the same pT maximum of reco SFs
             
-            scale_factor = scale_factor_ID * scale_factor_reco
-            tot_err      = math.sqrt( scale_factor_ID * scale_factor_ID * el_reco_err * el_reco_err + scale_factor_reco * scale_factor_reco * el_ID_err * el_ID_err)
+            scale_factor = scale_factor_ID * scale_factor_reco * scale_factor_trigger
+            tot_err      = math.sqrt( scale_factor_ID * scale_factor_ID * scale_factor_trigger * scale_factor_trigger * el_reco_err * el_reco_err + scale_factor_reco * scale_factor_reco * scale_factor_trigger * scale_factor_trigger * el_ID_err * el_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_reco * scale_factor_reco * el_trigger_err * el_trigger_err )
 
 
         if runningEra == 1: # Scale factors for 2017
@@ -388,13 +406,16 @@ class Simplified_Workflow_Handler:
             
             scale_factor_ID   = el_ID_scale_histo_2017.GetBinContent( el_ID_scale_histo_2017.GetXaxis().FindBin(local_lep_eta), el_ID_scale_histo_2017.GetYaxis().FindBin(local_lep_pt) )
             el_ID_err         = el_ID_scale_histo_2017.GetBinError( el_ID_scale_histo_2017.GetXaxis().FindBin(local_lep_eta), el_ID_scale_histo_2017.GetYaxis().FindBin(local_lep_pt) )
-
             
             scale_factor_reco   = el_reco_scale_histo_2017.GetBinContent( el_reco_scale_histo_2017.GetXaxis().FindBin(local_lep_eta), el_reco_scale_histo_2017.GetYaxis().FindBin(local_lep_pt) )
             el_reco_err         = el_reco_scale_histo_2017.GetBinError( el_reco_scale_histo_2017.GetXaxis().FindBin(local_lep_eta), el_reco_scale_histo_2017.GetYaxis().FindBin(local_lep_pt) )
+
+            scale_factor_trigger   = el_trigger_scale_histo_2017.GetBinContent( el_trigger_scale_histo_2017.GetXaxis().FindBin(local_lep_eta), el_trigger_scale_histo_2017.GetYaxis().FindBin(local_lep_pt) ) #trigger SFs have the same pT maximum of reco SFs
+            el_trigger_err         = el_trigger_scale_histo_2017.GetBinError( el_trigger_scale_histo_2017.GetXaxis().FindBin(local_lep_eta), el_trigger_scale_histo_2017.GetYaxis().FindBin(local_lep_pt) ) #trigger SFs have the same pT maximum of reco SFs
             
-            scale_factor = scale_factor_ID * scale_factor_reco
-            tot_err      = math.sqrt( scale_factor_ID * scale_factor_ID * el_reco_err * el_reco_err + scale_factor_reco * scale_factor_reco * el_ID_err * el_ID_err)
+            scale_factor = scale_factor_ID * scale_factor_reco * scale_factor_trigger
+            tot_err      = math.sqrt( scale_factor_ID * scale_factor_ID * scale_factor_trigger * scale_factor_trigger * el_reco_err * el_reco_err + scale_factor_reco * scale_factor_reco * scale_factor_trigger * scale_factor_trigger * el_ID_err * el_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_reco * scale_factor_reco * el_trigger_err * el_trigger_err )
+
 
 
         if runningEra == 2: # Scale factors for 2018
@@ -413,12 +434,14 @@ class Simplified_Workflow_Handler:
             scale_factor_ID   = el_ID_scale_histo_2018.GetBinContent( el_ID_scale_histo_2018.GetXaxis().FindBin(local_lep_eta), el_ID_scale_histo_2018.GetYaxis().FindBin(local_lep_pt) )
             el_ID_err         = el_ID_scale_histo_2018.GetBinError( el_ID_scale_histo_2018.GetXaxis().FindBin(local_lep_eta), el_ID_scale_histo_2018.GetYaxis().FindBin(local_lep_pt) )
 
-            
             scale_factor_reco   = el_reco_scale_histo_2018.GetBinContent( el_reco_scale_histo_2018.GetXaxis().FindBin(local_lep_eta), el_reco_scale_histo_2018.GetYaxis().FindBin(local_lep_pt) )
             el_reco_err         = el_reco_scale_histo_2018.GetBinError( el_reco_scale_histo_2018.GetXaxis().FindBin(local_lep_eta), el_reco_scale_histo_2018.GetYaxis().FindBin(local_lep_pt) )
+
+            scale_factor_trigger   = el_trigger_scale_histo_2018.GetBinContent( el_trigger_scale_histo_2018.GetXaxis().FindBin(local_lep_eta), el_trigger_scale_histo_2018.GetYaxis().FindBin(local_lep_pt) ) #trigger SFs have the same pT maximum of reco SFs
+            el_trigger_err         = el_trigger_scale_histo_2018.GetBinError( el_trigger_scale_histo_2018.GetXaxis().FindBin(local_lep_eta), el_trigger_scale_histo_2018.GetYaxis().FindBin(local_lep_pt) ) #trigger SFs have the same pT maximum of reco SFs
             
-            scale_factor = scale_factor_ID * scale_factor_reco
-            tot_err      = math.sqrt( scale_factor_ID * scale_factor_ID * el_reco_err * el_reco_err + scale_factor_reco * scale_factor_reco * el_ID_err * el_ID_err)
+            scale_factor = scale_factor_ID * scale_factor_reco * scale_factor_trigger
+            tot_err      = math.sqrt( scale_factor_ID * scale_factor_ID * scale_factor_trigger * scale_factor_trigger * el_reco_err * el_reco_err + scale_factor_reco * scale_factor_reco * scale_factor_trigger * scale_factor_trigger * el_ID_err * el_ID_err + scale_factor_ID * scale_factor_ID * scale_factor_reco * scale_factor_reco * el_trigger_err * el_trigger_err )
 
 
         return scale_factor, tot_err

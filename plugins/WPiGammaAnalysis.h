@@ -52,6 +52,7 @@ private:
   int nElectronsLoose;
   int nPions;
   int nPhotons;
+  int njets;
   int nBjets_30;
   int nBjets_25;
   int nBjets_scaled;

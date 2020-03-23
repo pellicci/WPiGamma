@@ -87,10 +87,10 @@ def rejB_vs_S():
     leg2.SetFillStyle(0)
     #leg2.AddEntry(h_rejB_vs_S_1,"with data sidebands","l")
     #leg2.AddEntry(h_rejB_vs_S_1,"with #Delta#varphi_{l,#gamma}","l")
-    leg2.AddEntry(h_rejB_vs_S_1,"with m_{\pi\gamma}","l")
+    leg2.AddEntry(h_rejB_vs_S_1,"with m_{#pi#gamma}","l")
     #leg2.AddEntry(h_rejB_vs_S_2,"with MC","l")
     #leg2.AddEntry(h_rejB_vs_S_2,"without #Delta#varphi_{l,#gamma}","l")
-    leg2.AddEntry(h_rejB_vs_S_2,"without m_{\pi\gamma}","l")
+    leg2.AddEntry(h_rejB_vs_S_2,"without m_{#pi#gamma}","l")
 
     gStyle.SetOptStat(0)
     canvas2 = TCanvas()
@@ -112,5 +112,5 @@ def rejB_vs_S():
 
 if __name__ == "__main__":
 
-    #rejB_vs_S()
-    BDT_output()
+    rejB_vs_S()
+    #BDT_output()

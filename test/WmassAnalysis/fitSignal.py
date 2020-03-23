@@ -89,7 +89,7 @@ totSignal.fitTo(data_Signal)
 massplot = Wmass.frame()
 massplot.SetTitle(" ")
 massplot.SetTitleOffset(1.5,"y")
-data_Signal.plotOn(massplot)#,ROOT.RooFit.MarkerColor(ROOT.kRed),ROOT.RooFit.Rescale(9740./9652.)) #RESCALE to the number of 2017 events to check if the two signals are compatible
+data_Signal.plotOn(massplot)#,ROOT.RooFit.MarkerColor(ROOT.kRed),ROOT.RooFit.Rescale(7882./7929.)) #RESCALE to the number of 2017 events to check if the two signals are compatible
 totSignal.plotOn(massplot)
 
 #totSignal.fitTo(data_Signal_2017)#FIXME

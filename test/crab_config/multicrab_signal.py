@@ -16,22 +16,22 @@ config.JobType.outputFiles = ['WPiGammaAnalysis_output.root']
 config.JobType.allowUndistributedCMSSW = True #Otherwise get an error for incompatibility of architecture(slc7)/release(9_4_10). It is safe according to https://hypernews.cern.ch/HyperNews/CMS/get/computing-tools/4935/2.html
 
 if runningEra == 0:
-    config.General.workArea = 'crab_projects/samples_MC_2016/'
-    #config.General.workArea = 'crab_projects/samples_MC_2016_bTagEfficiency/'
+    config.General.workArea = 'crab_projects/samples_MC_2016_medium/'
+    #config.General.workArea = 'crab_projects/samples_MC_2016_bTagEfficiency_medium/'
     #config.General.workArea = 'crab_projects/samples_LeptonStudy_2016/'
-    config.JobType.inputFiles = ['MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root','MyDataPileupHistogram_2016.root','DeepCSV_2016LegacySF_WP_V1.csv','bTagEff_2016.root'] #MC and data files for PileUp reweighting (2016)
+    config.JobType.inputFiles = ['MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root','MyDataPileupHistogram_2016.root','DeepCSV_2016LegacySF_WP_V1.csv','bTagEff_medium_2016.root'] #MC and data files for PileUp reweighting (2016)
 
 if runningEra == 1:
-    config.General.workArea = 'crab_projects/samples_MC_2017/'
-    #config.General.workArea = 'crab_projects/samples_MC_2017_bTagEfficiency/'
+    config.General.workArea = 'crab_projects/samples_MC_2017_medium/'
+    #config.General.workArea = 'crab_projects/samples_MC_2017_bTagEfficiency_medium/'
     #config.General.workArea = 'crab_projects/samples_LeptonStudy_2017/'
-    config.JobType.inputFiles = ['MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root','MyDataPileupHistogram_2017.root','DeepCSV_94XSF_WP_V4_B_F.csv','bTagEff_2017.root'] #MC and data files for PileUp reweighting (2017)
+    config.JobType.inputFiles = ['MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root','MyDataPileupHistogram_2017.root','DeepCSV_94XSF_WP_V4_B_F.csv','bTagEff_medium_2017.root'] #MC and data files for PileUp reweighting (2017)
 
 if runningEra == 2:
-    config.General.workArea = 'crab_projects/samples_MC_2018/'
-    #config.General.workArea = 'crab_projects/samples_MC_2018_bTagEfficiency/'
+    config.General.workArea = 'crab_projects/samples_MC_2018_medium/'
+    #config.General.workArea = 'crab_projects/samples_MC_2018_bTagEfficiency_medium/'
     #config.General.workArea = 'crab_projects/samples_LeptonStudy_2018/'
-    config.JobType.inputFiles = ['MCpileUp_2018_25ns_JuneProjectionFull18_PoissonOOTPU.root','MyDataPileupHistogram_2018.root','DeepCSV_102XSF_WP_V1.csv','bTagEff_2018.root'] #MC and data files for PileUp reweighting (2017)
+    config.JobType.inputFiles = ['MCpileUp_2018_25ns_JuneProjectionFull18_PoissonOOTPU.root','MyDataPileupHistogram_2018.root','DeepCSV_102XSF_WP_V1.csv','bTagEff_medium_2018.root'] #MC and data files for PileUp reweighting (2017)
 
 
 config.section_('Data')

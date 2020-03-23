@@ -24,7 +24,7 @@ runningEra = int(args.runningEra_option)
 #Supress the opening of many Canvas's
 ROOT.gROOT.SetBatch(True)
 
-isData   = True # Switch from DATA to MC and vice versa
+isData   = False # Switch from DATA to MC and vice versa
 isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
 split_MC = False # If True, MC signal sample is split in two for the training/testing of the BDT
 
@@ -54,13 +54,10 @@ ELE_GAMMA_INVMASS_MAX = 91.6
 #Normalize to this luminsity, in fb-1
 luminosity_norm_list = [35.86,41.529,59.69] #2016,2017,2018
 
-luminosity_norm_2017_Ele32_WPTight = 27.13
-_Nrandom_for_Ele_32_WPTight_exclusion = ROOT.TRandom3(64524)
-
 #############---------------- BDT score cut values ----------------#############
 
-BDT_OUT_MU  = 0.220
-BDT_OUT_ELE = 0.170
+BDT_OUT_MU  = 0.299
+BDT_OUT_ELE = 0.246
 
 ############################################################################
 #                                                                          #
@@ -105,7 +102,7 @@ _met                = np.zeros(1, dtype=float)
 _met_puppi          = np.zeros(1, dtype=float)
 _Wmass              = np.zeros(1, dtype=float)
 
-#_Nrandom_for_SF = ROOT.TRandom3(44317)
+_Nrandom_for_BDT_systematic = ROOT.TRandom3(24593)
 
 Wmass_mu   = ROOT.TH1F("Wmass_mu","Wmass mu",15,50,100)
 Wmass_ele  = ROOT.TH1F("Wmass_ele","Wmass ele",15,50,100)
@@ -300,9 +297,6 @@ def select_all_but_one(cutstring):
 ttbar_sig_calib = myWF.get_ttbar_signal_reweight()
 
 
-SignalTree_entries = 0
-entry_index = 0
-
 for full_sample_name in samplename_list:
 
     sample_name = full_sample_name.split("_")[0]
@@ -332,8 +326,11 @@ for full_sample_name in samplename_list:
 
     mytree = root_file[full_sample_name].Get("WPiGammaAnalysis/mytree")
     #print "root_file[sample_name]: ", root_file[full_sample_name]
- 
-    print "Processing Sample ", sample_name
+
+    sample_entries = mytree.GetEntriesFast() 
+    print "Processing Sample ", sample_name, ", number of events: ", sample_entries
+    SignalTree_entries = 0
+    entry_index = 0.
 
     #nEvts = mytree.GetEntriesFast() #Get the number of events per sample
 
@@ -373,31 +370,22 @@ for full_sample_name in samplename_list:
         #                                                                          #
         ############################################################################
 
-        if sample_name == "Signal":
-            SignalTree_entries = mytree.GetEntriesFast()
-            entry_index += 1
+        entry_index += 1.
+        
+        # if entry_index <= sample_entries/2.:
+        #     continue
+
+        # print entry_index
 
         isMuon = mytree.is_muon
 
         isTriggerMatched = mytree.isTriggerMatched
         isSingleMuTrigger_24 = mytree.isSingleMuTrigger_24
         isSingleMuTrigger_50 = mytree.isSingleMuTrigger_50
-
-        if sample_era == 1:
-            isSingleMuTrigger_27 = mytree.isSingleMuTrigger_27
-            isSingleEleTrigger_32 = mytree.isSingleEleTrigger_32
-            isSingleEleTrigger_32_DoubleEG = mytree.isSingleEleTrigger_32_DoubleEG
+        isSingleMuTrigger_27 = mytree.isSingleMuTrigger_27
+        isSingleEleTrigger_32 = mytree.isSingleEleTrigger_32
+        isSingleEleTrigger_32_DoubleEG = mytree.isSingleEleTrigger_32_DoubleEG
             
-            if sample_name == "Data":
-                run_number = mytree.run_number
-                #Use only Ele32_WPTight trigger for the period it is on
-                if run_number > 302026 and not isSingleMuTrigger_27 and not isSingleMuTrigger_50 and not isSingleEleTrigger_32:
-                    continue
-            else: #Use only Ele32_WPTight trigger for the fraction of luminosity it is on
-                if not isSingleMuTrigger_27 and not isSingleMuTrigger_50:
-                    if _Nrandom_for_Ele_32_WPTight_exclusion.Rndm() <= (luminosity_norm_2017_Ele32_WPTight/luminosity_norm):
-                        if not isSingleEleTrigger_32:
-                            continue
 
         lep_pT  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
@@ -424,10 +412,10 @@ for full_sample_name in samplename_list:
         gamma_FourMomentum = ROOT.TLorentzVector()
         gamma_FourMomentum.SetPtEtaPhiE(gamma_eT,gamma_eta,gamma_phi,gamma_E)
 
-        gamma_iso_ChHad = mytree.photon_iso_ChargedHadron
-        gamma_iso_NeuHad = mytree.photon_iso_NeutralHadron
-        gamma_iso_Ph = mytree.photon_iso_Photon
-        gamma_iso_eArho = mytree.photon_iso_eArho
+        # gamma_iso_ChHad = mytree.photon_iso_ChargedHadron
+        # gamma_iso_NeuHad = mytree.photon_iso_NeutralHadron
+        # gamma_iso_Ph = mytree.photon_iso_Photon
+        # gamma_iso_eArho = mytree.photon_iso_eArho
 
         W_phi = (pi_FourMomentum + gamma_FourMomentum).Phi()
 
@@ -450,7 +438,7 @@ for full_sample_name in samplename_list:
         else:
             mu_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
         
-        nBjets = mytree.nBjets
+        #nBjets_30 = mytree.nBjets_30
         nBjets_25 = mytree.nBjets_25
 
         deltaeta_lep_pi = math.fabs(lep_eta-pi_eta)
@@ -503,7 +491,7 @@ for full_sample_name in samplename_list:
         #                                                                          #
         ############################################################################
 
-        if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,deltaphi_lep_gamma,isTriggerMatched,sample_era):
+        if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,deltaphi_lep_pi,deltaphi_lep_gamma,isTriggerMatched,sample_era):
             continue
 
 
@@ -551,7 +539,7 @@ for full_sample_name in samplename_list:
             #https://twiki.cern.ch/twiki/bin/view/CMS/Egamma2017DataRecommendations
 
             if sample_era == 1:
-                if (isSingleEleTrigger_32_DoubleEG or isSingleEleTrigger_32) and not isSingleMuTrigger_27 and not isSingleMuTrigger_50:
+                if isSingleEleTrigger_32_DoubleEG and not isSingleMuTrigger_27 and not isSingleMuTrigger_50:
                     Event_Weight = Event_Weight*0.991 #uniform penalty for all the 2017 eras
                     
             ################ Correct for the difference in pT of the generated W in Pythia and Madgraph samples ################
@@ -667,7 +655,6 @@ for full_sample_name in samplename_list:
                 _pi_pT[0]              = pi_pT
                 _lep_pT[0]             = lep_pT
                 _lep_iso[0]            = lep_iso
-                _nBjets[0]             = nBjets
                 _nBjets_25[0]          = nBjets_25
                 _weight[0]             = Event_Weight
                 _deltaphi_lep_pi[0]    = deltaphi_lep_pi
@@ -679,6 +666,13 @@ for full_sample_name in samplename_list:
                 _met[0]                = met
                 _met_puppi[0]          = met_puppi
                 _Wmass[0]              = Wmass
+                #-----SCALED VARIABLES-----#
+                # _gamma_eT[0]           = _Nrandom_for_BDT_systematic.Gaus(gamma_eT,gamma_eT*0.05)
+                # _pi_pT[0]              = _Nrandom_for_BDT_systematic.Gaus(pi_pT,pi_pT*0.05)
+                # _lep_pT[0]             = _Nrandom_for_BDT_systematic.Gaus(lep_pT,lep_pT*0.05)
+                # _nBjets_25[0]          = _Nrandom_for_BDT_systematic.Gaus(nBjets_25,nBjets_25*0.1)
+                # _piRelIso_05_ch[0]     = _Nrandom_for_BDT_systematic.Gaus(piRelIso_05_ch,piRelIso_05_ch*0.1)
+                # _met[0]                = _Nrandom_for_BDT_systematic.Gaus(met,met*0.05)
                 
                 
                 if sample_name == "Signal" and isMuon and split_MC and entry_index <= SignalTree_entries/2:
@@ -706,7 +700,7 @@ for full_sample_name in samplename_list:
                 _pi_pT[0]           = pi_pT
                 _lep_pT[0]          = lep_pT
                 _lep_iso[0]         = lep_iso
-                _nBjets[0]          = nBjets
+                #_nBjets[0]          = nBjets
                 _nBjets_25[0]       = nBjets_25
                 _weight[0]          = 1
                 _deltaphi_lep_pi[0] = deltaphi_lep_pi

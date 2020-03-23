@@ -16,47 +16,49 @@ if args.isMuon_option == "electron":
 
 # year = args.year_option
 
-data_sidebands = False  # Switch from data sidebands to MC for training (background)
+evaluate_BDT_systematic = False  # Train on shifted variables, test on nominal case
 
 #---------------------------------#
 
-if isMuon and not data_sidebands:
+if isMuon and not evaluate_BDT_systematic:
     fIn_bkg = ROOT.TFile("Tree_MC_Background_mu.root")
     tree_bkg = fIn_bkg.Get("minitree_background_mu")
     fIn_sig = ROOT.TFile("Tree_MC_Signal_mu.root")
     tree_sig = fIn_sig.Get("minitree_signal_mu")
     fOut = ROOT.TFile("outputs/Nominal_training_mu.root","RECREATE")
+    #fOut = ROOT.TFile("outputs/Nominal_training_mu_withBjets.root","RECREATE")
     #fOut = ROOT.TFile("outputs/Nominal_training_mu_Wmass.root","RECREATE")
 
-if not isMuon and not data_sidebands:
+if not isMuon and not evaluate_BDT_systematic:
     fIn_bkg = ROOT.TFile("Tree_MC_Background_ele.root")
     tree_bkg = fIn_bkg.Get("minitree_background_ele")
     fIn_sig = ROOT.TFile("Tree_MC_Signal_ele.root")
     tree_sig = fIn_sig.Get("minitree_signal_ele")
     fOut = ROOT.TFile("outputs/Nominal_training_ele.root","RECREATE")
+    #fOut = ROOT.TFile("outputs/Nominal_training_ele_withBjets.root","RECREATE")
     #fOut = ROOT.TFile("outputs/Nominal_training_ele_Wmass.root","RECREATE")
 
-if isMuon and data_sidebands:
-    fIn_bkg_DATA = ROOT.TFile("Tree_MC_Background_mu_DATA.root")
-    tree_bkg_DATA = fIn_bkg_DATA.Get("minitree_background_mu_DATA")
-    fIn_bkg = ROOT.TFile("Tree_MC_Background_mu.root")
-    tree_bkg = fIn_bkg.Get("minitree_background_mu")
-    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_mu_training.root")
-    tree_sig_training = fIn_sig_training.Get("minitree_signal_mu_training")
-    fIn_sig_test = ROOT.TFile("Tree_MC_Signal_mu_test.root")
-    tree_sig_test = fIn_sig_test.Get("minitree_signal_mu_test")
-    fOut = ROOT.TFile("outputs/" + year + "/Nominal_training_mu_sidebands.root","RECREATE")
+if isMuon and evaluate_BDT_systematic:
+    fIn_bkg_training = ROOT.TFile("Tree_MC_Background_mu_shifted.root")
+    tree_bkg_training = fIn_bkg_training.Get("minitree_background_mu")
+    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_mu_shifted.root")
+    tree_sig_training = fIn_sig_training.Get("minitree_signal_mu")
+    fIn_bkg_testing = ROOT.TFile("Tree_MC_Background_mu.root")
+    tree_bkg_testing = fIn_bkg_testing.Get("minitree_background_mu")
+    fIn_sig_testing = ROOT.TFile("Tree_MC_Signal_mu.root")
+    tree_sig_testing = fIn_sig_testing.Get("minitree_signal_mu")
+    fOut = ROOT.TFile("outputs/Nominal_training_mu_shifted.root","RECREATE")
 
-if not isMuon and data_sidebands:
-    fIn_bkg_DATA = ROOT.TFile("Tree_MC_Background_ele_DATA.root")
-    tree_bkg_DATA = fIn_bkg_DATA.Get("minitree_background_ele_DATA")
-    fIn_bkg = ROOT.TFile("Tree_MC_Background_ele.root")
-    tree_bkg = fIn_bkg.Get("minitree_background_ele")
-    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_ele_training.root")
-    tree_sig_training = fIn_sig_training.Get("minitree_signal_ele_training")
-    fIn_sig_test = ROOT.TFile("Tree_MC_Signal_ele_test.root")
-    tree_sig_test = fIn_sig_test.Get("minitree_signal_ele_test")
-    fOut = ROOT.TFile("outputs/" + year + "/Nominal_training_ele_sidebands.root","RECREATE")
+if not isMuon and evaluate_BDT_systematic:
+    fIn_bkg_training = ROOT.TFile("Tree_MC_Background_ele_shifted.root")
+    tree_bkg_training = fIn_bkg_training.Get("minitree_background_ele")
+    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_ele_shifted.root")
+    tree_sig_training = fIn_sig_training.Get("minitree_signal_ele")
+    fIn_bkg_testing = ROOT.TFile("Tree_MC_Background_ele.root")
+    tree_bkg_testing = fIn_bkg_testing.Get("minitree_background_ele")
+    fIn_sig_testing = ROOT.TFile("Tree_MC_Signal_ele.root")
+    tree_sig_testing = fIn_sig_testing.Get("minitree_signal_ele")
+    fOut = ROOT.TFile("outputs/Nominal_training_ele_shifted.root","RECREATE")
 
 ROOT.TMVA.Tools.Instance()
 
@@ -78,11 +80,11 @@ dataloader.AddVariable("MET","F")
 sig_weight = 1.
 bkg_weight = 1.
 
-if data_sidebands:
+if evaluate_BDT_systematic:
     dataloader.AddSignalTree(tree_sig_training, sig_weight, "Training")
-    dataloader.AddSignalTree(tree_sig_test, sig_weight, "Testing")
-    dataloader.AddBackgroundTree(tree_bkg_DATA, bkg_weight, "Training")
-    dataloader.AddBackgroundTree(tree_bkg, bkg_weight, "Testing")
+    dataloader.AddSignalTree(tree_sig_testing, sig_weight, "Testing")
+    dataloader.AddBackgroundTree(tree_bkg_training, bkg_weight, "Training")
+    dataloader.AddBackgroundTree(tree_bkg_testing, bkg_weight, "Testing")
 
 else:
     dataloader.AddSignalTree(tree_sig, sig_weight)
@@ -94,10 +96,12 @@ mycutSig = ROOT.TCut("")
 mycutBkg = ROOT.TCut("")
 
 if isMuon:
-    dataloader.PrepareTrainingAndTestTree(mycutSig, mycutBkg, ":".join(["!V","nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0"]))
+    if not evaluate_BDT_systematic:
+        dataloader.PrepareTrainingAndTestTree(mycutSig, mycutBkg, ":".join(["!V","nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0"]))
     method_btd  = factory.BookMethod(dataloader, ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=20","NegWeightTreatment=IgnoreNegWeightsInTraining"]))
 else:
-    dataloader.PrepareTrainingAndTestTree(mycutSig, mycutBkg, ":".join(["!V","nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0"])) 
+    if not evaluate_BDT_systematic:
+        dataloader.PrepareTrainingAndTestTree(mycutSig, mycutBkg, ":".join(["!V","nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0"])) 
     method_btd  = factory.BookMethod(dataloader, ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=20","NegWeightTreatment=IgnoreNegWeightsInTraining"]))
 
 factory.TrainAllMethods()
@@ -108,9 +112,9 @@ fOut.Close()
 
 weightfile_dir = "default/weights/TMVAClassification_BDT.weights.xml"
 
-if data_sidebands:
-    weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_DATA.xml"
-    weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_DATA.xml"
+if evaluate_BDT_systematic:
+    weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_shifted.xml"
+    weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_shifted.xml"
 else:
     weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu.xml"
     weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele.xml"

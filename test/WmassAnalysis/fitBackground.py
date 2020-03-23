@@ -47,7 +47,6 @@ Wmass.setRange("HighSideband",90.,95.)
 #                                                              #
 ################################################################
 
-#fInput = ROOT.TFile("Tree_input_massfit_Data_" + str(runningEra) + ".root")
 fInput = ROOT.TFile("Tree_input_massfit_Data_" + str(runningEra) + ".root")
 
 fInput.cd()
@@ -99,11 +98,11 @@ if runningEra == 1 and not isMuon:
 
 if runningEra == 3 and isMuon:
     print "number of events mu - SR: ", data_initial.sumEntries("Categorization==1")
-    data = data_initial.reduce("BDT_out > 0.150 && Categorization==Categorization::MuonCR")
+    data = data_initial.reduce("BDT_out > 0.223 && Categorization==Categorization::MuonCR")
     print "number of events mu - CR: ", data.sumEntries("Categorization==0")
 if runningEra == 3 and not isMuon:
     print "number of events ele - SR: ", data_initial.sumEntries("Categorization==3")
-    data = data_initial.reduce("BDT_out > 0.090 && Categorization==Categorization::ElectronCR")
+    data = data_initial.reduce("BDT_out > 0.183 && Categorization==Categorization::ElectronCR")
     print "number of events ele - CR: ", data.sumEntries("Categorization==2")
 
 print "Using ", data.numEntries(), " events to fit"
@@ -164,15 +163,22 @@ b7_el = ROOT.RooRealVar("b7_el","b7_el",3.,0.,6.)
 b8_el = ROOT.RooRealVar("b8_el","b8_el",2.,0.,5.)
 # b9_el = ROOT.RooRealVar("b9_el","b9_el",5.,0.,10.)
 
+#Parameters for muon exponential
+c0_mu = ROOT.RooRealVar("c0_mu","c0_mu",0.001,0.,0.01)
+
+#Parameters for electron exponential
+c0_el = ROOT.RooRealVar("c0_el","c0_el",0.001,0.,0.01)
 
 backPDF_cheb_mu = ROOT.RooChebychev("backPDF_cheb_mu","backPDF_cheb_mu",Wmass,ROOT.RooArgList(a0_mu))#,a1_mu))#,a2_mu))#,a3_mu))#,a4_mu))#,a5_mu,a6_mu))
-backPDF_cheb_el = ROOT.RooChebychev("backPDF_cheb_el","backPDF_cheb_el",Wmass,ROOT.RooArgList(a0_el))#,a1_el))#,a2_el,a3_el))#,a4_el))#,a6_el))
+backPDF_cheb_el = ROOT.RooChebychev("backPDF_cheb_el","backPDF_cheb_el",Wmass,ROOT.RooArgList(a0_el))#,a1_el))#,a2_el))#,a3_el))#,a4_el))#,a6_el))
 
 
-backPDF_bern_mu = ROOT.RooBernstein("backPDF_bern_mu","backPDF_bern_mu",Wmass,ROOT.RooArgList(b0_mu,b1_mu))#,b2_mu))#,b3_mu))#,b4_mu)) #,b5_mu,b6_mu))
-backPDF_bern_el = ROOT.RooBernstein("backPDF_bern_el","backPDF_bern_el",Wmass,ROOT.RooArgList(b0_el,b1_el))#,b2_el))#,b3_el,b4_el))#,b5_el))#,b6_el))
+backPDF_bern_mu = ROOT.RooBernstein("backPDF_bern_mu","backPDF_bern_mu",Wmass,ROOT.RooArgList(b0_mu,b1_mu,b2_mu))#,b3_mu))#,b4_mu)) #,b5_mu,b6_mu))
+backPDF_bern_el = ROOT.RooBernstein("backPDF_bern_el","backPDF_bern_el",Wmass,ROOT.RooArgList(b0_el,b1_el,b2_el))#,b3_el,b4_el))#,b5_el))#,b6_el))
 
 
+backPDF_exp_mu = ROOT.RooExponential("backPDF_exp_mu","backPDF_exp_mu",Wmass,c0_mu)
+backPDF_exp_el = ROOT.RooExponential("backPDF_exp_el","backPDF_exp_el",Wmass,c0_el)
 
 if runningEra == 0 and useChebychev and isMuon:
     backPDF = backPDF_cheb_mu
@@ -197,9 +203,9 @@ if runningEra == 3 and useChebychev and isMuon:
 if runningEra == 3 and useChebychev and not isMuon:
     backPDF = backPDF_cheb_el
 if runningEra == 3 and not useChebychev and isMuon:
-    backPDF = backPDF_bern_mu
+    backPDF = backPDF_exp_mu
 if runningEra == 3 and not useChebychev and not isMuon:
-    backPDF = backPDF_bern_el
+    backPDF = backPDF_exp_el
 
 
 
@@ -214,7 +220,7 @@ result_dataFit = backPDF.fitTo(data,ROOT.RooFit.Extended(0), ROOT.RooFit.NumCPU(
 #Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
 
 print "minNll = ", result_dataFit.minNll()
-print "2Delta_minNll = ", 2*(5417.81160974-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
+print "2Delta_minNll = ", 2*(1525.61909339-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
 
 
 ################################################################
@@ -256,8 +262,10 @@ fOutput.cd()
 workspace_bkg_out = ROOT.RooWorkspace("workspace_bkg")
 getattr(workspace_bkg_out,'import')(backPDF_cheb_mu)
 getattr(workspace_bkg_out,'import')(backPDF_cheb_el)
-getattr(workspace_bkg_out,'import')(backPDF_bern_el)
-getattr(workspace_bkg_out,'import')(backPDF_bern_mu)
+#getattr(workspace_bkg_out,'import')(backPDF_bern_mu)
+#getattr(workspace_bkg_out,'import')(backPDF_bern_el)
+getattr(workspace_bkg_out,'import')(backPDF_exp_mu)
+getattr(workspace_bkg_out,'import')(backPDF_exp_el)
 
 
 workspace_bkg_out.Write()
