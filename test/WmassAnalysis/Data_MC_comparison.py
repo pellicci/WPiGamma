@@ -55,8 +55,8 @@ mytree_MC = fInput_MC.Get("minitree")
 data_initial_MC = ROOT.RooDataSet("MC","MC", ROOT.RooArgSet(Wmass,Categorization,weight,BDT_out,isSignal,isMuon), ROOT.RooFit.Import(mytree_MC), ROOT.RooFit.WeightVar("weight"))
 #MC = ROOT.RooDataSet("MC","MC", ROOT.RooArgSet(Wmass,Categorization,weight,BDT_out,isSignal,isMuon), ROOT.RooFit.Import(mytree_MC), ROOT.RooFit.WeightVar("weight"))
 
-data = data_initial_data.reduce("(BDT_out > 0.223 && isMuon==isMuon::Muon) || (BDT_out > 0.183 && isMuon==isMuon::Electron)")
-MC = data_initial_MC.reduce("(BDT_out > 0.223 && isMuon==isMuon::Muon) || (BDT_out > 0.183 && isMuon==isMuon::Electron)")
+data = data_initial_data.reduce("(BDT_out > 0.216 && isMuon==isMuon::Muon) || (BDT_out > 0.212 && isMuon==isMuon::Electron)")
+MC = data_initial_MC.reduce("(BDT_out > 0.216 && isMuon==isMuon::Muon) || (BDT_out > 0.212 && isMuon==isMuon::Electron)")
 #data = data_initial_data.reduce("BDT_out > -3")
 #MC = data_initial_MC.reduce("BDT_out > -3")
 

@@ -211,6 +211,7 @@ class Simplified_Workflow_Handler:
         self.norm_filename_2018 = "rootfiles/latest_production/MC/normalizations/Normalizations_table_2018.txt"
 
         self.ttbar_sig_calib_file = ROOT.TFile.Open("ttbar_signal_ratio_" + year + ".root")
+        self.Pythia_sig_modeling_file = ROOT.TFile.Open("PythiaModeling_" + year + ".root")
         
         ###################################################################################
         #                                                                                 #
@@ -288,6 +289,20 @@ class Simplified_Workflow_Handler:
 
     ###############################################################################################################################################
 
+    def get_Pythia_sig_modeling_reweight(self,up,W_pT):
+
+        h_Pythia_sig_rescale_up   = self.Pythia_sig_modeling_file.Get("h_genW_pT_up")
+        h_Pythia_sig_rescale_down = self.Pythia_sig_modeling_file.Get("h_genW_pT_down")
+        Pythia_sig_rescale_up     = h_Pythia_sig_rescale_up.GetBinContent(h_Pythia_sig_rescale_up.FindBin(W_pT))
+        Pythia_sig_rescale_down   = h_Pythia_sig_rescale_down.GetBinContent(h_Pythia_sig_rescale_down.FindBin(W_pT))
+
+        if up:
+            return Pythia_sig_rescale_up
+        else:
+            return Pythia_sig_rescale_down
+ 
+    ###############################################################################################################################################
+
     # get the sample names (MC and data)
     def get_samples_names(self,Add_Signal=True,Add_Data=True):
         list_dirs_bkg  = os.listdir(self.dir_bkg_input)
@@ -341,19 +356,31 @@ class Simplified_Workflow_Handler:
 
     ###############################################################################################################################################
 
-    def post_preselection_cuts(self, lep_eta, lep_pT, isMuon, deltaphi_lep_pi, deltaphi_lep_gamma, isTriggerMatched, runningEra):
+    def post_preselection_cuts(self, lep_eta, lep_pT, ele_etaSC, gamma_etaSC, isMuon, deltaphi_lep_pi, deltaphi_lep_gamma, isTriggerMatched, runningEra):
 
         if runningEra == 0:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 30.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or not isTriggerMatched:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 30.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (isMuon and lep_pT < 25.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
                 return True
 
         if runningEra == 1:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 28.) or not isTriggerMatched:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (isMuon and lep_pT < 28.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
                 return True
 
         if runningEra == 2:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or not isTriggerMatched:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (isMuon and lep_pT < 25.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
                 return True
+
+        # if runningEra == 0:
+        #     if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 30.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
+        #         return True
+
+        # if runningEra == 1:
+        #     if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 28.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
+        #         return True
+
+        # if runningEra == 2:
+        #     if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
+        #         return True
 
         return False
 

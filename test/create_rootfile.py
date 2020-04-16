@@ -27,6 +27,8 @@ ROOT.gROOT.SetBatch(True)
 isData   = False # Switch from DATA to MC and vice versa
 isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normalized to Wmass 
 split_MC = False # If True, MC signal sample is split in two for the training/testing of the BDT
+scale_signal_up = False # If true, scales the MC signal weight up (Pythia modeling) 
+scale_signal_down = False # If true, scales the MC signal weight down (Pythia modeling) 
 
 myWF = Simplified_Workflow_Handler("Signal","Data",create_mass_tree,isBDT_with_Wmass,runningEra)
 
@@ -56,8 +58,8 @@ luminosity_norm_list = [35.86,41.529,59.69] #2016,2017,2018
 
 #############---------------- BDT score cut values ----------------#############
 
-BDT_OUT_MU  = 0.299
-BDT_OUT_ELE = 0.246
+BDT_OUT_MU  = 0.285
+BDT_OUT_ELE = 0.277
 
 ############################################################################
 #                                                                          #
@@ -354,9 +356,6 @@ for full_sample_name in samplename_list:
         
         if not isData and "Data" in sample_name:
             continue
-        
-        #if runningEra == 0 and sample_name == "ttbar" and mytree.isttbarlnu: # Avoid double-counting of the ttbarlnu background
-        #    continue
 
         if mytree.is_muon and sample_name == "QCDDoubleEMEnriched30toInf":
             continue
@@ -372,10 +371,10 @@ for full_sample_name in samplename_list:
 
         entry_index += 1.
         
-        # if entry_index <= sample_entries/2.:
-        #     continue
+        if entry_index > sample_entries/2.:
+           continue
 
-        # print entry_index
+        # Print entry_index
 
         isMuon = mytree.is_muon
 
@@ -386,11 +385,11 @@ for full_sample_name in samplename_list:
         isSingleEleTrigger_32 = mytree.isSingleEleTrigger_32
         isSingleEleTrigger_32_DoubleEG = mytree.isSingleEleTrigger_32_DoubleEG
             
-
         lep_pT  = mytree.lepton_pT
         lep_eta = mytree.lepton_eta
         lep_phi = mytree.lepton_phi
         lep_iso = mytree.lepton_iso
+        ele_etaSC = mytree.lepton_etaSC
         lep_FourMomentum = ROOT.TLorentzVector()
         lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
 
@@ -412,12 +411,8 @@ for full_sample_name in samplename_list:
         gamma_FourMomentum = ROOT.TLorentzVector()
         gamma_FourMomentum.SetPtEtaPhiE(gamma_eT,gamma_eta,gamma_phi,gamma_E)
 
-        # gamma_iso_ChHad = mytree.photon_iso_ChargedHadron
-        # gamma_iso_NeuHad = mytree.photon_iso_NeutralHadron
-        # gamma_iso_Ph = mytree.photon_iso_Photon
-        # gamma_iso_eArho = mytree.photon_iso_eArho
-
         W_phi = (pi_FourMomentum + gamma_FourMomentum).Phi()
+        W_pT  = (pi_FourMomentum + gamma_FourMomentum).Pt()
 
         if not "Data" in sample_name:
             Wplus_pT = mytree.Wplus_pT
@@ -433,12 +428,10 @@ for full_sample_name in samplename_list:
         met_puppi = mytree.metpuppi_pT
 
         if not isMuon:
-            ele_etaSC = mytree.lepton_etaSC
             ele_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
         else:
             mu_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
         
-        #nBjets_30 = mytree.nBjets_30
         nBjets_25 = mytree.nBjets_25
 
         deltaeta_lep_pi = math.fabs(lep_eta-pi_eta)
@@ -491,7 +484,7 @@ for full_sample_name in samplename_list:
         #                                                                          #
         ############################################################################
 
-        if myWF.post_preselection_cuts(lep_eta,lep_pT,isMuon,deltaphi_lep_pi,deltaphi_lep_gamma,isTriggerMatched,sample_era):
+        if myWF.post_preselection_cuts(lep_eta,lep_pT,ele_etaSC,gamma_etaSC,isMuon,deltaphi_lep_pi,deltaphi_lep_gamma,isTriggerMatched,sample_era):
             continue
 
 
@@ -554,6 +547,14 @@ for full_sample_name in samplename_list:
                     local_W_pT = 300.
 
                 Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_W_pT))
+
+            ################ Create up- and down-scalded event weights for Pythia signal modeling ################
+
+            if sample_name == "Signal":
+                Event_Weight_up   = Event_Weight*myWF.get_Pythia_sig_modeling_reweight(True,W_pT)
+                Event_Weight_down = Event_Weight*myWF.get_Pythia_sig_modeling_reweight(False,W_pT)
+
+            #####################################################################################################
 
             if "Signal" in sample_name and isMuon:
                 nSig_mu += Event_Weight
@@ -651,29 +652,39 @@ for full_sample_name in samplename_list:
 
             if not isData:
                 
-                _gamma_eT[0]           = gamma_eT
-                _pi_pT[0]              = pi_pT
-                _lep_pT[0]             = lep_pT
+                #_gamma_eT[0]           = gamma_eT
+                #_pi_pT[0]              = pi_pT
+                #_lep_pT[0]             = lep_pT
                 _lep_iso[0]            = lep_iso
-                _nBjets_25[0]          = nBjets_25
-                _weight[0]             = Event_Weight
+                #_nBjets_25[0]          = nBjets_25
                 _deltaphi_lep_pi[0]    = deltaphi_lep_pi
                 _deltaphi_lep_gamma[0] = deltaphi_lep_gamma
                 _isMuon[0]             = isMuon
                 _piRelIso_05[0]        = piRelIso_05
-                _piRelIso_05_ch[0]     = piRelIso_05_ch
+                #_piRelIso_05_ch[0]     = piRelIso_05_ch
                 _pi_dxy[0]             = pi_dxy
-                _met[0]                = met
+                #_met[0]                = met
                 _met_puppi[0]          = met_puppi
                 _Wmass[0]              = Wmass
+                if sample_name == "Signal" and scale_signal_up:
+                    _weight[0]         = Event_Weight_up
+                elif sample_name == "Signal" and scale_signal_down:
+                    _weight[0]         = Event_Weight_down
+                else:
+                    _weight[0]         = Event_Weight
                 #-----SCALED VARIABLES-----#
-                # _gamma_eT[0]           = _Nrandom_for_BDT_systematic.Gaus(gamma_eT,gamma_eT*0.05)
-                # _pi_pT[0]              = _Nrandom_for_BDT_systematic.Gaus(pi_pT,pi_pT*0.05)
-                # _lep_pT[0]             = _Nrandom_for_BDT_systematic.Gaus(lep_pT,lep_pT*0.05)
-                # _nBjets_25[0]          = _Nrandom_for_BDT_systematic.Gaus(nBjets_25,nBjets_25*0.1)
-                # _piRelIso_05_ch[0]     = _Nrandom_for_BDT_systematic.Gaus(piRelIso_05_ch,piRelIso_05_ch*0.1)
-                # _met[0]                = _Nrandom_for_BDT_systematic.Gaus(met,met*0.05)
-                
+                _gamma_eT[0]           = _Nrandom_for_BDT_systematic.Gaus(gamma_eT,gamma_eT*0.05)
+                _pi_pT[0]              = _Nrandom_for_BDT_systematic.Gaus(pi_pT,pi_pT*0.05)
+                _lep_pT[0]             = _Nrandom_for_BDT_systematic.Gaus(lep_pT,lep_pT*0.05)
+                _piRelIso_05_ch[0]     = _Nrandom_for_BDT_systematic.Gaus(piRelIso_05_ch,piRelIso_05_ch*0.1)
+                _met[0]                = _Nrandom_for_BDT_systematic.Gaus(met,met*0.05)
+                _Nrandom_for_BDT_systematic_nBjets_25 = _Nrandom_for_BDT_systematic.Rndm()
+                if _Nrandom_for_BDT_systematic_nBjets_25 <= 0.90:
+                    _nBjets_25[0]          = nBjets_25
+                elif (_Nrandom_for_BDT_systematic_nBjets_25 > 0.90 and _Nrandom_for_BDT_systematic_nBjets_25 <= 0.95):
+                    _nBjets_25[0]          = nBjets_25-1
+                else:
+                    _nBjets_25[0]          = nBjets_25+1
                 
                 if sample_name == "Signal" and isMuon and split_MC and entry_index <= SignalTree_entries/2:
                     tMVA_signal_mu_training.Fill()

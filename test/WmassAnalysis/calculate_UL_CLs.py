@@ -155,6 +155,8 @@ print "Number of events in data = ", workspace.data("data").numEntries()
 #----------------------------------------------------------------------------------#
 fc = ROOT.RooStats.FrequentistCalculator(workspace.data("data"), bModel, sbModel)
 fc.SetToys(800,800)
+#fc = ROOT.RooStats.AsymptoticCalculator(workspace.data("data"), bModel, sbModel)
+
 
 #Create hypotest inverter passing desired calculator
 calc = ROOT.RooStats.HypoTestInverter(fc)
@@ -205,6 +207,8 @@ poimax = poi.find("W_pigamma_BR").getMax()
 
 min_scan = 0.000005
 max_scan = 0.000030
+#min_scan = 0.0000005
+#max_scan = 0.000003
 print "Doing a fixed scan  in interval : ",min_scan, " , ", max_scan
 calc.SetFixedScan(npoints,min_scan,max_scan)
 

@@ -190,8 +190,15 @@ private:
 
   bool is_photon_a_photon;
   bool is_photon_matched;
+  bool is_gen_pi;
   bool is_gen_ph;
+  float gen_pi_pT_tree;
+  float gen_pi_eta_tree;
+  float gen_pi_phi_tree;
+  int gen_pi_mother_tree;
   float gen_ph_pT_tree;
+  float gen_ph_eta_tree;
+  float gen_ph_phi_tree;
   int gen_ph_mother_tree;
 
   bool is_ttbar_lnu;

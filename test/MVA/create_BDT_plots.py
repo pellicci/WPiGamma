@@ -68,10 +68,14 @@ def BDT_output():
 def rejB_vs_S():
 
     if isMuon:
-        f1 = TFile("outputs/Nominal_training_mu_Wmass.root")
+        #f1 = TFile("outputs/Nominal_training_mu_Pythia_down.root")
+        #f1 = TFile("outputs/Nominal_training_mu_Wmass.root")
+        f1 = TFile("outputs/Nominal_training_mu_shifted.root")
         f2 = TFile("outputs/Nominal_training_mu.root")
     else:
-        f1 = TFile("outputs/Nominal_training_ele_Wmass.root")
+        #f1 = TFile("outputs/Nominal_training_ele_Pythia_down.root")
+        #f1 = TFile("outputs/Nominal_training_ele_Wmass.root")
+        f1 = TFile("outputs/Nominal_training_ele_shifted.root")
         f2 = TFile("outputs/Nominal_training_ele.root")
 
     h_rejB_vs_S_1 = f1.Get("default/Method_BDT/BDT/MVA_BDT_rejBvsS")
@@ -87,10 +91,14 @@ def rejB_vs_S():
     leg2.SetFillStyle(0)
     #leg2.AddEntry(h_rejB_vs_S_1,"with data sidebands","l")
     #leg2.AddEntry(h_rejB_vs_S_1,"with #Delta#varphi_{l,#gamma}","l")
-    leg2.AddEntry(h_rejB_vs_S_1,"with m_{#pi#gamma}","l")
+    #leg2.AddEntry(h_rejB_vs_S_1,"with m_{#pi#gamma}","l")
+    leg2.AddEntry(h_rejB_vs_S_1,"shifted","l")
+    #leg2.AddEntry(h_rejB_vs_S_1,"with signal scaled down","l")
     #leg2.AddEntry(h_rejB_vs_S_2,"with MC","l")
     #leg2.AddEntry(h_rejB_vs_S_2,"without #Delta#varphi_{l,#gamma}","l")
-    leg2.AddEntry(h_rejB_vs_S_2,"without m_{#pi#gamma}","l")
+    #leg2.AddEntry(h_rejB_vs_S_2,"without m_{#pi#gamma}","l")
+    leg2.AddEntry(h_rejB_vs_S_2,"nominal","l")
+    #leg2.AddEntry(h_rejB_vs_S_2,"with signal non scaled","l")
 
     gStyle.SetOptStat(0)
     canvas2 = TCanvas()
@@ -104,9 +112,13 @@ def rejB_vs_S():
     leg2.Draw("SAME")
 
     if isMuon:
-        canvas2.Print("plots/rejBvsS_mu_Wmass.pdf")
+        #canvas2.Print("plots/rejBvsS_mu_Wmass.pdf")
+        canvas2.Print("plots/rejBvsS_mu_shifted.pdf")
+        #canvas2.Print("plots/rejBvsS_mu_Pythia_down.pdf")
     else:
-        canvas2.Print("plots/rejBvsS_ele_Wmass.pdf")
+        #canvas2.Print("plots/rejBvsS_ele_Wmass.pdf")
+        canvas2.Print("plots/rejBvsS_ele_shifted.pdf")
+        #canvas2.Print("plots/rejBvsS_ele_Pythia_down.pdf")
 
     raw_input()
 

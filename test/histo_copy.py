@@ -4,11 +4,11 @@ import math
 import numpy as np
 import shutil
 
-source = "plots/latest_production/2016_2017_2018/"
+source = "plots/latest_production/2017/"
 
 source_list = os.listdir(source)
 
-destination = "/afs/cern.ch/user/r/rselvati/www/WPiGamma/InterestingVariables/BDT/13_03_2020/2016_2017_2018/"
+destination = "/afs/cern.ch/user/r/rselvati/www/WPiGamma/InterestingVariables/BDT/14_04_2020/2017/"
 
 for files in source_list:
     fullpath = os.path.join(source, files)

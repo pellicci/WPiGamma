@@ -98,11 +98,11 @@ if runningEra == 1 and not isMuon:
 
 if runningEra == 3 and isMuon:
     print "number of events mu - SR: ", data_initial.sumEntries("Categorization==1")
-    data = data_initial.reduce("BDT_out > 0.223 && Categorization==Categorization::MuonCR")
+    data = data_initial.reduce("BDT_out > 0.216 && Categorization==Categorization::MuonCR")
     print "number of events mu - CR: ", data.sumEntries("Categorization==0")
 if runningEra == 3 and not isMuon:
     print "number of events ele - SR: ", data_initial.sumEntries("Categorization==3")
-    data = data_initial.reduce("BDT_out > 0.183 && Categorization==Categorization::ElectronCR")
+    data = data_initial.reduce("BDT_out > 0.212 && Categorization==Categorization::ElectronCR")
     print "number of events ele - CR: ", data.sumEntries("Categorization==2")
 
 print "Using ", data.numEntries(), " events to fit"
@@ -164,10 +164,10 @@ b8_el = ROOT.RooRealVar("b8_el","b8_el",2.,0.,5.)
 # b9_el = ROOT.RooRealVar("b9_el","b9_el",5.,0.,10.)
 
 #Parameters for muon exponential
-c0_mu = ROOT.RooRealVar("c0_mu","c0_mu",0.001,0.,0.01)
+c0_mu = ROOT.RooRealVar("c0_mu","c0_mu",0.001,0.,0.02)
 
 #Parameters for electron exponential
-c0_el = ROOT.RooRealVar("c0_el","c0_el",0.001,0.,0.01)
+c0_el = ROOT.RooRealVar("c0_el","c0_el",0.001,0.,0.02)
 
 backPDF_cheb_mu = ROOT.RooChebychev("backPDF_cheb_mu","backPDF_cheb_mu",Wmass,ROOT.RooArgList(a0_mu))#,a1_mu))#,a2_mu))#,a3_mu))#,a4_mu))#,a5_mu,a6_mu))
 backPDF_cheb_el = ROOT.RooChebychev("backPDF_cheb_el","backPDF_cheb_el",Wmass,ROOT.RooArgList(a0_el))#,a1_el))#,a2_el))#,a3_el))#,a4_el))#,a6_el))
@@ -220,7 +220,7 @@ result_dataFit = backPDF.fitTo(data,ROOT.RooFit.Extended(0), ROOT.RooFit.NumCPU(
 #Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
 
 print "minNll = ", result_dataFit.minNll()
-print "2Delta_minNll = ", 2*(1525.61909339-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
+print "2Delta_minNll = ", 2*(1063.88326591-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
 
 
 ################################################################

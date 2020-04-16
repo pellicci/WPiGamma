@@ -228,61 +228,67 @@ gauss_lumi_2018  = ROOT.RooGaussian("gauss_lumi_2018","gauss_lumi_2018",glb_lumi
 ################################################################
 
 totsig_2016 = 100000. #total number of signal events in 2016
-totmu_2016  = 6345.   #total number of signal muon events in 2016
-totel_2016  = 4224.   #total number of signal electron events in 2016
+totmu_2016  = 6046.   #total number of signal muon events in 2016
+totel_2016  = 3686.   #total number of signal electron events in 2016
 
 totsig_2017 = 80000.  #total number of signal events in 2017
-totmu_2017  = 4555.   #total number of signal muon events in 2017
-totel_2017  = 3374.   #total number of signal electron events in 2017
+totmu_2017  = 4310.   #total number of signal muon events in 2017
+totel_2017  = 2934.   #total number of signal electron events in 2017
 
 totsig_2018 = 79820.  #total number of signal events in 2018
-totmu_2018  = 4653.   #total number of signal muon events in 2018
-totel_2018  = 3229.   #total number of signal electron events in 2018
+totmu_2018  = 4373.   #total number of signal muon events in 2018
+totel_2018  = 2815.   #total number of signal electron events in 2018
 
-glb_eff_mu_2016    = ROOT.RooRealVar("glb_eff_mu_2016","glb_eff_mu_2016",totmu_2016*2./totsig_2016, 0., 1.)
-binom_eff_mu_2016  = (4*totmu_2016*(totsig_2016-2*totmu_2016)/(totsig_2016*totsig_2016*totsig_2016))*(4*totmu_2016*(totsig_2016-2*totmu_2016)/(totsig_2016*totsig_2016*totsig_2016)) #It will be summed in quadrature to the BDT systematic
-BDT_syst_mu_2016   = 0.01*(totmu_2016*2./totsig_2016)*0.01*(totmu_2016*2./totsig_2016) #It will be summed in quadrature to the binomial uncertainty
-eff_mu_constr_2016 = ROOT.RooRealVar("eff_mu_constr_2016","eff_mu_constr_2016", totmu_2016*2./totsig_2016, 0., 1.)
-eff_mu_syst_2016   = ROOT.RooRealVar("eff_mu_syst_2016","eff_mu_syst_2016", math.sqrt(binom_eff_mu_2016+BDT_syst_mu_2016))
-gauss_eff_mu_2016  = ROOT.RooGaussian("gauss_eff_mu_2016","gauss_eff_mu_2016",glb_eff_mu_2016,eff_mu_constr_2016,eff_mu_syst_2016) 
+glb_eff_mu_2016     = ROOT.RooRealVar("glb_eff_mu_2016","glb_eff_mu_2016",totmu_2016*2./totsig_2016, 0., 1.)
+binom_eff_mu_2016   = (4*totmu_2016*(totsig_2016-2*totmu_2016)/(totsig_2016*totsig_2016*totsig_2016))*(4*totmu_2016*(totsig_2016-2*totmu_2016)/(totsig_2016*totsig_2016*totsig_2016)) #It will be summed in quadrature to the BDT systematic
+BDT_syst_mu_2016    = 0.01*0.01 #It will be summed in quadrature to the binomial uncertainty
+Pythia_syst_mu_2016 = 0.02*0.02 #It will be summed in quadrature to the binomial uncertainty
+eff_mu_constr_2016  = ROOT.RooRealVar("eff_mu_constr_2016","eff_mu_constr_2016", totmu_2016*2./totsig_2016, 0., 1.)
+eff_mu_syst_2016    = ROOT.RooRealVar("eff_mu_syst_2016","eff_mu_syst_2016", math.sqrt(binom_eff_mu_2016+BDT_syst_mu_2016+Pythia_syst_mu_2016))
+gauss_eff_mu_2016   = ROOT.RooGaussian("gauss_eff_mu_2016","gauss_eff_mu_2016",glb_eff_mu_2016,eff_mu_constr_2016,eff_mu_syst_2016) 
 
-glb_eff_el_2016    = ROOT.RooRealVar("glb_eff_el_2016","glb_eff_el_2016", totel_2016*2./totsig_2016, 0., 1.)
-binom_eff_el_2016  = (4*totel_2016*(totsig_2016-2*totel_2016)/(totsig_2016*totsig_2016*totsig_2016))*(4*totel_2016*(totsig_2016-2*totel_2016)/(totsig_2016*totsig_2016*totsig_2016)) #It will be summed in quadrature to the BDT systematic
-BDT_syst_el_2016   = 0.01*(totel_2016*2./totsig_2016)*0.01*(totel_2016*2./totsig_2016) #It will be summed in quadrature to the binomial uncertainty
-SF_syst_el_2016    = 0.02*(totel_2016*2./totsig_2016)*0.02*(totel_2016*2./totsig_2016) #It will be summed in quadrature to the binomial uncertainty
-eff_el_constr_2016 = ROOT.RooRealVar("eff_el_constr_2016","eff_el_constr_2016",totel_2016*2./totsig_2016, 0., 1.)
-eff_el_syst_2016   = ROOT.RooRealVar("eff_el_syst_2016","eff_el_syst_2016", math.sqrt(binom_eff_el_2016+BDT_syst_el_2016+SF_syst_el_2016))
-gauss_eff_el_2016  = ROOT.RooGaussian("gauss_eff_el_2016","gauss_eff_el_2016",glb_eff_el_2016,eff_el_constr_2016,eff_el_syst_2016) 
+glb_eff_el_2016     = ROOT.RooRealVar("glb_eff_el_2016","glb_eff_el_2016", totel_2016*2./totsig_2016, 0., 1.)
+binom_eff_el_2016   = (4*totel_2016*(totsig_2016-2*totel_2016)/(totsig_2016*totsig_2016*totsig_2016))*(4*totel_2016*(totsig_2016-2*totel_2016)/(totsig_2016*totsig_2016*totsig_2016)) #It will be summed in quadrature to the BDT systematic
+BDT_syst_el_2016    = 0.01*0.01 #It will be summed in quadrature to the binomial uncertainty
+Pythia_syst_el_2016 = 0.02*0.02 #It will be summed in quadrature to the binomial uncertainty
+SF_syst_el_2016     = 0.0125*0.0125 #It will be summed in quadrature to the binomial uncertainty
+eff_el_constr_2016  = ROOT.RooRealVar("eff_el_constr_2016","eff_el_constr_2016",totel_2016*2./totsig_2016, 0., 1.)
+eff_el_syst_2016    = ROOT.RooRealVar("eff_el_syst_2016","eff_el_syst_2016", math.sqrt(binom_eff_el_2016+BDT_syst_el_2016+SF_syst_el_2016+Pythia_syst_el_2016))
+gauss_eff_el_2016   = ROOT.RooGaussian("gauss_eff_el_2016","gauss_eff_el_2016",glb_eff_el_2016,eff_el_constr_2016,eff_el_syst_2016) 
 
-glb_eff_mu_2017    = ROOT.RooRealVar("glb_eff_mu_2017","glb_eff_mu_2017",totmu_2017*2./totsig_2017, 0., 1.)
-binom_eff_mu_2017  = (4*totmu_2017*(totsig_2017-2*totmu_2017)/(totsig_2017*totsig_2017*totsig_2017))*(4*totmu_2017*(totsig_2017-2*totmu_2017)/(totsig_2017*totsig_2017*totsig_2017)) #It will be summed in quadrature to the BDT systematic
-BDT_syst_mu_2017   = 0.01*(totmu_2017*2./totsig_2017)*0.01*(totmu_2017*2./totsig_2017) #It will be summed in quadrature to the binomial uncertainty
-eff_mu_constr_2017 = ROOT.RooRealVar("eff_mu_constr_2017","eff_mu_constr_2017", totmu_2017*2./totsig_2017, 0., 1.)
-eff_mu_syst_2017   = ROOT.RooRealVar("eff_mu_syst_2017","eff_mu_syst_2017", math.sqrt(binom_eff_mu_2017+BDT_syst_mu_2017))
-gauss_eff_mu_2017  = ROOT.RooGaussian("gauss_eff_mu_2017","gauss_eff_mu_2017",glb_eff_mu_2017,eff_mu_constr_2017,eff_mu_syst_2017) 
+glb_eff_mu_2017     = ROOT.RooRealVar("glb_eff_mu_2017","glb_eff_mu_2017",totmu_2017*2./totsig_2017, 0., 1.)
+binom_eff_mu_2017   = (4*totmu_2017*(totsig_2017-2*totmu_2017)/(totsig_2017*totsig_2017*totsig_2017))*(4*totmu_2017*(totsig_2017-2*totmu_2017)/(totsig_2017*totsig_2017*totsig_2017)) #It will be summed in quadrature to the BDT systematic
+BDT_syst_mu_2017    = 0.01*0.01 #It will be summed in quadrature to the binomial uncertainty
+Pythia_syst_mu_2017 = 0.02*0.02 #It will be summed in quadrature to the binomial uncertainty
+eff_mu_constr_2017  = ROOT.RooRealVar("eff_mu_constr_2017","eff_mu_constr_2017", totmu_2017*2./totsig_2017, 0., 1.)
+eff_mu_syst_2017    = ROOT.RooRealVar("eff_mu_syst_2017","eff_mu_syst_2017", math.sqrt(binom_eff_mu_2017+BDT_syst_mu_2017+Pythia_syst_mu_2017))
+gauss_eff_mu_2017   = ROOT.RooGaussian("gauss_eff_mu_2017","gauss_eff_mu_2017",glb_eff_mu_2017,eff_mu_constr_2017,eff_mu_syst_2017) 
 
-glb_eff_el_2017    = ROOT.RooRealVar("glb_eff_el_2017","glb_eff_el_2017", totel_2017*2./totsig_2017, 0., 1.)
-binom_eff_el_2017  = (4*totel_2017*(totsig_2017-2*totel_2017)/(totsig_2017*totsig_2017*totsig_2017))*(4*totel_2017*(totsig_2017-2*totel_2017)/(totsig_2017*totsig_2017*totsig_2017)) #It will be summed in quadrature to the BDT systematic
-BDT_syst_el_2017   = 0.01*(totel_2017*2./totsig_2017)*0.01*(totel_2017*2./totsig_2017) #It will be summed in quadrature to the binomial uncertainty
-SF_syst_el_2017    = 0.02*(totel_2017*2./totsig_2017)*0.02*(totel_2017*2./totsig_2017) #It will be summed in quadrature to the binomial uncertainty
-eff_el_constr_2017 = ROOT.RooRealVar("eff_el_constr_2017","eff_el_constr_2017",totel_2017*2./totsig_2017, 0., 1.)
-eff_el_syst_2017   = ROOT.RooRealVar("eff_el_syst_2017","eff_el_syst_2017", math.sqrt(binom_eff_el_2017+BDT_syst_el_2017+SF_syst_el_2017))
-gauss_eff_el_2017  = ROOT.RooGaussian("gauss_eff_el_2017","gauss_eff_el_2017",glb_eff_el_2017,eff_el_constr_2017,eff_el_syst_2017) 
+glb_eff_el_2017     = ROOT.RooRealVar("glb_eff_el_2017","glb_eff_el_2017", totel_2017*2./totsig_2017, 0., 1.)
+binom_eff_el_2017   = (4*totel_2017*(totsig_2017-2*totel_2017)/(totsig_2017*totsig_2017*totsig_2017))*(4*totel_2017*(totsig_2017-2*totel_2017)/(totsig_2017*totsig_2017*totsig_2017)) #It will be summed in quadrature to the BDT systematic
+BDT_syst_el_2017    = 0.01*0.01 #It will be summed in quadrature to the binomial uncertainty
+Pythia_syst_el_2017 = 0.02*0.02 #It will be summed in quadrature to the binomial uncertainty
+SF_syst_el_2017     = 0.0125*0.0125 #It will be summed in quadrature to the binomial uncertainty
+eff_el_constr_2017  = ROOT.RooRealVar("eff_el_constr_2017","eff_el_constr_2017",totel_2017*2./totsig_2017, 0., 1.)
+eff_el_syst_2017    = ROOT.RooRealVar("eff_el_syst_2017","eff_el_syst_2017", math.sqrt(binom_eff_el_2017+BDT_syst_el_2017+SF_syst_el_2017+Pythia_syst_el_2017))
+gauss_eff_el_2017   = ROOT.RooGaussian("gauss_eff_el_2017","gauss_eff_el_2017",glb_eff_el_2017,eff_el_constr_2017,eff_el_syst_2017) 
 
-glb_eff_mu_2018    = ROOT.RooRealVar("glb_eff_mu_2018","glb_eff_mu_2018",totmu_2018*2./totsig_2018, 0., 1.)
-binom_eff_mu_2018  = (4*totmu_2018*(totsig_2018-2*totmu_2018)/(totsig_2018*totsig_2018*totsig_2018))*(4*totmu_2018*(totsig_2018-2*totmu_2018)/(totsig_2018*totsig_2018*totsig_2018)) #It will be summed in quadrature to the BDT systematic
-BDT_syst_mu_2018   = 0.01*(totmu_2018*2./totsig_2018)*0.01*(totmu_2018*2./totsig_2018) #It will be summed in quadrature to the binomial uncertainty
-eff_mu_constr_2018 = ROOT.RooRealVar("eff_mu_constr_2018","eff_mu_constr_2018", totmu_2018*2./totsig_2018, 0., 1.)
-eff_mu_syst_2018   = ROOT.RooRealVar("eff_mu_syst_2018","eff_mu_syst_2018", math.sqrt(binom_eff_mu_2018+BDT_syst_mu_2018))
-gauss_eff_mu_2018  = ROOT.RooGaussian("gauss_eff_mu_2018","gauss_eff_mu_2018",glb_eff_mu_2018,eff_mu_constr_2018,eff_mu_syst_2018) 
+glb_eff_mu_2018     = ROOT.RooRealVar("glb_eff_mu_2018","glb_eff_mu_2018",totmu_2018*2./totsig_2018, 0., 1.)
+binom_eff_mu_2018   = (4*totmu_2018*(totsig_2018-2*totmu_2018)/(totsig_2018*totsig_2018*totsig_2018))*(4*totmu_2018*(totsig_2018-2*totmu_2018)/(totsig_2018*totsig_2018*totsig_2018)) #It will be summed in quadrature to the BDT systematic
+BDT_syst_mu_2018    = 0.01*0.01 #It will be summed in quadrature to the binomial uncertainty
+Pythia_syst_mu_2018 = 0.02*0.02 #It will be summed in quadrature to the binomial uncertainty   
+eff_mu_constr_2018  = ROOT.RooRealVar("eff_mu_constr_2018","eff_mu_constr_2018", totmu_2018*2./totsig_2018, 0., 1.)
+eff_mu_syst_2018    = ROOT.RooRealVar("eff_mu_syst_2018","eff_mu_syst_2018", math.sqrt(binom_eff_mu_2018+BDT_syst_mu_2018+Pythia_syst_mu_2018))
+gauss_eff_mu_2018   = ROOT.RooGaussian("gauss_eff_mu_2018","gauss_eff_mu_2018",glb_eff_mu_2018,eff_mu_constr_2018,eff_mu_syst_2018) 
 
-glb_eff_el_2018    = ROOT.RooRealVar("glb_eff_el_2018","glb_eff_el_2018", totel_2018*2./totsig_2018, 0., 1.)
-binom_eff_el_2018  = (4*totel_2018*(totsig_2018-2*totel_2018)/(totsig_2018*totsig_2018*totsig_2018))*(4*totel_2018*(totsig_2018-2*totel_2018)/(totsig_2018*totsig_2018*totsig_2018)) #It will be summed in quadrature to the BDT systematic
-BDT_syst_el_2018   = 0.01*(totel_2018*2./totsig_2018)*0.01*(totel_2018*2./totsig_2018) #It will be summed in quadrature to the binomial uncertainty
-SF_syst_el_2018    = 0.02*(totel_2018*2./totsig_2018)*0.02*(totel_2018*2./totsig_2018) #It will be summed in quadrature to the binomial uncertainty
-eff_el_constr_2018 = ROOT.RooRealVar("eff_el_constr_2018","eff_el_constr_2018",totel_2018*2./totsig_2018, 0., 1.)
-eff_el_syst_2018   = ROOT.RooRealVar("eff_el_syst_2018","eff_el_syst_2018", math.sqrt(binom_eff_el_2018+BDT_syst_el_2018+SF_syst_el_2018))
-gauss_eff_el_2018  = ROOT.RooGaussian("gauss_eff_el_2018","gauss_eff_el_2018",glb_eff_el_2018,eff_el_constr_2018,eff_el_syst_2018) 
+glb_eff_el_2018     = ROOT.RooRealVar("glb_eff_el_2018","glb_eff_el_2018", totel_2018*2./totsig_2018, 0., 1.)
+binom_eff_el_2018   = (4*totel_2018*(totsig_2018-2*totel_2018)/(totsig_2018*totsig_2018*totsig_2018))*(4*totel_2018*(totsig_2018-2*totel_2018)/(totsig_2018*totsig_2018*totsig_2018)) #It will be summed in quadrature to the BDT systematic
+BDT_syst_el_2018    = 0.01*0.01 #It will be summed in quadrature to the binomial uncertainty
+Pythia_syst_el_2018 = 0.02*0.02 #It will be summed in quadrature to the binomial uncertainty        
+SF_syst_el_2018     = 0.0125*0.0125 #It will be summed in quadrature to the binomial uncertainty
+eff_el_constr_2018  = ROOT.RooRealVar("eff_el_constr_2018","eff_el_constr_2018",totel_2018*2./totsig_2018, 0., 1.)
+eff_el_syst_2018    = ROOT.RooRealVar("eff_el_syst_2018","eff_el_syst_2018", math.sqrt(binom_eff_el_2018+BDT_syst_el_2018+SF_syst_el_2018+Pythia_syst_el_2018))
+gauss_eff_el_2018   = ROOT.RooGaussian("gauss_eff_el_2018","gauss_eff_el_2018",glb_eff_el_2018,eff_el_constr_2018,eff_el_syst_2018) 
 
 
 ################################################################
@@ -311,8 +317,8 @@ if not suppressBkgSystematic:
     bkg_syst_el_2018 = 0.001
 
     #SUM OF THE YEARS
-    bkg_syst_mu_2016_2017_2018 = 0.062
-    bkg_syst_el_2016_2017_2018 = 0.086
+    bkg_syst_mu_2016_2017_2018 = 0.139
+    bkg_syst_el_2016_2017_2018 = 0.049
 
 else:
     bkg_syst_mu_2016 = 0.0001 #In the suppressBkgSystematic mode, one is supposed to not know yet this systematic. 0.0001 is a custom small value
@@ -451,7 +457,7 @@ Nbkg_el_2018 = ROOT.RooRealVar("Nbkg_el_2017","Nbkg_el_2017",300.,100.,1000.)
 
 #SUM OF YEARS
 Nbkg_mu_2016_2017_2018 = ROOT.RooRealVar("Nbkg_mu_2016_2017_2018","Nbkg_mu_2016_2017_2018",900.,300.,3000.)
-Nbkg_el_2016_2017_2018 = ROOT.RooRealVar("Nbkg_el_2016_2017_2018","Nbkg_el_2016_2017_2018",900.,300.,3000.)
+Nbkg_el_2016_2017_2018 = ROOT.RooRealVar("Nbkg_el_2016_2017_2018","Nbkg_el_2016_2017_2018",900.,200.,3000.)
 
 
 if runningEra == 0:
@@ -495,8 +501,14 @@ elif runningEra == 3:
     gauss_eff_el_product = ROOT.RooProdPdf("gauss_eff_el_product","gauss_eff_el_product",ROOT.RooArgList(gauss_eff_el_2016,gauss_eff_el_2017,gauss_eff_el_2018))
     gauss_bkg_param_mu = gauss_bkg_param_mu_2016_2017_2018
     gauss_bkg_param_el = gauss_bkg_param_el_2016_2017_2018
-
-
+    print "eff_mu_syst_2016:", eff_mu_syst_2016.getVal()
+    print "eff_el_syst_2016:", eff_el_syst_2016.getVal()
+    print "eff_mu_syst_2017:", eff_mu_syst_2017.getVal()
+    print "eff_el_syst_2017:", eff_el_syst_2017.getVal()
+    print "eff_mu_syst_2018:", eff_mu_syst_2018.getVal()
+    print "eff_el_syst_2018:", eff_el_syst_2018.getVal()
+    #print "error on gauss mu product", gauss_eff_mu_product.getError()
+    #print "error on gauss el product", gauss_eff_el_product.getError()
 
 totPDF_mu_unconstr = ROOT.RooAddPdf("totPDF_mu_unconstr","Total PDF for the mu channel",ROOT.RooArgList(totSignal,backPDF_mu),ROOT.RooArgList(Nsig_mu,Nbkg_mu))
 totPDF_el_unconstr = ROOT.RooAddPdf("totPDF_el_unconstr","Total PDF for the el channel",ROOT.RooArgList(totSignal,backPDF_el),ROOT.RooArgList(Nsig_el,Nbkg_el))
@@ -596,10 +608,7 @@ else:
 if isData:
     # W_pigamma_BR.setVal(0.000006)
     # W_pigamma_BR.setConstant(1)
-    if not suppressAllSystematics:
-        result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
-    else:
-        result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Save() )
+    result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
 
     print "minNll = ", result_dataFit.minNll()
     print "2Delta_minNll = ", 2*(3250.96600396-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
@@ -706,5 +715,6 @@ getattr(workspace_out,'import')(totPDF)
 workspace_out.Write()
 
 fOutput.Close()
+del workspace_out
 
 raw_input()

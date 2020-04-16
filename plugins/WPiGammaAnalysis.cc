@@ -399,7 +399,14 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   lepton_dxy_tree   = 0.;
   lepton_dz_tree    = 0.;
 
+  gen_pi_pT_tree     = 0.;
+  gen_pi_eta_tree    = 0.;
+  gen_pi_phi_tree    = 0.;
+  gen_pi_mother_tree = 0;
+
   gen_ph_pT_tree     = 0.;
+  gen_ph_eta_tree    = 0.;
+  gen_ph_phi_tree    = 0.;
   gen_ph_mother_tree = 0;
 
   //*************************************************************//
@@ -927,12 +934,47 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //*************************************************************//
   //                                                             //
+  //---------------------- Pions in MC Truth --------------------//
+  //                                                             //
+  //*************************************************************//
+
+  float gen_pi_pT_min = -9999.;
+  float gen_pi_pT = 0.;
+  float gen_pi_eta = 0.;
+  float gen_pi_phi = 0.;
+  int gen_pi_mother = 0;
+  is_gen_pi = false;
+
+  if(!runningOnData_){
+    for (auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
+      if(fabs(gen->pdgId()) != 211 || gen->pt() < 20. || fabs(gen->mother()->pdgId()) == 11 || !gen->isPromptFinalState()) continue;
+      if(gen->pt() < gen_pi_pT_min) continue;
+      gen_pi_pT_min = gen->pt();
+      gen_pi_pT = gen->pt();
+      gen_pi_eta = gen->eta();
+      gen_pi_phi = gen->phi();
+      gen_pi_mother = gen->mother()->pdgId();
+      is_gen_pi = true;
+    }
+  }
+
+  if(is_gen_pi){
+    gen_pi_pT_tree = gen_pi_pT;
+    gen_pi_eta_tree = gen_pi_eta;
+    gen_pi_phi_tree = gen_pi_phi;
+    gen_pi_mother_tree = gen_pi_mother;
+  }
+
+  //*************************************************************//
+  //                                                             //
   //--------------------- Photons in MC Truth -------------------//
   //                                                             //
   //*************************************************************//
 
   float gen_ph_pT_min = -9999.;
   float gen_ph_pT = 0.;
+  float gen_ph_eta = 0.;
+  float gen_ph_phi = 0.;
   int gen_ph_mother = 0;
   is_gen_ph = false;
 
@@ -942,6 +984,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       if(gen->pt() < gen_ph_pT_min) continue;
       gen_ph_pT_min = gen->pt();
       gen_ph_pT = gen->pt();
+      gen_ph_eta = gen->eta();
+      gen_ph_phi = gen->phi();
       gen_ph_mother = gen->mother()->pdgId();
       is_gen_ph = true;
     }
@@ -949,6 +993,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   if(is_gen_ph){
     gen_ph_pT_tree = gen_ph_pT;
+    gen_ph_eta_tree = gen_ph_eta;
+    gen_ph_phi_tree = gen_ph_phi;
     gen_ph_mother_tree = gen_ph_mother;
   }
 
@@ -1151,7 +1197,13 @@ void WPiGammaAnalysis::create_trees()
     mytree->Branch("is_signal_Wplus",&is_signal_Wplus);
     mytree->Branch("is_signal_Wminus",&is_signal_Wminus);
     mytree->Branch("is_gen_ph",&is_gen_ph);
+    mytree->Branch("gen_pi_pT",&gen_pi_pT_tree);
+    mytree->Branch("gen_pi_eta",&gen_pi_eta_tree);
+    mytree->Branch("gen_pi_phi",&gen_pi_phi_tree);
+    mytree->Branch("gen_pi_mother",&gen_pi_mother_tree);
     mytree->Branch("gen_ph_pT",&gen_ph_pT_tree);
+    mytree->Branch("gen_ph_eta",&gen_ph_eta_tree);
+    mytree->Branch("gen_ph_phi",&gen_ph_phi_tree);
     mytree->Branch("gen_ph_mother",&gen_ph_mother_tree);
   }
 
@@ -1166,17 +1218,17 @@ void WPiGammaAnalysis::beginJob()
   char const *bTag_SF_name;
   if(runningEra_ == 0){ // PU reweighting
    Lumiweights_ = edm::LumiReWeighting("MCpileUp_2016_25ns_Moriond17MC_PoissonOOTPU.root", "MyDataPileupHistogram_2016.root", "pileup", "pileup");
-   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_medium_2016.root");
+   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2016.root");
    bTag_SF_name = "DeepCSV_2016LegacySF_WP_V1.csv";
   }
   if (runningEra_ == 1){ // PU reweighting
    Lumiweights_ = edm::LumiReWeighting("MCpileUp_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU.root", "MyDataPileupHistogram_2017.root", "pileup", "pileup");
-   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_medium_2017.root");
+   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2017.root");
    bTag_SF_name = "DeepCSV_94XSF_WP_V4_B_F.csv";
   }
   if (runningEra_ == 2){ // PU reweighting
    Lumiweights_ = edm::LumiReWeighting("MCpileUp_2018_25ns_JuneProjectionFull18_PoissonOOTPU.root", "MyDataPileupHistogram_2018.root", "pileup", "pileup");
-   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_medium_2018.root");
+   Btag_efficiencyFile_ = std::make_shared<TFile>("bTagEff_2018.root");
    bTag_SF_name = "DeepCSV_102XSF_WP_V1.csv";
   }
 
@@ -1188,7 +1240,7 @@ void WPiGammaAnalysis::beginJob()
   //                                                             //
   //*************************************************************//
   BTagCalibration calib("DeepCSV", bTag_SF_name);
-  reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM,  // operating point
+  reader = BTagCalibrationReader(BTagEntry::OP_LOOSE,  // operating point
                                   "central",            // central sys type
                                   {"up", "down"});      // other sys types
   

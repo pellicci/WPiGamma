@@ -45,7 +45,7 @@ Categorization.setRange("SignalRegion","MuonSignal,ElectronSignal")
 #Categorization.setRange("SignalRegion_2017","MuonSignal_2017,ElectronSignal_2017")#FIXME
 
 #Create the RooDataSet. No need to import weight for signal only analysis
-sample = ROOT.RooDataSet("sample","sample", ROOT.RooArgSet(Wmass,isSignal,weight,Categorization), ROOT.RooFit.Import(mytree),ROOT.RooFit.Cut("isSignal==1"))
+sample = ROOT.RooDataSet("sample","sample", ROOT.RooArgSet(Wmass,isSignal,weight,Categorization), ROOT.RooFit.Import(mytree),ROOT.RooFit.Cut("isSignal==1"))#,ROOT.RooFit.WeightVar("weight"))
 
 #Skim the signal only
 data_Signal = sample.reduce(ROOT.RooFit.CutRange("SignalRegion"))
@@ -83,7 +83,7 @@ dCB       = ROOT.RooDoubleCBFast("dCB", "Double Crystal Ball", Wmass, dCB_pole, 
 totSignal = ROOT.RooAddPdf("totSignal","Total signal PDF",ROOT.RooArgList(dCB,Gauss_W),ROOT.RooArgList(fracSig))
 
 
-totSignal.fitTo(data_Signal)
+totSignal.fitTo(data_Signal)#, ROOT.RooFit.SumW2Error(0))
 
 #Make the plots
 massplot = Wmass.frame()

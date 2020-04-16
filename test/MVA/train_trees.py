@@ -16,11 +16,13 @@ if args.isMuon_option == "electron":
 
 # year = args.year_option
 
-evaluate_BDT_systematic = False  # Train on shifted variables, test on nominal case
+evaluate_BDT_systematic     = True  # Train on shifted variables, test on nominal case
+test_on_signal_shifted_up   = False
+test_on_signal_shifted_down = False
 
 #---------------------------------#
 
-if isMuon and not evaluate_BDT_systematic:
+if isMuon and not evaluate_BDT_systematic and not test_on_signal_shifted_up and not test_on_signal_shifted_down:
     fIn_bkg = ROOT.TFile("Tree_MC_Background_mu.root")
     tree_bkg = fIn_bkg.Get("minitree_background_mu")
     fIn_sig = ROOT.TFile("Tree_MC_Signal_mu.root")
@@ -29,7 +31,7 @@ if isMuon and not evaluate_BDT_systematic:
     #fOut = ROOT.TFile("outputs/Nominal_training_mu_withBjets.root","RECREATE")
     #fOut = ROOT.TFile("outputs/Nominal_training_mu_Wmass.root","RECREATE")
 
-if not isMuon and not evaluate_BDT_systematic:
+if not isMuon and not evaluate_BDT_systematic and not test_on_signal_shifted_up and not test_on_signal_shifted_down:
     fIn_bkg = ROOT.TFile("Tree_MC_Background_ele.root")
     tree_bkg = fIn_bkg.Get("minitree_background_ele")
     fIn_sig = ROOT.TFile("Tree_MC_Signal_ele.root")
@@ -38,7 +40,7 @@ if not isMuon and not evaluate_BDT_systematic:
     #fOut = ROOT.TFile("outputs/Nominal_training_ele_withBjets.root","RECREATE")
     #fOut = ROOT.TFile("outputs/Nominal_training_ele_Wmass.root","RECREATE")
 
-if isMuon and evaluate_BDT_systematic:
+if isMuon and evaluate_BDT_systematic and not test_on_signal_shifted_up and not test_on_signal_shifted_down:
     fIn_bkg_training = ROOT.TFile("Tree_MC_Background_mu_shifted.root")
     tree_bkg_training = fIn_bkg_training.Get("minitree_background_mu")
     fIn_sig_training = ROOT.TFile("Tree_MC_Signal_mu_shifted.root")
@@ -49,7 +51,7 @@ if isMuon and evaluate_BDT_systematic:
     tree_sig_testing = fIn_sig_testing.Get("minitree_signal_mu")
     fOut = ROOT.TFile("outputs/Nominal_training_mu_shifted.root","RECREATE")
 
-if not isMuon and evaluate_BDT_systematic:
+if not isMuon and evaluate_BDT_systematic and not test_on_signal_shifted_up and not test_on_signal_shifted_down:
     fIn_bkg_training = ROOT.TFile("Tree_MC_Background_ele_shifted.root")
     tree_bkg_training = fIn_bkg_training.Get("minitree_background_ele")
     fIn_sig_training = ROOT.TFile("Tree_MC_Signal_ele_shifted.root")
@@ -59,6 +61,43 @@ if not isMuon and evaluate_BDT_systematic:
     fIn_sig_testing = ROOT.TFile("Tree_MC_Signal_ele.root")
     tree_sig_testing = fIn_sig_testing.Get("minitree_signal_ele")
     fOut = ROOT.TFile("outputs/Nominal_training_ele_shifted.root","RECREATE")
+
+if isMuon and test_on_signal_shifted_up:
+    fIn_bkg = ROOT.TFile("Tree_MC_Background_mu.root")
+    tree_bkg = fIn_bkg.Get("minitree_background_mu")
+    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_mu_Pythia_nominal.root")
+    tree_sig_training = fIn_sig_training.Get("minitree_signal_mu")
+    fIn_sig_testing = ROOT.TFile("Tree_MC_Signal_mu_Pythia_up.root")
+    tree_sig_testing = fIn_sig_testing.Get("minitree_signal_mu")
+    fOut = ROOT.TFile("outputs/Nominal_training_mu_Pythia_up.root","RECREATE")
+
+if not isMuon and test_on_signal_shifted_up:
+    fIn_bkg = ROOT.TFile("Tree_MC_Background_ele.root")
+    tree_bkg = fIn_bkg.Get("minitree_background_ele")
+    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_ele_Pythia_nominal.root")
+    tree_sig_training = fIn_sig_training.Get("minitree_signal_ele")
+    fIn_sig_testing = ROOT.TFile("Tree_MC_Signal_ele_Pythia_up.root")
+    tree_sig_testing = fIn_sig_testing.Get("minitree_signal_ele")
+    fOut = ROOT.TFile("outputs/Nominal_training_ele_Pythia_up.root","RECREATE")
+
+if isMuon and test_on_signal_shifted_down:
+    fIn_bkg = ROOT.TFile("Tree_MC_Background_mu.root")
+    tree_bkg = fIn_bkg.Get("minitree_background_mu")
+    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_mu_Pythia_nominal.root")
+    tree_sig_training = fIn_sig_training.Get("minitree_signal_mu")
+    fIn_sig_testing = ROOT.TFile("Tree_MC_Signal_mu_Pythia_down.root")
+    tree_sig_testing = fIn_sig_testing.Get("minitree_signal_mu")
+    fOut = ROOT.TFile("outputs/Nominal_training_mu_Pythia_down.root","RECREATE")
+
+if not isMuon and test_on_signal_shifted_down:
+    fIn_bkg = ROOT.TFile("Tree_MC_Background_ele.root")
+    tree_bkg = fIn_bkg.Get("minitree_background_ele")
+    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_ele_Pythia_nominal.root")
+    tree_sig_training = fIn_sig_training.Get("minitree_signal_ele")
+    fIn_sig_testing = ROOT.TFile("Tree_MC_Signal_ele_Pythia_down.root")
+    tree_sig_testing = fIn_sig_testing.Get("minitree_signal_ele")
+    fOut = ROOT.TFile("outputs/Nominal_training_ele_Pythia_down.root","RECREATE")
+
 
 ROOT.TMVA.Tools.Instance()
 
@@ -74,8 +113,6 @@ dataloader.AddVariable("nBjets_25","I")
 dataloader.AddVariable("lep_pT","F")
 dataloader.AddVariable("piRelIso_05_ch","F")
 dataloader.AddVariable("MET","F")
-#dataloader.AddVariable("deltaphi_lep_pi","F")
-#dataloader.AddVariable("deltaphi_lep_gamma","F")
 
 sig_weight = 1.
 bkg_weight = 1.
@@ -85,6 +122,11 @@ if evaluate_BDT_systematic:
     dataloader.AddSignalTree(tree_sig_testing, sig_weight, "Testing")
     dataloader.AddBackgroundTree(tree_bkg_training, bkg_weight, "Training")
     dataloader.AddBackgroundTree(tree_bkg_testing, bkg_weight, "Testing")
+
+elif (test_on_signal_shifted_up or test_on_signal_shifted_down):
+    dataloader.AddSignalTree(tree_sig_training, sig_weight, "Training")
+    dataloader.AddSignalTree(tree_sig_testing, sig_weight, "Testing")
+    dataloader.AddBackgroundTree(tree_bkg, bkg_weight)
 
 else:
     dataloader.AddSignalTree(tree_sig, sig_weight)
@@ -96,12 +138,21 @@ mycutSig = ROOT.TCut("")
 mycutBkg = ROOT.TCut("")
 
 if isMuon:
-    if not evaluate_BDT_systematic:
+
+    if not evaluate_BDT_systematic and not test_on_signal_shifted_up and not test_on_signal_shifted_down:
         dataloader.PrepareTrainingAndTestTree(mycutSig, mycutBkg, ":".join(["!V","nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0"]))
+    if test_on_signal_shifted_up or test_on_signal_shifted_down:
+        dataloader.PrepareTrainingAndTestTree(mycutBkg, ":".join(["!V","nTrain_Background=0:nTest_Background=0"]))
+
     method_btd  = factory.BookMethod(dataloader, ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=20","NegWeightTreatment=IgnoreNegWeightsInTraining"]))
+
 else:
-    if not evaluate_BDT_systematic:
+
+    if not evaluate_BDT_systematic and not test_on_signal_shifted_up and not test_on_signal_shifted_down:
         dataloader.PrepareTrainingAndTestTree(mycutSig, mycutBkg, ":".join(["!V","nTrain_Signal=0:nTrain_Background=0:nTest_Signal=0:nTest_Background=0"])) 
+    if test_on_signal_shifted_up or test_on_signal_shifted_down:
+        dataloader.PrepareTrainingAndTestTree(mycutBkg, ":".join(["!V","nTrain_Background=0:nTest_Background=0"]))
+
     method_btd  = factory.BookMethod(dataloader, ROOT.TMVA.Types.kBDT, "BDT", ":".join(["H","!V","NTrees=800", "MinNodeSize=2.5%","MaxDepth=3","BoostType=AdaBoost","AdaBoostBeta=0.25","nCuts=20","NegWeightTreatment=IgnoreNegWeightsInTraining"]))
 
 factory.TrainAllMethods()
@@ -115,6 +166,12 @@ weightfile_dir = "default/weights/TMVAClassification_BDT.weights.xml"
 if evaluate_BDT_systematic:
     weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_shifted.xml"
     weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_shifted.xml"
+elif test_on_signal_shifted_up:
+    weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_Pythia_up.xml"
+    weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_Pythia_up.xml"
+elif test_on_signal_shifted_down:
+    weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_Pythia_down.xml"
+    weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_Pythia_down.xml"
 else:
     weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu.xml"
     weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele.xml"

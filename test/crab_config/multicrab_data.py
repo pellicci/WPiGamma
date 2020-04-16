@@ -1,5 +1,5 @@
 from WMCore.Configuration import Configuration
-from CRABClient.UserUtilities import config, getUsernameFromSiteDB
+from CRABClient.UserUtilities import config
 
 config = Configuration()
 
@@ -20,22 +20,22 @@ config.section_('Data')
 if runningEra == 0:
     config.General.workArea = 'crab_projects/samples_data_2016_medium/'
     config.Data.lumiMask = 'json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
-    config.JobType.inputFiles = ['DeepCSV_2016LegacySF_WP_V1.csv','bTagEff_medium_2016.root']
+    config.JobType.inputFiles = ['DeepCSV_2016LegacySF_WP_V1.csv','bTagEff_2016.root']
 
 if runningEra == 1:
     config.General.workArea = 'crab_projects/samples_data_2017_medium/'
     config.Data.lumiMask = 'json/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
-    config.JobType.inputFiles = ['DeepCSV_94XSF_WP_V4_B_F.csv','bTagEff_medium_2017.root']
+    config.JobType.inputFiles = ['DeepCSV_94XSF_WP_V4_B_F.csv','bTagEff_2017.root']
 
 if runningEra == 2:
     config.General.workArea = 'crab_projects/samples_data_2018_medium/'
     config.Data.lumiMask = 'json/Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt'
-    config.JobType.inputFiles = ['DeepCSV_102XSF_WP_V1.csv','bTagEff_medium_2018.root']
+    config.JobType.inputFiles = ['DeepCSV_102XSF_WP_V1.csv','bTagEff_2018.root']
 
 
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'Automatic'
-config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+config.Data.outLFNDirBase = '/store/user/rselvati/'
 config.Data.publication = False
 
 config.section_('Site')

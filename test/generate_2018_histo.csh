@@ -1,4 +1,4 @@
-Mkdir histos
+mkdir histos
 mkdir histos/latest_production
 
 rm histos/latest_production/*2018*.root

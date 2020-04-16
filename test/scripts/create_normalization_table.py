@@ -295,13 +295,15 @@ if year == "2018":
 ##Now starts the program
 def main():
 
-    dir_input = "crab_projects/samples_MC_" + year + "/"
+    #dir_input = "crab_projects/samples_MC_" + year + "/"
+    dir_input = "crab_projects/samples_MC_" + year + "_PythiaModeling/"
     list_dirs = os.listdir(dir_input)
 
     if not os.path.exists("rootfiles"):
         os.makedirs("rootfiles")
 
-    output_filename = "rootfiles/latest_production/MC/normalizations/Normalizations_table_" + year + ".txt" 
+    #output_filename = "rootfiles/latest_production/MC/normalizations/Normalizations_table_" + year + ".txt" 
+    output_filename = "rootfiles/PythiaModeling/MC/normalizations/Normalizations_table_" + year + ".txt" 
     out_file = open(output_filename,"w")
 
     events_cumul = dict()
