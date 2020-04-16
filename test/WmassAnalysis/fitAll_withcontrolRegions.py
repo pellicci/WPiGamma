@@ -162,9 +162,12 @@ elif selectBkgFunction == 2: #Use Bernstein for electron channel (calculation of
 ################################################################
 
 #Gaussian distribution of W pole resolution for systematics
-dCB_pole = workspace.var("dCB_pole")
+dCB_pole        = workspace.var("dCB_pole")
+#dCB_pole_kappa  = ROOT.RooRealVar("dCB_pole_kappa","dCB_pole_kappa",1+(dCB_pole.getError()/dCB_pole.getVal()))
+#dCB_pole_beta   = ROOT.RooRealVar("dCB_pole_beta","dCB_pole_beta",0.,-5.,5.)
+#          = ROOT.RooFormulaVar("eff","@0 * pow(@1,@2)",ROOT.RooArgList(dCB_pole,dCB_pole_kappa,dCB_pole_beta))
 dCB_pole_constr = ROOT.RooRealVar("dCB_pole_constr","dCB_pole_constr",dCB_pole.getVal())
-dCB_pole_err = ROOT.RooRealVar("dCB_pole_err","dCB_pole_err",dCB_pole.getError())
+dCB_pole_err    = ROOT.RooRealVar("dCB_pole_err","dCB_pole_err",dCB_pole.getError())
 gauss_W_pole_resol = ROOT.RooGaussian("gauss_W_pole_resol","gauss_W_pole_resol",dCB_pole,dCB_pole_constr,dCB_pole_err)
 
 
@@ -191,10 +194,15 @@ gauss_W_resol = ROOT.RooGaussian("gauss_W_resol","gauss_W_resol",dCB_width,dCB_w
 #First the cross section, with a modifier for systematics
 #CMS ttbar measurement/W->lnu BR (it is measured with both W in lnu), in pb
 #http://cms-results.web.cern.ch/cms-results/public-results/publications/TOP-16-005/index.html
-glb_W_xsec    = ROOT.RooRealVar("glb_W_xsec","glb_W_xsec", 2.*831.76*0.1086, 0., 1000.)
-W_xsec_constr = ROOT.RooRealVar("W_xsec_constr","W_x_sec_constr", 2.*831.76*0.1086, 0., 1000.)
+W_xsec_nominal  = ROOT.RooRealVar("W_xsec_nominal","W_xsec_nominal", 2.*831.76*0.1086)
 W_xsec_syst   = ROOT.RooRealVar("W_xsec_syst","W_xsec_syst",43.*2.*0.1086)
-gauss_W_xsec  = ROOT.RooGaussian("gauss_W_xsec","gauss_W_xsec",glb_W_xsec,W_xsec_constr,W_xsec_syst)
+W_xsec_kappa  = ROOT.RooRealVar("W_xsec_kappa","W_xsec_kappa",1+(W_xsec_syst/W_xsec_nominal))
+W_xsec_beta   = ROOT.RooRealVar("W_xsec_beta","W_xsec_beta",0.,-5.,5.)
+W_xsec        = ROOT.RooFormulaVar("W_xsec","@0 * pow(@1,@2)",ROOT.RooArgList(W_xsec_nominal,W_xsec_kappa,W_xsec_beta))
+glb_W_xsec    = ROOT.RooRealVar("glb_W_xsec","glb_W_xsec", 0., -5., 5.)
+#W_xsec_constr = ROOT.RooRealVar("W_xsec_constr","W_x_sec_constr", 2.*831.76*0.1086, 0., 1000.)
+one           = ROOT.RooRealVar("one","one",1.)
+gauss_W_xsec  = ROOT.RooGaussian("gauss_W_xsec","gauss_W_xsec",glb_W_xsec,W_xsec_beta,one)
 
 
 ################################################################
@@ -441,9 +449,9 @@ Nsig_mu_2018 = ROOT.RooFormulaVar("Nsig_mu_2018","@0*@1*@2*@3*@4", ROOT.RooArgLi
 Nsig_el_2018 = ROOT.RooFormulaVar("Nsig_el_2018","@0*@1*@2*@3*@4", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, lumi_constr_2018, eff_el_constr_2018, eta_el_2018))
 
 #SUM OF YEARS
-Nsig_mu_2016_2017_2018 = ROOT.RooFormulaVar("Nsig_mu_2016_2017_2018","@0*@1*@2*(@3*@4+@5*@6+@7*@8)", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, eta_mu_2016_2017_2018, lumi_constr_2016, eff_mu_constr_2016, lumi_constr_2017, eff_mu_constr_2017, lumi_constr_2018, eff_mu_constr_2018))
+Nsig_mu_2016_2017_2018 = ROOT.RooFormulaVar("Nsig_mu_2016_2017_2018","@0*@1*@2*(@3*@4+@5*@6+@7*@8)", ROOT.RooArgList(W_pigamma_BR, W_xsec, eta_mu_2016_2017_2018, lumi_constr_2016, eff_mu_constr_2016, lumi_constr_2017, eff_mu_constr_2017, lumi_constr_2018, eff_mu_constr_2018))
 
-Nsig_el_2016_2017_2018 = ROOT.RooFormulaVar("Nsig_el_2016_2017_2018","@0*@1*@2*(@3*@4+@5*@6+@7*@8)", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, eta_el_2016_2017_2018, lumi_constr_2016, eff_el_constr_2016, lumi_constr_2017, eff_el_constr_2017, lumi_constr_2018, eff_el_constr_2018))
+Nsig_el_2016_2017_2018 = ROOT.RooFormulaVar("Nsig_el_2016_2017_2018","@0*@1*@2*(@3*@4+@5*@6+@7*@8)", ROOT.RooArgList(W_pigamma_BR, W_xsec, eta_el_2016_2017_2018, lumi_constr_2016, eff_el_constr_2016, lumi_constr_2017, eff_el_constr_2017, lumi_constr_2018, eff_el_constr_2018))
 
 
 Nbkg_mu_2016 = ROOT.RooRealVar("Nbkg_mu_2016","Nbkg_mu_2016",300.,100.,1000.)
@@ -570,7 +578,7 @@ if not suppressAllSystematics:
         constrained_params.add(dCB_pole)
         constrained_params.add(eta_mu_2016_2017_2018)
         constrained_params.add(eta_el_2016_2017_2018)
-        constrained_params.add(W_xsec_constr)
+        #constrained_params.add(W_xsec_constr)
         constrained_params.add(lumi_constr_2016)
         constrained_params.add(lumi_constr_2017)
         constrained_params.add(lumi_constr_2018)
@@ -582,8 +590,8 @@ if not suppressAllSystematics:
         constrained_params.add(eff_el_constr_2018)
 else:
     if runningEra == 3:
-        totPDF.addPdf(totPDF_mu,"MuonSignal")
-        totPDF.addPdf(totPDF_el,"ElectronSignal")
+        totPDF.addPdf(totPDF_mu_unconstr,"MuonSignal")
+        totPDF.addPdf(totPDF_el_unconstr,"ElectronSignal")
         dCB_width.setConstant(1)
         dCB_pole.setConstant(1)
         eta_mu_2016_2017_2018.setConstant(1)
@@ -608,8 +616,10 @@ else:
 if isData:
     # W_pigamma_BR.setVal(0.000006)
     # W_pigamma_BR.setConstant(1)
-    result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
-
+    if not suppressAllSystematics:
+        result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
+    else:
+        result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
     print "minNll = ", result_dataFit.minNll()
     print "2Delta_minNll = ", 2*(3250.96600396-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
 else:
