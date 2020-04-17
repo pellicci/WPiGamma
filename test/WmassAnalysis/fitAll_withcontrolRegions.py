@@ -9,7 +9,7 @@ ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 #---------------------------------#
 p = argparse.ArgumentParser(description='Select whether to fit data or MC')
 p.add_argument('isData_option', help='Type <<data>> or <<MC>>')
-p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <<2>> for 2016+2017, <<3>> for 2016+2017+2018')
+#p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <<2>> for 2016+2017, <<3>> for 2016+2017+2018')
 args = p.parse_args()
 
 isData = False
@@ -17,7 +17,7 @@ isData = False
 if args.isData_option == "data":
     isData = True
 
-runningEra = int(args.runningEra_option)
+#runningEra = int(args.runningEra_option)
 #---------------------------------#
 
 ################################################################
@@ -48,9 +48,9 @@ Wmass.setRange("HighSideband",90.,95.)
 ################################################################
 
 if isData:
-    fInput = ROOT.TFile("Tree_input_massfit_Data_" + str(runningEra) + ".root")
+    fInput = ROOT.TFile("Tree_input_massfit_Data_3.root")
 else:
-    fInput = ROOT.TFile("Tree_input_massfit_MC_ " + str(runningEra) + ".root")
+    fInput = ROOT.TFile("Tree_input_massfit_MC_3.root")
 
 fInput.cd()
 
@@ -70,10 +70,6 @@ Categorization.defineType("ElectronSignal",3)
 isSignal = ROOT.RooCategory("isSignal","isSignal")
 isSignal.defineType("Signal",1)
 isSignal.defineType("Background",0)
-
-# isMuon = ROOT.RooCategory("isMuon","isMuon")
-# isMuon.defineType("Muon",1)
-# isMuon.defineType("Electron",0)
 
 ################################################################
 #                                                              #
@@ -108,7 +104,7 @@ print "Using ", data.numEntries(), " events to fit"
 ################################################################
 
 #Import the signal
-fInput_sigmodel = ROOT.TFile("Signal_model_" + str(runningEra) + ".root")
+fInput_sigmodel = ROOT.TFile("Signal_model_3.root")
 fInput_sigmodel.cd()
 
 workspace = fInput_sigmodel.Get("myworkspace")
@@ -163,13 +159,9 @@ elif selectBkgFunction == 2: #Use Bernstein for electron channel (calculation of
 
 #Gaussian distribution of W pole resolution for systematics
 dCB_pole        = workspace.var("dCB_pole")
-#dCB_pole_kappa  = ROOT.RooRealVar("dCB_pole_kappa","dCB_pole_kappa",1+(dCB_pole.getError()/dCB_pole.getVal()))
-#dCB_pole_beta   = ROOT.RooRealVar("dCB_pole_beta","dCB_pole_beta",0.,-5.,5.)
-#          = ROOT.RooFormulaVar("eff","@0 * pow(@1,@2)",ROOT.RooArgList(dCB_pole,dCB_pole_kappa,dCB_pole_beta))
 dCB_pole_constr = ROOT.RooRealVar("dCB_pole_constr","dCB_pole_constr",dCB_pole.getVal())
 dCB_pole_err    = ROOT.RooRealVar("dCB_pole_err","dCB_pole_err",dCB_pole.getError())
 gauss_W_pole_resol = ROOT.RooGaussian("gauss_W_pole_resol","gauss_W_pole_resol",dCB_pole,dCB_pole_constr,dCB_pole_err)
-
 
 ################################################################
 #                                                              #
@@ -183,7 +175,6 @@ dCB_width = workspace.var("dCB_width")
 dCB_width_constr = ROOT.RooRealVar("dCB_width_constr","dCB_width_constr",dCB_width.getVal())
 dCB_width_err = ROOT.RooRealVar("dCB_width_err","dCB_width_err",dCB_width.getError())
 gauss_W_resol = ROOT.RooGaussian("gauss_W_resol","gauss_W_resol",dCB_width,dCB_width_constr,dCB_width_err)
-
 
 ################################################################
 #                                                              #
@@ -202,7 +193,6 @@ glb_W_xsec      = ROOT.RooRealVar("glb_W_xsec","glb_W_xsec", 0., -5., 5.)
 one             = ROOT.RooRealVar("one","one",1.)
 gauss_W_xsec    = ROOT.RooGaussian("gauss_W_xsec","gauss_W_xsec",glb_W_xsec,W_xsec_beta,one)
 
-W_xsec_constr = ROOT.RooRealVar("W_xsec_constr","W_x_sec_constr", 2.*831.76*0.1086, 0., 1000.)
 ################################################################
 #                                                              #
 #------------------ Systematic on luminosity ------------------#
@@ -219,7 +209,6 @@ lumi_2016         = ROOT.RooFormulaVar("lumi_2016","@0 * pow(@1,@2)",ROOT.RooArg
 glb_lumi_2016    = ROOT.RooRealVar("glb_lumi_2016","glb_lumi_2016",0.,-5.,5.)
 gauss_lumi_2016  = ROOT.RooGaussian("gauss_lumi_2016","gauss_lumi_2016",glb_lumi_2016,lumi_beta_2016,one)
 
-lumi_constr_2016 = ROOT.RooRealVar("lumi_constr_2016","lumi_constr_2016", 35.86*1000., 0., 50000.)
 
 lumi_nominal_2017  = ROOT.RooRealVar("lumi_nominal_2017","lumi_nominal_2017",41.53*1000.) #In pb
 lumi_syst_2017    = ROOT.RooRealVar("lumi_syst_2017","lumi_syst_2017", 41.53*0.023*1000.)
@@ -229,7 +218,6 @@ lumi_2017         = ROOT.RooFormulaVar("lumi_2017","@0 * pow(@1,@2)",ROOT.RooArg
 glb_lumi_2017    = ROOT.RooRealVar("glb_lumi_2017","glb_lumi_2017",0.,-5.,5.)
 gauss_lumi_2017  = ROOT.RooGaussian("gauss_lumi_2017","gauss_lumi_2017",glb_lumi_2017,lumi_beta_2017,one) 
 
-lumi_constr_2017 = ROOT.RooRealVar("lumi_constr_2017","lumi_constr_2017", 41.529*1000., 0., 50000.)
 
 lumi_nominal_2018  = ROOT.RooRealVar("lumi_nominal_2018","lumi_nominal_2018",59.69*1000.) #In pb
 lumi_syst_2018    = ROOT.RooRealVar("lumi_syst_2018","lumi_syst_2018", 59.69*0.025*1000.)
@@ -239,7 +227,6 @@ lumi_2018         = ROOT.RooFormulaVar("lumi_2018","@0 * pow(@1,@2)",ROOT.RooArg
 glb_lumi_2018    = ROOT.RooRealVar("glb_lumi_2018","glb_lumi_2018",0.,-5.,5.)
 gauss_lumi_2018  = ROOT.RooGaussian("gauss_lumi_2018","gauss_lumi_2018",glb_lumi_2018,lumi_beta_2018,one) 
 
-lumi_constr_2018 = ROOT.RooRealVar("lumi_constr_2018","lumi_constr_2018", 59.69*1000., 0., 65000.)
 
 ################################################################
 #                                                              #
@@ -260,7 +247,7 @@ totmu_2018  = 4373.   #total number of signal muon events in 2018
 totel_2018  = 2815.   #total number of signal electron events in 2018
 
 eff_mu_nominal_2016  = ROOT.RooRealVar("eff_mu_nominal_2016","eff_mu_nominal_2016",totmu_2016*2./totsig_2016)
-binom_eff_mu_2016   = (4*totmu_2016*(totsig_2016-2*totmu_2016)/(totsig_2016*totsig_2016*totsig_2016))*(4*totmu_2016*(totsig_2016-2*totmu_2016)/(totsig_2016*totsig_2016*totsig_2016)) #It will be summed in quadrature to the BDT systematic
+binom_eff_mu_2016   = (4*totmu_2016*(totsig_2016-2*totmu_2016)/(totsig_2016*totsig_2016*totsig_2016))*(4*totmu_2016*(totsig_2016-2*totmu_2016)/(totsig_2016*totsig_2016*totsig_2016))/(eff_mu_nominal_2016.getVal()*eff_mu_nominal_2016.getVal()) #It will be summed in quadrature to the BDT systematic
 BDT_syst_mu_2016    = 0.01*0.01 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_mu_2016 = 0.02*0.02 #It will be summed in quadrature to the binomial uncertainty
 eff_mu_syst_2016    = ROOT.RooRealVar("eff_mu_syst_2016","eff_mu_syst_2016", math.sqrt(binom_eff_mu_2016+BDT_syst_mu_2016+Pythia_syst_mu_2016))
@@ -270,10 +257,9 @@ eff_mu_2016         = ROOT.RooFormulaVar("eff_mu_2016","@0 * pow(@1,@2)",ROOT.Ro
 glb_eff_mu_2016     = ROOT.RooRealVar("glb_eff_mu_2016","glb_eff_mu_2016",0.,-5.,5.)
 gauss_eff_mu_2016   = ROOT.RooGaussian("gauss_eff_mu_2016","gauss_eff_mu_2016",glb_eff_mu_2016,eff_mu_beta_2016,one) 
 
-eff_mu_constr_2016  = ROOT.RooRealVar("eff_mu_constr_2016","eff_mu_constr_2016", totmu_2016*2./totsig_2016, 0., 1.)
 
 eff_el_nominal_2016  = ROOT.RooRealVar("eff_el_nominal_2016","eff_el_nominal_2016",totel_2016*2./totsig_2016)
-binom_eff_el_2016   = (4*totel_2016*(totsig_2016-2*totel_2016)/(totsig_2016*totsig_2016*totsig_2016))*(4*totel_2016*(totsig_2016-2*totel_2016)/(totsig_2016*totsig_2016*totsig_2016)) #It will be summed in quadrature to the BDT systematic
+binom_eff_el_2016   = (4*totel_2016*(totsig_2016-2*totel_2016)/(totsig_2016*totsig_2016*totsig_2016))*(4*totel_2016*(totsig_2016-2*totel_2016)/(totsig_2016*totsig_2016*totsig_2016))/(eff_el_nominal_2016.getVal()*eff_el_nominal_2016.getVal()) #It will be summed in quadrature to the BDT systematic
 BDT_syst_el_2016    = 0.01*0.01 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_el_2016 = 0.02*0.02 #It will be summed in quadrature to the binomial uncertainty
 SF_syst_el_2016     = 0.0125*0.0125 #It will be summed in quadrature to the binomial uncertainty
@@ -284,10 +270,9 @@ eff_el_2016         = ROOT.RooFormulaVar("eff_el_2016","@0 * pow(@1,@2)",ROOT.Ro
 glb_eff_el_2016     = ROOT.RooRealVar("glb_eff_el_2016","glb_eff_el_2016",0.,-5.,5.)
 gauss_eff_el_2016   = ROOT.RooGaussian("gauss_eff_el_2016","gauss_eff_el_2016",glb_eff_el_2016,eff_el_beta_2016,one)
 
-eff_el_constr_2016  = ROOT.RooRealVar("eff_el_constr_2016","eff_el_constr_2016",totel_2016*2./totsig_2016, 0., 1.)
 
 eff_mu_nominal_2017  = ROOT.RooRealVar("eff_mu_nominal_2017","eff_mu_nominal_2017",totmu_2017*2./totsig_2017)
-binom_eff_mu_2017   = (4*totmu_2017*(totsig_2017-2*totmu_2017)/(totsig_2017*totsig_2017*totsig_2017))*(4*totmu_2017*(totsig_2017-2*totmu_2017)/(totsig_2017*totsig_2017*totsig_2017)) #It will be summed in quadrature to the BDT systematic
+binom_eff_mu_2017   = (4*totmu_2017*(totsig_2017-2*totmu_2017)/(totsig_2017*totsig_2017*totsig_2017))*(4*totmu_2017*(totsig_2017-2*totmu_2017)/(totsig_2017*totsig_2017*totsig_2017))/(eff_mu_nominal_2017.getVal()*eff_mu_nominal_2017.getVal()) #It will be summed in quadrature to the BDT systematic
 BDT_syst_mu_2017    = 0.01*0.01 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_mu_2017 = 0.02*0.02 #It will be summed in quadrature to the binomial uncertainty
 eff_mu_syst_2017    = ROOT.RooRealVar("eff_mu_syst_2017","eff_mu_syst_2017", math.sqrt(binom_eff_mu_2017+BDT_syst_mu_2017+Pythia_syst_mu_2017))
@@ -297,10 +282,9 @@ eff_mu_2017         = ROOT.RooFormulaVar("eff_mu_2017","@0 * pow(@1,@2)",ROOT.Ro
 glb_eff_mu_2017     = ROOT.RooRealVar("glb_eff_mu_2017","glb_eff_mu_2017",0.,-5.,5.)
 gauss_eff_mu_2017   = ROOT.RooGaussian("gauss_eff_mu_2017","gauss_eff_mu_2017",glb_eff_mu_2017,eff_mu_beta_2017,one)
 
-eff_mu_constr_2017  = ROOT.RooRealVar("eff_mu_constr_2017","eff_mu_constr_2017", totmu_2017*2./totsig_2017, 0., 1.) 
 
 eff_el_nominal_2017  = ROOT.RooRealVar("eff_el_nominal_2017","eff_el_nominal_2017",totel_2017*2./totsig_2017)
-binom_eff_el_2017   = (4*totel_2017*(totsig_2017-2*totel_2017)/(totsig_2017*totsig_2017*totsig_2017))*(4*totel_2017*(totsig_2017-2*totel_2017)/(totsig_2017*totsig_2017*totsig_2017)) #It will be summed in quadrature to the BDT systematic
+binom_eff_el_2017   = (4*totel_2017*(totsig_2017-2*totel_2017)/(totsig_2017*totsig_2017*totsig_2017))*(4*totel_2017*(totsig_2017-2*totel_2017)/(totsig_2017*totsig_2017*totsig_2017))/(eff_el_nominal_2017.getVal()*eff_el_nominal_2017.getVal()) #It will be summed in quadrature to the BDT systematic
 BDT_syst_el_2017    = 0.01*0.01 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_el_2017 = 0.02*0.02 #It will be summed in quadrature to the binomial uncertainty
 SF_syst_el_2017     = 0.0125*0.0125 #It will be summed in quadrature to the binomial uncertainty
@@ -311,10 +295,9 @@ eff_el_2017         = ROOT.RooFormulaVar("eff_el_2017","@0 * pow(@1,@2)",ROOT.Ro
 glb_eff_el_2017     = ROOT.RooRealVar("glb_eff_el_2017","glb_eff_el_2017",0.,-5.,5.)
 gauss_eff_el_2017   = ROOT.RooGaussian("gauss_eff_el_2017","gauss_eff_el_2017",glb_eff_el_2017,eff_el_beta_2017,one)
 
-eff_el_constr_2017  = ROOT.RooRealVar("eff_el_constr_2017","eff_el_constr_2017",totel_2017*2./totsig_2017, 0., 1.) 
 
 eff_mu_nominal_2018  = ROOT.RooRealVar("eff_mu_nominal_2018","eff_mu_nominal_2018",totmu_2018*2./totsig_2018)
-binom_eff_mu_2018   = (4*totmu_2018*(totsig_2018-2*totmu_2018)/(totsig_2018*totsig_2018*totsig_2018))*(4*totmu_2018*(totsig_2018-2*totmu_2018)/(totsig_2018*totsig_2018*totsig_2018)) #It will be summed in quadrature to the BDT systematic
+binom_eff_mu_2018   = (4*totmu_2018*(totsig_2018-2*totmu_2018)/(totsig_2018*totsig_2018*totsig_2018))*(4*totmu_2018*(totsig_2018-2*totmu_2018)/(totsig_2018*totsig_2018*totsig_2018))/(eff_mu_nominal_2018.getVal()*eff_mu_nominal_2018.getVal()) #It will be summed in quadrature to the BDT systematic
 BDT_syst_mu_2018    = 0.01*0.01 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_mu_2018 = 0.02*0.02 #It will be summed in quadrature to the binomial uncertainty
 eff_mu_syst_2018    = ROOT.RooRealVar("eff_mu_syst_2018","eff_mu_syst_2018", math.sqrt(binom_eff_mu_2018+BDT_syst_mu_2018+Pythia_syst_mu_2018))
@@ -324,10 +307,9 @@ eff_mu_2018         = ROOT.RooFormulaVar("eff_mu_2018","@0 * pow(@1,@2)",ROOT.Ro
 glb_eff_mu_2018     = ROOT.RooRealVar("glb_eff_mu_2018","glb_eff_mu_2018",0.,-5.,5.)
 gauss_eff_mu_2018   = ROOT.RooGaussian("gauss_eff_mu_2018","gauss_eff_mu_2018",glb_eff_mu_2018,eff_mu_beta_2018,one)
 
-eff_mu_constr_2018  = ROOT.RooRealVar("eff_mu_constr_2018","eff_mu_constr_2018", totmu_2018*2./totsig_2018, 0., 1.) 
 
 eff_el_nominal_2018  = ROOT.RooRealVar("eff_el_nominal_2018","eff_el_nominal_2018",totel_2018*2./totsig_2018)
-binom_eff_el_2018   = (4*totel_2018*(totsig_2018-2*totel_2018)/(totsig_2018*totsig_2018*totsig_2018))*(4*totel_2018*(totsig_2018-2*totel_2018)/(totsig_2018*totsig_2018*totsig_2018)) #It will be summed in quadrature to the BDT systematic
+binom_eff_el_2018   = (4*totel_2018*(totsig_2018-2*totel_2018)/(totsig_2018*totsig_2018*totsig_2018))*(4*totel_2018*(totsig_2018-2*totel_2018)/(totsig_2018*totsig_2018*totsig_2018))/(eff_el_nominal_2018.getVal()*eff_el_nominal_2018.getVal()) #It will be summed in quadrature to the BDT systematic
 BDT_syst_el_2018    = 0.01*0.01 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_el_2018 = 0.02*0.02 #It will be summed in quadrature to the binomial uncertainty
 SF_syst_el_2018     = 0.0125*0.0125 #It will be summed in quadrature to the binomial uncertainty
@@ -338,87 +320,32 @@ eff_el_2018         = ROOT.RooFormulaVar("eff_el_2018","@0 * pow(@1,@2)",ROOT.Ro
 glb_eff_el_2018     = ROOT.RooRealVar("glb_eff_el_2018","glb_eff_el_2018",0.,-5.,5.)
 gauss_eff_el_2018   = ROOT.RooGaussian("gauss_eff_el_2018","gauss_eff_el_2018",glb_eff_el_2018,eff_el_beta_2018,one) 
 
-eff_el_constr_2018  = ROOT.RooRealVar("eff_el_constr_2018","eff_el_constr_2018",totel_2018*2./totsig_2018, 0., 1.)
-
 ################################################################
 #                                                              #
 #------------- Systematic on bkg parametrization --------------#
 #                                                              #
 ################################################################
 
-eta_mu_2016 = ROOT.RooRealVar("eta_mu_2016","eta_mu_2016", 1.,0.0001,3.)
-eta_el_2016 = ROOT.RooRealVar("eta_el_2016","eta_el_2016", 1.,0.0001,3.)
-eta_mu_2017 = ROOT.RooRealVar("eta_mu_2017","eta_mu_2017", 1.,0.0001,3.)
-eta_el_2017 = ROOT.RooRealVar("eta_el_2017","eta_el_2017", 1.,0.0001,3.)
-eta_mu_2018 = ROOT.RooRealVar("eta_mu_2018","eta_mu_2018", 1.,0.0001,3.)
-eta_el_2018 = ROOT.RooRealVar("eta_el_2018","eta_el_2018", 1.,0.0001,3.)
-
-#SUM OF THE YEARS
-#eta_mu_2016_2017_2018 = ROOT.RooRealVar("eta_mu_2016_2017_2018","eta_mu_2016_2017_2018", 1.,0.0001,3.)
-#eta_el_2016_2017_2018 = ROOT.RooRealVar("eta_el_2016_2017_2018","eta_el_2016_2017_2018", 1.,0.0001,3.)
-
 if not suppressBkgSystematic:
-    bkg_syst_mu_2016 = 0.004 #Value of the systematic to use in the fit of the signal regions
-    bkg_syst_el_2016 = 0.002
-    bkg_syst_mu_2017 = 0.001
-    bkg_syst_el_2017 = 0.001
-    bkg_syst_mu_2018 = 0.001
-    bkg_syst_el_2018 = 0.001
-
-    #SUM OF THE YEARS
-    bkg_syst_mu_2016_2017_2018 = 0.139
-    bkg_syst_el_2016_2017_2018 = 0.049
-
+    bkg_syst_mu = 0.139
+    bkg_syst_el = 0.049
 else:
-    bkg_syst_mu_2016 = 0.0001 #In the suppressBkgSystematic mode, one is supposed to not know yet this systematic. 0.0001 is a custom small value
-    bkg_syst_el_2016 = 0.0001
-    bkg_syst_mu_2017 = 0.0001
-    bkg_syst_el_2017 = 0.0001
-    bkg_syst_mu_2018 = 0.0001
-    bkg_syst_el_2018 = 0.0001
-    
-    #SUM OF THE YEARS
-    bkg_syst_mu_2016_2017_2018 = 0.0001
-    bkg_syst_el_2016_2017_2018 = 0.0001
+    bkg_syst_mu = 0.0001
+    bkg_syst_el = 0.0001
 
-glb_bkg_param_mu_2016    = ROOT.RooRealVar("glb_bkg_param_mu_2016","glb_bkg_param_mu_2016", 1., 0.0001, 3.)
-bkg_param_syst_mu_2016   = ROOT.RooRealVar("bkg_param_syst_mu_2016","bkg_param_syst_mu_2016",bkg_syst_mu_2016)
-gauss_bkg_param_mu_2016  = ROOT.RooGaussian("gauss_bkg_param_mu_2016","gauss_bkg_param_2016_mu",glb_bkg_param_mu_2016,eta_mu_2016,bkg_param_syst_mu_2016)
+glb_bkg_param_mu   = ROOT.RooRealVar("glb_bkg_param_mu","glb_bkg_param_mu", 0.,-5.,-5.)
+bkg_param_syst_mu  = ROOT.RooRealVar("bkg_param_syst_mu","bkg_param_syst_mu",bkg_syst_mu)
+bkg_param_kappa_mu = ROOT.RooRealVar("bkg_param_kappa_mu","bkg_param_kappa_mu",1.+bkg_param_syst_mu.getVal())
+bkg_param_beta_mu  = ROOT.RooRealVar("bkg_param_beta_mu","bkg_param_beta_mu",0.,-5.,5.)
+eta_mu = ROOT.RooFormulaVar("eta_mu","@0 * pow(@1,@2)",ROOT.RooArgList(one,bkg_param_kappa_mu,bkg_param_beta_mu))
+gauss_bkg_param_mu  = ROOT.RooGaussian("gauss_bkg_param_mu","gauss_bkg_param_mu",glb_bkg_param_mu,bkg_param_beta_mu,one)
 
-glb_bkg_param_el_2016    = ROOT.RooRealVar("glb_bkg_param_el_2016","glb_bkg_param_el_2016", 1., 0.0001, 3.)
-bkg_param_syst_el_2016   = ROOT.RooRealVar("bkg_param_syst_el_2016","bkg_param_syst_el_2016",bkg_syst_el_2016)
-gauss_bkg_param_el_2016  = ROOT.RooGaussian("gauss_bkg_param_el_2016","gauss_bkg_param_2016_el",glb_bkg_param_el_2016,eta_el_2016,bkg_param_syst_el_2016)
-
-glb_bkg_param_mu_2017    = ROOT.RooRealVar("glb_bkg_param_mu_2017","glb_bkg_param_mu_2017", 1., 0.0001, 3.)
-bkg_param_syst_mu_2017   = ROOT.RooRealVar("bkg_param_syst_mu_2017","bkg_param_syst_mu_2017",bkg_syst_mu_2017)
-gauss_bkg_param_mu_2017  = ROOT.RooGaussian("gauss_bkg_param_mu_2017","gauss_bkg_param_2017_mu",glb_bkg_param_mu_2017,eta_mu_2017,bkg_param_syst_mu_2017)
-
-glb_bkg_param_el_2017    = ROOT.RooRealVar("glb_bkg_param_el_2017","glb_bkg_param_el_2017", 1., 0.0001, 3.)
-bkg_param_syst_el_2017   = ROOT.RooRealVar("bkg_param_syst_el_2017","bkg_param_syst_el_2017",bkg_syst_el_2017)
-gauss_bkg_param_el_2017  = ROOT.RooGaussian("gauss_bkg_param_el_2017","gauss_bkg_param_2017_el",glb_bkg_param_el_2017,eta_el_2017,bkg_param_syst_el_2017)
-
-glb_bkg_param_mu_2018    = ROOT.RooRealVar("glb_bkg_param_mu_2018","glb_bkg_param_mu_2018", 1., 0.0001, 3.)
-bkg_param_syst_mu_2018   = ROOT.RooRealVar("bkg_param_syst_mu_2018","bkg_param_syst_mu_2018",bkg_syst_mu_2018)
-gauss_bkg_param_mu_2018  = ROOT.RooGaussian("gauss_bkg_param_mu_2018","gauss_bkg_param_2018_mu",glb_bkg_param_mu_2018,eta_mu_2018,bkg_param_syst_mu_2018)
-
-glb_bkg_param_el_2018    = ROOT.RooRealVar("glb_bkg_param_el_2018","glb_bkg_param_el_2018", 1., 0.0001, 3.)
-bkg_param_syst_el_2018   = ROOT.RooRealVar("bkg_param_syst_el_2018","bkg_param_syst_el_2018",bkg_syst_el_2018)
-gauss_bkg_param_el_2018  = ROOT.RooGaussian("gauss_bkg_param_el_2018","gauss_bkg_param_2018_el",glb_bkg_param_el_2018,eta_el_2018,bkg_param_syst_el_2018)
-
-#SUM OF THE YEARS
-glb_bkg_param_mu_2016_2017_2018   = ROOT.RooRealVar("glb_bkg_param_mu_2016_2017_2018","glb_bkg_param_mu_2016_2017_2018", 0.,-5.,-5.)
-bkg_param_syst_mu_2016_2017_2018  = ROOT.RooRealVar("bkg_param_syst_mu_2016_2017_2018","bkg_param_syst_mu_2016_2017_2018",bkg_syst_mu_2016_2017_2018)
-bkg_param_kappa_mu_2016_2017_2018 = ROOT.RooRealVar("bkg_param_kappa_mu_2016_2017_2018","bkg_param_kappa_mu_2016_2017_2018",1.+bkg_param_syst_mu_2016_2017_2018.getVal())
-bkg_param_beta_mu_2016_2017_2018  = ROOT.RooRealVar("bkg_param_beta_mu_2016_2017_2018","bkg_param_beta_mu_2016_2017_2018",0.,-5.,5.)
-eta_mu_2016_2017_2018 = ROOT.RooFormulaVar("eta_mu_2016_2017_2018","@0 * pow(@1,@2)",ROOT.RooArgList(one,bkg_param_kappa_mu_2016_2017_2018,bkg_param_beta_mu_2016_2017_2018))
-gauss_bkg_param_mu_2016_2017_2018  = ROOT.RooGaussian("gauss_bkg_param_mu_2016_2017_2018","gauss_bkg_param_2016_2017_2018_mu",glb_bkg_param_mu_2016_2017_2018,bkg_param_beta_mu_2016_2017_2018,one)
-
-glb_bkg_param_el_2016_2017_2018   = ROOT.RooRealVar("glb_bkg_param_el_2016_2017_2018","glb_bkg_param_el_2016_2017_2018", 0.,-5.,-5.)
-bkg_param_syst_el_2016_2017_2018  = ROOT.RooRealVar("bkg_param_syst_el_2016_2017_2018","bkg_param_syst_el_2016_2017_2018",bkg_syst_el_2016_2017_2018)
-bkg_param_kappa_el_2016_2017_2018 = ROOT.RooRealVar("bkg_param_kappa_el_2016_2017_2018","bkg_param_kappa_el_2016_2017_2018",1.+bkg_param_syst_el_2016_2017_2018.getVal())
-bkg_param_beta_el_2016_2017_2018  = ROOT.RooRealVar("bkg_param_beta_el_2016_2017_2018","bkg_param_beta_el_2016_2017_2018",0.,-5.,5.)
-eta_el_2016_2017_2018 = ROOT.RooFormulaVar("eta_el_2016_2017_2018","@0 * pow(@1,@2)",ROOT.RooArgList(one,bkg_param_kappa_el_2016_2017_2018,bkg_param_beta_el_2016_2017_2018))
-gauss_bkg_param_el_2016_2017_2018  = ROOT.RooGaussian("gauss_bkg_param_el_2016_2017_2018","gauss_bkg_param_2016_2017_2018_el",glb_bkg_param_el_2016_2017_2018,bkg_param_beta_el_2016_2017_2018,one)
+glb_bkg_param_el   = ROOT.RooRealVar("glb_bkg_param_el","glb_bkg_param_el", 0.,-5.,-5.)
+bkg_param_syst_el  = ROOT.RooRealVar("bkg_param_syst_el","bkg_param_syst_el",bkg_syst_el)
+bkg_param_kappa_el = ROOT.RooRealVar("bkg_param_kappa_el","bkg_param_kappa_el",1.+bkg_param_syst_el.getVal())
+bkg_param_beta_el  = ROOT.RooRealVar("bkg_param_beta_el","bkg_param_beta_el",0.,-5.,5.)
+eta_el = ROOT.RooFormulaVar("eta_el","@0 * pow(@1,@2)",ROOT.RooArgList(one,bkg_param_kappa_el,bkg_param_beta_el))
+gauss_bkg_param_el  = ROOT.RooGaussian("gauss_bkg_param_el","gauss_bkg_param_el",glb_bkg_param_el,bkg_param_beta_el,one)
 
 
 ################################################################
@@ -442,121 +369,35 @@ W_pigamma_BR_blind = ROOT.RooUnblindOffset("W_pigamma_BR_blind","W_pigamma_BR_bl
 ################################################################
 
 glb_W_xsec.setConstant(1)
-
-if runningEra == 0:
-    glb_bkg_param_mu_2016.setConstant(1)
-    glb_bkg_param_el_2016.setConstant(1)
-    glb_lumi_2016.setConstant(1)
-    glb_eff_mu_2016.setConstant(1)
-    glb_eff_el_2016.setConstant(1)
-
-elif runningEra == 1:
-    glb_bkg_param_mu_2017.setConstant(1)
-    glb_bkg_param_el_2017.setConstant(1)
-    glb_lumi_2017.setConstant(1)
-    glb_eff_mu_2017.setConstant(1)
-    glb_eff_el_2017.setConstant(1)
-
-elif runningEra == 2:
-    glb_bkg_param_mu_2018.setConstant(1)
-    glb_bkg_param_el_2018.setConstant(1)
-    glb_lumi_2018.setConstant(1)
-    glb_eff_mu_2018.setConstant(1)
-    glb_eff_el_2018.setConstant(1)
-
-elif runningEra == 3:
-    glb_bkg_param_mu_2016_2017_2018.setConstant(1) 
-    glb_bkg_param_el_2016_2017_2018.setConstant(1)
-    glb_lumi_2016.setConstant(1)
-    glb_lumi_2017.setConstant(1)
-    glb_lumi_2018.setConstant(1)
-    glb_eff_mu_2016.setConstant(1)
-    glb_eff_el_2016.setConstant(1)
-    glb_eff_mu_2017.setConstant(1)
-    glb_eff_el_2017.setConstant(1)
-    glb_eff_mu_2018.setConstant(1)
-    glb_eff_el_2018.setConstant(1)
-
+glb_bkg_param_mu.setConstant(1) 
+glb_bkg_param_el.setConstant(1)
+glb_lumi_2016.setConstant(1)
+glb_lumi_2017.setConstant(1)
+glb_lumi_2018.setConstant(1)
+glb_eff_mu_2016.setConstant(1)
+glb_eff_el_2016.setConstant(1)
+glb_eff_mu_2017.setConstant(1)
+glb_eff_el_2017.setConstant(1)
+glb_eff_mu_2018.setConstant(1)
+glb_eff_el_2018.setConstant(1)
 
 ################################################################
 #                                                              #
 #------------------- Define PDFs for the fit ------------------#
 #                                                              #
 ################################################################
+Nsig_mu = ROOT.RooFormulaVar("Nsig_mu","@0*@1*@2*(@3*@4+@5*@6+@7*@8)", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec, eta_mu, lumi_2016, eff_mu_2016, lumi_2017, eff_mu_2017, lumi_2018, eff_mu_2018))
 
-#This is for the signal region
-# Nsig_mu = ROOT.RooFormulaVar("Nsig_mu","@0*@1*@2*@3*@4", ROOT.RooArgList(W_pigamma_BR, W_xsec_constr,lumi_constr,eff_mu_constr,eta))
-# Nsig_el = ROOT.RooFormulaVar("Nsig_el","@0*@1*@2*@3*@4", ROOT.RooArgList(W_pigamma_BR, W_xsec_constr,lumi_constr,eff_el_constr,eta))
-Nsig_mu_2016 = ROOT.RooFormulaVar("Nsig_mu_2016","@0*@1*@2*@3*@4", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, lumi_constr_2016, eff_mu_constr_2016, eta_mu_2016))
-Nsig_el_2016 = ROOT.RooFormulaVar("Nsig_el_2016","@0*@1*@2*@3*@4", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, lumi_constr_2016, eff_el_constr_2016, eta_el_2016))
+Nsig_el = ROOT.RooFormulaVar("Nsig_el","@0*@1*@2*(@3*@4+@5*@6+@7*@8)", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec, eta_el, lumi_2016, eff_el_2016, lumi_2017, eff_el_2017, lumi_2018, eff_el_2018))
 
-Nsig_mu_2017 = ROOT.RooFormulaVar("Nsig_mu_2017","@0*@1*@2*@3*@4", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, lumi_constr_2017, eff_mu_constr_2017, eta_mu_2017))
-Nsig_el_2017 = ROOT.RooFormulaVar("Nsig_el_2017","@0*@1*@2*@3*@4", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, lumi_constr_2017, eff_el_constr_2017, eta_el_2017))
+Nbkg_mu = ROOT.RooRealVar("Nbkg_mu","Nbkg_mu",900.,300.,3000.)
+Nbkg_el = ROOT.RooRealVar("Nbkg_el","Nbkg_el",900.,200.,3000.)
 
-Nsig_mu_2018 = ROOT.RooFormulaVar("Nsig_mu_2018","@0*@1*@2*@3*@4", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, lumi_constr_2018, eff_mu_constr_2018, eta_mu_2018))
-Nsig_el_2018 = ROOT.RooFormulaVar("Nsig_el_2018","@0*@1*@2*@3*@4", ROOT.RooArgList(W_pigamma_BR_blind, W_xsec_constr, lumi_constr_2018, eff_el_constr_2018, eta_el_2018))
+#Per qualche motivo, il numero di argomenti della RooArgList sembra essere limitato. Se non uso gauss_lumi_product, ce n'e' uno uno di troppo in totPDF
+gauss_lumi_product = ROOT.RooProdPdf("gauss_lumi_product","gauss_lumi_product",ROOT.RooArgList(gauss_lumi_2016,gauss_lumi_2017,gauss_lumi_2018))
+gauss_eff_mu_product = ROOT.RooProdPdf("gauss_eff_mu_product","gauss_eff_mu_product",ROOT.RooArgList(gauss_eff_mu_2016,gauss_eff_mu_2017,gauss_eff_mu_2018))
+gauss_eff_el_product = ROOT.RooProdPdf("gauss_eff_el_product","gauss_eff_el_product",ROOT.RooArgList(gauss_eff_el_2016,gauss_eff_el_2017,gauss_eff_el_2018))
 
-#SUM OF YEARS
-Nsig_mu_2016_2017_2018 = ROOT.RooFormulaVar("Nsig_mu_2016_2017_2018","@0*@1*@2*(@3*@4+@5*@6+@7*@8)", ROOT.RooArgList(W_pigamma_BR, W_xsec, eta_mu_2016_2017_2018, lumi_2016, eff_mu_2016, lumi_2017, eff_mu_2017, lumi_2018, eff_mu_2018))
-
-Nsig_el_2016_2017_2018 = ROOT.RooFormulaVar("Nsig_el_2016_2017_2018","@0*@1*@2*(@3*@4+@5*@6+@7*@8)", ROOT.RooArgList(W_pigamma_BR, W_xsec, eta_el_2016_2017_2018, lumi_2016, eff_el_2016, lumi_2017, eff_el_2017, lumi_2018, eff_el_2018))
-
-
-Nbkg_mu_2016 = ROOT.RooRealVar("Nbkg_mu_2016","Nbkg_mu_2016",300.,100.,1000.)
-Nbkg_el_2016 = ROOT.RooRealVar("Nbkg_el_2016","Nbkg_el_2016",300.,100.,1000.)
-
-Nbkg_mu_2017 = ROOT.RooRealVar("Nbkg_mu_2017","Nbkg_mu_2017",300.,100.,1000.)
-Nbkg_el_2017 = ROOT.RooRealVar("Nbkg_el_2017","Nbkg_el_2017",300.,100.,1000.)
-
-Nbkg_mu_2018 = ROOT.RooRealVar("Nbkg_mu_2017","Nbkg_mu_2017",300.,100.,1000.)
-Nbkg_el_2018 = ROOT.RooRealVar("Nbkg_el_2017","Nbkg_el_2017",300.,100.,1000.)
-
-#SUM OF YEARS
-Nbkg_mu_2016_2017_2018 = ROOT.RooRealVar("Nbkg_mu_2016_2017_2018","Nbkg_mu_2016_2017_2018",900.,300.,3000.)
-Nbkg_el_2016_2017_2018 = ROOT.RooRealVar("Nbkg_el_2016_2017_2018","Nbkg_el_2016_2017_2018",900.,200.,3000.)
-
-
-if runningEra == 0:
-    Nsig_mu = Nsig_mu_2016
-    Nsig_el = Nsig_el_2016
-    Nbkg_mu = Nbkg_mu_2016
-    Nbkg_el = Nbkg_el_2016
-    gauss_lumi_product = gauss_lumi_2016
-    gauss_eff_mu_product = gauss_eff_mu_2016
-    gauss_eff_el_product = gauss_eff_el_2016
-    gauss_bkg_param_mu = gauss_bkg_param_mu_2016
-    gauss_bkg_param_el = gauss_bkg_param_el_2016
-elif runningEra == 1:
-    Nsig_mu = Nsig_mu_2017
-    Nsig_el = Nsig_el_2017
-    Nbkg_mu = Nbkg_mu_2017
-    Nbkg_el = Nbkg_el_2017
-    gauss_lumi_product = gauss_lumi_2017
-    gauss_eff_mu_product = gauss_eff_mu_2017
-    gauss_eff_el_product = gauss_eff_el_2017
-    gauss_bkg_param_mu = gauss_bkg_param_mu_2017
-    gauss_bkg_param_el = gauss_bkg_param_el_2017
-elif runningEra == 2:
-    Nsig_mu = Nsig_mu_2018
-    Nsig_el = Nsig_el_2018
-    Nbkg_mu = Nbkg_mu_2018
-    Nbkg_el = Nbkg_el_2018
-    gauss_lumi_product = gauss_lumi_2018
-    gauss_eff_mu_product = gauss_eff_mu_2018
-    gauss_eff_el_product = gauss_eff_el_2018
-    gauss_bkg_param_mu = gauss_bkg_param_mu_2018
-    gauss_bkg_param_el = gauss_bkg_param_el_2018
-elif runningEra == 3:
-    Nsig_mu = Nsig_mu_2016_2017_2018
-    Nsig_el = Nsig_el_2016_2017_2018
-    Nbkg_mu = Nbkg_mu_2016_2017_2018
-    Nbkg_el = Nbkg_el_2016_2017_2018
-    #Per qualche motivo, il numero di argomenti della RooArgList sembra essere limitato. Se non uso gauss_lumi_product, ce n'e' uno uno di troppo in totPDF
-    gauss_lumi_product = ROOT.RooProdPdf("gauss_lumi_product","gauss_lumi_product",ROOT.RooArgList(gauss_lumi_2016,gauss_lumi_2017,gauss_lumi_2018))
-    gauss_eff_mu_product = ROOT.RooProdPdf("gauss_eff_mu_product","gauss_eff_mu_product",ROOT.RooArgList(gauss_eff_mu_2016,gauss_eff_mu_2017,gauss_eff_mu_2018))
-    gauss_eff_el_product = ROOT.RooProdPdf("gauss_eff_el_product","gauss_eff_el_product",ROOT.RooArgList(gauss_eff_el_2016,gauss_eff_el_2017,gauss_eff_el_2018))
-    gauss_bkg_param_mu = gauss_bkg_param_mu_2016_2017_2018
-    gauss_bkg_param_el = gauss_bkg_param_el_2016_2017_2018
 
 totPDF_mu_unconstr = ROOT.RooAddPdf("totPDF_mu_unconstr","Total PDF for the mu channel",ROOT.RooArgList(totSignal,backPDF_mu),ROOT.RooArgList(Nsig_mu,Nbkg_mu))
 totPDF_el_unconstr = ROOT.RooAddPdf("totPDF_el_unconstr","Total PDF for the el channel",ROOT.RooArgList(totSignal,backPDF_el),ROOT.RooArgList(Nsig_el,Nbkg_el))
@@ -576,56 +417,19 @@ totPDF = ROOT.RooSimultaneous("totPDF","The total PDF",Categorization)
 
 if not suppressAllSystematics:
     constrained_params = ROOT.RooArgSet()
-
-    if runningEra == 0: #Fit on 2016 signal region with background+signal PDF
-        totPDF.addPdf(totPDF_mu,"MuonSignal")
-        totPDF.addPdf(totPDF_el,"ElectronSignal")
-        constrained_params.add(dCB_width)
-        constrained_params.add(eta_mu_2016)
-        constrained_params.add(eta_el_2016)
-        constrained_params.add(W_xsec_constr)
-        constrained_params.add(lumi_constr_2016)
-        constrained_params.add(eff_mu_constr_2016)
-        constrained_params.add(eff_el_constr_2016)
-        
-    if runningEra == 1: #Fit on 2017 signal region with background+signal PDF
-        totPDF.addPdf(totPDF_mu,"MuonSignal")
-        totPDF.addPdf(totPDF_el,"ElectronSignal")
-        constrained_params.add(dCB_width)
-        constrained_params.add(eta_mu_2017)
-        constrained_params.add(eta_el_2017)
-        constrained_params.add(W_xsec_constr)
-        constrained_params.add(lumi_constr_2017)
-        constrained_params.add(eff_mu_constr_2017)
-        constrained_params.add(eff_el_constr_2017)
-        
-    if runningEra == 2: #Fit on 2018 signal regions
-        totPDF.addPdf(totPDF_mu,"MuonSignal")
-        totPDF.addPdf(totPDF_el,"ElectronSignal")
-        constrained_params.add(dCB_width)
-        constrained_params.add(eta_mu_2018)
-        constrained_params.add(eta_el_2018)
-        constrained_params.add(W_xsec_constr)
-        constrained_params.add(lumi_constr_2018)
-        constrained_params.add(eff_mu_constr_2018)
-        constrained_params.add(eff_el_constr_2018)
-        
-    #SUM OF YEARS
-    if runningEra == 3: #Fit on 2016+2017+2018 signal regions, summing the years but not the channels
-        totPDF.addPdf(totPDF_mu,"MuonSignal")
-        totPDF.addPdf(totPDF_el,"ElectronSignal")
-        constrained_params.add(dCB_width)
-        constrained_params.add(dCB_pole)
-        #constrained_params.add(eta_mu_2016_2017_2018)
-        #constrained_params.add(eta_el_2016_2017_2018)
+    totPDF.addPdf(totPDF_mu,"MuonSignal")
+    totPDF.addPdf(totPDF_el,"ElectronSignal")
+    constrained_params.add(dCB_width)
+    constrained_params.add(dCB_pole)
+    #constrained_params.add(eta_mu)
+    #constrained_params.add(eta_el)
 else:
-    if runningEra == 3:
-        totPDF.addPdf(totPDF_mu_unconstr,"MuonSignal")
-        totPDF.addPdf(totPDF_el_unconstr,"ElectronSignal")
-        dCB_width.setConstant(1)
-        dCB_pole.setConstant(1)
-        #eta_mu_2016_2017_2018.setConstant(1)
-        #eta_el_2016_2017_2018.setConstant(1)
+    totPDF.addPdf(totPDF_mu_unconstr,"MuonSignal")
+    totPDF.addPdf(totPDF_el_unconstr,"ElectronSignal")
+    dCB_width.setConstant(1)
+    dCB_pole.setConstant(1)
+    #eta_mu.setConstant(1)
+    #eta_el.setConstant(1)
 
 ################################################################
 #                                                              #
@@ -634,14 +438,10 @@ else:
 ################################################################
 
 if isData:
-    # W_pigamma_BR.setVal(0.000006)
-    # W_pigamma_BR.setConstant(1)
     if not suppressAllSystematics:
         result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
     else:
-        result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
-    print "minNll = ", result_dataFit.minNll()
-    print "2Delta_minNll = ", 2*(3250.96600396-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
+        result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Save() )
 else:
     totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(0), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
 
@@ -673,19 +473,8 @@ totPDF.plotOn(xframe_mu, ROOT.RooFit.Range("LowSideband,HighSideband"), ROOT.Roo
 data_reduced.plotOn(xframe_el, ROOT.RooFit.Cut("Categorization==3"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
 totPDF.plotOn(xframe_el, ROOT.RooFit.Range("LowSideband,HighSideband"), ROOT.RooFit.Slice(Categorization,"ElectronSignal"), ROOT.RooFit.ProjWData(data))
 
-
+#DRAW ON CANVAS
 canvas = ROOT.TCanvas()
-# canvas.Divide(2,2)
-# canvas.cd(1)
-# xframe_mu_2016.Draw()
-# canvas.cd(2)
-# xframe_el_2016.Draw()
-# canvas.cd(3)
-# xframe_mu_2017.Draw()
-# canvas.cd(4)
-# xframe_el_2017.Draw()
-
-#FIXME
 canvas.Divide(2,1)
 canvas.cd(1)
 xframe_mu.Draw()
@@ -697,32 +486,6 @@ if isData:
     canvas.SaveAs("plots/fitData_signalR.pdf")
 else:
     canvas.SaveAs("plots/fitMC_signalR.pdf")
-
-# #Now plot the CR
-# xframe_mu_CR = Wmass.frame(55.,95.,15)
-# xframe_mu_CR.SetTitle(" ")
-# xframe_mu_CR.SetTitleOffset(1.4,"y")
-# data.plotOn(xframe_mu_CR, ROOT.RooFit.Cut("Categorization==0"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-# totPDF.plotOn(xframe_mu_CR, ROOT.RooFit.Slice(Categorization,"MuonCR"), ROOT.RooFit.ProjWData(data))
-
-# xframe_el_CR = Wmass.frame(55.,95.,15)
-# xframe_el_CR.SetTitle(" ")
-# xframe_el_CR.SetTitleOffset(1.4,"y")
-# data.plotOn(xframe_el_CR, ROOT.RooFit.Cut("Categorization==2"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-# totPDF.plotOn(xframe_el_CR, ROOT.RooFit.Slice(Categorization,"ElectronCR"), ROOT.RooFit.ProjWData(data))
-
-# canvas_CR = ROOT.TCanvas()
-# canvas_CR.Divide(2,1)
-# canvas_CR.cd(1)
-# xframe_mu_CR.Draw()
-# canvas_CR.cd(2)
-# xframe_el_CR.Draw()
-
-# if isData:
-#     canvas_CR.SaveAs("plots/fitData_CR_restricted.pdf")
-# else:
-#     canvas_CR.SaveAs("plots/fitMC_CR.pdf")
-
 
 ################################################################
 #                                                              #
