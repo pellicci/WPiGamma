@@ -117,7 +117,7 @@ print "Using ", data.numEntries(), " events to fit"
 #Now describe the background
 
 #Parameters for muon Chebychev
-a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",0.15,-5.,5.)
+a0_mu = ROOT.RooRealVar("a0_mu","a0_mu",0.29,-1.,1.)
 a1_mu = ROOT.RooRealVar("a1_mu","a1_mu",-0.7,-5.,5.)
 a2_mu = ROOT.RooRealVar("a2_mu","a2_mu",-0.2,-5.,5.)
 a3_mu = ROOT.RooRealVar("a3_mu","a3_mu",-0.15,-5.,5.)
@@ -130,7 +130,7 @@ a7_mu = ROOT.RooRealVar("a7_mu","a7_mu",-0.15,-5.,5.)
 # a6_mu = ROOT.RooRealVar("a6_mu","a6_mu",0.1,-5.,5.)
 
 #Parameters for electron Chebychev
-a0_el = ROOT.RooRealVar("a0_el","a0_el",0.1,-5.,5.)
+a0_el = ROOT.RooRealVar("a0_el","a0_el",0.25,-1.,1.)
 a1_el = ROOT.RooRealVar("a1_el","a1_el",-0.6,-5.,5.)
 a2_el = ROOT.RooRealVar("a2_el","a2_el",-0.05,-5.,5.)
 a3_el = ROOT.RooRealVar("a3_el","a3_el",-0.2,-5.,5.)
@@ -164,10 +164,10 @@ b8_el = ROOT.RooRealVar("b8_el","b8_el",2.,0.,5.)
 # b9_el = ROOT.RooRealVar("b9_el","b9_el",5.,0.,10.)
 
 #Parameters for muon exponential
-c0_mu = ROOT.RooRealVar("c0_mu","c0_mu",0.001,0.,0.02)
+c0_mu = ROOT.RooRealVar("c0_mu","c0_mu",0.001,0.,0.01)
 
 #Parameters for electron exponential
-c0_el = ROOT.RooRealVar("c0_el","c0_el",0.001,0.,0.02)
+c0_el = ROOT.RooRealVar("c0_el","c0_el",0.001,0.,0.01)
 
 backPDF_cheb_mu = ROOT.RooChebychev("backPDF_cheb_mu","backPDF_cheb_mu",Wmass,ROOT.RooArgList(a0_mu))#,a1_mu))#,a2_mu))#,a3_mu))#,a4_mu))#,a5_mu,a6_mu))
 backPDF_cheb_el = ROOT.RooChebychev("backPDF_cheb_el","backPDF_cheb_el",Wmass,ROOT.RooArgList(a0_el))#,a1_el))#,a2_el))#,a3_el))#,a4_el))#,a6_el))

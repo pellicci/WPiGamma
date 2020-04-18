@@ -359,28 +359,16 @@ class Simplified_Workflow_Handler:
     def post_preselection_cuts(self, lep_eta, lep_pT, ele_etaSC, gamma_etaSC, isMuon, deltaphi_lep_pi, deltaphi_lep_gamma, isTriggerMatched, runningEra):
 
         if runningEra == 0:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 30.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (isMuon and lep_pT < 25.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 30.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
                 return True
 
         if runningEra == 1:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (isMuon and lep_pT < 28.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 28.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
                 return True
 
         if runningEra == 2:
-            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (isMuon and lep_pT < 25.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
+            if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
                 return True
-
-        # if runningEra == 0:
-        #     if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 30.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
-        #         return True
-
-        # if runningEra == 1:
-        #     if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 28.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
-        #         return True
-
-        # if runningEra == 2:
-        #     if (not isMuon and math.fabs(lep_eta) > 2.4) or (not isMuon and lep_pT < 33.) or (isMuon and deltaphi_lep_pi <= 0.09) or (not isMuon and deltaphi_lep_pi <= 0.05) or (deltaphi_lep_gamma < 0.04) or (isMuon and lep_pT < 25.) or (not isMuon and (math.fabs(ele_etaSC) >= 1.4442 and math.fabs(ele_etaSC) <= 1.566)) or (math.fabs(gamma_etaSC) >= 1.4442 and math.fabs(gamma_etaSC) <= 1.566) or not isTriggerMatched:
-        #         return True
 
         return False
 

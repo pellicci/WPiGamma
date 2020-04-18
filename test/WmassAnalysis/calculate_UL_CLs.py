@@ -4,13 +4,13 @@ import argparse
 ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
 #---------------------------------#
-p = argparse.ArgumentParser(description='Select whether to fit data or MC')
-p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <<2>> for 2016+2017, <<3>> for 2016+2017+2018')
-args = p.parse_args()
+#p = argparse.ArgumentParser(description='Select whether to fit data or MC')
+#p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <<2>> for 2016+2017, <<3>> for 2016+2017+2018')
+#args = p.parse_args()
 
-runningEra = int(args.runningEra_option)
+#runningEra = int(args.runningEra_option)
 
-suppressAllSystematics = True
+suppressAllSystematics = False
 #---------------------------------#
 
 #Get the model and the data
@@ -39,86 +39,67 @@ if not suppressAllSystematics:
     constrained_params = ROOT.RooArgSet()
     constrained_params.add(workspace.var("dCB_width"))
     constrained_params.add(workspace.var("dCB_pole"))
-    constrained_params.add(workspace.var("W_xsec_constr"))
-    
-    if runningEra == 0:
-        constrained_params.add(workspace.var("eta_mu_2016"))
-        constrained_params.add(workspace.var("eta_el_2016"))
-        constrained_params.add(workspace.var("lumi_constr_2016"))
-        constrained_params.add(workspace.var("eff_mu_constr_2016"))
-        constrained_params.add(workspace.var("eff_el_constr_2016"))
-    if runningEra == 1:
-        constrained_params.add(workspace.var("eta_mu_2017"))
-        constrained_params.add(workspace.var("eta_el_2017"))
-        constrained_params.add(workspace.var("lumi_constr_2017"))
-        constrained_params.add(workspace.var("eff_mu_constr_2017"))
-        constrained_params.add(workspace.var("eff_el_constr_2017"))
-    if runningEra == 2:
-        constrained_params.add(workspace.var("eta_mu_2016"))
-        constrained_params.add(workspace.var("eta_el_2016"))
-        constrained_params.add(workspace.var("lumi_constr_2016"))
-        constrained_params.add(workspace.var("eff_mu_constr_2016"))
-        constrained_params.add(workspace.var("eff_el_constr_2016"))
-        constrained_params.add(workspace.var("eta_mu_2017"))
-        constrained_params.add(workspace.var("eta_el_2017"))
-        constrained_params.add(workspace.var("lumi_constr_2017"))
-        constrained_params.add(workspace.var("eff_mu_constr_2017"))
-        constrained_params.add(workspace.var("eff_el_constr_2017"))
-    if runningEra == 3:
-        constrained_params.add(workspace.var("eta_mu_2016_2017_2018"))
-        constrained_params.add(workspace.var("eta_el_2016_2017_2018"))
-        constrained_params.add(workspace.var("lumi_constr_2016"))
-        constrained_params.add(workspace.var("eff_mu_constr_2016"))
-        constrained_params.add(workspace.var("eff_el_constr_2016"))
-        constrained_params.add(workspace.var("lumi_constr_2017"))
-        constrained_params.add(workspace.var("eff_mu_constr_2017"))
-        constrained_params.add(workspace.var("eff_el_constr_2017"))
-        constrained_params.add(workspace.var("lumi_constr_2018"))
-        constrained_params.add(workspace.var("eff_mu_constr_2018"))
-        constrained_params.add(workspace.var("eff_el_constr_2018"))
+    constrained_params.add(workspace.var("W_xsec_beta"))
+    constrained_params.add(workspace.var("lumi_beta_2016"))
+    constrained_params.add(workspace.var("lumi_beta_2017"))
+    constrained_params.add(workspace.var("lumi_beta_2018"))
+    constrained_params.add(workspace.var("eff_mu_beta_2016"))
+    constrained_params.add(workspace.var("eff_el_beta_2016"))
+    constrained_params.add(workspace.var("eff_mu_beta_2017"))
+    constrained_params.add(workspace.var("eff_el_beta_2017"))
+    constrained_params.add(workspace.var("eff_mu_beta_2018"))
+    constrained_params.add(workspace.var("eff_el_beta_2018"))
+    constrained_params.add(workspace.var("bkg_param_beta_mu"))
+    constrained_params.add(workspace.var("bkg_param_beta_el"))
         
-#Define global observables
-if not suppressAllSystematics:
+    #Define global observables
     global_params = ROOT.RooArgSet()
+
+    workspace.var("dCB_width_constr").setConstant(1)
+    workspace.var("dCB_pole_constr").setConstant(1)
+    workspace.var("glb_W_xsec").setConstant(1)
+    workspace.var("glb_lumi_2016").setConstant(1)
+    workspace.var("glb_eff_mu_2016").setConstant(1)
+    workspace.var("glb_eff_el_2016").setConstant(1)
+    workspace.var("glb_lumi_2017").setConstant(1)
+    workspace.var("glb_eff_mu_2017").setConstant(1)
+    workspace.var("glb_eff_el_2017").setConstant(1)
+    workspace.var("glb_lumi_2018").setConstant(1)
+    workspace.var("glb_eff_mu_2018").setConstant(1)
+    workspace.var("glb_eff_el_2018").setConstant(1)
+    workspace.var("glb_bkg_param_mu").setConstant(1)
+    workspace.var("glb_bkg_param_el").setConstant(1)
+
     global_params.add(workspace.var("dCB_width_constr"))
     global_params.add(workspace.var("dCB_pole_constr"))
     global_params.add(workspace.var("glb_W_xsec"))
-    
-    if runningEra == 0:
-        global_params.add(workspace.var("glb_lumi_2016"))
-        global_params.add(workspace.var("glb_eff_mu_2016"))
-        global_params.add(workspace.var("glb_eff_el_2016"))
-        global_params.add(workspace.var("glb_bkg_param_mu_2016"))
-        global_params.add(workspace.var("glb_bkg_param_el_2016"))
-    if runningEra == 1:
-        global_params.add(workspace.var("glb_lumi_2017"))
-        global_params.add(workspace.var("glb_eff_mu_2017"))
-        global_params.add(workspace.var("glb_eff_el_2017"))
-        global_params.add(workspace.var("glb_bkg_param_mu_2017"))
-        global_params.add(workspace.var("glb_bkg_param_el_2017"))
-    if runningEra == 2:
-        global_params.add(workspace.var("glb_lumi_2016"))
-        global_params.add(workspace.var("glb_eff_mu_2016"))
-        global_params.add(workspace.var("glb_eff_el_2016"))
-        global_params.add(workspace.var("glb_bkg_param_mu_2016"))
-        global_params.add(workspace.var("glb_bkg_param_el_2016"))
-        global_params.add(workspace.var("glb_lumi_2017"))
-        global_params.add(workspace.var("glb_eff_mu_2017"))
-        global_params.add(workspace.var("glb_eff_el_2017"))
-        global_params.add(workspace.var("glb_bkg_param_mu_2017"))
-        global_params.add(workspace.var("glb_bkg_param_el_2017"))
-    if runningEra == 3:
-        global_params.add(workspace.var("glb_lumi_2016"))
-        global_params.add(workspace.var("glb_eff_mu_2016"))
-        global_params.add(workspace.var("glb_eff_el_2016"))
-        global_params.add(workspace.var("glb_lumi_2017"))
-        global_params.add(workspace.var("glb_eff_mu_2017"))
-        global_params.add(workspace.var("glb_eff_el_2017"))
-        global_params.add(workspace.var("glb_lumi_2018"))
-        global_params.add(workspace.var("glb_eff_mu_2018"))
-        global_params.add(workspace.var("glb_eff_el_2018"))
-        global_params.add(workspace.var("glb_bkg_param_mu_2016_2017_2018"))
-        global_params.add(workspace.var("glb_bkg_param_el_2016_2017_2018"))
+    global_params.add(workspace.var("glb_lumi_2016"))
+    global_params.add(workspace.var("glb_eff_mu_2016"))
+    global_params.add(workspace.var("glb_eff_el_2016"))
+    global_params.add(workspace.var("glb_lumi_2017"))
+    global_params.add(workspace.var("glb_eff_mu_2017"))
+    global_params.add(workspace.var("glb_eff_el_2017"))
+    global_params.add(workspace.var("glb_lumi_2018"))
+    global_params.add(workspace.var("glb_eff_mu_2018"))
+    global_params.add(workspace.var("glb_eff_el_2018"))
+    global_params.add(workspace.var("glb_bkg_param_mu"))
+    global_params.add(workspace.var("glb_bkg_param_el"))
+
+else:
+    workspace.var("dCB_width").setConstant(1)
+    workspace.var("dCB_pole").setConstant(1)
+    workspace.var("W_xsec_beta").setConstant(1)
+    workspace.var("lumi_beta_2016").setConstant(1)
+    workspace.var("lumi_beta_2017").setConstant(1)
+    workspace.var("lumi_beta_2018").setConstant(1)
+    workspace.var("eff_mu_beta_2016").setConstant(1)
+    workspace.var("eff_el_beta_2016").setConstant(1)
+    workspace.var("eff_mu_beta_2017").setConstant(1)
+    workspace.var("eff_el_beta_2017").setConstant(1)
+    workspace.var("eff_mu_beta_2018").setConstant(1)
+    workspace.var("eff_el_beta_2018").setConstant(1)
+    workspace.var("bkg_param_beta_mu").setConstant(1)
+    workspace.var("bkg_param_beta_el").setConstant(1)
 
 #Define the model container
 #First the S+B
@@ -206,7 +187,7 @@ npoints = 25 #Number of points to scan
 poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
-min_scan = 0.000005
+min_scan = 0.000004
 max_scan = 0.000030
 #min_scan = 0.0000005
 #max_scan = 0.000003
