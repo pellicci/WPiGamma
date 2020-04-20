@@ -55,23 +55,19 @@ if not suppressAllSystematics:
     #Define global observables
     global_params = ROOT.RooArgSet()
 
-    workspace.var("dCB_width_constr").setConstant(1)
-    workspace.var("dCB_pole_constr").setConstant(1)
-    workspace.var("glb_W_xsec").setConstant(1)
-    workspace.var("glb_lumi_2016").setConstant(1)
-    workspace.var("glb_eff_mu_2016").setConstant(1)
-    workspace.var("glb_eff_el_2016").setConstant(1)
-    workspace.var("glb_lumi_2017").setConstant(1)
-    workspace.var("glb_eff_mu_2017").setConstant(1)
-    workspace.var("glb_eff_el_2017").setConstant(1)
-    workspace.var("glb_lumi_2018").setConstant(1)
-    workspace.var("glb_eff_mu_2018").setConstant(1)
-    workspace.var("glb_eff_el_2018").setConstant(1)
-    workspace.var("glb_bkg_param_mu").setConstant(1)
-    workspace.var("glb_bkg_param_el").setConstant(1)
+    # workspace.var("glb_W_xsec").setConstant(1)
+    # workspace.var("glb_lumi_2016").setConstant(1)
+    # workspace.var("glb_eff_mu_2016").setConstant(1)
+    # workspace.var("glb_eff_el_2016").setConstant(1)
+    # workspace.var("glb_lumi_2017").setConstant(1)
+    # workspace.var("glb_eff_mu_2017").setConstant(1)
+    # workspace.var("glb_eff_el_2017").setConstant(1)
+    # workspace.var("glb_lumi_2018").setConstant(1)
+    # workspace.var("glb_eff_mu_2018").setConstant(1)
+    # workspace.var("glb_eff_el_2018").setConstant(1)
+    # workspace.var("glb_bkg_param_mu").setConstant(1)
+    # workspace.var("glb_bkg_param_el").setConstant(1)
 
-    global_params.add(workspace.var("dCB_width_constr"))
-    global_params.add(workspace.var("dCB_pole_constr"))
     global_params.add(workspace.var("glb_W_xsec"))
     global_params.add(workspace.var("glb_lumi_2016"))
     global_params.add(workspace.var("glb_eff_mu_2016"))
@@ -189,7 +185,7 @@ poimax = poi.find("W_pigamma_BR").getMax()
 
 min_scan = 0.000004
 max_scan = 0.000030
-#min_scan = 0.0000005
+#min_scan = 0.00000005
 #max_scan = 0.000003
 print "Doing a fixed scan  in interval : ",min_scan, " , ", max_scan
 calc.SetFixedScan(npoints,min_scan,max_scan)
