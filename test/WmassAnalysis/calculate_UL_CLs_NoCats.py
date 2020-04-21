@@ -10,7 +10,7 @@ ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
 #runningEra = int(args.runningEra_option)
 
-suppressAllSystematics = False
+suppressAllSystematics = True
 #---------------------------------#
 
 #Get the model and the data
@@ -19,7 +19,7 @@ fInput.cd()
 
 workspace = fInput.Get("workspace")
 workspace.Print()
-#workspace.var("W_pigamma_BR").setRange(0.,0.0001)
+#workspace.var("W_pigamma_BR").setRange(-0.0001,0.01)
 
 #Define the parameter of interest
 W_pigamma_BR = workspace.var("W_pigamma_BR")
@@ -31,52 +31,24 @@ Categorization = workspace.cat("Categorization")#All the categories added with d
 
 observables = ROOT.RooArgSet()
 observables.add(Wmass)
-#observables.add(Categorization)
+observables.add(Categorization)
 
 #Define nuisances
 if not suppressAllSystematics:
     constrained_params = ROOT.RooArgSet()
-    constrained_params.add(workspace.var("dCB_width"))
-    constrained_params.add(workspace.var("dCB_pole"))
-    constrained_params.add(workspace.var("W_xsec_beta"))
-    constrained_params.add(workspace.var("efflumi_mu_beta"))
-    constrained_params.add(workspace.var("efflumi_el_beta"))
-    constrained_params.add(workspace.var("bkg_param_beta_mu"))
-    constrained_params.add(workspace.var("bkg_param_beta_el"))
-    constrained_params.add(workspace.var("Nbkg_mu"))
-    constrained_params.add(workspace.var("Nbkg_el"))
-    constrained_params.add(workspace.var("a0_mu"))
-    constrained_params.add(workspace.var("a1_mu"))
-    constrained_params.add(workspace.var("a0_el"))
-    constrained_params.add(workspace.var("a1_el"))
+    constrained_params.add(workspace.var("Multi_param_beta"))
+    constrained_params.add(workspace.var("Nbkg"))
+    constrained_params.add(workspace.var("a0_bkg"))
+    constrained_params.add(workspace.var("a1_bkg"))
         
     #Define global observables
     global_params = ROOT.RooArgSet()
 
-    workspace.var("dCB_width_constr").setConstant(1)
-    workspace.var("dCB_pole_constr").setConstant(1)
-    workspace.var("glb_W_xsec").setConstant(1)
-    workspace.var("glb_efflumi_mu").setConstant(1)
-    workspace.var("glb_efflumi_el").setConstant(1)
-    workspace.var("glb_bkg_param_mu").setConstant(1)
-    workspace.var("glb_bkg_param_el").setConstant(1)
+    workspace.var("glb_Multi_param").setConstant(1)
 
-    global_params.add(workspace.var("dCB_width_constr"))
-    global_params.add(workspace.var("dCB_pole_constr"))
-    global_params.add(workspace.var("glb_W_xsec"))
-    global_params.add(workspace.var("glb_efflumi_mu"))
-    global_params.add(workspace.var("glb_efflumi_el"))
-    global_params.add(workspace.var("glb_bkg_param_mu"))
-    global_params.add(workspace.var("glb_bkg_param_el"))
-
+    global_params.add(workspace.var("glb_Multi_param"))
 else:
-    workspace.var("dCB_width").setConstant(1)
-    workspace.var("dCB_pole").setConstant(1)
-    workspace.var("W_xsec_beta").setConstant(1)
-    workspace.var("efflumi_mu_beta").setConstant(1)
-    workspace.var("efflumi_el_beta").setConstant(1)
-    workspace.var("bkg_param_beta_mu").setConstant(1)
-    workspace.var("bkg_param_beta_el").setConstant(1)
+    workspace.var("Multi_param_beta").setConstant(1)
 
 #Define the model container
 #First the S+B
@@ -86,7 +58,6 @@ if not suppressAllSystematics:
     sbModel.SetNuisanceParameters(constrained_params)
     sbModel.SetGlobalObservables(global_params)
 sbModel.SetPdf("totPDF")
-#sbModel.SetPdf("totPDF_el_2016")
 sbModel.SetName("S+B Model")
 sbModel.SetParametersOfInterest(poi)
 sbModel.SetSnapshot(poi)
@@ -97,7 +68,6 @@ if not suppressAllSystematics:
     bModel.SetNuisanceParameters(constrained_params)
     bModel.SetGlobalObservables(global_params)
 bModel.SetPdf("totPDF")
-#bModel.SetPdf("totPDF_el_2016")
 bModel.SetName("B model")
 bModel.SetParametersOfInterest(poi)
 oldval = poi.find("W_pigamma_BR").getVal()
@@ -109,41 +79,41 @@ print "Number of events in data = ", workspace.data("data").numEntries()
 
 #use the CLs method with the asymptotic calculator, using Asimov datasets
 #See here https://arxiv.org/pdf/1007.1727.pdf
-
+"""
 #----------------------------------------------------------------------------------#
-#fc = ROOT.RooStats.FrequentistCalculator(workspace.data("data"), bModel, sbModel)
-#fc.SetToys(800,800)
+fc = ROOT.RooStats.FrequentistCalculator(workspace.data("data"), bModel, sbModel)
+fc.SetToys(800,500)
 
 #Create hypotest inverter passing desired calculator
-#calc = ROOT.RooStats.HypoTestInverter(fc)
-#calc.SetConfidenceLevel(0.95)
+calc = ROOT.RooStats.HypoTestInverter(fc)
+calc.SetConfidenceLevel(0.95)
 
 #Use CLs
-#calc.UseCLs(1)
+calc.UseCLs(1)
 
-#calc.SetVerbose(0)
+calc.SetVerbose(0)
 
 #Configure ToyMC sampler
-#toymc = calc.GetHypoTestCalculator().GetTestStatSampler()
-#toymc = fc.GetTestStatSampler()
+toymc = calc.GetHypoTestCalculator().GetTestStatSampler()
+toymc = fc.GetTestStatSampler()
 
 #Set profile likelihood test statistics
-#profl = ROOT.RooStats.ProfileLikelihoodTestStat(sbModel.GetPdf())
+profl = ROOT.RooStats.ProfileLikelihoodTestStat(sbModel.GetPdf())
 #For CLs (bounded intervals) use one-sided profile likelihood
-#profl.SetOneSided(1)
+profl.SetOneSided(1)
 
 #Set the test statistic to use
-#toymc.SetTestStatistic(profl)
+toymc.SetTestStatistic(profl)
 
 #----------------------------------------------------------------------------------#
-
+"""
 data = workspace.data("data")
 
 # #data = data_initial.reduce("Categorization==Categorization::ElectronSignal_2016")
 
 fc = ROOT.RooStats.AsymptoticCalculator(data, bModel, sbModel)
 fc.SetOneSided(1)
-fc.SetPrintLevel(2)
+#fc.SetPrintLevel(2)
 #fc.UseSameAltToys()
 
 # #Create hypotest inverter passing the desired calculator 
@@ -151,7 +121,7 @@ calc = ROOT.RooStats.HypoTestInverter(fc)
 
 # #set confidence level (e.g. 95% upper limits)
 calc.SetConfidenceLevel(0.95)
-calc.SetVerbose(1)
+calc.SetVerbose(0)
 
 # #use CLs
 calc.UseCLs(1)
@@ -170,7 +140,7 @@ poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
 min_scan = 0.0000001
-max_scan = 0.000005
+max_scan = 0.00005
 #min_scan = 0.00000005
 #max_scan = 0.000003
 print "Doing a fixed scan  in interval : ",min_scan, " , ", max_scan

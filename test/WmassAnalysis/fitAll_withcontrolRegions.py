@@ -227,7 +227,6 @@ lumi_2018         = ROOT.RooFormulaVar("lumi_2018","@0 * pow(@1,@2)",ROOT.RooArg
 glb_lumi_2018     = ROOT.RooRealVar("glb_lumi_2018","glb_lumi_2018",0.,-5.,5.)
 gauss_lumi_2018   = ROOT.RooGaussian("gauss_lumi_2018","gauss_lumi_2018",glb_lumi_2018,lumi_beta_2018,one) 
 
-
 ################################################################
 #                                                              #
 #------------------ Systematic on efficiency ------------------#
@@ -392,7 +391,6 @@ glb_eff_el_2018.setConstant(1)
 #                                                              #
 ################################################################
 Nsig_mu = ROOT.RooFormulaVar("Nsig_mu","@0*@1*@2*(@3*@4+@5*@6+@7*@8)", ROOT.RooArgList(W_pigamma_BR, W_xsec, eta_mu, lumi_2016, eff_mu_2016, lumi_2017, eff_mu_2017, lumi_2018, eff_mu_2018))
-
 Nsig_el = ROOT.RooFormulaVar("Nsig_el","@0*@1*@2*(@3*@4+@5*@6+@7*@8)", ROOT.RooArgList(W_pigamma_BR, W_xsec, eta_el, lumi_2016, eff_el_2016, lumi_2017, eff_el_2017, lumi_2018, eff_el_2018))
 
 Nbkg_mu = ROOT.RooRealVar("Nbkg_mu","Nbkg_mu",900.,300.,3000.)
@@ -456,11 +454,11 @@ else:
 
 if isData:
     if not suppressAllSystematics:
-        result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
+        result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
     else:
         result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Save() )
 else:
-    totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(0), ROOT.RooFit.NumCPU(4), ROOT.RooFit.Constrain(constrained_params) )
+    totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(0), ROOT.RooFit.NumCPU(4) )
 
 
 ################################################################
