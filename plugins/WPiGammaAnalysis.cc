@@ -606,7 +606,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   //**********************************************************************//
   //                                                                      //
-  //---------------------- Trigger Matching          ---------------------//
+  //-------------------------- Trigger Matching --------------------------//
   //                                                                      //
   //**********************************************************************//
   //https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2017#Trigger
@@ -942,7 +942,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   float gen_pi_pT = 0.;
   float gen_pi_eta = 0.;
   float gen_pi_phi = 0.;
+  float gen_pi_energy = 0.;
   int gen_pi_mother = 0;
+  int gen_pi_grandmother = 0;
+  float gen_pi_grandmother_pT = 0.;
+  float gen_pi_grandmother_eta = 0.;
+  float gen_pi_grandmother_phi = 0.;
+  float gen_pi_grandmother_energy = 0.;
   is_gen_pi = false;
 
   if(!runningOnData_){
@@ -953,16 +959,36 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       gen_pi_pT = gen->pt();
       gen_pi_eta = gen->eta();
       gen_pi_phi = gen->phi();
+      gen_pi_energy = gen->energy();
       gen_pi_mother = gen->mother()->pdgId();
+      gen_pi_grandmother = gen->mother()->mother()->pdgId();
+      gen_pi_grandmother_pT     = gen->mother()->mother()->pt();
+      gen_pi_grandmother_eta    = gen->mother()->mother()->eta();
+      gen_pi_grandmother_phi    = gen->mother()->mother()->phi();
+      gen_pi_grandmother_energy = gen->mother()->mother()->energy();
       is_gen_pi = true;
+      if(fabs(gen_pi_grandmother) == 24){
+	gen_pi_grandmother = gen->mother()->mother()->mother()->pdgId();
+	gen_pi_grandmother_pT     = gen->mother()->mother()->mother()->pt();
+	gen_pi_grandmother_eta    = gen->mother()->mother()->mother()->eta();
+	gen_pi_grandmother_phi    = gen->mother()->mother()->mother()->phi();
+	gen_pi_grandmother_energy = gen->mother()->mother()->mother()->energy();
+      }
     }
   }
 
   if(is_gen_pi){
+    //std::cout << "la nonna del pi: " <<  gen_pi_grandmother << std::endl;
     gen_pi_pT_tree = gen_pi_pT;
     gen_pi_eta_tree = gen_pi_eta;
     gen_pi_phi_tree = gen_pi_phi;
+    gen_pi_energy_tree = gen_pi_energy;
     gen_pi_mother_tree = gen_pi_mother;
+    gen_pi_grandmother_tree = gen_pi_grandmother;
+    gen_pi_grandmother_pT_tree = gen_pi_grandmother_pT;
+    gen_pi_grandmother_eta_tree = gen_pi_grandmother_eta;
+    gen_pi_grandmother_phi_tree = gen_pi_grandmother_phi;
+    gen_pi_grandmother_energy_tree = gen_pi_grandmother_energy;
   }
 
   //*************************************************************//
@@ -975,6 +1001,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   float gen_ph_pT = 0.;
   float gen_ph_eta = 0.;
   float gen_ph_phi = 0.;
+  float gen_ph_energy = 0.;
   int gen_ph_mother = 0;
   is_gen_ph = false;
 
@@ -986,6 +1013,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       gen_ph_pT = gen->pt();
       gen_ph_eta = gen->eta();
       gen_ph_phi = gen->phi();
+      gen_ph_energy = gen->energy();
       gen_ph_mother = gen->mother()->pdgId();
       is_gen_ph = true;
     }
@@ -995,6 +1023,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     gen_ph_pT_tree = gen_ph_pT;
     gen_ph_eta_tree = gen_ph_eta;
     gen_ph_phi_tree = gen_ph_phi;
+    gen_ph_energy_tree = gen_ph_energy;
     gen_ph_mother_tree = gen_ph_mother;
   }
 
@@ -1197,13 +1226,21 @@ void WPiGammaAnalysis::create_trees()
     mytree->Branch("is_signal_Wplus",&is_signal_Wplus);
     mytree->Branch("is_signal_Wminus",&is_signal_Wminus);
     mytree->Branch("is_gen_ph",&is_gen_ph);
+    mytree->Branch("is_gen_pi",&is_gen_pi);
     mytree->Branch("gen_pi_pT",&gen_pi_pT_tree);
     mytree->Branch("gen_pi_eta",&gen_pi_eta_tree);
     mytree->Branch("gen_pi_phi",&gen_pi_phi_tree);
+    mytree->Branch("gen_pi_energy",&gen_pi_energy_tree);
     mytree->Branch("gen_pi_mother",&gen_pi_mother_tree);
+    mytree->Branch("gen_pi_grandmother",&gen_pi_grandmother_tree);
+    mytree->Branch("gen_pi_grandmother_pT",&gen_pi_grandmother_pT_tree);
+    mytree->Branch("gen_pi_grandmother_eta",&gen_pi_grandmother_eta_tree);
+    mytree->Branch("gen_pi_grandmother_phi",&gen_pi_grandmother_phi_tree);
+    mytree->Branch("gen_pi_grandmother_energy",&gen_pi_grandmother_energy_tree);
     mytree->Branch("gen_ph_pT",&gen_ph_pT_tree);
     mytree->Branch("gen_ph_eta",&gen_ph_eta_tree);
     mytree->Branch("gen_ph_phi",&gen_ph_phi_tree);
+    mytree->Branch("gen_ph_energy",&gen_ph_energy_tree);
     mytree->Branch("gen_ph_mother",&gen_ph_mother_tree);
   }
 

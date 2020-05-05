@@ -10,7 +10,7 @@ ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
 #runningEra = int(args.runningEra_option)
 
-suppressAllSystematics = True
+suppressAllSystematics = False
 #---------------------------------#
 
 #Get the model and the data
@@ -39,7 +39,6 @@ if not suppressAllSystematics:
     constrained_params.add(workspace.var("Multi_param_beta"))
     constrained_params.add(workspace.var("Nbkg"))
     constrained_params.add(workspace.var("a0_bkg"))
-    constrained_params.add(workspace.var("a1_bkg"))
         
     #Define global observables
     global_params = ROOT.RooArgSet()

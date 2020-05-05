@@ -195,10 +195,18 @@ private:
   float gen_pi_pT_tree;
   float gen_pi_eta_tree;
   float gen_pi_phi_tree;
+  float gen_pi_energy_tree;
   int gen_pi_mother_tree;
+  int gen_pi_grandmother_tree;
+  float gen_pi_grandmother_pT_tree;
+  float gen_pi_grandmother_eta_tree;
+  float gen_pi_grandmother_phi_tree;
+  float gen_pi_grandmother_energy_tree;
+
   float gen_ph_pT_tree;
   float gen_ph_eta_tree;
   float gen_ph_phi_tree;
+  float gen_ph_energy_tree;
   int gen_ph_mother_tree;
 
   bool is_ttbar_lnu;

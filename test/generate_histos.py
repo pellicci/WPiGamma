@@ -2,6 +2,7 @@ import ROOT
 import math
 import argparse
 import numpy as np
+import array as arr
 from Simplified_Workflow_Handler import Simplified_Workflow_Handler
 
 ############################################################################
@@ -84,11 +85,22 @@ h_PUdistrib.Sumw2()
 ttbar_sig_calib = myWF.get_ttbar_signal_reweight()
 
 h_genW_pT       = ROOT.TH1F("h_genW_pT", "", 15, 0., 300.)
+h_genW_eta      = ROOT.TH1F("h_genW_eta", "", 20, -2.6, 2.6)
+h_genW_phi      = ROOT.TH1F("h_genW_phi", "", 15, -3.14, 3.14)
+h_genTop_pT     = ROOT.TH1F("h_genTop_pT", "", 15, 0., 300.)
+h_genTop_eta    = ROOT.TH1F("h_genTop_eta", "", 20, -2.6, 2.6)
+h_genTop_phi    = ROOT.TH1F("h_genTop_phi", "", 15, -3.14, 3.14)
+h_angle_Top_Pi  = ROOT.TH1F("h_angle_Top_Pi", "", 25, -3.14, 6.28)
+h_angle_Pi_Ph   = ROOT.TH1F("h_angle_Pi_Ph", "", 35, -3.14, 6.28)
+h_angle_Pi_W    = ROOT.TH1F("h_angle_Pi_W", "", 20, -1., 1.)
+
 h_genW_pT_up    = ROOT.TH1F("h_genW_pT_up", "", 15, 0., 300.)
 h_genW_pT_down  = ROOT.TH1F("h_genW_pT_down", "", 15, 0., 300.)
-
 h_genW_pT_up_over_nominal   = ROOT.TH1F("h_genW_pT_up_over_nominal", "", 15, 0., 300.)
 h_genW_pT_down_over_nominal = ROOT.TH1F("h_genW_pT_down_over_nominal", "", 15, 0., 300.)
+
+
+pT_ele_binning = arr.array('f',[33.,40.,50.,100.,200.,500.])
 
 ##Get the handlers for all the histos and graphics
 h_base  = dict()
@@ -96,7 +108,8 @@ h_base  = dict()
 list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets"]
 
 h_base[list_histos[0]]  = ROOT.TH1F(list_histos[0], "p_{T} of the muon", 15, 25, 100.)
-h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 15, 28, 100.)
+#h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 15, 28, 100.)
+h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 5, pT_ele_binning)
 h_base[list_histos[2]]  = ROOT.TH1F(list_histos[2], "p_{T} of the pion", 15, 20, 100.)
 h_base[list_histos[3]]  = ROOT.TH1F(list_histos[3], "E_{T} of the gamma", 15, 20, 100.)
 h_base[list_histos[4]]  = ROOT.TH1F(list_histos[4], "eta of the muon", 20, -3, 3)
@@ -314,16 +327,56 @@ for jentry in xrange(mytree.GetEntriesFast()):
         genPi_pT  = mytree.gen_pi_pT 
         genPi_eta = mytree.gen_pi_eta 
         genPi_phi = mytree.gen_pi_phi
+        genPi_energy = mytree.gen_pi_energy
+        genTop_pT  = mytree.gen_pi_grandmother_pT 
+        genTop_eta = mytree.gen_pi_grandmother_eta 
+        genTop_phi = mytree.gen_pi_grandmother_phi
+        genTop_energy = mytree.gen_pi_grandmother_energy
         genPh_pT  = mytree.gen_ph_pT 
         genPh_eta = mytree.gen_ph_eta
         genPh_phi = mytree.gen_ph_phi
+        genPh_energy = mytree.gen_ph_energy
         
+        genTop_FourMomentum = ROOT.TLorentzVector()
+        genTop_FourMomentum.SetPtEtaPhiE(genTop_pT,genTop_eta,genTop_phi,genTop_energy)
         genPi_FourMomentum = ROOT.TLorentzVector()
-        genPi_FourMomentum.SetPtEtaPhiM(genPi_pT,genPi_eta,genPi_phi,0.140)
+        genPi_FourMomentum.SetPtEtaPhiE(genPi_pT,genPi_eta,genPi_phi,genPi_energy)
         genPh_FourMomentum = ROOT.TLorentzVector()
-        genPh_FourMomentum.SetPtEtaPhiM(genPh_pT,genPh_eta,genPh_phi,0.)
+        genPh_FourMomentum.SetPtEtaPhiE(genPh_pT,genPh_eta,genPh_phi,genPh_energy)
         
-        genW_pT  = (genPi_FourMomentum + genPh_FourMomentum).Pt()
+        genW_pT      = (genPi_FourMomentum + genPh_FourMomentum).Pt()
+        genW_eta     = (genPi_FourMomentum + genPh_FourMomentum).Eta()
+        genW_phi     = (genPi_FourMomentum + genPh_FourMomentum).Phi()
+        genW_energy  = (genPi_FourMomentum + genPh_FourMomentum).E()
+        genW_FourMomentum = ROOT.TLorentzVector()
+        genW_FourMomentum.SetPtEtaPhiE(genW_pT,genW_eta,genW_phi,genW_energy)
+
+        #print "genPi_pT: ", genPi_FourMomentum.Pt()
+        #print "eta BB: ", genPi_FourMomentum.Eta(), " energy BB: ", genPi_FourMomentum.E(), " pT BB: ", genPi_FourMomentum.Pt()
+        boosted_genTop_FourMomentum = ROOT.TLorentzVector()
+        boosted_genTop_FourMomentum = genTop_FourMomentum
+        boosted_genTop_FourMomentum.Boost(-genW_FourMomentum.BoostVector()) #The sign - is required
+        boosted_genPi_FourMomentum = ROOT.TLorentzVector()
+        boosted_genPi_FourMomentum = genPi_FourMomentum
+        boosted_genPi_FourMomentum.Boost(-genW_FourMomentum.BoostVector()) #The sign - is required
+        boosted_genPh_FourMomentum = ROOT.TLorentzVector()
+        boosted_genPh_FourMomentum = genPh_FourMomentum
+        #boosted_genPh_FourMomentum.Boost(-genW_FourMomentum.BoostVector()) #The sign - is required 
+
+        boosted_genW_FourMomentum = ROOT.TLorentzVector()
+        boosted_genW_FourMomentum = genW_FourMomentum
+        boosted_genW_FourMomentum.Boost(-genW_FourMomentum.BoostVector()) #The sign - is required  
+        #print "pT prima: ", genW_FourMomentum.Pt(), "   pT dopo: ", boosted_genW_FourMomentum.Pt() 
+        genW_ThreeMomentum = ROOT.TVector3()
+        genW_ThreeMomentum = genW_FourMomentum.Vect()
+        #print "  X: ",genW_ThreeMomentum.X(),"  Y: ",genW_ThreeMomentum.Y(),"  Z: ", genW_ThreeMomentum.Z()
+
+        #print genW_FourMomentum.X(), genW_FourMomentum.Y(), genW_FourMomentum.Z()
+        angle_Top_Pi = boosted_genTop_FourMomentum.Angle(boosted_genPi_FourMomentum.Vect())
+        angle_Pi_Ph  = boosted_genPi_FourMomentum.Angle(boosted_genPh_FourMomentum.Vect())
+        angle_Pi_W   = boosted_genPi_FourMomentum.Angle(genW_ThreeMomentum)
+        #print "Boosted eta: ", boosted_genPi_FourMomentum.Eta(), " energy: ", boosted_genPi_FourMomentum.E(), " pT: ", boosted_genPi_FourMomentum.Pt(), " pT da variabile: ", genPi_pT
+        #print
     ############################################################
 
     ############################################################################
@@ -517,7 +570,8 @@ for jentry in xrange(mytree.GetEntriesFast()):
             h_base["h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
         if not isBDT:
             h_base["h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
-        h_base["h_elept"].Fill(lep_pT,Event_Weight)
+        if math.fabs(ele_etaSC) < 0.8:
+            h_base["h_elept"].Fill(lep_pT,Event_Weight)
         h_base["h_eleeta"].Fill(lep_eta,Event_Weight)
         h_base["h_nPV_ele"].Fill(nPV,Event_Weight)
         h_base["h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
@@ -538,12 +592,49 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_genW_pT.Fill(genW_pT)
         h_genW_pT_up.Fill(genW_pT*1.05)
         h_genW_pT_down.Fill(genW_pT*0.95)
+        h_genW_eta.Fill(genW_eta)
+        h_genW_phi.Fill(genW_phi)
+        h_genTop_pT.Fill(genTop_pT)
+        h_genTop_eta.Fill(genTop_eta)
+        h_genTop_phi.Fill(genTop_phi)
+        h_angle_Top_Pi.Fill(angle_Top_Pi)
+        if mytree.is_gen_pi:
+            h_angle_Pi_W.Fill(math.cos(angle_Pi_W))
+            h_angle_Pi_Ph.Fill(angle_Pi_Ph)
 
     ############################################################################                                                 
     #                                                                          #                                                 
     #------------------- Fill Pythia Signal Modeling histos -------------------#                                                 
     #                                                                          #                                                 
     ############################################################################  
+
+canvas_W_pT = ROOT.TCanvas()
+h_genW_pT.Draw("hist")
+canvas_W_pT.SaveAs("plots/latest_production/2018/genW_pT.pdf")
+canvas_W_eta = ROOT.TCanvas()
+h_genW_eta.Draw("hist")
+canvas_W_eta.SaveAs("plots/latest_production/2018/genW_eta.pdf")
+canvas_W_phi = ROOT.TCanvas()
+h_genW_phi.Draw("hist")
+canvas_W_phi.SaveAs("plots/latest_production/2018/genW_phi.pdf")
+canvas_Top_pT = ROOT.TCanvas()
+h_genTop_pT.Draw("hist")
+canvas_Top_pT.SaveAs("plots/latest_production/2018/genTop_pT.pdf")
+canvas_Top_eta = ROOT.TCanvas()
+h_genTop_eta.Draw("hist")
+canvas_Top_eta.SaveAs("plots/latest_production/2018/genTop_eta.pdf")
+canvas_Top_phi = ROOT.TCanvas()
+h_genTop_phi.Draw("hist")
+canvas_Top_phi.SaveAs("plots/latest_production/2018/genTop_phi.pdf")
+canvas_angle_Top_Pi = ROOT.TCanvas()
+h_angle_Top_Pi.Draw("hist")
+canvas_angle_Top_Pi.SaveAs("plots/latest_production/2018/angle_Top_Pi.pdf")
+canvas_angle_Pi_Ph = ROOT.TCanvas()
+h_angle_Pi_Ph.Draw("hist")
+canvas_angle_Pi_Ph.SaveAs("plots/latest_production/2018/angle_Pi_Ph.pdf")
+canvas_angle_Pi_W = ROOT.TCanvas()
+h_angle_Pi_W.Draw("hist")
+canvas_angle_Pi_W.SaveAs("plots/latest_production/2018/angle_Pi_W.pdf")
 
 # ROOT.gStyle.SetOptStat(0)
 # canvas1 = ROOT.TCanvas()

@@ -25,6 +25,8 @@ if args.isData_option == "data":
 #------------------------ Instructions ------------------------#
 #                                                              #
 ################################################################
+selectSigShift = 0
+suppressSigSystematic = False
 
 selectBkgFunction = 0 # 0: use Chebychev for ALL the bkg PDFs. 1: use alternative PDF for muon channel. 2: use alternative PDF for electron channel
 suppressBkgSystematic = False # To be used when trying to fit with alternative bkg description, in order to estimate a systematic. If True, it will allow W_pigamma_BR to float negative. Moreover, it will use Signal+Background in the totPDF, so that the fit to the restricted CRs will contain also the POI BR, which will be used to calculate the pull and hence to estimate the systematic
@@ -102,20 +104,53 @@ print "Using ", data.numEntries(), " events to fit"
 fInput_sigmodel = ROOT.TFile("Signal_model_3.root")
 fInput_sigmodel.cd()
 
-workspace = fInput_sigmodel.Get("myworkspace")
+workspace_sig = fInput_sigmodel.Get("myworkspace")
+
+dCB_pole         = workspace_sig.var("dCB_pole")
+dCB_pole_nominal = dCB_pole.getVal()
+dCB_pole_err     = dCB_pole.getError()
+
+dCB_width         = workspace_sig.var("dCB_width")
+dCB_width_nominal = dCB_width.getVal()
+dCB_width_err     = dCB_width.getError()
+
+totSignal = workspace_sig.pdf("totSignal")
 
 #Fix the signal parametrization
-workspace.var("dCB_aL").setConstant(1)
-workspace.var("dCB_pole").setConstant(1)
-workspace.var("dCB_width").setConstant(1)
-workspace.var("dCB_nL").setConstant(1)
-workspace.var("dCB_aR").setConstant(1)
-workspace.var("dCB_nR").setConstant(1)
-workspace.var("Gauss_pole").setConstant(1)
-workspace.var("Gauss_sigma").setConstant(1)
-workspace.var("fracSig").setConstant(1)
-
-totSignal = workspace.pdf("totSignal")
+workspace_sig.var("dCB_aL").setConstant(1)
+workspace_sig.var("dCB_nL").setConstant(1)
+workspace_sig.var("dCB_aR").setConstant(1)
+workspace_sig.var("dCB_nR").setConstant(1)
+workspace_sig.var("Gauss_pole").setConstant(1)
+workspace_sig.var("Gauss_sigma").setConstant(1)
+workspace_sig.var("fracSig").setConstant(1)
+if selectSigShift == 0:
+    workspace_sig.var("dCB_pole").setConstant(1)
+    workspace_sig.var("dCB_width").setConstant(1)
+if selectSigShift == 1:
+    print "old value of the pole: ", dCB_pole_nominal, "  dCB_pole_err: ", dCB_pole_err
+    print "old value of the width: ", dCB_width_nominal, "  dCB_width_err: ", dCB_width_err
+    workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal+dCB_pole_err)
+    workspace_sig.var("dCB_width").setVal(dCB_width_nominal+dCB_width_err)
+    workspace_sig.var("dCB_pole").setConstant(1)
+    workspace_sig.var("dCB_width").setConstant(1)
+    print "new value of the pole: ", workspace_sig.var("dCB_pole").getVal()
+    print "new value of the width: ", workspace_sig.var("dCB_width").getVal()
+if selectSigShift == 2:
+    workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal-dCB_pole_err)
+    workspace_sig.var("dCB_width").setVal(dCB_width_nominal+dCB_width_err)
+    workspace_sig.var("dCB_pole").setConstant(1)
+    workspace_sig.var("dCB_width").setConstant(1)
+if selectSigShift == 3:
+    workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal+dCB_pole_err)
+    workspace_sig.var("dCB_width").setVal(dCB_width_nominal-dCB_width_err)
+    workspace_sig.var("dCB_pole").setConstant(1)
+    workspace_sig.var("dCB_width").setConstant(1)
+if selectSigShift == 4:
+    workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal-dCB_pole_err)
+    workspace_sig.var("dCB_width").setVal(dCB_width_nominal-dCB_width_err)
+    workspace_sig.var("dCB_pole").setConstant(1)
+    workspace_sig.var("dCB_width").setConstant(1)
 
 
 ################################################################
@@ -125,10 +160,19 @@ totSignal = workspace.pdf("totSignal")
 ################################################################
 
 #Now describe the background
-a0_bkg = ROOT.RooRealVar("a0_bkg","a0_bkg",0.29,-1.,1.)
-a1_bkg = ROOT.RooRealVar("a1_bkg","a1_bkg",-0.7,-5.,5.)
+fInput_bkgmodel = ROOT.TFile("fitBackground.root")
+fInput_bkgmodel.cd()
 
-backPDF = ROOT.RooChebychev("backPDF_cheb","backPDF_cheb",Wmass,ROOT.RooArgList(a0_bkg,a1_bkg))#,a2_mu))#,a3_mu))#,a4_mu))#,a5_mu,a6_mu))
+workspace_bkg = fInput_bkgmodel.Get("workspace_bkg")
+
+if selectBkgFunction == 0:
+
+    backPDF = workspace_bkg.pdf("backPDF_cheb")
+
+elif selectBkgFunction == 1: #Use Exponential for muon channel (calculation of systematic on background parametrization)
+
+    backPDF = workspace_bkg.pdf("backPDF_exp")
+
 
 ################################################################
 #                                                              #
@@ -138,8 +182,8 @@ backPDF = ROOT.RooChebychev("backPDF_cheb","backPDF_cheb",Wmass,ROOT.RooArgList(
 #First the cross section, with a modifier for systematics
 #CMS ttbar measurement/W->lnu BR (it is measured with both W in lnu), in pb
 #http://cms-results.web.cern.ch/cms-results/public-results/publications/TOP-16-005/index.html
-W_xsec_nominal  = 2.*831.76*0.1086
-W_xsec_syst     = (43.*2.*0.1086)/W_xsec_nominal
+W_xsec_nominal = 2.*831.76*0.1086
+W_xsec_syst    = (43.*2.*0.1086)/W_xsec_nominal
 
 ################################################################
 #                                                              #
@@ -154,7 +198,7 @@ lumi_2018 = 59.69*1000.
 lumi_syst_2016 = 0.025
 lumi_syst_2017 = 0.023 
 lumi_syst_2018 = 0.025
-lumi_nominal = lumi_2016+lumi_2017+lumi_2018 #In pb
+lumi_nominal = lumi_2016 + lumi_2017 + lumi_2018 #In pb
 lumi_syst    = (lumi_syst_2016*lumi_2016 + lumi_syst_2017*lumi_2017 + lumi_syst_2018*lumi_2018)/lumi_nominal
 
 ################################################################
@@ -182,22 +226,19 @@ eff_nominal_2016 = tot_2016*2./totsig_2016
 binom_eff_2016   = (4*tot_2016*(totsig_2016-2*tot_2016)/(totsig_2016*totsig_2016*totsig_2016))*(4*tot_2016*(totsig_2016-2*tot_2016)/(totsig_2016*totsig_2016*totsig_2016))/(eff_nominal_2016*eff_nominal_2016) #It will be summed in quadrature to the BDT systematic
 BDT_syst_2016    = ((0.01*totmu_2016 + 0.01 * totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_2016 = ((0.02*totmu_2016 + 0.02*totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
-SF_syst_2016     = ((0.0125*totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
-eff_syst_2016    = math.sqrt(binom_eff_2016+BDT_syst_2016+Pythia_syst_2016+SF_syst_2016)
+eff_syst_2016    = math.sqrt(binom_eff_2016+BDT_syst_2016+Pythia_syst_2016)
 
 eff_nominal_2017 = tot_2017*2./totsig_2017
 binom_eff_2017   = (4*tot_2017*(totsig_2017-2*tot_2017)/(totsig_2017*totsig_2017*totsig_2017))*(4*tot_2017*(totsig_2017-2*tot_2017)/(totsig_2017*totsig_2017*totsig_2017))/(eff_nominal_2017*eff_nominal_2017) #It will be summed in quadrature to the BDT systematic
 BDT_syst_2017    = ((0.01*totmu_2017 + 0.01 * totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_2017 = ((0.02*totmu_2017 + 0.02*totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
-SF_syst_2017     = ((0.0125*totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
-eff_syst_2017    = math.sqrt(binom_eff_2017+BDT_syst_2017+Pythia_syst_2017+SF_syst_2017)
+eff_syst_2017    = math.sqrt(binom_eff_2017+BDT_syst_2017+Pythia_syst_2017)
 
 eff_nominal_2018 = tot_2018*2./totsig_2018
 binom_eff_2018   = (4*tot_2018*(totsig_2018-2*tot_2018)/(totsig_2018*totsig_2018*totsig_2018))*(4*tot_2018*(totsig_2018-2*tot_2018)/(totsig_2018*totsig_2018*totsig_2018))/(eff_nominal_2018*eff_nominal_2018) #It will be summed in quadrature to the BDT systematic
 BDT_syst_2018    = ((0.01*totmu_2018 + 0.01 * totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_2018 = ((0.02*totmu_2018 + 0.02*totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
-SF_syst_2018     = ((0.0125*totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
-eff_syst_2018    = math.sqrt(binom_eff_2018+BDT_syst_2018+Pythia_syst_2018+SF_syst_2018)
+eff_syst_2018    = math.sqrt(binom_eff_2018+BDT_syst_2018+Pythia_syst_2018)
 
 efflumi_2016_nominal = eff_nominal_2016*lumi_2016
 efflumi_2017_nominal = eff_nominal_2017*lumi_2017
@@ -208,7 +249,7 @@ efflumi_2017_syst = (eff_syst_2017+lumi_syst_2017)*efflumi_2017_nominal
 efflumi_2018_syst = (eff_syst_2018+lumi_syst_2018)*efflumi_2018_nominal
 
 efflumi_nominal = efflumi_2016_nominal + efflumi_2017_nominal + efflumi_2018_nominal
-efflumi_syst = math.sqrt(  efflumi_2016_syst**2. + efflumi_2017_syst**2. + efflumi_2018_syst**2. )/efflumi_nominal
+efflumi_syst = math.sqrt( efflumi_2016_syst**2. + efflumi_2017_syst**2. + efflumi_2018_syst**2. )/efflumi_nominal
 
 ################################################################
 #                                                              #
@@ -216,12 +257,18 @@ efflumi_syst = math.sqrt(  efflumi_2016_syst**2. + efflumi_2017_syst**2. + efflu
 #                                                              #
 ################################################################
 
+if not suppressSigSystematic:
+    sig_syst = 0.011
+else:
+    sig_syst = 0.0001
+
 if not suppressBkgSystematic:
-    bkg_syst = 0.139 + 0.049 
+    bkg_syst = 0.198 
 else:
     bkg_syst = 0.0001
 
 eta_nominal = 1.
+eta_sig_syst = sig_syst
 eta_bkg_syst = bkg_syst
 
 ################################################################
@@ -230,7 +277,7 @@ eta_bkg_syst = bkg_syst
 #                                                              #
 ################################################################
 
-if suppressBkgSystematic:
+if suppressBkgSystematic or suppressSigSystematic:
     W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.000005,-0.0001,0.01) # The parameter of interest can go negative when we try the alternative bkg description
 else:
     W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.000001,0.,0.01) # The parameter of interest
@@ -245,7 +292,7 @@ W_pigamma_BR_blind = ROOT.RooUnblindOffset("W_pigamma_BR_blind","W_pigamma_BR_bl
 ################################################################
 
 Nsig_multiplier_value = W_xsec_nominal * efflumi_nominal * eta_nominal
-Nsig_multiplier_value_err = W_xsec_syst + efflumi_syst + eta_bkg_syst
+Nsig_multiplier_value_err = W_xsec_syst + efflumi_syst + eta_sig_syst + eta_bkg_syst
 
 Multi_param_nominal = ROOT.RooRealVar("Multi_param_nominal","Multi_param_nominal", Nsig_multiplier_value)
 glb_Multi_param   = ROOT.RooRealVar("glb_Multi_param","glb_Multi_param", 0.,-5.,5.)
@@ -255,7 +302,7 @@ Nsig_multiplier   = ROOT.RooFormulaVar("Nsig_multiplier","@0 * pow(@1,@2)",ROOT.
 one               = ROOT.RooRealVar("one","one",1.)
 gauss_Multi_param = ROOT.RooGaussian("gauss_Multi_param","gauss_Multi_param",glb_Multi_param,Multi_param_beta,one)
 
-Nsig = ROOT.RooFormulaVar("Nsig_mu","@0*@1", ROOT.RooArgList(W_pigamma_BR, Nsig_multiplier))
+Nsig = ROOT.RooFormulaVar("Nsig_mu","@0*@1", ROOT.RooArgList(W_pigamma_BR_blind, Nsig_multiplier))
 
 Nbkg = ROOT.RooRealVar("Nbkg","Nbkg",900.,100.,5000.)
 
@@ -279,8 +326,14 @@ if suppressAllSystematics:
 #                                                              #
 ################################################################
 
+constrained_params = ROOT.RooArgSet()
+constrained_params.add(Multi_param_beta)
+
 if isData:
-    result_dataFit = totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
+    if not suppressAllSystematics:
+        result_dataFit = totPDF.fitTo(data, ROOT.RooFit.Extended(1), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
+    else:
+        result_dataFit = totPDF.fitTo(data, ROOT.RooFit.Extended(1), ROOT.RooFit.Save() )
 else:
     totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(0), ROOT.RooFit.NumCPU(4) )
 

@@ -5,13 +5,6 @@ import tdrstyle, CMS_lumi
 
 #Supress the opening of many Canvas's
 ROOT.gROOT.SetBatch(True)   
-#CMS-style plotting 
-#tdrstyle.setTDRStyle()
-CMS_lumi.lumi_13TeV = "137.08 fb^{-1}"
-CMS_lumi.lumi_sqrtS = "13 TeV"
-iPeriod = 0
-iPos = 0.1
-CMS_lumi.relPosX = 0.12
 runningEra = int(sys.argv[1])
 signal_magnify = int(sys.argv[2])
 
@@ -19,14 +12,25 @@ list_inputfiles = []
 for filename in sys.argv[3:]:
     list_inputfiles.append(filename)
 
+#CMS-style plotting 
+tdrstyle.setTDRStyle()
+iPeriod = 4
+iPos = 11
+CMS_lumi.lumiTextSize = 0.9
+CMS_lumi.cmsTextSize = 1.
+
 if runningEra == 0:
     output_dir = "plots/latest_production/2016/"
+    CMS_lumi.lumi_13TeV = "35.9 fb^{-1}"
 elif runningEra == 1:
     output_dir = "plots/latest_production/2017/"
+    CMS_lumi.lumi_13TeV = "41.5 fb^{-1}"
 elif runningEra == 2:
     output_dir = "plots/latest_production/2018/"
+    CMS_lumi.lumi_13TeV = "59.7 fb^{-1}"
 elif runningEra == 3:
     output_dir = "plots/latest_production/2016_2017_2018/"
+    CMS_lumi.lumi_13TeV = "137 fb^{-1}"
 
 hstack  = dict()
 hsignal = dict()
@@ -66,7 +70,7 @@ colors_mask["ttbarWlnu"]           = ROOT.kOrange+8
 # leg1 = ROOT.TLegend(0.15,0.6120093,0.34,0.9491917) #left positioning
 leg1 = ROOT.TLegend(0.6868687,0.6120093,0.9511784,0.9491917) #right positioning
 leg1.SetHeader(" ")
-leg1.SetFillColor(0)
+leg1.SetFillColorAlpha(0,0.)
 leg1.SetBorderSize(0)
 leg1.SetLineColor(1)
 leg1.SetLineStyle(1)
@@ -117,8 +121,8 @@ for filename in list_inputfiles:
 for histo_name in list_histos:
 
     canvas[histo_name] = ROOT.TCanvas("Canvas_" + histo_name,"",200,106,600,600)
-    #CMS_lumi.CMS_lumi(canvas[histo_name], iPeriod, iPos)
     canvas[histo_name].cd()
+    #CMS_lumi.CMS_lumi(canvas[histo_name], iPeriod, iPos)
     ####
     #canvas[histo_name].Update()
     #canvas[histo_name].RedrawAxis()
@@ -127,11 +131,10 @@ for histo_name in list_histos:
     ####
  
     ##########################################
-    pad1 = ROOT.TPad("pad_" + histo_name,"",0,0.28,1,1)
+    pad1 = ROOT.TPad("pad_" + histo_name,"",0,0.28,1,1.)
     pad2 = ROOT.TPad("pad_" + histo_name,'',0,0,1,0.25)
     pad1.SetBottomMargin(0.02)
     pad1.SetBorderMode(0)
-    #pad2.SetTopMargin(0.01)
     pad2.SetBottomMargin(0.3)
     pad2.SetBorderMode(0)
     pad1.Draw()
@@ -141,8 +144,8 @@ for histo_name in list_histos:
     ##########################################
     pad1.cd()
     ##########################################
-
     hstack[histo_name].SetTitle("")
+    #CMS_lumi.CMS_lumi(pad1, iPeriod, iPos)
     hstack[histo_name].Draw("histo")
 
     ##########################################
@@ -256,6 +259,21 @@ for histo_name in list_histos:
     hMCErr.Draw("sameE2")
 
     leg1.Draw()
+    ####
+    # latex = ROOT.TLatex()
+    # latex.SetNDC()
+    # latex.SetTextAngle(0)
+    # latex.SetTextColor(ROOT.kBlack)
+
+    # extraTextSize = 0.76*0.75
+
+    # latex.SetTextFont(42)
+    # latex.SetTextAlign(31)
+    # #latex.SetTextSize(0.6*0.92)
+    # latex.SetTextSize(0.1)
+
+    # latex.DrawLatex(0.5,0.6,"137 fb^{-1} (13 TeV)")
+    CMS_lumi.CMS_lumi(pad1, iPeriod, iPos)
 
     ################################################
     pad2.cd()
@@ -343,36 +361,36 @@ for histo_name in list_histos:
 
     canvas[histo_name].SaveAs(output_dir + histo_name + ".pdf")
 
-Wmass_nominal_cut_mu = copy.deepcopy(hstack["h_Wmass_flag_mu"].GetStack().Last())
-Wmass_alternative_cut_mu = copy.deepcopy(hstack["h_Wmass_alternative_mu"].GetStack().Last())
+# Wmass_nominal_cut_mu = copy.deepcopy(hstack["h_Wmass_flag_mu"].GetStack().Last())
+# Wmass_alternative_cut_mu = copy.deepcopy(hstack["h_Wmass_alternative_mu"].GetStack().Last())
 
-Wmass_nominal_cut_ele = copy.deepcopy(hstack["h_Wmass_flag_ele"].GetStack().Last())
-Wmass_alternative_cut_ele = copy.deepcopy(hstack["h_Wmass_alternative_ele"].GetStack().Last())
+# Wmass_nominal_cut_ele = copy.deepcopy(hstack["h_Wmass_flag_ele"].GetStack().Last())
+# Wmass_alternative_cut_ele = copy.deepcopy(hstack["h_Wmass_alternative_ele"].GetStack().Last())
 
-Wmass_nominal_cut_mu.Scale(1./Wmass_nominal_cut_mu.Integral())
-Wmass_alternative_cut_mu.Scale(1./Wmass_alternative_cut_mu.Integral())
+# Wmass_nominal_cut_mu.Scale(1./Wmass_nominal_cut_mu.Integral())
+# Wmass_alternative_cut_mu.Scale(1./Wmass_alternative_cut_mu.Integral())
 
-Wmass_nominal_cut_ele.Scale(1./Wmass_nominal_cut_ele.Integral())
-Wmass_alternative_cut_ele.Scale(1./Wmass_alternative_cut_ele.Integral())
+# Wmass_nominal_cut_ele.Scale(1./Wmass_nominal_cut_ele.Integral())
+# Wmass_alternative_cut_ele.Scale(1./Wmass_alternative_cut_ele.Integral())
 
-Wmass_nominal_cut_mu.Divide(Wmass_nominal_cut_mu,Wmass_alternative_cut_mu,1.,1.,"B")
-Wmass_nominal_cut_ele.Divide(Wmass_nominal_cut_ele,Wmass_alternative_cut_ele,1.,1.,"B")
+# Wmass_nominal_cut_mu.Divide(Wmass_nominal_cut_mu,Wmass_alternative_cut_mu,1.,1.,"B")
+# Wmass_nominal_cut_ele.Divide(Wmass_nominal_cut_ele,Wmass_alternative_cut_ele,1.,1.,"B")
 
-canvas_Wmass_1 = ROOT.TCanvas()
-Wmass_nominal_cut_mu.SetMarkerStyle(21)
-Wmass_nominal_cut_mu.GetYaxis().SetRangeUser(0.,2.)
-Wmass_nominal_cut_mu.SetTitle("")
-Wmass_nominal_cut_mu.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
-Wmass_nominal_cut_mu.Draw("Pe")
-canvas_Wmass_1.SaveAs(output_dir + "Wmass_ratio_mu_Wmass.pdf")
+# canvas_Wmass_1 = ROOT.TCanvas()
+# Wmass_nominal_cut_mu.SetMarkerStyle(21)
+# Wmass_nominal_cut_mu.GetYaxis().SetRangeUser(0.,2.)
+# Wmass_nominal_cut_mu.SetTitle("")
+# Wmass_nominal_cut_mu.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
+# Wmass_nominal_cut_mu.Draw("Pe")
+# canvas_Wmass_1.SaveAs(output_dir + "Wmass_ratio_mu_Wmass.pdf")
 
-canvas_Wmass_2 = ROOT.TCanvas()
-Wmass_nominal_cut_ele.SetMarkerStyle(21)
-Wmass_nominal_cut_ele.GetYaxis().SetRangeUser(0.,2.)
-Wmass_nominal_cut_ele.SetTitle("")
-Wmass_nominal_cut_ele.GetXaxis().SetTitle("m_{(#pi#gamma#)} (GeV)")
-Wmass_nominal_cut_ele.Draw("Pe")
-canvas_Wmass_2.SaveAs(output_dir + "Wmass_ratio_ele_Wmass.pdf")
+# canvas_Wmass_2 = ROOT.TCanvas()
+# Wmass_nominal_cut_ele.SetMarkerStyle(21)
+# Wmass_nominal_cut_ele.GetYaxis().SetRangeUser(0.,2.)
+# Wmass_nominal_cut_ele.SetTitle("")
+# Wmass_nominal_cut_ele.GetXaxis().SetTitle("m_{(#pi#gamma#)} (GeV)")
+# Wmass_nominal_cut_ele.Draw("Pe")
+# canvas_Wmass_2.SaveAs(output_dir + "Wmass_ratio_ele_Wmass.pdf")
 
 h_nBjets_ratio = copy.deepcopy(hstack["h_nBjets_25"].GetStack().Last())
 h_nBjets_ratio.Divide(h_nBjets_ratio,copy.deepcopy(hstack["h_nBjets_scaled"].GetStack().Last()),1.,1.,"B")

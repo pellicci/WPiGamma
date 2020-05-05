@@ -26,7 +26,7 @@ options.register('runningOnMuons',
                  VarParsing.VarParsing.varType.bool,
                  "muon trigger config flag")
 options.register('runningEra',
-                 1, #default value. 0 is 2016, 1 is 2017, 2 is 2018
+                 2, #default value. 0 is 2016, 1 is 2017, 2 is 2018
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  "2016-2017-2018 config flag")
@@ -113,17 +113,18 @@ else:
         process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mc2017_realistic_v17') 
         print "MC Sample (2017) will be taken as input for check up of the code working "
         inputFiles = {
-            "root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/60000/FCC2AFA9-4BBB-E811-B35F-0CC47AFB7D48.root",
-           "root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_2J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/110000/04874802-E793-E911-9FCA-506B4BB134CE.root",
-           "root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_2J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/110000/0ED74680-1693-E911-B288-0242AC130002.root"}
-            #"root://cms-xrd-global.cern.ch//store/user/rselvati/WPlusPiGamma_GENSIM_94X_2017_v7/WPlusPiGamma_MINIAODSIM_94X_2017_v7/190826_151434/0002/WPiGamma_pythia8_MINIAOD_2017_2435.root"}
-
+           #"root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v2/60000/FCC2AFA9-4BBB-E811-B35F-0CC47AFB7D48.root",
+           #"root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_2J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/110000/04874802-E793-E911-9FCA-506B4BB134CE.root",
+           #"root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_2J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/110000/0ED74680-1693-E911-B288-0242AC130002.root"}
+           #"root://cms-xrd-global.cern.ch//store/user/rselvati/WPlusPiGamma_GENSIM_94X_2017_v7/WPlusPiGamma_MINIAODSIM_94X_2017_v7/190826_151434/0002/WPiGamma_pythia8_MINIAOD_2017_2435.root",
+           "root://cms-xrd-global.cern.ch//store/user/rselvati/WPlusPiGamma_GENSIM_94X_2017_v7/WPlusPiGamma_MINIAODSIM_94X_2017_v7/190826_151434/0002/WPiGamma_pythia8_MINIAOD_2017_2366.root"}
         
     if options.runningEra == 2: #test 2018 MC
         process.GlobalTag = GlobalTag(process.GlobalTag, '102X_upgrade2018_realistic_v15') 
         print "MC Sample (2018) will be taken as input for check up of the code working "
-        inputFiles = {"root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18MiniAOD/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v1/00000/38CB48DD-A494-4044-B9CD-64241707E25F.root"}
-
+        inputFiles = {
+           #"root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18MiniAOD/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v1/00000/38CB48DD-A494-4044-B9CD-64241707E25F.root"}
+           "root://cms-xrd-global.cern.ch//store/user/rselvati/WPlusPiGamma_102X_2018/WPlusPiGamma_MINIAODSIM_102X_2018_v1/191028_152254/0008/WPiGamma_pythia8_MINIAOD_2018_8000.root"}
 
 process.source = cms.Source ("PoolSource",
                              fileNames = cms.untracked.vstring (inputFiles)
