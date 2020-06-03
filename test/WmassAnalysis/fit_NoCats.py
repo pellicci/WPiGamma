@@ -6,30 +6,18 @@ import argparse
 
 ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
-#---------------------------------#
-p = argparse.ArgumentParser(description='Select whether to fit data or MC')
-p.add_argument('isData_option', help='Type <<data>> or <<MC>>')
-#p.add_argument('runningEra_option', help='Type <<0>> for 2016, <<1>> for 2017, <<2>> for 2016+2017, <<3>> for 2016+2017+2018')
-args = p.parse_args()
-
-isData = False
-# Switch from MC to data channel
-if args.isData_option == "data":
-    isData = True
-
-#runningEra = int(args.runningEra_option)
-#---------------------------------#
-
 ################################################################
 #                                                              #
 #------------------------ Instructions ------------------------#
 #                                                              #
 ################################################################
-selectSigShift = 0
+selectSigShift = 0 #Zero is the nominal case: signal parameters fixed to their central values from fit on MC signal. Numbers from 1 to 4 are plus/minus 1sigma
 suppressSigSystematic = False
 
 selectBkgFunction = 0 # 0: use Chebychev for ALL the bkg PDFs. 1: use alternative PDF for muon channel. 2: use alternative PDF for electron channel
-suppressBkgSystematic = False # To be used when trying to fit with alternative bkg description, in order to estimate a systematic. If True, it will allow W_pigamma_BR to float negative. Moreover, it will use Signal+Background in the totPDF, so that the fit to the restricted CRs will contain also the POI BR, which will be used to calculate the pull and hence to estimate the systematic
+suppressBkgSystematic = False # To be used when trying to fit with alternative bkg description, in order to estimate a systematic.If True, it will allow W_pigamma_BR to float negative. 
+#Moreover, it will use Signal+Background in the totPDF, so that the fit to the restricted CRs will contain also the POI BR, which will be used to calculate the pull and hence to estimate the systematic
+
 suppressAllSystematics = False
 
 
@@ -49,10 +37,7 @@ Wmass.setRange("HighSideband",90.,95.)
 #                                                              #
 ################################################################
 
-if isData:
-    fInput = ROOT.TFile("Tree_input_massfit_Data_3.root")
-else:
-    fInput = ROOT.TFile("Tree_input_massfit_MC_3.root")
+fInput = ROOT.TFile("Tree_input_massfit_Data_3.root")
 
 fInput.cd()
 
@@ -64,26 +49,18 @@ mytree = fInput.Get("minitree")
 #                                                              #
 ################################################################
 
-#Define the mu/ele category for 2016 and 2017
+#Define the mu/ele categories
 Categorization = ROOT.RooCategory("Categorization","Categorization")
 Categorization.defineType("MuonSignal",1)
 Categorization.defineType("ElectronSignal",3)
 
 ################################################################
 #                                                              #
-#--------------- Get event weight and BDT output --------------#
+#---------------------- Get the BDT output --------------------#
 #                                                              #
 ################################################################
 
-minWeight_inMC = -50. # Set the minimum weight an event can have when processing MC. This is useful to remove spikes which cannot be fitted
-maxWeight_inMC = 50.  # Set the maximum weight an event can have when processing MC. This is useful to remove spikes which cannot be fitted
-
-#Define the event weight
-if not isData:
-    weight = ROOT.RooRealVar("weight","The event weight",minWeight_inMC,maxWeight_inMC)
-
 #Import dataset
-if isData:
     data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization), ROOT.RooFit.Import(mytree))
 else:
     data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,weight), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
