@@ -14,7 +14,7 @@ config.JobType.allowUndistributedCMSSW = True
 config.section_('Data')
 
 if runningEra == 0:
-    config.General.requestName = 'WPlusPiGamma_Pythia8_GENSIM_80XV1'
+    config.General.requestName = 'WPlusPiGamma_Pythia8_GENSIM_80X_2016_v1'
     config.JobType.psetName = 'cmssw_config/WPlusPiGamma_13TeV_pythia8_GENSIM_2016_cfg.py'
     config.JobType.outputFiles = ['WPiGamma_pythia8_GENSIM.root']
     config.Data.outputPrimaryDataset = 'TTToSemilepWPlusPiGamma_GENSIM_80X_2016_v1'
