@@ -1,5 +1,7 @@
+from CRABAPI.RawCommand import crabCommand
+from WMCore.Configuration import Configuration
 from CRABClient.UserUtilities import config
-config = config()
+config = Configuration()
 
 runningEra = 0 # 0 = 2016, 1 = 2017, 2 = 2018
 
@@ -31,7 +33,7 @@ if runningEra == 2:
     config.JobType.outputFiles = ['WPiGamma_pythia8_GENSIM_2018.root']
     config.Data.outputPrimaryDataset = 'TTToSemilepWPlusPiGamma_102X_2018_v1'
 
-Config.Data.splitting = 'EventBased' # Can only be set to EventBased if pluginName = PrivateMC
+config.Data.splitting = 'EventBased' # Can only be set to EventBased if pluginName = PrivateMC
 config.Data.unitsPerJob = 5
 NJOBS = 8000
 config.Data.totalUnits = config.Data.unitsPerJob * NJOBS

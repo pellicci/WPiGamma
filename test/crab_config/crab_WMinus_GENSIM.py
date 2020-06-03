@@ -1,5 +1,7 @@
+from CRABAPI.RawCommand import crabCommand
+from WMCore.Configuration import Configuration
 from CRABClient.UserUtilities import config
-config = config()
+config = Configuration()
 
 runningEra = 0 # 0 = 2016, 1 = 2017, 2 = 2018
 
