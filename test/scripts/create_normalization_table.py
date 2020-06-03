@@ -53,7 +53,7 @@ secs_table_2016["QCDDoubleEMEnriched40toInf"] = 113100.0
 secs_table_2016["WGToLNuG01J"] = 178.4
 secs_table_2016["TTGJets"] = 3.795
 secs_table_2016["ZGTo2LG"] = 123.8
-secs_table_2016["Signal"] = 831.76*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
+secs_table_2016["Signal"] = 815.*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
 
 #fraction of negative-weighted events in NLO samples (2016)
 frac_table_2016 = dict()
@@ -138,7 +138,7 @@ secs_table_2017["WJetsToLNu0J"] = 50131.98
 secs_table_2017["WJetsToLNu1J"] = 8426.09
 secs_table_2017["WJetsToLNu2J"] = 3172.96
 secs_table_2017["WGToLNuG01J"] = 191.1
-secs_table_2017["Signal"] = 831.76*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
+secs_table_2017["Signal"] = 815.*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
 
 #fraction of negative-weighted events in NLO samples (2017)
 frac_table_2017 = dict()
@@ -226,7 +226,7 @@ secs_table_2018["WJetsToLNu0J"] = 50131.98
 secs_table_2018["WJetsToLNu1J"] = 8426.09
 secs_table_2018["WJetsToLNu2J"] = 3172.96
 secs_table_2018["WGToLNuG01J"] = 191.6 #Calculated with the xsec computation tool
-secs_table_2018["Signal"] = 831.76*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
+secs_table_2018["Signal"] = 815.*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
 
 #fraction of negative-weighted events in NLO samples (2017)
 frac_table_2018 = dict()

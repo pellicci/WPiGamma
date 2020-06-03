@@ -212,6 +212,7 @@ class Simplified_Workflow_Handler:
 
         self.ttbar_sig_calib_file = ROOT.TFile.Open("ttbar_signal_ratio_" + year + ".root")
         self.Pythia_sig_modeling_file = ROOT.TFile.Open("PythiaModeling_" + year + ".root")
+        self.Pythia_polarization_modeling_file = ROOT.TFile.Open("Pythia_polarization_modeling_Pi_W_" + year + ".root")
         
         ###################################################################################
         #                                                                                 #
@@ -300,6 +301,20 @@ class Simplified_Workflow_Handler:
             return Pythia_sig_rescale_up
         else:
             return Pythia_sig_rescale_down
+ 
+    ###############################################################################################################################################
+
+    def get_Pythia_polarization_modeling_reweight(self,sin2,angle_Pi_W):
+
+        h_sin2 = self.Pythia_polarization_modeling_file.Get("h_sin2")
+        h_cos  = self.Pythia_polarization_modeling_file.Get("h_cos")
+        Pythia_polarization_sin2 = h_sin2.GetBinContent(h_sin2.FindBin(math.cos(angle_Pi_W)))
+        Pythia_polarization_cos  = h_cos.GetBinContent(h_cos.FindBin(math.cos(angle_Pi_W)))
+
+        if sin2:
+            return Pythia_polarization_sin2
+        else:
+            return Pythia_polarization_cos
  
     ###############################################################################################################################################
 

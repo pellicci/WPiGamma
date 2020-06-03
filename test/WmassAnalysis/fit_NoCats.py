@@ -182,8 +182,8 @@ elif selectBkgFunction == 1: #Use Exponential for muon channel (calculation of s
 #First the cross section, with a modifier for systematics
 #CMS ttbar measurement/W->lnu BR (it is measured with both W in lnu), in pb
 #http://cms-results.web.cern.ch/cms-results/public-results/publications/TOP-16-005/index.html
-W_xsec_nominal = 2.*831.76*0.1086
-W_xsec_syst    = (43.*2.*0.1086)/W_xsec_nominal
+W_xsec_nominal = 2.*2.*815.*0.1086 #The two factors 2 account for the possible charge signs of the Ws and for the two leptonic decay channels of the tag W
+W_xsec_syst    = (43.*2.*2.*0.1086)/W_xsec_nominal
 
 ################################################################
 #                                                              #
@@ -225,20 +225,23 @@ tot_2018  = totmu_2018 + totel_2018
 eff_nominal_2016 = tot_2016*2./totsig_2016
 binom_eff_2016   = (4*tot_2016*(totsig_2016-2*tot_2016)/(totsig_2016*totsig_2016*totsig_2016))*(4*tot_2016*(totsig_2016-2*tot_2016)/(totsig_2016*totsig_2016*totsig_2016))/(eff_nominal_2016*eff_nominal_2016) #It will be summed in quadrature to the BDT systematic
 BDT_syst_2016    = ((0.01*totmu_2016 + 0.01 * totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
-Pythia_syst_2016 = ((0.02*totmu_2016 + 0.02*totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
-eff_syst_2016    = math.sqrt(binom_eff_2016+BDT_syst_2016+Pythia_syst_2016)
+Pythia_syst_pT_2016 = ((0.02*totmu_2016 + 0.02*totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
+Pythia_syst_angle_2016 = ((0.05*totmu_2016 + 0.05*totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
+eff_syst_2016    = math.sqrt(binom_eff_2016+BDT_syst_2016+Pythia_syst_pT_2016+Pythia_syst_angle_2016)
 
 eff_nominal_2017 = tot_2017*2./totsig_2017
 binom_eff_2017   = (4*tot_2017*(totsig_2017-2*tot_2017)/(totsig_2017*totsig_2017*totsig_2017))*(4*tot_2017*(totsig_2017-2*tot_2017)/(totsig_2017*totsig_2017*totsig_2017))/(eff_nominal_2017*eff_nominal_2017) #It will be summed in quadrature to the BDT systematic
 BDT_syst_2017    = ((0.01*totmu_2017 + 0.01 * totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
-Pythia_syst_2017 = ((0.02*totmu_2017 + 0.02*totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
-eff_syst_2017    = math.sqrt(binom_eff_2017+BDT_syst_2017+Pythia_syst_2017)
+Pythia_syst_pT_2017 = ((0.02*totmu_2017 + 0.02*totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
+Pythia_syst_angle_2017 = ((0.05*totmu_2017 + 0.05*totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
+eff_syst_2017    = math.sqrt(binom_eff_2017+BDT_syst_2017+Pythia_syst_pT_2017+Pythia_syst_angle_2017)
 
 eff_nominal_2018 = tot_2018*2./totsig_2018
 binom_eff_2018   = (4*tot_2018*(totsig_2018-2*tot_2018)/(totsig_2018*totsig_2018*totsig_2018))*(4*tot_2018*(totsig_2018-2*tot_2018)/(totsig_2018*totsig_2018*totsig_2018))/(eff_nominal_2018*eff_nominal_2018) #It will be summed in quadrature to the BDT systematic
 BDT_syst_2018    = ((0.01*totmu_2018 + 0.01 * totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
-Pythia_syst_2018 = ((0.02*totmu_2018 + 0.02*totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
-eff_syst_2018    = math.sqrt(binom_eff_2018+BDT_syst_2018+Pythia_syst_2018)
+Pythia_syst_pT_2018 = ((0.02*totmu_2018 + 0.02*totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
+Pythia_syst_angle_2018 = ((0.05*totmu_2018 + 0.05*totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
+eff_syst_2018    = math.sqrt(binom_eff_2018+BDT_syst_2018+Pythia_syst_pT_2018+Pythia_syst_angle_2018)
 
 efflumi_2016_nominal = eff_nominal_2016*lumi_2016
 efflumi_2017_nominal = eff_nominal_2017*lumi_2017
@@ -302,7 +305,7 @@ Nsig_multiplier   = ROOT.RooFormulaVar("Nsig_multiplier","@0 * pow(@1,@2)",ROOT.
 one               = ROOT.RooRealVar("one","one",1.)
 gauss_Multi_param = ROOT.RooGaussian("gauss_Multi_param","gauss_Multi_param",glb_Multi_param,Multi_param_beta,one)
 
-Nsig = ROOT.RooFormulaVar("Nsig_mu","@0*@1", ROOT.RooArgList(W_pigamma_BR_blind, Nsig_multiplier))
+Nsig = ROOT.RooFormulaVar("Nsig_mu","@0*@1", ROOT.RooArgList(W_pigamma_BR, Nsig_multiplier))
 
 Nbkg = ROOT.RooRealVar("Nbkg","Nbkg",900.,100.,5000.)
 

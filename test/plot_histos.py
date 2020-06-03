@@ -42,7 +42,7 @@ h_nBjet_ratio   = ROOT.TH1F("nBjets_ratio", "nBjets ratio", 6,0,6)
 h_met_mu_ratio  = ROOT.TH1F("met_mu_ratio", "met mu ratio",20,0.,200.)
 h_met_ele_ratio = ROOT.TH1F("met_ele_ratio", "met ele ratio",20,0.,200.)
 
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets","MCT_deltaR_lep_gamma"]
 
 for hname in list_histos:
     hstack[hname] = ROOT.THStack("hstack_" + hname,"")
@@ -122,13 +122,6 @@ for histo_name in list_histos:
 
     canvas[histo_name] = ROOT.TCanvas("Canvas_" + histo_name,"",200,106,600,600)
     canvas[histo_name].cd()
-    #CMS_lumi.CMS_lumi(canvas[histo_name], iPeriod, iPos)
-    ####
-    #canvas[histo_name].Update()
-    #canvas[histo_name].RedrawAxis()
-    #frame = canvas[histo_name].GetFrame()
-    #frame.Draw()
-    ####
  
     ##########################################
     pad1 = ROOT.TPad("pad_" + histo_name,"",0,0.28,1,1.)
@@ -140,13 +133,11 @@ for histo_name in list_histos:
     pad1.Draw()
     pad2.Draw()
     ##########################################
-
-    ##########################################
     pad1.cd()
-    ##########################################
+
     hstack[histo_name].SetTitle("")
-    #CMS_lumi.CMS_lumi(pad1, iPeriod, iPos)
     hstack[histo_name].Draw("histo")
+    hstack[histo_name].GetYaxis().SetTitle("Events")
 
     ##########################################
     #hstack[histo_name].GetXaxis().SetTickLength(0)
@@ -165,12 +156,12 @@ for histo_name in list_histos:
 
     if histo_name == "h_elept":
         hstack[histo_name].GetXaxis().SetTitle("p_{T}^{e} (GeV)")
-        #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),4000))
+        #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),4000.))
         hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),60.))
 
     if histo_name == "h_lepton_eta":
         hstack[histo_name].GetXaxis().SetTitle("\eta^{l}")
-        #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),4000))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),40000.))
         hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),200.))
 
     if histo_name == "h_lepton_pt":
@@ -180,15 +171,15 @@ for histo_name in list_histos:
     
     if histo_name == "h_pipt":
         hstack[histo_name].GetXaxis().SetTitle("p_{T}^{#pi} (GeV)")
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),160.))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),130000.))
 
     if histo_name == "h_gammaet":
         hstack[histo_name].GetXaxis().SetTitle("E_{T}^{#gamma} (GeV)")
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),160))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),130000.))
 
     if histo_name == "h_gammaeta":
         hstack[histo_name].GetXaxis().SetTitle("#eta^{#gamma}")
-        #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),60))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),140.))
 
     if histo_name == "h_mueta":
         hstack[histo_name].GetXaxis().SetTitle("#eta^{#mu}")
@@ -202,29 +193,39 @@ for histo_name in list_histos:
 
     if histo_name == "h_pieta":
         hstack[histo_name].GetXaxis().SetTitle("#eta^{#pi}")
-        #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),350.))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),140.))
 
     if histo_name == "h_deltaphi_mu_pi":
-        hstack[histo_name].GetXaxis().SetTitle("#Delta#varphi_{#mu-#pi}")
+        hstack[histo_name].GetXaxis().SetTitle("#Delta#varphi(#mu,#pi)")
         hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),35000.))
 
     if histo_name == "h_deltaphi_ele_pi":
-        hstack[histo_name].GetXaxis().SetTitle("#Delta#varphi_{e-#pi}")
+        hstack[histo_name].GetXaxis().SetTitle("#Delta#varphi(e,#pi)")
         #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),45000))
         hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),11000.))
 
     if histo_name == "h_deltaphi_ele_gamma":
-        hstack[histo_name].GetXaxis().SetTitle("#Delta#varphi_{e-#gamma}")
+        hstack[histo_name].GetXaxis().SetTitle("#Delta#varphi(e,#gamma)")
         #canvas[histo_name].SetLogy()
         #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),15000))
 
     if histo_name == "h_deltaphi_mu_gamma":
-        hstack[histo_name].GetXaxis().SetTitle("#Delta#varphi_{#mu-#gamma}")
+        hstack[histo_name].GetXaxis().SetTitle("#Delta#varphi(#mu,#gamma)")
         #canvas[histo_name].SetLogy()
         #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),7000))
 
+    if histo_name == "h_deltaR_mu_pi":
+        hstack[histo_name].GetXaxis().SetTitle("#Delta R(#mu,#pi)")
+
+    if histo_name == "h_deltaR_ele_pi":
+        hstack[histo_name].GetXaxis().SetTitle("#Delta R(e,#pi)")
+
+    if histo_name == "h_deltaR_mu_gamma":
+        hstack[histo_name].GetXaxis().SetTitle("#Delta R(#mu,#gamma)")
+
     if histo_name == "h_deltaR_ele_gamma":
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),60000.))
+        hstack[histo_name].GetXaxis().SetTitle("#Delta R(e,#gamma)")
+        #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),60000.))
 
     if histo_name == "h_ele_gamma_InvMass":
         hstack[histo_name].GetXaxis().SetTitle("m_{e#gamma} (GeV/c^{2})")
@@ -292,7 +293,7 @@ for histo_name in list_histos:
     totalData.GetYaxis().SetTitle("Data/MC")
     totalData.GetYaxis().SetTitleSize(0.08)
     totalData.GetYaxis().SetTitleOffset(0.5)
-    #totalData.GetYaxis().SetRangeUser(0.4,1.6)
+    totalData.GetYaxis().SetRangeUser(-0.5,+2.5)
 
     totalData.GetXaxis().SetLabelSize(0.10)
     totalData.GetXaxis().SetTitleSize(0.12)
@@ -322,20 +323,38 @@ for histo_name in list_histos:
     if histo_name == "h_eleeta":
         totalData.GetXaxis().SetTitle("#eta^{e}")
 
+    if histo_name == "h_lepton_eta":
+        totalData.GetXaxis().SetTitle("\eta^{l}")
+
+    if histo_name == "h_lepton_pt":
+        totalData.GetXaxis().SetTitle("p_{T}^{l} (GeV)")
+
     if histo_name == "h_pieta":
         totalData.GetXaxis().SetTitle("#eta^{#pi}")
 
     if histo_name == "h_deltaphi_mu_pi":
-        totalData.GetXaxis().SetTitle("#Delta#varphi_{#mu-#pi}")
+        totalData.GetXaxis().SetTitle("#Delta#varphi(#mu,#pi)")
 
     if histo_name == "h_deltaphi_ele_pi":
-        totalData.GetXaxis().SetTitle("#Delta#varphi_{e-#pi}")
+        totalData.GetXaxis().SetTitle("#Delta#varphi(e,#pi)")
 
     if histo_name == "h_deltaphi_ele_gamma":
-        totalData.GetXaxis().SetTitle("#Delta#varphi_{e-#gamma}")
+        totalData.GetXaxis().SetTitle("#Delta#varphi(e,#gamma)")
 
     if histo_name == "h_deltaphi_mu_gamma":
-        totalData.GetXaxis().SetTitle("#Delta#varphi_{#mu-#gamma}")
+        totalData.GetXaxis().SetTitle("#Delta#varphi(#mu,#gamma)")
+
+    if histo_name == "h_deltaR_mu_pi":
+        totalData.GetXaxis().SetTitle("#DeltaR(#mu,#pi)")
+
+    if histo_name == "h_deltaR_ele_pi":
+        totalData.GetXaxis().SetTitle("#DeltaR(e,#pi)")
+
+    if histo_name == "h_deltaR_ele_gamma":
+        totalData.GetXaxis().SetTitle("#DeltaR(e,#gamma)")
+
+    if histo_name == "h_deltaR_mu_gamma":
+        totalData.GetXaxis().SetTitle("#DeltaR(#mu,#gamma)")
 
     if histo_name == "h_ele_gamma_InvMass":
         totalData.GetXaxis().SetTitle("m_{e#gamma} (GeV/c^{2})")

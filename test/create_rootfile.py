@@ -29,6 +29,9 @@ isBDT_with_Wmass = False # If true, pT(pi) and ET(gamma) in the BDT are normaliz
 split_MC = False # If True, MC signal sample is split in two for the training/testing of the BDT
 scale_signal_up = False # If true, scales the MC signal weight up (Pythia modeling) 
 scale_signal_down = False # If true, scales the MC signal weight down (Pythia modeling) 
+scale_signal_sin2 = False
+scale_signal_cos = False
+only_signal_relevant_weights = True
 
 myWF = Simplified_Workflow_Handler("Signal","Data",create_mass_tree,isBDT_with_Wmass,runningEra)
 
@@ -371,8 +374,8 @@ for full_sample_name in samplename_list:
 
         entry_index += 1.
         
-        if entry_index > sample_entries/2.:
-           continue
+        #if entry_index <= sample_entries/2.:
+        #    continue
 
         # Print entry_index
 
@@ -417,10 +420,6 @@ for full_sample_name in samplename_list:
         if not "Data" in sample_name:
             Wplus_pT = mytree.Wplus_pT
             Wminus_pT = mytree.Wminus_pT
-
-        if sample_name == "Signal":
-            is_signal_Wplus = mytree.is_signal_Wplus
-            is_signal_Wminus = mytree.is_signal_Wminus
 
         Wmass = mytree.Wmass
 
@@ -477,6 +476,48 @@ for full_sample_name in samplename_list:
             if MCT_deltaR_lep_gamma > 0.2 and not MCT_lep_pT < 0. and not mytree.MCT_HeT_ph_eT < 0.:
                 continue
 
+        if sample_name == "Signal":
+            is_signal_Wplus = mytree.is_signal_Wplus
+            is_signal_Wminus = mytree.is_signal_Wminus
+            genPi_pT  = mytree.gen_pi_pT 
+            genPi_eta = mytree.gen_pi_eta 
+            genPi_phi = mytree.gen_pi_phi
+            genPi_energy = mytree.gen_pi_energy
+            genPh_pT  = mytree.gen_ph_pT 
+            genPh_eta = mytree.gen_ph_eta
+            genPh_phi = mytree.gen_ph_phi
+            genPh_energy = mytree.gen_ph_energy
+            genTop_pT  = mytree.gen_pi_grandmother_pT 
+            genTop_eta = mytree.gen_pi_grandmother_eta 
+            genTop_phi = mytree.gen_pi_grandmother_phi
+            genTop_energy = mytree.gen_pi_grandmother_energy
+        
+            genTop_FourMomentum = ROOT.TLorentzVector()
+            genTop_FourMomentum.SetPtEtaPhiE(genTop_pT,genTop_eta,genTop_phi,genTop_energy)
+            genPi_FourMomentum = ROOT.TLorentzVector()
+            genPi_FourMomentum.SetPtEtaPhiE(genPi_pT,genPi_eta,genPi_phi,genPi_energy)
+            genPh_FourMomentum = ROOT.TLorentzVector()
+            genPh_FourMomentum.SetPtEtaPhiE(genPh_pT,genPh_eta,genPh_phi,genPh_energy)
+        
+            genW_pT      = (genPi_FourMomentum + genPh_FourMomentum).Pt()
+            genW_eta     = (genPi_FourMomentum + genPh_FourMomentum).Eta()
+            genW_phi     = (genPi_FourMomentum + genPh_FourMomentum).Phi()
+            genW_energy  = (genPi_FourMomentum + genPh_FourMomentum).E()
+            genW_FourMomentum = ROOT.TLorentzVector()
+            genW_FourMomentum.SetPtEtaPhiE(genW_pT,genW_eta,genW_phi,genW_energy)
+
+            genW_ThreeMomentum = ROOT.TVector3()
+            genW_ThreeMomentum = genW_FourMomentum.Vect()
+
+            boosted_genTop_FourMomentum = ROOT.TLorentzVector()
+            boosted_genTop_FourMomentum.SetPtEtaPhiE(genTop_pT,genTop_eta,genTop_phi,genTop_energy)
+            boosted_genTop_FourMomentum.Boost(-genW_FourMomentum.BoostVector()) #The sign - is required
+            boosted_genPi_FourMomentum = ROOT.TLorentzVector()
+            boosted_genPi_FourMomentum.SetPtEtaPhiE(genPi_pT,genPi_eta,genPi_phi,genPi_energy)
+            boosted_genPi_FourMomentum.Boost(-genW_FourMomentum.BoostVector()) #The sign - is required
+
+            angle_Top_Pi = boosted_genTop_FourMomentum.Angle(boosted_genPi_FourMomentum.Vect())
+            angle_Pi_W = boosted_genPi_FourMomentum.Angle(genW_FourMomentum.Vect())
 
         ############################################################################
         #                                                                          #
@@ -520,11 +561,18 @@ for full_sample_name in samplename_list:
             PU_Weight = mytree.PU_Weight # Add Pile Up weight
 
             if not runningEra == 2: # Prefiring weight not to be applied to 2018 MC
-                Prefiring_Weight = mytree.Prefiring_Weight # Add prefiring weight 
-                Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight*Prefiring_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
-            else:
-                Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
+                Prefiring_Weight = mytree.Prefiring_Weight # Add prefiring weight
 
+                if only_signal_relevant_weights: #Suppress non pt/eta-dependent weights
+                    Event_Weight = ph_weight*PU_Weight*Prefiring_Weight
+                else:
+                    Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight*Prefiring_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
+
+            else:
+                if only_signal_relevant_weights: #Suppress non pt/eta-dependent weights
+                    Event_Weight = ph_weight*PU_Weight
+                else:
+                    Event_Weight = norm_factor*ph_weight*MC_Weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight                
 
             Event_Weight = Event_Weight*lep_weight
 
@@ -548,11 +596,12 @@ for full_sample_name in samplename_list:
 
                 Event_Weight = Event_Weight*ttbar_sig_calib.GetBinContent(ttbar_sig_calib.GetXaxis().FindBin(local_W_pT))
 
-            ################ Create up- and down-scalded event weights for Pythia signal modeling ################
+                ################ Create up- and down-scalded event weights for Pythia signal modeling ################
 
-            if sample_name == "Signal":
-                Event_Weight_up   = Event_Weight*myWF.get_Pythia_sig_modeling_reweight(True,W_pT)
-                Event_Weight_down = Event_Weight*myWF.get_Pythia_sig_modeling_reweight(False,W_pT)
+                Event_Weight_up   = Event_Weight*myWF.get_Pythia_sig_modeling_reweight(True,genW_pT)
+                Event_Weight_down = Event_Weight*myWF.get_Pythia_sig_modeling_reweight(False,genW_pT)
+                Event_Weight_sin2 = Event_Weight*myWF.get_Pythia_polarization_modeling_reweight(True,angle_Pi_W)
+                Event_Weight_cos  = Event_Weight*myWF.get_Pythia_polarization_modeling_reweight(False,angle_Pi_W)
 
             #####################################################################################################
 
@@ -652,39 +701,43 @@ for full_sample_name in samplename_list:
 
             if not isData:
                 
-                #_gamma_eT[0]           = gamma_eT
-                #_pi_pT[0]              = pi_pT
-                #_lep_pT[0]             = lep_pT
+                _gamma_eT[0]           = gamma_eT
+                _pi_pT[0]              = pi_pT
+                _lep_pT[0]             = lep_pT
                 _lep_iso[0]            = lep_iso
-                #_nBjets_25[0]          = nBjets_25
+                _nBjets_25[0]          = nBjets_25
                 _deltaphi_lep_pi[0]    = deltaphi_lep_pi
                 _deltaphi_lep_gamma[0] = deltaphi_lep_gamma
                 _isMuon[0]             = isMuon
                 _piRelIso_05[0]        = piRelIso_05
-                #_piRelIso_05_ch[0]     = piRelIso_05_ch
+                _piRelIso_05_ch[0]     = piRelIso_05_ch
                 _pi_dxy[0]             = pi_dxy
-                #_met[0]                = met
+                _met[0]                = met
                 _met_puppi[0]          = met_puppi
                 _Wmass[0]              = Wmass
                 if sample_name == "Signal" and scale_signal_up:
                     _weight[0]         = Event_Weight_up
                 elif sample_name == "Signal" and scale_signal_down:
                     _weight[0]         = Event_Weight_down
+                elif sample_name == "Signal" and scale_signal_sin2:
+                    _weight[0]         = Event_Weight_sin2
+                elif sample_name == "Signal" and scale_signal_cos:
+                    _weight[0]         = Event_Weight_cos
                 else:
                     _weight[0]         = Event_Weight
                 #-----SCALED VARIABLES-----#
-                _gamma_eT[0]           = _Nrandom_for_BDT_systematic.Gaus(gamma_eT,gamma_eT*0.05)
-                _pi_pT[0]              = _Nrandom_for_BDT_systematic.Gaus(pi_pT,pi_pT*0.05)
-                _lep_pT[0]             = _Nrandom_for_BDT_systematic.Gaus(lep_pT,lep_pT*0.05)
-                _piRelIso_05_ch[0]     = _Nrandom_for_BDT_systematic.Gaus(piRelIso_05_ch,piRelIso_05_ch*0.1)
-                _met[0]                = _Nrandom_for_BDT_systematic.Gaus(met,met*0.05)
-                _Nrandom_for_BDT_systematic_nBjets_25 = _Nrandom_for_BDT_systematic.Rndm()
-                if _Nrandom_for_BDT_systematic_nBjets_25 <= 0.90:
-                    _nBjets_25[0]          = nBjets_25
-                elif (_Nrandom_for_BDT_systematic_nBjets_25 > 0.90 and _Nrandom_for_BDT_systematic_nBjets_25 <= 0.95):
-                    _nBjets_25[0]          = nBjets_25-1
-                else:
-                    _nBjets_25[0]          = nBjets_25+1
+                # _gamma_eT[0]           = _Nrandom_for_BDT_systematic.Gaus(gamma_eT,gamma_eT*0.05)
+                # _pi_pT[0]              = _Nrandom_for_BDT_systematic.Gaus(pi_pT,pi_pT*0.05)
+                # _lep_pT[0]             = _Nrandom_for_BDT_systematic.Gaus(lep_pT,lep_pT*0.05)
+                # _piRelIso_05_ch[0]     = _Nrandom_for_BDT_systematic.Gaus(piRelIso_05_ch,piRelIso_05_ch*0.1)
+                # _met[0]                = _Nrandom_for_BDT_systematic.Gaus(met,met*0.05)
+                # _Nrandom_for_BDT_systematic_nBjets_25 = _Nrandom_for_BDT_systematic.Rndm()
+                # if _Nrandom_for_BDT_systematic_nBjets_25 <= 0.90:
+                #     _nBjets_25[0]          = nBjets_25
+                # elif (_Nrandom_for_BDT_systematic_nBjets_25 > 0.90 and _Nrandom_for_BDT_systematic_nBjets_25 <= 0.95):
+                #     _nBjets_25[0]          = nBjets_25-1
+                # else:
+                #     _nBjets_25[0]          = nBjets_25+1
                 
                 if sample_name == "Signal" and isMuon and split_MC and entry_index <= SignalTree_entries/2:
                     tMVA_signal_mu_training.Fill()

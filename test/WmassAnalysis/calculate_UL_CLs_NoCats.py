@@ -139,7 +139,7 @@ poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
 min_scan = 0.0000001
-max_scan = 0.00005
+max_scan = 0.000035
 #min_scan = 0.00000005
 #max_scan = 0.000003
 print "Doing a fixed scan  in interval : ",min_scan, " , ", max_scan

@@ -42,28 +42,27 @@ Categorization.defineType("ElectronSignal",3)
 # Categorization.defineType("ElectronSignal_2017",7)
 
 Categorization.setRange("SignalRegion","MuonSignal,ElectronSignal")
+Categorization.setRange("SignalRegion_mu","MuonSignal")
+Categorization.setRange("SignalRegion_ele","ElectronSignal")
 #Categorization.setRange("SignalRegion_2017","MuonSignal_2017,ElectronSignal_2017")#FIXME
 
 #Create the RooDataSet. No need to import weight for signal only analysis
-sample = ROOT.RooDataSet("sample","sample", ROOT.RooArgSet(Wmass,isSignal,weight,Categorization), ROOT.RooFit.Import(mytree),ROOT.RooFit.Cut("isSignal==1"))#,ROOT.RooFit.WeightVar("weight"))
+sample = ROOT.RooDataSet("sample","sample", ROOT.RooArgSet(Wmass,isSignal,weight,Categorization), ROOT.RooFit.Import(mytree),ROOT.RooFit.Cut("isSignal==1") ,ROOT.RooFit.WeightVar("weight"))
 
 #Skim the signal only
 data_Signal = sample.reduce(ROOT.RooFit.CutRange("SignalRegion"))
+#data_Signal = sample.reduce(ROOT.RooFit.CutRange("SignalRegion_mu"))
+#data_Signal = sample.reduce(ROOT.RooFit.CutRange("SignalRegion_ele"))
 #data_Signal_2017 = sample.reduce(ROOT.RooFit.CutRange("SignalRegion_2017"))#FIXME
 
 print "Using ", data_Signal.numEntries(), " events to fit the signal shape"
 #print "Using ", data_Signal_2017.numEntries(), " events to fit the signal shape (2017)"#FIXME
 
 # #Define the signal lineshape
-# Gauss_pole = ROOT.RooRealVar("Gauss_pole","The gaussian pole", 73.,70.,80.)
-# Gauss_sigma = ROOT.RooRealVar("Gauss_sigma","The gaussian sigma",4,0.1,10.)
-# Gauss_W = ROOT.RooGaussian("Gauss_W","The Gaussian",Wmass,Gauss_pole,Gauss_sigma)
-
 
 Gauss_pole = ROOT.RooRealVar("Gauss_pole","The gaussian pole", 81.,70.,90.)
 Gauss_sigma = ROOT.RooRealVar("Gauss_sigma","The gaussian sigma",5.,0.1,10.)
 Gauss_W = ROOT.RooGaussian("Gauss_W","The Gaussian",Wmass,Gauss_pole,Gauss_sigma)
-
 
 fracSig_prime = ROOT.RooRealVar("fracSig_prime","Partial fraction",0.5,0.,1.)
 fracSig = ROOT.RooRealVar("fracSig","Fraction",0.5,0.,1.)
@@ -82,14 +81,16 @@ dCB       = ROOT.RooDoubleCBFast("dCB", "Double Crystal Ball", Wmass, dCB_pole, 
 #totSignal = ROOT.RooAddPdf("totSignal","Total signal PDF",ROOT.RooArgList(totSignal_prime,Gauss_W_2),ROOT.RooArgList(fracSig))
 totSignal = ROOT.RooAddPdf("totSignal","Total signal PDF",ROOT.RooArgList(dCB,Gauss_W),ROOT.RooArgList(fracSig))
 
+totSignal.fitTo(data_Signal, ROOT.RooFit.SumW2Error(0))
 
-totSignal.fitTo(data_Signal)#, ROOT.RooFit.SumW2Error(0))
+#h_signal_mu = ROOT.TH1F("signal_mu","",100,50.,100.)
+h_signal_mu = data_Signal.createHistogram("signal_mu",Wmass,ROOT.RooFit.Binning(100,50.,100.))
 
 #Make the plots
 massplot = Wmass.frame()
 massplot.SetTitle(" ")
 massplot.SetTitleOffset(1.5,"y")
-data_Signal.plotOn(massplot)#,ROOT.RooFit.MarkerColor(ROOT.kRed),ROOT.RooFit.Rescale(7882./7929.)) #RESCALE to the number of 2017 events to check if the two signals are compatible
+data_Signal.plotOn(massplot)#,ROOT.RooFit.MarkerColor(ROOT.kRed),ROOT.RooFit.Rescale(9435./14729.)) #RESCALE to the number of 2017 events to check if the two signals are compatible
 totSignal.plotOn(massplot)
 
 #totSignal.fitTo(data_Signal_2017)#FIXME
@@ -110,9 +111,11 @@ workspace = ROOT.RooWorkspace("myworkspace")
 getattr(workspace,'import')(totSignal)
 
 fOutput = ROOT.TFile("Signal_model_" + runningEra + ".root","RECREATE")
+#fOutput = ROOT.TFile("Signal_model_mu_only.root","RECREATE")
 fOutput.cd()
 workspace.Write()
 massplot.Write("massplot")
+h_signal_mu.Write()
 fOutput.Close()
 
 raw_input()

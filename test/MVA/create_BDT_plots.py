@@ -70,12 +70,18 @@ def rejB_vs_S():
     if isMuon:
         #f1 = TFile("outputs/Nominal_training_mu_Pythia_down.root")
         #f1 = TFile("outputs/Nominal_training_mu_Wmass.root")
-        f1 = TFile("outputs/Nominal_training_mu_shifted.root")
+        #f1 = TFile("outputs/Nominal_training_mu_shifted.root")
+        #f1 = TFile("outputs/Nominal_training_mu_sin2_Top_Pi.root")
+        f1 = TFile("outputs/Nominal_training_mu_cos_Top_Pi.root")
+        #f1 = TFile("outputs/Nominal_training_mu_2_1.root")
         f2 = TFile("outputs/Nominal_training_mu.root")
     else:
         #f1 = TFile("outputs/Nominal_training_ele_Pythia_down.root")
         #f1 = TFile("outputs/Nominal_training_ele_Wmass.root")
-        f1 = TFile("outputs/Nominal_training_ele_shifted.root")
+        #f1 = TFile("outputs/Nominal_training_ele_shifted.root")
+        #f1 = TFile("outputs/Nominal_training_ele_sin2_Top_Pi.root")
+        f1 = TFile("outputs/Nominal_training_ele_cos_Top_Pi.root")
+        #f1 = TFile("outputs/Nominal_training_ele_2_1.root")
         f2 = TFile("outputs/Nominal_training_ele.root")
 
     h_rejB_vs_S_1 = f1.Get("default/Method_BDT/BDT/MVA_BDT_rejBvsS")
@@ -92,12 +98,15 @@ def rejB_vs_S():
     #leg2.AddEntry(h_rejB_vs_S_1,"with data sidebands","l")
     #leg2.AddEntry(h_rejB_vs_S_1,"with #Delta#varphi_{l,#gamma}","l")
     #leg2.AddEntry(h_rejB_vs_S_1,"with m_{#pi#gamma}","l")
-    leg2.AddEntry(h_rejB_vs_S_1,"shifted","l")
+    #leg2.AddEntry(h_rejB_vs_S_1,"sin^{2}#theta","l")
+    #leg2.AddEntry(h_rejB_vs_S_1,"train: 2018, test: 2017","l")
+    leg2.AddEntry(h_rejB_vs_S_1,"cos#theta","l")
     #leg2.AddEntry(h_rejB_vs_S_1,"with signal scaled down","l")
     #leg2.AddEntry(h_rejB_vs_S_2,"with MC","l")
     #leg2.AddEntry(h_rejB_vs_S_2,"without #Delta#varphi_{l,#gamma}","l")
     #leg2.AddEntry(h_rejB_vs_S_2,"without m_{#pi#gamma}","l")
     leg2.AddEntry(h_rejB_vs_S_2,"nominal","l")
+    #leg2.AddEntry(h_rejB_vs_S_2,"train: 2018, test: 2018","l")
     #leg2.AddEntry(h_rejB_vs_S_2,"with signal non scaled","l")
 
     gStyle.SetOptStat(0)
@@ -113,12 +122,18 @@ def rejB_vs_S():
 
     if isMuon:
         #canvas2.Print("plots/rejBvsS_mu_Wmass.pdf")
-        canvas2.Print("plots/rejBvsS_mu_shifted.pdf")
+        #canvas2.Print("plots/rejBvsS_mu_shifted.pdf")
+        #canvas2.Print("plots/rejBvsS_mu_sin2_Top_Pi.pdf")
+        canvas2.Print("plots/rejBvsS_mu_cos_Top_Pi.pdf")
         #canvas2.Print("plots/rejBvsS_mu_Pythia_down.pdf")
+        #canvas2.Print("plots/rejBvsS_mu_cross_years.pdf")
     else:
         #canvas2.Print("plots/rejBvsS_ele_Wmass.pdf")
-        canvas2.Print("plots/rejBvsS_ele_shifted.pdf")
+        #canvas2.Print("plots/rejBvsS_ele_shifted.pdf")
+        #canvas2.Print("plots/rejBvsS_ele_sin2_Top_Pi.pdf")
+        canvas2.Print("plots/rejBvsS_ele_cos_Top_Pi.pdf")
         #canvas2.Print("plots/rejBvsS_ele_Pythia_down.pdf")
+        #canvas2.Print("plots/rejBvsS_ele_cross_years.pdf")
 
     raw_input()
 
