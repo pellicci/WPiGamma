@@ -2,20 +2,10 @@
 
 import ROOT
 import math
-import argparse
 
 ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
-useChebychev = True
-
-#---------------------------------#
-
-################################################################
-#                                                              #
-#------------------------ Instructions ------------------------#
-#                                                              #
-################################################################
-
+useChebychev = True #Choose to use Chebychev or Exponential to fit the background
 
 ################################################################
 #                                                              #
@@ -24,8 +14,6 @@ useChebychev = True
 ################################################################
 
 Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV/c^{2}")
-Wmass.setRange("LowSideband",55.,65.)
-Wmass.setRange("HighSideband",90.,95.)
 
 ################################################################
 #                                                              #
@@ -80,8 +68,6 @@ print "Using ", data.numEntries(), " events to fit"
 #                                                              #
 ################################################################
 
-#Now describe the background
-
 #Parameters for Chebychev
 a0_bkg = ROOT.RooRealVar("a0_bkg","a0_bkg",0.29,-1.,1.)
 a1_bkg = ROOT.RooRealVar("a1_bkg","a1_bkg",-0.7,-5.,5.)
@@ -91,10 +77,9 @@ a3_bkg = ROOT.RooRealVar("a3_bkg","a3_bkg",-0.15,-5.,5.)
 #Parameters for exponential
 b0_bkg = ROOT.RooRealVar("b0_bkg","b0_bkg",0.001,0.,0.01)
 
-backPDF_cheb = ROOT.RooChebychev("backPDF_cheb","backPDF_cheb",Wmass,ROOT.RooArgList(a0_bkg))#,a1_bkg))#,a2_bkg))#,a3_bkg))#,a4_bkg))#,a5_bkg,a6_bkg))
- 
-backPDF_exp = ROOT.RooExponential("backPDF_exp","backPDF_exp",Wmass,b0_bkg)
+backPDF_cheb = ROOT.RooChebychev("backPDF_cheb","backPDF_cheb",Wmass,ROOT.RooArgList(a0_bkg))#,a1_bkg))#,a2_bkg))#,a3_bkg))
 
+backPDF_exp = ROOT.RooExponential("backPDF_exp","backPDF_exp",Wmass,b0_bkg)
 
 if useChebychev:
     backPDF = backPDF_cheb
@@ -115,14 +100,11 @@ result_dataFit = backPDF.fitTo(data,ROOT.RooFit.Extended(0), ROOT.RooFit.NumCPU(
 print "minNll = ", result_dataFit.minNll()
 print "2Delta_minNll = ", 2*(3420.95752167-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
 
-
 ################################################################
 #                                                              #
 #-------------------------- Plotting --------------------------#
 #                                                              #
 ################################################################
-
-#First plot the signal region
 
 xframe = Wmass.frame(55.,95.,15)
 xframe.SetTitle(" ")
