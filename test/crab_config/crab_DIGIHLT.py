@@ -58,9 +58,9 @@ config.Data.publication = True
 if runningEra == 0:
 
     if doPlus:
-        config.Data.outputDatasetTag = 'WPlusPiGamma_RECOSIM_80XV1'
+        config.Data.outputDatasetTag = 'WPlusPiGamma_DIGIHLT_80X_2016'
     else:
-        config.Data.outputDatasetTag = 'WMinusPiGamma_RECOSIM_80XV1'
+        config.Data.outputDatasetTag = 'WMinusPiGamma_DIGIHLT_80X_2016'
 
 if runningEra == 1:
 

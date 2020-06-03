@@ -2,7 +2,6 @@
 
 import ROOT
 import math
-import argparse
 
 ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
@@ -56,28 +55,24 @@ Categorization.defineType("ElectronSignal",3)
 
 ################################################################
 #                                                              #
-#---------------------- Get the BDT output --------------------#
+#---------------------- Get the dataset -----------------------#
 #                                                              #
 ################################################################
 
 #Import dataset
-    data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization), ROOT.RooFit.Import(mytree))
-else:
-    data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization,weight), ROOT.RooFit.Import(mytree), ROOT.RooFit.WeightVar("weight"))
-
+data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization), ROOT.RooFit.Import(mytree))
 data = data_initial.reduce("(Categorization==Categorization::MuonSignal) || (Categorization==Categorization::ElectronSignal)")
+
 print "number of events mu - SR: ", data.sumEntries("Categorization==1")
 print "number of events ele - SR: ", data.sumEntries("Categorization==3")
-
 print "Using ", data.numEntries(), " events to fit"
 
 ################################################################
 #                                                              #
-#--------------- Import variables from workspace --------------#
+#------------------ Import signal variables -------------------#
 #                                                              #
 ################################################################
 
-#Import the signal
 fInput_sigmodel = ROOT.TFile("Signal_model_3.root")
 fInput_sigmodel.cd()
 
@@ -101,29 +96,26 @@ workspace_sig.var("dCB_nR").setConstant(1)
 workspace_sig.var("Gauss_pole").setConstant(1)
 workspace_sig.var("Gauss_sigma").setConstant(1)
 workspace_sig.var("fracSig").setConstant(1)
-if selectSigShift == 0:
+
+if selectSigShift == 0: #The nominal case (dCB parameters fixed to their central values from fit on MC signal)
     workspace_sig.var("dCB_pole").setConstant(1)
     workspace_sig.var("dCB_width").setConstant(1)
-if selectSigShift == 1:
-    print "old value of the pole: ", dCB_pole_nominal, "  dCB_pole_err: ", dCB_pole_err
-    print "old value of the width: ", dCB_width_nominal, "  dCB_width_err: ", dCB_width_err
+if selectSigShift == 1: #Both dCB_pole and dCB_width fixed to central value +1sigma
     workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal+dCB_pole_err)
     workspace_sig.var("dCB_width").setVal(dCB_width_nominal+dCB_width_err)
     workspace_sig.var("dCB_pole").setConstant(1)
     workspace_sig.var("dCB_width").setConstant(1)
-    print "new value of the pole: ", workspace_sig.var("dCB_pole").getVal()
-    print "new value of the width: ", workspace_sig.var("dCB_width").getVal()
-if selectSigShift == 2:
+if selectSigShift == 2: #Both dCB_pole -1sigma and dCB_width +1sigma
     workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal-dCB_pole_err)
     workspace_sig.var("dCB_width").setVal(dCB_width_nominal+dCB_width_err)
     workspace_sig.var("dCB_pole").setConstant(1)
     workspace_sig.var("dCB_width").setConstant(1)
-if selectSigShift == 3:
+if selectSigShift == 3: #Both dCB_pole +1sigma and dCB_width -1sigma
     workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal+dCB_pole_err)
     workspace_sig.var("dCB_width").setVal(dCB_width_nominal-dCB_width_err)
     workspace_sig.var("dCB_pole").setConstant(1)
     workspace_sig.var("dCB_width").setConstant(1)
-if selectSigShift == 4:
+if selectSigShift == 4: #Both dCB_pole and dCB_width fixed to central value -1sigma
     workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal-dCB_pole_err)
     workspace_sig.var("dCB_width").setVal(dCB_width_nominal-dCB_width_err)
     workspace_sig.var("dCB_pole").setConstant(1)
@@ -132,21 +124,20 @@ if selectSigShift == 4:
 
 ################################################################
 #                                                              #
-#---------------- Variables for bkg description ---------------#
+#----------------- Import background variables ----------------#
 #                                                              #
 ################################################################
 
-#Now describe the background
 fInput_bkgmodel = ROOT.TFile("fitBackground.root")
 fInput_bkgmodel.cd()
 
 workspace_bkg = fInput_bkgmodel.Get("workspace_bkg")
 
-if selectBkgFunction == 0:
+if selectBkgFunction == 0: #Nominal case (Chebychev)
 
     backPDF = workspace_bkg.pdf("backPDF_cheb")
 
-elif selectBkgFunction == 1: #Use Exponential for muon channel (calculation of systematic on background parametrization)
+elif selectBkgFunction == 1: #Use Exponential (estimate systematic on background parametrization)
 
     backPDF = workspace_bkg.pdf("backPDF_exp")
 
@@ -156,7 +147,6 @@ elif selectBkgFunction == 1: #Use Exponential for muon channel (calculation of s
 #------------------ Systematic on ttbar xsec ------------------#
 #                                                              #
 ################################################################
-#First the cross section, with a modifier for systematics
 #CMS ttbar measurement/W->lnu BR (it is measured with both W in lnu), in pb
 #http://cms-results.web.cern.ch/cms-results/public-results/publications/TOP-16-005/index.html
 W_xsec_nominal = 2.*2.*815.*0.1086 #The two factors 2 account for the possible charge signs of the Ws and for the two leptonic decay channels of the tag W
@@ -258,7 +248,7 @@ eta_bkg_syst = bkg_syst
 ################################################################
 
 if suppressBkgSystematic or suppressSigSystematic:
-    W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.000005,-0.0001,0.01) # The parameter of interest can go negative when we try the alternative bkg description
+    W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.000005,-0.0001,0.01) # The parameter of interest can go negative when we try the alternative bkg description, to obtain the correct statistic coverage
 else:
     W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.000001,0.,0.01) # The parameter of interest
 
@@ -282,7 +272,7 @@ Nsig_multiplier   = ROOT.RooFormulaVar("Nsig_multiplier","@0 * pow(@1,@2)",ROOT.
 one               = ROOT.RooRealVar("one","one",1.)
 gauss_Multi_param = ROOT.RooGaussian("gauss_Multi_param","gauss_Multi_param",glb_Multi_param,Multi_param_beta,one)
 
-Nsig = ROOT.RooFormulaVar("Nsig_mu","@0*@1", ROOT.RooArgList(W_pigamma_BR, Nsig_multiplier))
+Nsig = ROOT.RooFormulaVar("Nsig_mu","@0*@1", ROOT.RooArgList(W_pigamma_BR_blind, Nsig_multiplier))
 
 Nbkg = ROOT.RooRealVar("Nbkg","Nbkg",900.,100.,5000.)
 
@@ -302,20 +292,17 @@ if suppressAllSystematics:
 
 ################################################################
 #                                                              #
-#---------------------- Fit (and F-Test) ----------------------#
+#---------------------------- Fit -----------------------------#
 #                                                              #
 ################################################################
 
 constrained_params = ROOT.RooArgSet()
 constrained_params.add(Multi_param_beta)
 
-if isData:
-    if not suppressAllSystematics:
-        result_dataFit = totPDF.fitTo(data, ROOT.RooFit.Extended(1), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of unmber of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
-    else:
-        result_dataFit = totPDF.fitTo(data, ROOT.RooFit.Extended(1), ROOT.RooFit.Save() )
+if not suppressAllSystematics:
+    result_dataFit = totPDF.fitTo(data, ROOT.RooFit.Extended(1), ROOT.RooFit.Constrain(constrained_params), ROOT.RooFit.Save() )#For the signal region, I want the fit to be extended (Poisson fluctuation of number of events) to take into account that the total number of events is the sum of signal and background events. Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
 else:
-    totPDF.fitTo(data,ROOT.RooFit.Extended(1), ROOT.RooFit.SumW2Error(0), ROOT.RooFit.NumCPU(4) )
+    result_dataFit = totPDF.fitTo(data, ROOT.RooFit.Extended(1), ROOT.RooFit.Save() )
 
 ################################################################
 #                                                              #
@@ -324,10 +311,7 @@ else:
 ################################################################
         
 #Save the fit into a root file
-if isData:
-    fOutput = ROOT.TFile("fitData.root","RECREATE")
-else:
-    fOutput = ROOT.TFile("fitMC.root","RECREATE")
+fOutput = ROOT.TFile("fitData.root","RECREATE")
 
 fOutput.cd()
 
@@ -352,24 +336,18 @@ xframe.SetTitleOffset(1.4,"y")
 
 #################################################
 
-#Exclude the control regions
 data_reduced = data.reduce("Wmass < 65. || Wmass > 90.")
 
 data_reduced.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
 totPDF.plotOn(xframe, ROOT.RooFit.Range("LowSideband,HighSideband"))
-
 
 #DRAW ON CANVAS
 canvas = ROOT.TCanvas()
 canvas.cd()
 xframe.Draw()
 
-
 # Save the plot
-if isData:
-    canvas.SaveAs("plots/fitData_signalR.pdf")
-else:
-    canvas.SaveAs("plots/fitMC_signalR.pdf")
+canvas.SaveAs("plots/fitData_signalR.pdf")
 
 del workspace_out
 
