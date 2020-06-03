@@ -92,7 +92,6 @@ fOutput = ROOT.TFile("Signal_model_" + runningEra + ".root","RECREATE")
 fOutput.cd()
 workspace.Write()
 massplot.Write("massplot")
-h_signal_mu.Write()
 fOutput.Close()
 
 raw_input()
