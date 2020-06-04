@@ -1,7 +1,7 @@
 from CRABClient.UserUtilities import config
 config = config()
  
-doPlus = False
+doPlus = True
 runningEra = 2 # 0 = 2016, 1 = 2017, 2 = 2018
  
 config.section_('General')
