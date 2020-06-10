@@ -84,8 +84,11 @@ process.generator = cms.EDFilter("Pythia8GeneratorFilter",
             '24:onMode = off', 
             '24:onNegIfMatch = 11 12', 
             '24:onNegIfMatch = 13 14', 
-            '24:onPosIfMatch = 211 22'
-        ),
+            '24:onNegIfMatch = 15 16', 
+            '24:onPosIfMatch = 211 22',
+            '15:onMode = off',
+            '15:onIfAny = 11',
+            '15:onIfAny = 13'),
         pythia8CUEP8M1Settings = cms.vstring(
             'Tune:pp 14', 
             'Tune:ee 7', 

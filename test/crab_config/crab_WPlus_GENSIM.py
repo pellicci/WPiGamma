@@ -3,7 +3,7 @@ from WMCore.Configuration import Configuration
 from CRABClient.UserUtilities import config
 config = Configuration()
 
-runningEra = 1 # 0 = 2016, 1 = 2017, 2 = 2018
+runningEra = 2 # 0 = 2016, 1 = 2017, 2 = 2018
 
 config.section_('General')
 config.General.transferOutputs = True
