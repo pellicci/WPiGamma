@@ -53,7 +53,7 @@ secs_table_2016["QCDDoubleEMEnriched40toInf"] = 113100.0
 secs_table_2016["WGToLNuG01J"] = 178.4
 secs_table_2016["TTGJets"] = 3.795
 secs_table_2016["ZGTo2LG"] = 123.8
-secs_table_2016["Signal"] = 815.*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
+secs_table_2016["Signal"] = 815.*0.1086*2.*0.000001*(2.+0.3521) #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
 
 #fraction of negative-weighted events in NLO samples (2016)
 frac_table_2016 = dict()
@@ -138,7 +138,7 @@ secs_table_2017["WJetsToLNu0J"] = 50131.98
 secs_table_2017["WJetsToLNu1J"] = 8426.09
 secs_table_2017["WJetsToLNu2J"] = 3172.96
 secs_table_2017["WGToLNuG01J"] = 191.1
-secs_table_2017["Signal"] = 815.*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
+secs_table_2017["Signal"] = 815.*0.1086*2.*0.000001*(2.+0.3521) #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
 
 #fraction of negative-weighted events in NLO samples (2017)
 frac_table_2017 = dict()
@@ -226,7 +226,7 @@ secs_table_2018["WJetsToLNu0J"] = 50131.98
 secs_table_2018["WJetsToLNu1J"] = 8426.09
 secs_table_2018["WJetsToLNu2J"] = 3172.96
 secs_table_2018["WGToLNuG01J"] = 191.6 #Calculated with the xsec computation tool
-secs_table_2018["Signal"] = 815.*0.1086*2.*0.000001*2. #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
+secs_table_2018["Signal"] = 815.*0.1086*2.*0.000001*(2.+0.3521) #cross section taken from https://arxiv.org/pdf/1611.04040.pdf, BR assumed 10-6, last factor 2 is because we have two possible final states (one for W+ and one for W-)
 
 #fraction of negative-weighted events in NLO samples (2017)
 frac_table_2018 = dict()
@@ -295,15 +295,14 @@ if year == "2018":
 ##Now starts the program
 def main():
 
-    #dir_input = "crab_projects/samples_MC_" + year + "/"
-    dir_input = "crab_projects/samples_MC_" + year + "_PythiaModeling/"
+    dir_input = "crab_projects/samples_MC_" + year + "/"
     list_dirs = os.listdir(dir_input)
 
     if not os.path.exists("rootfiles"):
         os.makedirs("rootfiles")
 
-    #output_filename = "rootfiles/latest_production/MC/normalizations/Normalizations_table_" + year + ".txt" 
-    output_filename = "rootfiles/PythiaModeling/MC/normalizations/Normalizations_table_" + year + ".txt" 
+    output_filename = "rootfiles/latest_production/MC/normalizations/Normalizations_table_" + year + ".txt" 
+    #output_filename = "rootfiles/PythiaModeling/MC/normalizations/Normalizations_table_" + year + ".txt" 
     out_file = open(output_filename,"w")
 
     events_cumul = dict()
@@ -315,6 +314,9 @@ def main():
         is_in_complementary_sample_list = False
         
         samplename = dirname.split("crab_" + year + "_WPiGammaAnalysis_")[1]
+
+        #if samplename == "WPlusPiGamma_DirectProduction" or samplename == "WMinusPiGamma_DirectProduction":
+        #    continue
 
         print "Processing sample dir " + dirname
         crab_command = "crab report -d " + dir_input + dirname + " | grep read"

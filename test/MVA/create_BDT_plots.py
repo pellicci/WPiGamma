@@ -24,13 +24,21 @@ if args.isMuon_option == "electron":
 
 def BDT_output():
 
+    f_Data = TFile("../histos/latest_production/mergedYearsSelection/WPiGammaHistos_Data_201620172018.root")
+
     if isMuon:
         f = TFile("outputs/Nominal_training_mu.root")
+        h_BDT_data = f_Data.Get("h_BDT_out_mu")
     else:
         f = TFile("outputs/Nominal_training_ele.root")
+        h_BDT_data = f_Data.Get("h_BDT_out_ele")
 
     h_BDT_sig = f.Get("default/Method_BDT/BDT/MVA_BDT_S")
     h_BDT_bkg = f.Get("default/Method_BDT/BDT/MVA_BDT_B")
+
+    data_normalization = h_BDT_bkg.Integral()/h_BDT_data.Integral()
+    print data_normalization
+    h_BDT_data.Scale(data_normalization)
 
     leg1 = TLegend(0.65,0.7,0.8,0.95)
     leg1.SetHeader(" ")
@@ -42,18 +50,22 @@ def BDT_output():
     leg1.SetFillStyle(0)
     leg1.AddEntry(h_BDT_sig,"Signal","f")
     leg1.AddEntry(h_BDT_bkg,"Background","f")
+    leg1.AddEntry(h_BDT_data,"Data","lep")
     
     gStyle.SetOptStat(0)
     canvas1 = TCanvas()
     h_BDT_sig.SetTitle("")
     h_BDT_bkg.SetTitle("")
+    h_BDT_data.SetTitle("")
     h_BDT_sig.SetFillColor(38)
     #h_BDT_sig.SetLineColor(1)
     h_BDT_bkg.SetFillColor(2)
     h_BDT_bkg.SetLineColor(2)
     h_BDT_bkg.SetFillStyle(3002)
+    h_BDT_data.SetMarkerStyle(20)
     h_BDT_sig.Draw("hist")
     h_BDT_bkg.Draw("SAME, hist")
+    h_BDT_data.Draw("SAME, lep")
     h_BDT_sig.SetMaximum(4.5)
     leg1.Draw("SAME")
 
@@ -139,5 +151,5 @@ def rejB_vs_S():
 
 if __name__ == "__main__":
 
-    rejB_vs_S()
-    #BDT_output()
+    #rejB_vs_S()
+    BDT_output()

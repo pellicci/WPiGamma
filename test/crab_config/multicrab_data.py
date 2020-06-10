@@ -1,3 +1,4 @@
+from CRABAPI.RawCommand import crabCommand
 from WMCore.Configuration import Configuration
 from CRABClient.UserUtilities import config
 
@@ -6,7 +7,7 @@ config = Configuration()
 config.section_('General')
 config.General.transferOutputs = True
 
-runningEra = 2 # 0 = 2016, 1 = 2017, 2 = 2018
+runningEra = 1 # 0 = 2016, 1 = 2017, 2 = 2018
 
 config.section_('JobType')
 config.JobType.psetName = 'cmssw_config/run_WPiGammaAnalysis.py'
@@ -18,17 +19,17 @@ config.section_('Data')
 
 
 if runningEra == 0:
-    config.General.workArea = 'crab_projects/samples_data_2016_medium/'
+    config.General.workArea = 'crab_projects/samples_data_2016/'
     config.Data.lumiMask = 'json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
     config.JobType.inputFiles = ['DeepCSV_2016LegacySF_WP_V1.csv','bTagEff_2016.root']
 
 if runningEra == 1:
-    config.General.workArea = 'crab_projects/samples_data_2017_medium/'
+    config.General.workArea = 'crab_projects/samples_data_2017/'
     config.Data.lumiMask = 'json/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
     config.JobType.inputFiles = ['DeepCSV_94XSF_WP_V4_B_F.csv','bTagEff_2017.root']
 
 if runningEra == 2:
-    config.General.workArea = 'crab_projects/samples_data_2018_medium/'
+    config.General.workArea = 'crab_projects/samples_data_2018/'
     config.Data.lumiMask = 'json/Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt'
     config.JobType.inputFiles = ['DeepCSV_102XSF_WP_V1.csv','bTagEff_2018.root']
 

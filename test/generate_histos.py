@@ -107,7 +107,7 @@ pT_ele_binning = arr.array('f',[33.,40.,50.,100.,200.,500.])
 ##Get the handlers for all the histos and graphics
 h_base  = dict()
 
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets","MCT_deltaR_lep_gamma"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets","MCT_deltaR_lep_gamma","h_BDT_out_mu","h_BDT_out_ele"]
 
 h_base[list_histos[0]]  = ROOT.TH1F(list_histos[0], "p_{T} of the muon", 15, 25, 100.)
 #h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 15, 28, 100.)
@@ -160,6 +160,8 @@ h_base[list_histos[44]] = ROOT.TH1F(list_histos[44], "met ele scaled", 20, 0, 20
 h_base[list_histos[45]] = ROOT.TH1F(list_histos[45], "n jets", 10, -0.5, 9.5)
 h_base[list_histos[46]] = ROOT.TH2F(list_histos[46], "nBjets vs njets", 20, -0.5, 19.5, 10, -0.5, 9.5,)
 h_base[list_histos[47]] = ROOT.TH1F(list_histos[47], "MCT deltaR lep gamma", 20, 0., 2.)
+h_base[list_histos[48]] = ROOT.TH1F(list_histos[48], "BDT out_mu", 40, -0.7, 0.7)
+h_base[list_histos[49]] = ROOT.TH1F(list_histos[49], "BDT out_ele", 40, -0.7, 0.7)
 
 _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 
@@ -316,6 +318,11 @@ for jentry in xrange(mytree.GetEntriesFast()):
     if sample_name == "Signal":
         is_signal_Wplus = mytree.is_signal_Wplus
         is_signal_Wminus = mytree.is_signal_Wminus
+        isMuonSignal_fromTau = mytree.isMuonSignal_fromTau
+        isEleSignal_fromTau = mytree.isEleSignal_fromTau
+
+        if isMuonSignal_fromTau or isEleSignal_fromTau:
+            continue
 
     if not isMuon:
         ele_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
@@ -482,7 +489,10 @@ for jentry in xrange(mytree.GetEntriesFast()):
         BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)
     elif isBDT:
         BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)
-   
+        if isMuon and BDT_out <=0.2:
+            h_base["h_BDT_out_mu"].Fill(BDT_out)
+        if not isMuon and BDT_out <=0.2:
+            h_base["h_BDT_out_ele"].Fill(BDT_out)
     ############################################################################
     #                                                                          #
     #------------------------------- Fill histos ------------------------------#
@@ -749,3 +759,4 @@ print "Number of events expected = ", Nevts_expected
 print "Number of events expected in muon channel = ", Nevts_expected_mu
 print "Number of events expected in electron channel = ", Nevts_expected_ele
 print "###################"
+

@@ -31,18 +31,18 @@ year = args.year_option
 #---------------------------------#
 
 if not isData:
-    dir_input = "crab_projects/samples_MC_" + year + "_medium/"
-    #dir_output_bkg = "rootfiles/latest_production/MC/backgrounds/"
-    #dir_output_sig = "rootfiles/latest_production/MC/signals/" 
-    dir_output_bkg = "rootfiles/medium_production/MC/backgrounds/"
-    dir_output_sig = "rootfiles/medium_production/MC/signals/" 
+    dir_input = "crab_projects/samples_MC_" + year + "/"
+    dir_output_bkg = "rootfiles/latest_production/MC/backgrounds/"
+    dir_output_sig = "rootfiles/latest_production/MC/signals/" 
+    #dir_output_bkg = "rootfiles/medium_production/MC/backgrounds/"
+    #dir_output_sig = "rootfiles/medium_production/MC/signals/" 
     #dir_output_bkg = "rootfiles/bTagEfficiency_medium/MC/backgrounds/"
     #dir_output_sig = "rootfiles/bTagEfficiency_medium/MC/signals/" 
 
 if isData:
-    dir_input = "crab_projects/samples_data_" + year + "_medium/"
-    #dir_output_data = "rootfiles/latest_production/dataprocess/"
-    dir_output_data = "rootfiles/medium_production/dataprocess/"
+    dir_input = "crab_projects/samples_data_" + year + "/"
+    dir_output_data = "rootfiles/latest_production/dataprocess/"
+    #dir_output_data = "rootfiles/medium_production/dataprocess/"
 
 
 list_dirs = os.listdir(dir_input)

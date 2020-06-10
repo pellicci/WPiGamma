@@ -56,6 +56,9 @@ private:
   int nBjets_30;
   int nBjets_25;
   int nBjets_scaled;
+  int nBjets_medium_30;
+  int nBjets_medium_25;
+  int nBjets_medium_scaled;
 
   int _Nevents_processed;
   int _Nevents_muVeto;
@@ -147,6 +150,7 @@ private:
   float _Wmass;
 
   float met_pT;
+  float met_phi;
   float met_pT_scaled;
   float metpuppi_pT;
   
@@ -184,6 +188,8 @@ private:
   bool is_Wminus_in_lep;
   bool is_Mu_signal;
   bool is_Ele_signal;
+  bool is_Mu_signal_fromTau;
+  bool is_Ele_signal_fromTau;
 
   bool is_pi_a_pi;
   bool is_pi_matched;
@@ -250,6 +256,7 @@ private:
   //Effective areas for isolation
   EffectiveAreas   effectiveAreas_el_;
   EffectiveAreas   effectiveAreas_ph_;
-  double Bjets_WP;
+  double Bjets_WP_loose;
+  double Bjets_WP_medium;
 
 };

@@ -98,13 +98,16 @@ WPiGammaAnalysis::WPiGammaAnalysis(const edm::ParameterSet& iConfig) :
 
   //Btag stuff
   if(runningEra_ == 0){
-    Bjets_WP = iConfig.getParameter<double>("Bjets_WP_2016");
+    Bjets_WP_loose  = iConfig.getParameter<double>("Bjets_WP_loose_2016");
+    Bjets_WP_medium = iConfig.getParameter<double>("Bjets_WP_medium_2016");
   }
   else if(runningEra_ == 1){
-    Bjets_WP = iConfig.getParameter<double>("Bjets_WP_2017");
+    Bjets_WP_loose  = iConfig.getParameter<double>("Bjets_WP_loose_2017");
+    Bjets_WP_medium = iConfig.getParameter<double>("Bjets_WP_medium_2017");
   }
   else{
-    Bjets_WP = iConfig.getParameter<double>("Bjets_WP_2018");
+    Bjets_WP_loose  = iConfig.getParameter<double>("Bjets_WP_loose_2018");
+    Bjets_WP_medium = iConfig.getParameter<double>("Bjets_WP_medium_2018");
   }
 
   h2_BTaggingEff_Num_b   = fs->make<TH2D>("h2_BTaggingEff_Num_b", ";p_{T} [GeV];#eta", 75, 25., 1000., 50, -2.5, 2.5);
@@ -321,15 +324,18 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //------------------ Variable initialization ------------------//
   //                                                             //
   //*************************************************************//
-  nMuons          = 0;
-  nElectrons      = 0;
-  nElectronsLoose = 0;
-  nPions          = 0;
-  nPhotons        = 0;
-  njets           = 0;
-  nBjets_30       = 0;
-  nBjets_25       = 0;
-  nBjets_scaled   = 0;
+  nMuons               = 0;
+  nElectrons           = 0;
+  nElectronsLoose      = 0;
+  nPions               = 0;
+  nPhotons             = 0;
+  njets                = 0;
+  nBjets_30            = 0;
+  nBjets_25            = 0;
+  nBjets_scaled        = 0;
+  nBjets_medium_30     = 0;
+  nBjets_medium_25     = 0;
+  nBjets_medium_scaled = 0;
 
   is_pi_a_pi         = false;
   is_pi_matched      = false;
@@ -388,6 +394,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   _Wmass = 0.;
 
   met_pT = 0.;
+  met_phi = 0.;
+  met_pT_scaled = 0.;
 
   is_muon = false;
   is_ele  = false;
@@ -456,7 +464,6 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //----------------------------- MET ---------------------------//
   //                                                             //
   //*************************************************************//
-  met_pT_scaled = 0.;
 
   for(auto met = slimmedMETs->begin(); met != slimmedMETs->end(); ++met){
 
@@ -471,6 +478,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     }
     
     met_pT = met->pt();
+    met_phi = met->phi();
   }
 
   for(auto metpuppi = slimmedMETsPuppi->begin(); metpuppi != slimmedMETsPuppi->end(); ++metpuppi){
@@ -715,15 +723,17 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   //*************************************************************//
 
   //In signal, identify if there's a real mu or ele from W
-  is_Ele_signal       = false;
-  is_Mu_signal        = false;
-  is_Wplus_from_t     = false;
-  is_Wminus_from_tbar = false;
-  is_Wminus_in_lep    = false;
-  is_Wplus_in_lep     = false;
-  is_signal_Wplus     = false;
-  is_signal_Wminus    = false;
-  is_ttbar_lnu        = false;
+  is_Ele_signal         = false;
+  is_Mu_signal          = false;
+  is_Ele_signal_fromTau = false;
+  is_Mu_signal_fromTau  = false;
+  is_Wplus_from_t       = false;
+  is_Wminus_from_tbar   = false;
+  is_Wminus_in_lep      = false;
+  is_Wplus_in_lep       = false;
+  is_signal_Wplus       = false;
+  is_signal_Wminus      = false;
+  is_ttbar_lnu          = false;
   Wplus_pT  = -999.;
   Wminus_pT = -999.;
 
@@ -731,6 +741,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     for(auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){
       if(fabs(gen->pdgId() ) == 11 && fabs(gen->mother()->pdgId()) == 24) is_Ele_signal = true;
       if(fabs(gen->pdgId() ) == 13 && fabs(gen->mother()->pdgId()) == 24) is_Mu_signal = true;
+      if(fabs(gen->pdgId() ) == 11 && fabs(gen->mother()->pdgId()) == 15 && fabs(gen->mother()->mother()->pdgId()) == 24) is_Ele_signal_fromTau = true;
+      if(fabs(gen->pdgId() ) == 13 && fabs(gen->mother()->pdgId()) == 15 && fabs(gen->mother()->mother()->pdgId()) == 24) is_Mu_signal_fromTau = true;
       if(gen->numberOfDaughters() != 2) continue; //Avoid Ws <<decaying>> into another W (especially in Signal)
       if(gen->pdgId() == 24){// && gen->mother()->pdgId() == 6){
         is_Wplus_from_t = true;
@@ -1051,14 +1063,15 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     njets += 1;
     //---------------Fill b-tagging efficiency histograms---------------//
 
-    bool Bjetscore = (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP;
+    bool Bjetscore_loose  = (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP_loose;
+    bool Bjetscore_medium = (jet->bDiscriminator("pfDeepCSVJetTags:probb") + jet->bDiscriminator("pfDeepCSVJetTags:probbb")) >= Bjets_WP_medium;
 
     if(!runningOnData_){
       int hadronFlavour = jet->hadronFlavour();
       
       if(fabs(hadronFlavour) == 5){
         h2_BTaggingEff_Denom_b->Fill(jet->pt(), jet->eta());
-        if(Bjetscore) h2_BTaggingEff_Num_b->Fill(jet->pt(), jet->eta());
+        if(Bjetscore_loose) h2_BTaggingEff_Num_b->Fill(jet->pt(), jet->eta());
       }
 
       jetSF = reader.eval_auto_bounds("central", 
@@ -1074,7 +1087,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
 	//std::cout << "btag_efficiency: " << btag_efficiency << std::endl;
 
-        if(!Bjetscore){//Calculate efficiencies for non b-tagged objects
+        if(!Bjetscore_loose){//Calculate efficiencies for non b-tagged objects
 	  prod_1_minus_eff    *= (1 - btag_efficiency); //Non b-tagged object*(1-efficiency)
 	  prod_1_minus_eff_SF *= (1 - jetSF*btag_efficiency); //Non b-tagged object*(1-SF*efficiency)
 	  //std::cout << "SF untagged: " << jetSF << std::endl;
@@ -1087,7 +1100,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       }
     }
 
-    if(Bjetscore){
+    //First the loose working point of the b-tagger
+    if(Bjetscore_loose){
 
       if(jet->pt() >= 30.){
       	nBjets_30++;
@@ -1117,6 +1131,35 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
         nBjets_scaled++;
       }
     }
+
+    //Now the medium working point of the b-tagger
+    if(Bjetscore_medium){
+
+      if(jet->pt() >= 30.){
+      	nBjets_medium_30++;
+      }
+
+      nBjets_medium_25++;
+
+      //----Scale down jet pT for 2018 HEM16/17 issue----//
+      if(jet->phi() > -1.57 && jet->phi() < 0.87 && jet->eta() > -2.5 && jet->eta() < -1.3){
+        jet_pT_temp = 0.8*jet->pt();
+        if(jet_pT_temp >= 25.){
+          nBjets_medium_scaled++;
+        }
+      }      
+      if(jet->phi() > -1.57 && jet->phi() < 0.87 && jet->eta() > -3.0 && jet->eta() < -2.5){
+        jet_pT_temp = 0.65*jet->pt();
+        if(jet_pT_temp >= 25.){
+          nBjets_medium_scaled++;
+        }
+      }
+      if( (jet->phi() > -1.57 && jet->phi() < 0.87 && (jet->eta() <= -3.0 || jet->eta() >= -1.3)) || jet->phi() <= -1.57 || jet->phi() >= 0.87){
+        nBjets_medium_scaled++;
+      }
+    }
+
+
   }
 
   //if(!is_one_bJet_found) return;
@@ -1192,8 +1235,12 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("nBjets_30",&nBjets_30);
   mytree->Branch("nBjets_25",&nBjets_25);
   mytree->Branch("nBjets_scaled",&nBjets_scaled);
+  mytree->Branch("nBjets_medium_30",&nBjets_medium_30);
+  mytree->Branch("nBjets_medium_25",&nBjets_medium_25);
+  mytree->Branch("nBjets_medium_scaled",&nBjets_medium_scaled);
   mytree->Branch("bJet_outside_eta_bounds",&bJet_outside_eta_bounds);
   mytree->Branch("met_pT",&met_pT);
+  mytree->Branch("met_phi",&met_phi);
   mytree->Branch("met_pT_scaled",&met_pT_scaled);
   mytree->Branch("metpuppi_pT",&metpuppi_pT);
 
@@ -1216,6 +1263,8 @@ void WPiGammaAnalysis::create_trees()
     mytree->Branch("MCT_HeT_ph_phi",&MCT_HeT_ph_phi);
     mytree->Branch("isMuonSignal",&is_Mu_signal);
     mytree->Branch("isEleSignal",&is_Ele_signal);
+    mytree->Branch("isMuonSignal_fromTau",&is_Mu_signal_fromTau);
+    mytree->Branch("isEleSignal_fromTau",&is_Ele_signal_fromTau);
     mytree->Branch("isPionTrue",&is_pi_a_pi);
     mytree->Branch("isPionMatched",&is_pi_matched);
     mytree->Branch("isPhotonTrue",&is_photon_a_photon);

@@ -8,7 +8,7 @@ source = "plots/latest_production/2016_2017_2018/"
 
 source_list = os.listdir(source)
 
-destination = "/afs/cern.ch/user/r/rselvati/www/WPiGamma/InterestingVariables/14_04_2020/2016_2017_2018/"
+destination = "/afs/cern.ch/user/r/rselvati/www/WPiGamma/InterestingVariables/BDT/14_04_2020/2016_2017_2018/"
 
 for files in source_list:
     fullpath = os.path.join(source, files)

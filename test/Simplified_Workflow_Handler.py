@@ -204,11 +204,15 @@ class Simplified_Workflow_Handler:
         # Where the files are
         self.dir_bkg_input  = "rootfiles/latest_production/MC/backgrounds/"
         self.dir_sig_input  = "rootfiles/latest_production/MC/signals/"
+        #self.dir_sig_input  = "rootfiles/13_03_2020/MC/signals/"
         self.dir_data_input = "rootfiles/latest_production/dataprocess/"
 
         self.norm_filename_2016 = "rootfiles/latest_production/MC/normalizations/Normalizations_table_2016.txt"
+        #self.norm_filename_2016 = "rootfiles/13_03_2020/MC/normalizations/Normalizations_table_2016.txt"
         self.norm_filename_2017 = "rootfiles/latest_production/MC/normalizations/Normalizations_table_2017.txt"
+        #self.norm_filename_2017 = "rootfiles/13_03_2020/MC/normalizations/Normalizations_table_2017.txt"
         self.norm_filename_2018 = "rootfiles/latest_production/MC/normalizations/Normalizations_table_2018.txt"
+        #self.norm_filename_2018 = "rootfiles/13_03_2020/MC/normalizations/Normalizations_table_2018.txt"
 
         self.ttbar_sig_calib_file = ROOT.TFile.Open("ttbar_signal_ratio_" + year + ".root")
         self.Pythia_sig_modeling_file = ROOT.TFile.Open("PythiaModeling_" + year + ".root")

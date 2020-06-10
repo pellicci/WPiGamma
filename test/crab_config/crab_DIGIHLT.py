@@ -1,4 +1,4 @@
-from CRABClient.UserUtilities import config, getUsernameFromSiteDB
+from CRABClient.UserUtilities import config
 config = config()
  
 doPlus = False
@@ -52,7 +52,7 @@ if runningEra == 2:
 config.Data.inputDBS = 'phys03'
 config.Data.splitting = 'FileBased'
 config.Data.unitsPerJob = 1
-config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+config.Data.outLFNDirBase = '/store/user/rselvati/'
 config.Data.publication = True
 
 if runningEra == 0:

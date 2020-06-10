@@ -20,9 +20,9 @@ year = args.year_option
 #---------------------------------#
 
 if isData:
-    dir_input = "crab_projects/samples_data_" + year + "_medium/"
+    dir_input = "crab_projects/samples_data_" + year + "/"
 else:
-    dir_input = "crab_projects/samples_MC_" + year + "_PythiaModeling/"
+    dir_input = "crab_projects/samples_MC_" + year + "/"
 
 list_dirs = os.listdir(dir_input)
 
