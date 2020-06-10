@@ -42,7 +42,7 @@ h_nBjet_ratio   = ROOT.TH1F("nBjets_ratio", "nBjets ratio", 6,0,6)
 h_met_mu_ratio  = ROOT.TH1F("met_mu_ratio", "met mu ratio",20,0.,200.)
 h_met_ele_ratio = ROOT.TH1F("met_ele_ratio", "met ele ratio",20,0.,200.)
 
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets","MCT_deltaR_lep_gamma"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets","MCT_deltaR_lep_gamma","h_mu_met_mT","h_ele_met_mT","h_met"]
 
 for hname in list_histos:
     hstack[hname] = ROOT.THStack("hstack_" + hname,"")
@@ -246,6 +246,12 @@ for histo_name in list_histos:
         hstack[histo_name].GetXaxis().SetTitle("#pi_{Iso}/p_{T}^{#pi}")
         hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),45000.))    
 
+    if histo_name == "h_mu_met_mT":
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),14000.))    
+
+    if histo_name == "h_ele_met_mT":
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),8000.))    
+
     if signal_magnify != 1:
         hsignal[histo_name].Scale(signal_magnify)      
 
@@ -370,6 +376,12 @@ for histo_name in list_histos:
 
     if "h_piRelIso" in histo_name:
         totalData.GetXaxis().SetTitle("#pi_{Iso}/p_{T}^{#pi}")
+
+    if histo_name == "h_mu_met_mT":
+        totalData.GetXaxis().SetTitle("m_{T}(#mu,MET) (GeV)")
+
+    if histo_name == "h_ele_met_mT":
+        totalData.GetXaxis().SetTitle("m_{T}(e,MET) (GeV)")
 
     line_on_one = ROOT.TLine(totalData.GetXaxis().GetXmin(),1.,totalData.GetXaxis().GetXmax(),1.)
     line_on_one.SetLineColor(38)

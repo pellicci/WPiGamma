@@ -107,11 +107,11 @@ pT_ele_binning = arr.array('f',[33.,40.,50.,100.,200.,500.])
 ##Get the handlers for all the histos and graphics
 h_base  = dict()
 
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets","MCT_deltaR_lep_gamma","h_BDT_out_mu","h_BDT_out_ele"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets","MCT_deltaR_lep_gamma","h_BDT_out_mu","h_BDT_out_ele","h_mu_met_mT","h_ele_met_mT","h_met"]
 
 h_base[list_histos[0]]  = ROOT.TH1F(list_histos[0], "p_{T} of the muon", 15, 25, 100.)
-#h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 15, 28, 100.)
-h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 5, pT_ele_binning)
+h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 15, 28, 100.)
+#h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 5, pT_ele_binning)
 h_base[list_histos[2]]  = ROOT.TH1F(list_histos[2], "p_{T} of the pion", 15, 20, 100.)
 h_base[list_histos[3]]  = ROOT.TH1F(list_histos[3], "E_{T} of the gamma", 15, 20, 100.)
 h_base[list_histos[4]]  = ROOT.TH1F(list_histos[4], "eta of the muon", 20, -3, 3)
@@ -162,6 +162,9 @@ h_base[list_histos[46]] = ROOT.TH2F(list_histos[46], "nBjets vs njets", 20, -0.5
 h_base[list_histos[47]] = ROOT.TH1F(list_histos[47], "MCT deltaR lep gamma", 20, 0., 2.)
 h_base[list_histos[48]] = ROOT.TH1F(list_histos[48], "BDT out_mu", 40, -0.7, 0.7)
 h_base[list_histos[49]] = ROOT.TH1F(list_histos[49], "BDT out_ele", 40, -0.7, 0.7)
+h_base[list_histos[50]] = ROOT.TH1F(list_histos[50], "mu-met mT", 40, 0., 200.)
+h_base[list_histos[51]] = ROOT.TH1F(list_histos[51], "ele-met mT", 40, 0., 200.)
+h_base[list_histos[52]] = ROOT.TH1F(list_histos[52], "met", 45, 0., 300.)
 
 _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 
@@ -195,9 +198,6 @@ for jentry in xrange(mytree.GetEntriesFast()):
     #-------------------------- Samples to be excluded ------------------------#
     #                                                                          #
     ############################################################################
-
-    #if runningEra == 0 and sample_name == "ttbar" and mytree.isttbarlnu: # Avoid double-counting of the ttbarlnu background
-    #    continue
 
     if mytree.is_muon and sample_name == "QCDDoubleEMEnriched30toInf":
         continue
@@ -257,6 +257,17 @@ for jentry in xrange(mytree.GetEntriesFast()):
 
     lep_FourMomentum = ROOT.TLorentzVector()
     lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
+
+    #met_FourMomentum = ROOT.TLorentzVector()
+    #met_FourMomentum.SetPtEtaPhiE(met,0.,mytree.met_phi,met)
+
+    #lep_met_TransverseMass = (lep_FourMomentum + met_FourMomentum).Mt()
+
+    deltaphi_lep_met = math.fabs(lep_phi - mytree.met_phi)
+    if deltaphi_lep_met > 3.14:
+        deltaphi_lep_met = 6.28 - deltaphi_lep_met
+
+    lep_met_TransverseMass = math.sqrt(2*lep_pT*met*(1. - math.cos(deltaphi_lep_met)))
 
     nBjets_30 = mytree.nBjets_30
     nBjets_25 = mytree.nBjets_25
@@ -321,8 +332,8 @@ for jentry in xrange(mytree.GetEntriesFast()):
         isMuonSignal_fromTau = mytree.isMuonSignal_fromTau
         isEleSignal_fromTau = mytree.isEleSignal_fromTau
 
-        if isMuonSignal_fromTau or isEleSignal_fromTau:
-            continue
+        #if isMuonSignal_fromTau or isEleSignal_fromTau:
+        #    continue
 
     if not isMuon:
         ele_gamma_InvMass = (lep_FourMomentum + gamma_FourMomentum).M()
@@ -433,19 +444,12 @@ for jentry in xrange(mytree.GetEntriesFast()):
     if not "Data" in sample_name:
         MC_Weight   = mytree.MC_Weight # Add MC weight        
         PU_Weight   = mytree.PU_Weight # Add Pile Up weight
-        bTag_Weight = mytree.bTag_Weight # Add b-tagging weight
-        if math.isnan(bTag_Weight) or bTag_Weight == np.inf or bTag_Weight == -np.inf: #FIXME
-            bTag_Weight = 1.
-
-        #if nBjets_25 == 0:
-        #    print "bTag_Weight: ", bTag_Weight
-
-        # if bTag_Weight < 1:
-        #     print "bTag_Weight: ", bTag_Weight
+        # bTag_Weight = mytree.bTag_Weight # Add b-tagging weight
+        # if math.isnan(bTag_Weight) or bTag_Weight == np.inf or bTag_Weight == -np.inf: #FIXME
+        #     bTag_Weight = 1.
         
-        #print "bTag_Weight ancora scazzato: ", bTag_Weight
         Event_Weight = norm_factor*MC_Weight*lep_weight*ph_weight*PU_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
-        #Event_Weight = norm_factor*lep_weight*ph_weight*MC_Weight*PU_Weight*bTag_Weight/math.fabs(MC_Weight) # Just take the sign of the gen weight
+
         if not runningEra == 2: # Prefiring weight NOT to be applied to 2018 MC
             Prefiring_Weight = mytree.Prefiring_Weight # Add prefiring weight 
             Event_Weight *= Prefiring_Weight
@@ -538,6 +542,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
     h_base["h_nBjets_vs_njets"].Fill(mytree.njets,nBjets_25,Event_Weight)
     h_base["h_nBjets_scaled"].Fill(nBjets_scaled,Event_Weight)
     h_base["h_met_puppi"].Fill(met_puppi,Event_Weight)
+    h_base["h_met"].Fill(met,Event_Weight)
     h_base["h_pipt"].Fill(pi_pT,Event_Weight)
     h_base["h_pieta"].Fill(pi_eta,Event_Weight)
     h_base["h_gammaet"].Fill(gamma_eT,Event_Weight)
@@ -569,6 +574,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_base["h_deltaphi_mu_pi"].Fill(deltaphi_lep_pi,Event_Weight)
         h_base["h_deltaphi_mu_gamma"].Fill(deltaphi_lep_gamma,Event_Weight)
         h_base["h_deltaR_mu_pi"].Fill(deltaR_lep_pi,Event_Weight)
+        h_base["h_mu_met_mT"].Fill(lep_met_TransverseMass,Event_Weight)
         #if "WJetsToLNu" in sample_name:
         h_base["h_deltaR_mu_gamma"].Fill(deltaR_lep_gamma,Event_Weight)
 
@@ -594,6 +600,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_base["h_deltaphi_ele_gamma"].Fill(deltaphi_lep_gamma,Event_Weight)
         h_base["h_deltaphi_ele_W"].Fill(deltaphi_lep_W,Event_Weight)
         h_base["h_deltaR_ele_pi"].Fill(deltaR_lep_pi,Event_Weight)
+        h_base["h_ele_met_mT"].Fill(lep_met_TransverseMass,Event_Weight)
         #if "WJetsToLNu" in sample_name:
         h_base["h_deltaR_ele_gamma"].Fill(deltaR_lep_gamma,Event_Weight)
 
