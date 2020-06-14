@@ -1,6 +1,6 @@
-from ROOT import TFile, TH1F, TCanvas
+from ROOT import TFile, TH1F, TCanvas, gStyle, TLegend
 
-test_different_years = True
+test_different_years = False
 
 if test_different_years:
 
@@ -61,15 +61,48 @@ if test_different_years:
     print "2016 with 2018: ", h_signal_2016.Chi2Test(h_signal_2018,"WW")
     print "2017 with 2018: ", h_signal_2017.Chi2Test(h_signal_2018,"WW")
 
-    canvas_2016 = TCanvas()
-    canvas_2016.cd()
+    # canvas_2016 = TCanvas()
+    # canvas_2016.cd()
+    # h_signal_2016.Draw()
+    # canvas_2017 = TCanvas()
+    # canvas_2017.cd()
+    # h_signal_2017.Draw()
+    # canvas_2018 = TCanvas()
+    # canvas_2018.cd()
+    # h_signal_2018.Draw()
+
+    gStyle.SetOptStat(0)
+    canvas_years = TCanvas()
+    legend_years = TLegend(0.15,0.7,0.3,0.95)
+    legend_years.SetHeader(" ")
+    legend_years.SetFillColor(0)
+    legend_years.SetBorderSize(0)
+    legend_years.SetLineColor(1)
+    legend_years.SetLineStyle(1)
+    legend_years.SetLineWidth(1)
+    legend_years.SetFillStyle(0)
+    legend_years.SetTextSize(0.03)
+    legend_years.AddEntry(h_signal_2016,"2016","lep")
+    legend_years.AddEntry(h_signal_2017,"2017","lep")
+    legend_years.AddEntry(h_signal_2018,"2018","lep")
+
+    scaling_factor_2016_2018 = (h_signal_2018.Integral())/(h_signal_2016.Integral())
+    scaling_factor_2017_2018 = (h_signal_2018.Integral())/(h_signal_2017.Integral())
+    h_signal_2016.Scale(scaling_factor_2016_2018)
+    h_signal_2016.SetMarkerStyle(20)
+    h_signal_2016.SetMarkerColor(3)
+    h_signal_2017.Scale(scaling_factor_2017_2018)
+    h_signal_2017.SetMarkerStyle(20)
+    h_signal_2017.SetMarkerColor(2)
+    h_signal_2018.SetMarkerStyle(20)
+    h_signal_2018.SetMarkerColor(1)
+    h_signal_2016.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
+    h_signal_2016.GetYaxis().SetTitle("Events")
     h_signal_2016.Draw()
-    canvas_2017 = TCanvas()
-    canvas_2017.cd()
-    h_signal_2017.Draw()
-    canvas_2018 = TCanvas()
-    canvas_2018.cd()
-    h_signal_2018.Draw()
+    h_signal_2017.Draw("SAME")
+    h_signal_2018.Draw("SAME")
+    legend_years.Draw("SAME")
+    canvas_years.SaveAs("plots/comparison_signal_different_years.pdf")
 
 
 else:
@@ -99,11 +132,38 @@ else:
     #Chi2 test
     print h_signal_mu.Chi2Test(h_signal_ele,"WW")
 
-    canvas_mu = TCanvas()
-    canvas_mu.cd()
+    # canvas_mu = TCanvas()
+    # canvas_mu.cd()
+    # h_signal_mu.Draw()
+    # canvas_ele = TCanvas()
+    # canvas_ele.cd()
+    # h_signal_ele.Draw()
+    
+    gStyle.SetOptStat(0)
+    canvas_mu_ele = TCanvas()
+    legend_mu_ele = TLegend(0.15,0.7,0.3,0.95)
+    legend_mu_ele.SetHeader(" ")
+    legend_mu_ele.SetFillColor(0)
+    legend_mu_ele.SetBorderSize(0)
+    legend_mu_ele.SetLineColor(1)
+    legend_mu_ele.SetLineStyle(1)
+    legend_mu_ele.SetLineWidth(1)
+    legend_mu_ele.SetFillStyle(0)
+    legend_mu_ele.SetTextSize(0.03)
+    legend_mu_ele.AddEntry(h_signal_mu,"Muon channel","lep")
+    legend_mu_ele.AddEntry(h_signal_ele,"Electron channel","lep")
+
+    scaling_factor = (h_signal_ele.Integral())/(h_signal_mu.Integral())
+    h_signal_mu.Scale(scaling_factor)
+    h_signal_mu.SetMarkerStyle(20)
+    h_signal_mu.SetMarkerColor(2)
+    h_signal_ele.SetMarkerStyle(20)
+    h_signal_ele.SetMarkerColor(4)
+    h_signal_mu.GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
+    h_signal_mu.GetYaxis().SetTitle("Events")
     h_signal_mu.Draw()
-    canvas_ele = TCanvas()
-    canvas_ele.cd()
-    h_signal_ele.Draw()
+    h_signal_ele.Draw("SAME")
+    legend_mu_ele.Draw("SAME")
+    canvas_mu_ele.SaveAs("plots/comparison_signal_different_channels.pdf")
 
 raw_input()

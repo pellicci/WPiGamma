@@ -11,10 +11,10 @@ ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 #                                                              #
 ################################################################
 selectSigShift = 0 #Zero is the nominal case: signal parameters fixed to their central values from fit on MC signal. Numbers from 1 to 4 are plus/minus 1sigma
-suppressSigSystematic = False
+suppressSigSystematic = True
 
 selectBkgFunction = 0 # 0: use Chebychev for ALL the bkg PDFs. 1: use alternative PDF for muon channel. 2: use alternative PDF for electron channel
-suppressBkgSystematic = False # To be used when trying to fit with alternative bkg description, in order to estimate a systematic.If True, it will allow W_pigamma_BR to float negative. 
+suppressBkgSystematic = True # To be used when trying to fit with alternative bkg description, in order to estimate a systematic.If True, it will allow W_pigamma_BR to float negative. 
 #Moreover, it will use Signal+Background in the totPDF, so that the fit to the restricted CRs will contain also the POI BR, which will be used to calculate the pull and hence to estimate the systematic
 
 suppressAllSystematics = False
@@ -27,8 +27,8 @@ suppressAllSystematics = False
 ################################################################
 
 Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV/c^{2}")
-Wmass.setRange("LowSideband",55.,65.)
-Wmass.setRange("HighSideband",90.,95.)
+Wmass.setRange("LowSideband",50.,65.)
+Wmass.setRange("HighSideband",90.,100.)
 
 ################################################################
 #                                                              #
@@ -149,8 +149,8 @@ elif selectBkgFunction == 1: #Use Exponential (estimate systematic on background
 ################################################################
 #CMS ttbar measurement/W->lnu BR (it is measured with both W in lnu), in pb
 #http://cms-results.web.cern.ch/cms-results/public-results/publications/TOP-16-005/index.html
-W_xsec_nominal = 2.*2.*815.*0.1086 #The two factors 2 account for the possible charge signs of the Ws and for the two leptonic decay channels of the tag W
-W_xsec_syst    = (43.*2.*2.*0.1086)/W_xsec_nominal
+W_xsec_nominal = (2.+0.3521)*2.*815.*0.1086 #The two factors 2 account for the possible charge signs of the Ws and for the two leptonic decay channels of the tag W. The +0.3521 accounts for the leptonic tau decays
+W_xsec_syst    = (43.*2.*(2.+0.3521)*0.1086)/W_xsec_nominal
 
 ################################################################
 #                                                              #
@@ -174,38 +174,38 @@ lumi_syst    = (lumi_syst_2016*lumi_2016 + lumi_syst_2017*lumi_2017 + lumi_syst_
 #                                                              #
 ################################################################
 
-totsig_2016 = 100000. #total number of signal events in 2016
-totmu_2016 = 6046.
-totel_2016 = 3686.
+totsig_2016 = 80000. #total number of signal events in 2016
+totmu_2016 = 3851.
+totel_2016 = 2193.
 tot_2016  = totmu_2016 + totel_2016
 
-totsig_2017 = 80000.  #total number of signal events in 2017
-totmu_2017 = 4310.
-totel_2017 = 2934.
+totsig_2017 = 79985.  #total number of signal events in 2017
+totmu_2017 = 3587.
+totel_2017 = 2234.
 tot_2017  = totmu_2017 + totel_2017
 
-totsig_2018 = 79820.  #total number of signal events in 2018
-totmu_2018 = 4373.
-totel_2018 = 2815.
+totsig_2018 = 79905.  #total number of signal events in 2018
+totmu_2018 = 3719.
+totel_2018 = 2170.
 tot_2018  = totmu_2018 + totel_2018
 
-eff_nominal_2016 = tot_2016*2./totsig_2016
-binom_eff_2016   = (4*tot_2016*(totsig_2016-2*tot_2016)/(totsig_2016*totsig_2016*totsig_2016))*(4*tot_2016*(totsig_2016-2*tot_2016)/(totsig_2016*totsig_2016*totsig_2016))/(eff_nominal_2016*eff_nominal_2016) #It will be summed in quadrature to the BDT systematic
-BDT_syst_2016    = ((0.01*totmu_2016 + 0.01 * totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
+eff_nominal_2016 = tot_2016/totsig_2016
+binom_eff_2016 = ((1 - eff_nominal_2016)/totsig_2016)**2 #It will be summed in quadrature to the binomial uncertainty 
+BDT_syst_2016    = ((0.02*totmu_2016 + 0.03*totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_pT_2016 = ((0.02*totmu_2016 + 0.02*totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_angle_2016 = ((0.05*totmu_2016 + 0.05*totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
 eff_syst_2016    = math.sqrt(binom_eff_2016+BDT_syst_2016+Pythia_syst_pT_2016+Pythia_syst_angle_2016)
 
-eff_nominal_2017 = tot_2017*2./totsig_2017
-binom_eff_2017   = (4*tot_2017*(totsig_2017-2*tot_2017)/(totsig_2017*totsig_2017*totsig_2017))*(4*tot_2017*(totsig_2017-2*tot_2017)/(totsig_2017*totsig_2017*totsig_2017))/(eff_nominal_2017*eff_nominal_2017) #It will be summed in quadrature to the BDT systematic
-BDT_syst_2017    = ((0.01*totmu_2017 + 0.01 * totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
+eff_nominal_2017 = tot_2017/totsig_2017
+binom_eff_2017 = ((1 - eff_nominal_2017)/totsig_2017)**2 #It will be summed in quadrature to the binomial uncertainty 
+BDT_syst_2017    = ((0.02*totmu_2017 + 0.03*totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_pT_2017 = ((0.02*totmu_2017 + 0.02*totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_angle_2017 = ((0.05*totmu_2017 + 0.05*totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
 eff_syst_2017    = math.sqrt(binom_eff_2017+BDT_syst_2017+Pythia_syst_pT_2017+Pythia_syst_angle_2017)
 
-eff_nominal_2018 = tot_2018*2./totsig_2018
-binom_eff_2018   = (4*tot_2018*(totsig_2018-2*tot_2018)/(totsig_2018*totsig_2018*totsig_2018))*(4*tot_2018*(totsig_2018-2*tot_2018)/(totsig_2018*totsig_2018*totsig_2018))/(eff_nominal_2018*eff_nominal_2018) #It will be summed in quadrature to the BDT systematic
-BDT_syst_2018    = ((0.01*totmu_2018 + 0.01 * totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
+eff_nominal_2018 = tot_2018/totsig_2018
+binom_eff_2018 = ((1 - eff_nominal_2018)/totsig_2018)**2 #It will be summed in quadrature to the binomial uncertainty 
+BDT_syst_2018    = ((0.02*totmu_2018 + 0.03*totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_pT_2018 = ((0.02*totmu_2018 + 0.02*totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
 Pythia_syst_angle_2018 = ((0.05*totmu_2018 + 0.05*totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
 eff_syst_2018    = math.sqrt(binom_eff_2018+BDT_syst_2018+Pythia_syst_pT_2018+Pythia_syst_angle_2018)
@@ -330,7 +330,8 @@ fOutput.Close()
 #                                                              #
 ################################################################
 
-xframe = Wmass.frame(55.,95.,15)
+#xframe = Wmass.frame(55.,95.,15)
+xframe = Wmass.frame(50.,100.,10)
 xframe.SetTitle(" ")
 xframe.SetTitleOffset(1.4,"y")
 

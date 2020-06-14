@@ -55,7 +55,7 @@ data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorizatio
 #Check the number of events contained in the signal regions before reducing the dataset
 print "number of events mu - SR: ", data_initial.sumEntries("Categorization==1")
 print "number of events ele - SR: ", data_initial.sumEntries("Categorization==3")
-data = data_initial.reduce("(BDT_out > 0.216 && Categorization==Categorization::MuonCR) || (BDT_out > 0.212 && Categorization==Categorization::ElectronCR)")
+data = data_initial.reduce("(BDT_out > 0.206 && Categorization==Categorization::MuonCR) || (BDT_out > 0.209 && Categorization==Categorization::ElectronCR)")
 print "number of events mu - CR: ", data.sumEntries("Categorization==0")
 print "number of events ele - CR: ", data.sumEntries("Categorization==2")
 
@@ -98,7 +98,7 @@ result_dataFit = backPDF.fitTo(data,ROOT.RooFit.Extended(0), ROOT.RooFit.NumCPU(
 #Either I do this, or I use a fraction frac*Nbkg+(1-frac)*Nsig, which will become a parameter of the fit and will have a Gaussian behavior (whilst the extended fit preserves the natural Poisson behavior)
 
 print "minNll = ", result_dataFit.minNll()
-print "2Delta_minNll = ", 2*(3420.95752167-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
+print "2Delta_minNll = ", 2*(4106.73001635-result_dataFit.minNll()) # If 2*(NLL(N)-NLL(N+1)) > 3.85 -> N+1 is significant improvement
 
 ################################################################
 #                                                              #
@@ -106,7 +106,7 @@ print "2Delta_minNll = ", 2*(3420.95752167-result_dataFit.minNll()) # If 2*(NLL(
 #                                                              #
 ################################################################
 
-xframe = Wmass.frame(55.,95.,15)
+xframe = Wmass.frame(50.,100.,10)
 xframe.SetTitle(" ")
 xframe.SetTitleOffset(1.4,"y")
 xframe.SetMaximum(60)

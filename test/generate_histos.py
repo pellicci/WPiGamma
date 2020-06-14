@@ -49,8 +49,8 @@ if runningEra == 2:
     luminosity_norm = 59.69
 
 #############---------------- BDT score cut values ----------------#############
-BDT_OUT_MU  = 0.285
-BDT_OUT_ELE = 0.277
+BDT_OUT_MU  = 0.281
+BDT_OUT_ELE = 0.269
 # BDT_OUT_MU  = 0.281 #Wmass
 # BDT_OUT_ELE = 0.269 #Wmass
 
@@ -259,13 +259,13 @@ for jentry in xrange(mytree.GetEntriesFast()):
     lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
 
     #met_FourMomentum = ROOT.TLorentzVector()
-    #met_FourMomentum.SetPtEtaPhiE(met,0.,mytree.met_phi,met)
+    #met_FourMomentum.SetPtEtaPhiE(met_puppi,0.,mytree.metpuppi_phi,met_puppi)
 
     #lep_met_TransverseMass = (lep_FourMomentum + met_FourMomentum).Mt()
 
     deltaphi_lep_met = math.fabs(lep_phi - mytree.met_phi)
     if deltaphi_lep_met > 3.14:
-        deltaphi_lep_met = 6.28 - deltaphi_lep_met
+       deltaphi_lep_met = 6.28 - deltaphi_lep_met
 
     lep_met_TransverseMass = math.sqrt(2*lep_pT*met*(1. - math.cos(deltaphi_lep_met)))
 
@@ -462,7 +462,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
             if isSingleEleTrigger_32_DoubleEG and not isSingleMuTrigger_27 and not isSingleMuTrigger_50:
                 Event_Weight *= 0.991 #uniform penalty for all the 2017 eras
 
-        ################ Correct for the difference in pT of the generated W in Pythia and Madgraph samples ################
+        ################ Correct for the difference in pT of the generated W in Pythia and PowHeg samples ################
 
         if sample_name == "Signal":
             if is_signal_Wplus:
@@ -618,6 +618,49 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_angle_Pi_W.Fill(math.cos(angle_Pi_W))
         h_angle_Pi_Ph.Fill(angle_Pi_Ph)
 
+
+    ############################################################################
+    #                                                                          #
+    #------------------- Fill Signal-ttbar comparison histos ------------------#
+    #                                                                          #
+    ############################################################################
+    ########----------- To be filled in "preselection" mode! -----------########
+#     if sample_name == "Signal":
+#         if is_signal_Wplus:
+#             local_pT = Wplus_pT
+#         else:
+#             local_pT = Wminus_pT
+
+#         if local_pT > 300.:
+#             W_signal_hist.Fill(300.,Event_Weight)
+#         else:
+#             W_signal_hist.Fill(local_pT,Event_Weight)
+
+
+#     if sample_name == "ttbarToSemiLeptonic":
+#         if Wplus_pT > 300.:
+#             W_ttbar_hist.Fill(300.,Event_Weight)
+#         else:
+#             W_ttbar_hist.Fill(Wplus_pT,Event_Weight)
+
+#         if Wminus_pT > 300.:
+#             W_ttbar_hist.Fill(300.,Event_Weight)
+#         else:
+#             W_ttbar_hist.Fill(Wminus_pT,Event_Weight)
+
+# if sample_name == "Signal":
+#     fOut_signal = ROOT.TFile("signal_pT.root","RECREATE")
+#     fOut_signal.cd()
+#     W_signal_hist.Write()
+#     fOut_signal.Close()
+
+# if sample_name == "ttbarToSemiLeptonic":
+#     fOut_ttbar = ROOT.TFile("ttbar_pT.root","RECREATE")
+#     fOut_ttbar.cd()
+#     W_ttbar_hist.Write()
+#     fOut_ttbar.Close()
+
+
     ############################################################################                                                 
     #                                                                          #                                                 
     #------------------- Fill Pythia Signal Modeling histos -------------------#                                                 
@@ -667,6 +710,7 @@ ROOT.gStyle.SetOptStat(0)
 # ROOT.gStyle.SetOptStat(0)
 # canvas1 = ROOT.TCanvas()
 # h_genW_pT.Draw("hist")
+# h_genW_pT.GetXaxis().SetTitle("p_{T}^{W} (GeV)")
 # h_genW_pT_up.SetLineColor(2)
 # h_genW_pT_down.SetLineColor(3)
 # h_genW_pT_up.Draw("SAME,hist")
@@ -686,7 +730,7 @@ ROOT.gStyle.SetOptStat(0)
 # leg.AddEntry(h_genW_pT_down,"gen W down","l")
 # leg.Draw("SAME")
 
-# canvas1.SaveAs("plots/latest_production/2016/h_genW_pT.pdf")
+# canvas1.SaveAs("plots/latest_production/2018/h_genW_pT.pdf")
 
 # h_genW_pT.Scale(1./h_genW_pT.Integral())
 # h_genW_pT_up.Scale(1./h_genW_pT_up.Integral())
@@ -697,58 +741,17 @@ ROOT.gStyle.SetOptStat(0)
 # h_genW_pT_down_over_nominal.Divide(h_genW_pT)
 # canvas2 = ROOT.TCanvas()
 # h_genW_pT_up_over_nominal.Draw()
-# canvas2.SaveAs("plots/latest_production/2016/h_genW_pT_up_over_nominal.pdf")
+# canvas2.SaveAs("plots/latest_production/2018/h_genW_pT_up_over_nominal.pdf")
 # canvas3 = ROOT.TCanvas()
 # h_genW_pT_down_over_nominal.Draw()
-# canvas3.SaveAs("plots/latest_production/2016/h_genW_pT_down_over_nominal.pdf")
-# fOutPythia = ROOT.TFile("PythiaModeling_2016.root","RECREATE")
+# canvas3.SaveAs("plots/latest_production/2018/h_genW_pT_down_over_nominal.pdf")
+# fOutPythia = ROOT.TFile("Pythia_pT_modeling_2018.root","RECREATE")
 # fOutPythia.cd()
 # h_genW_pT_up_over_nominal.Write()
 # h_genW_pT_down_over_nominal.Write()
 # fOutPythia.Close()
 
     #########    #########    #########    #########    #########    #########    #########
-
-    ############################################################################
-    #                                                                          #
-    #------------------- Fill Signal-ttbar comparison histos ------------------#
-    #                                                                          #
-    ############################################################################
-    ########----------- To be filled in "preselection" mode! -----------########
-#     if sample_name == "Signal":
-#         if is_signal_Wplus:
-#             local_pT = Wplus_pT
-#         else:
-#             local_pT = Wminus_pT
-
-#         if local_pT > 300.:
-#             W_signal_hist.Fill(300.,Event_Weight)
-#         else:
-#             W_signal_hist.Fill(local_pT,Event_Weight)
-
-
-#     if sample_name == "ttbarToSemiLeptonic":
-#         if Wplus_pT > 300.:
-#             W_ttbar_hist.Fill(300.,Event_Weight)
-#         else:
-#             W_ttbar_hist.Fill(Wplus_pT,Event_Weight)
-
-#         if Wminus_pT > 300.:
-#             W_ttbar_hist.Fill(300.,Event_Weight)
-#         else:
-#             W_ttbar_hist.Fill(Wminus_pT,Event_Weight)
-
-# if sample_name == "Signal":
-#     fOut_signal = ROOT.TFile("signal_pT.root","RECREATE")
-#     fOut_signal.cd()
-#     W_signal_hist.Write()
-#     fOut_signal.Close()
-
-# if sample_name == "ttbarToSemiLeptonic":
-#     fOut_ttbar = ROOT.TFile("ttbar_pT.root","RECREATE")
-#     fOut_ttbar.cd()
-#     W_ttbar_hist.Write()
-#     fOut_ttbar.Close()
 
 fOut = ROOT.TFile(output_filename,"RECREATE")
 fOut.cd()

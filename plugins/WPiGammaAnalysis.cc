@@ -396,6 +396,8 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   met_pT = 0.;
   met_phi = 0.;
   met_pT_scaled = 0.;
+  metpuppi_pT = 0.;
+  metpuppi_phi = 0.;
 
   is_muon = false;
   is_ele  = false;
@@ -483,6 +485,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
   for(auto metpuppi = slimmedMETsPuppi->begin(); metpuppi != slimmedMETsPuppi->end(); ++metpuppi){
     metpuppi_pT = metpuppi->pt();
+    metpuppi_phi = metpuppi->phi();
   }
 
   //*************************************************************//
@@ -1243,6 +1246,7 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("met_phi",&met_phi);
   mytree->Branch("met_pT_scaled",&met_pT_scaled);
   mytree->Branch("metpuppi_pT",&metpuppi_pT);
+  mytree->Branch("metpuppi_phi",&metpuppi_phi);
 
   //Save MC info
   if(!runningOnData_){

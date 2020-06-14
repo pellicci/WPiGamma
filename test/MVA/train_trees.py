@@ -5,7 +5,6 @@ import argparse
 #---------------------------------#
 p = argparse.ArgumentParser(description='Select whether the MVA will be performed on the muon or the electron sample')
 p.add_argument('isMuon_option', help='Type <<muon>> or <<electron>>')
-#p.add_argument('year_option', help='Type <<2016>> or <<2017>> or <<2018>>')
 args = p.parse_args()
 
 # Switch from muon to electron channel
@@ -14,10 +13,9 @@ if args.isMuon_option == "muon":
 if args.isMuon_option == "electron":
     isMuon = False
 
-# year = args.year_option
-
+#Training options
 evaluate_BDT_systematic     = False  # Train on shifted variables, test on nominal case
-test_on_signal_shifted_up   = False
+test_on_signal_shifted_up   = True
 test_on_signal_shifted_down = False
 test_on_signal_sin2         = False
 test_on_signal_cos          = False
@@ -222,8 +220,8 @@ elif test_on_signal_shifted_down:
     weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_Pythia_down.xml"
     weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_Pythia_down.xml"
 elif test_on_signal_sin2:
-    weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_sin2_Top_Pi.xml"
-    weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_sin2_Top_Pi.xml"
+    weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_sin2.xml"
+    weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_sin2.xml"
 elif test_on_signal_cos:
     weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_cos.xml"
     weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_cos.xml"

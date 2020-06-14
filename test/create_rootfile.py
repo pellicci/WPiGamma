@@ -31,25 +31,9 @@ scale_signal_up = False # If true, scales the MC signal weight up (Pythia modeli
 scale_signal_down = False # If true, scales the MC signal weight down (Pythia modeling) 
 scale_signal_sin2 = False
 scale_signal_cos = False
-only_signal_relevant_weights = True
+only_signal_relevant_weights = False
 
 myWF = Simplified_Workflow_Handler("Signal","Data",create_mass_tree,isBDT_with_Wmass,runningEra)
-
-#------------------------------------------------------------------------#
-
-##Global constants
-MU_MIN_PT = 27.
-ELE_MIN_PT = 29.
-PI_MIN_PT = 50.
-GAMMA_MIN_ET = 60.
-N_BJETS_MIN = 2.
-WMASS_MIN = 50.
-WMASS_MAX  = 100.
-DELTAPHI_MU_PI_MIN = 0.
-DELTAPHI_ELE_PI_MIN = 0.
-ELE_ISO_MAX = 0.35
-ELE_GAMMA_INVMASS_MIN = 90.4
-ELE_GAMMA_INVMASS_MAX = 91.6
 
 ############################################################################
 #                                                                          #
@@ -61,8 +45,8 @@ luminosity_norm_list = [35.86,41.529,59.69] #2016,2017,2018
 
 #############---------------- BDT score cut values ----------------#############
 
-BDT_OUT_MU  = 0.285
-BDT_OUT_ELE = 0.277
+BDT_OUT_MU  = 0.281
+BDT_OUT_ELE = 0.269
 
 ############################################################################
 #                                                                          #
@@ -108,16 +92,6 @@ _met_puppi          = np.zeros(1, dtype=float)
 _Wmass              = np.zeros(1, dtype=float)
 
 _Nrandom_for_BDT_systematic = ROOT.TRandom3(24593)
-
-Wmass_mu   = ROOT.TH1F("Wmass_mu","Wmass mu",15,50,100)
-Wmass_ele  = ROOT.TH1F("Wmass_ele","Wmass ele",15,50,100)
-lep_pt_mu  = ROOT.TH1F("lep_pt_mu","lep pt mu",15,25,100)
-lep_pt_ele = ROOT.TH1F("lep_pt_ele","lep pt ele",15,28,100)
-
-Wmass_mu_WJets  = ROOT.TH1F("Wmass_mu_WJets","Wmass mu WJets",15,50,100)
-Wmass_ele_WJets = ROOT.TH1F("Wmass_ele_WJets","Wmass ele WJets",15,50,100)
-
-N_WGToLNuG_mu = 0.
 
 nSig_mu  = 0.
 nBkg_mu  = 0.
@@ -272,32 +246,6 @@ if isData:
         tMVA_background_ele_DATA.Branch('MET_puppi',_met_puppi,'MET_puppi/D')
         tMVA_background_ele_DATA.Branch('Wmass',_Wmass,'Wmass/D')
 
-
-def select_all_but_one(cutstring):
-
-    selection_bools = dict()
-    if isMuon:
-        selection_bools["mupt"]                = lep_pT >= MU_MIN_PT
-        selection_bools["deltaphi_mu_pi"]      = deltaphi_lep_pi >= DELTAPHI_MU_PI_MIN
-    if not isMuon:
-        selection_bools["elept"]               = lep_pT >= ELE_MIN_PT
-        selection_bools["deltaphi_ele_pi"]     = deltaphi_lep_pi >= DELTAPHI_ELE_PI_MIN
-        selection_bools["h_ele_iso"]           = lep_iso <= ELE_ISO_MAX
-        selection_bools["h_ele_gamma_InvMass"] = (ele_gamma_InvMass < ELE_GAMMA_INVMASS_MIN or ele_gamma_InvMass > ELE_GAMMA_INVMASS_MAX)
-    selection_bools["pipt"]                    = pi_pT >= PI_MIN_PT
-    selection_bools["gammaet"]                 = gamma_eT >= GAMMA_MIN_ET
-    selection_bools["nBjets"]                  = nBjets_25 >= N_BJETS_MIN
-    selection_bools["Wmass"]                   = (Wmass >= WMASS_MIN and Wmass <= WMASS_MAX)
-    result = True
-
-    for hname in selection_bools:
-        if cutstring == hname:
-            continue
-        else:
-            result = result and selection_bools[hname]
-
-    return result
-
 ## ttbar-signal calibration ##
 ttbar_sig_calib = myWF.get_ttbar_signal_reweight()
 
@@ -374,7 +322,7 @@ for full_sample_name in samplename_list:
 
         entry_index += 1.
         
-        #if entry_index <= sample_entries/2.:
+        #if entry_index > sample_entries/2.:
         #    continue
 
         # Print entry_index
@@ -528,7 +476,6 @@ for full_sample_name in samplename_list:
         if myWF.post_preselection_cuts(lep_eta,lep_pT,ele_etaSC,gamma_etaSC,isMuon,deltaphi_lep_pi,deltaphi_lep_gamma,isTriggerMatched,sample_era):
             continue
 
-
         ############################################################################
         #                                                                          #
         #--------------------- Determine the total event weight -------------------#
@@ -598,8 +545,8 @@ for full_sample_name in samplename_list:
 
                 ################ Create up- and down-scalded event weights for Pythia signal modeling ################
 
-                Event_Weight_up   = Event_Weight*myWF.get_Pythia_sig_modeling_reweight(True,genW_pT)
-                Event_Weight_down = Event_Weight*myWF.get_Pythia_sig_modeling_reweight(False,genW_pT)
+                Event_Weight_up   = Event_Weight*myWF.get_Pythia_pT_modeling_reweight(True,genW_pT)
+                Event_Weight_down = Event_Weight*myWF.get_Pythia_pT_modeling_reweight(False,genW_pT)
                 Event_Weight_sin2 = Event_Weight*myWF.get_Pythia_polarization_modeling_reweight(True,angle_Pi_W)
                 Event_Weight_cos  = Event_Weight*myWF.get_Pythia_polarization_modeling_reweight(False,angle_Pi_W)
 
@@ -610,15 +557,11 @@ for full_sample_name in samplename_list:
             if not "Signal" in sample_name and isMuon:
                 nBkg_mu += Event_Weight
                 nBkg_processed_mu  += 1.
-                # if "WJetsToLNu" in sample_name:
-                #     Wmass_mu_WJets.Fill(Wmass,Event_Weight)
             if "Signal" in sample_name and not isMuon:
                 nSig_ele += Event_Weight
             if not "Signal" in sample_name and not isMuon:
                 nBkg_ele += Event_Weight
                 nBkg_processed_ele  += 1.
-                # if "WJetsToLNu" in sample_name:
-                #     Wmass_ele_WJets.Fill(Wmass,Event_Weight)
 
         else:
             Event_Weight = 1.
@@ -642,7 +585,6 @@ for full_sample_name in samplename_list:
         if create_mass_tree:
             BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)
 
-
         #---------- Fill the tree ----------#
 
         if create_mass_tree:
@@ -665,8 +607,6 @@ for full_sample_name in samplename_list:
                 if isMuon and BDT_out >= BDT_OUT_MU:
                     _Categorization_fit[0] = 1 # Signal Region muon channel = 1
                     if not sample_name=="Signal":
-                        Wmass_mu.Fill(Wmass,Event_Weight)
-                        #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]
                         if not Wmass == _Wmass_fit[0]:
                             print "WARNING!!! mu channel"
 
@@ -675,8 +615,6 @@ for full_sample_name in samplename_list:
                 if not isMuon and BDT_out >= BDT_OUT_ELE:
                     _Categorization_fit[0] = 3 # Signal Region electron channel = 3
                     if not sample_name=="Signal":
-                        Wmass_ele.Fill(Wmass,Event_Weight)
-                        #print "Wmass: ", Wmass, "  Wmass_fit[0]", _Wmass_fit[0]
                         if not Wmass == _Wmass_fit[0]:
                             print "WARNING!!! ele channel"
 
@@ -704,12 +642,12 @@ for full_sample_name in samplename_list:
                 _gamma_eT[0]           = gamma_eT
                 _pi_pT[0]              = pi_pT
                 _lep_pT[0]             = lep_pT
-                _lep_iso[0]            = lep_iso
+                #_lep_iso[0]            = lep_iso
                 _nBjets_25[0]          = nBjets_25
-                _deltaphi_lep_pi[0]    = deltaphi_lep_pi
-                _deltaphi_lep_gamma[0] = deltaphi_lep_gamma
+                #_deltaphi_lep_pi[0]    = deltaphi_lep_pi
+                #_deltaphi_lep_gamma[0] = deltaphi_lep_gamma
                 _isMuon[0]             = isMuon
-                _piRelIso_05[0]        = piRelIso_05
+                #_piRelIso_05[0]        = piRelIso_05
                 _piRelIso_05_ch[0]     = piRelIso_05_ch
                 _pi_dxy[0]             = pi_dxy
                 _met[0]                = met
@@ -739,32 +677,21 @@ for full_sample_name in samplename_list:
                 # else:
                 #     _nBjets_25[0]          = nBjets_25+1
                 
-                if sample_name == "Signal" and isMuon and split_MC and entry_index <= SignalTree_entries/2:
-                    tMVA_signal_mu_training.Fill()
-                if sample_name == "Signal" and (not isMuon) and split_MC and entry_index <= SignalTree_entries/2:
-                    tMVA_signal_ele_training.Fill()
-                if sample_name == "Signal" and isMuon and split_MC and entry_index > SignalTree_entries/2:
-                    tMVA_signal_mu_test.Fill()
-                if sample_name == "Signal" and (not isMuon) and split_MC and entry_index > SignalTree_entries/2:
-                    tMVA_signal_ele_test.Fill()
                 if sample_name == "Signal" and isMuon and (not split_MC):
                     tMVA_signal_mu.Fill()
                 if sample_name == "Signal" and (not isMuon) and (not split_MC):
                     tMVA_signal_ele.Fill()
                 if (not sample_name == "Signal") and isMuon:
-                    lep_pt_mu.Fill(lep_pT,Event_Weight)
                     tMVA_background_mu.Fill()
                 if (not sample_name == "Signal") and (not isMuon):
-                    lep_pt_ele.Fill(lep_pT,Event_Weight)
                     tMVA_background_ele.Fill()
 
-            if isData:# and (Wmass < 65. or Wmass > 90.):
+            if isData:
 
                 _gamma_eT[0]        = gamma_eT
                 _pi_pT[0]           = pi_pT
                 _lep_pT[0]          = lep_pT
                 _lep_iso[0]         = lep_iso
-                #_nBjets[0]          = nBjets
                 _nBjets_25[0]       = nBjets_25
                 _weight[0]          = 1
                 _deltaphi_lep_pi[0] = deltaphi_lep_pi
@@ -781,11 +708,7 @@ for full_sample_name in samplename_list:
                 if sample_name == "Data" and not isMuon:
                     tMVA_background_ele_DATA.Fill()
 
-
-
 print "Finished runnning over samples!"
-
-#print "N_WGToLNuG_mu", N_WGToLNuG_mu 
 
 ############################################################################
 #                                                                          #
@@ -800,32 +723,14 @@ if create_mass_tree:
 
 else:
     if not isData :
-        
-        if split_MC:
-            fMVA_signal_mu_training.cd()
-            tMVA_signal_mu_training.Write()
-            fMVA_signal_mu_training.Close()
+                    
+        fMVA_signal_mu.cd()
+        tMVA_signal_mu.Write()
+        fMVA_signal_mu.Close()
             
-            fMVA_signal_ele_training.cd()
-            tMVA_signal_ele_training.Write()
-            fMVA_signal_ele_training.Close()
-            
-            fMVA_signal_mu_test.cd()
-            tMVA_signal_mu_test.Write()
-            fMVA_signal_mu_test.Close()
-            
-            fMVA_signal_ele_test.cd()
-            tMVA_signal_ele_test.Write()
-            fMVA_signal_ele_test.Close()
-            
-        else:
-            fMVA_signal_mu.cd()
-            tMVA_signal_mu.Write()
-            fMVA_signal_mu.Close()
-            
-            fMVA_signal_ele.cd()
-            tMVA_signal_ele.Write()
-            fMVA_signal_ele.Close()
+        fMVA_signal_ele.cd()
+        tMVA_signal_ele.Write()
+        fMVA_signal_ele.Close()
 
         fMVA_background_mu.cd()
         tMVA_background_mu.Write()
@@ -850,39 +755,3 @@ print "File written"
 print "nSig_mu: ", nSig_mu, "nBkg_mu: ", nBkg_mu 
 print "nSig_ele: ", nSig_ele, "nBkg_ele: ", nBkg_ele 
 print "nBkg_processed_mu: ", nBkg_processed_mu, "nBkg_processed_ele: ", nBkg_processed_ele
-
-canvas1 = TCanvas("canvas1","canvas1",200,106,600,600)
-ROOT.gStyle.SetOptStat(0)
-Wmass_mu.SetAxisRange(0.,65.,"Y")
-Wmass_mu.Draw("hist")
-canvas1.SaveAs("Wmass_mu_create_rootfile.pdf")
-
-canvas2 = TCanvas("canvas2","canvas2",200,106,600,600)
-ROOT.gStyle.SetOptStat(0)
-Wmass_ele.SetAxisRange(0.,65.,"Y")
-Wmass_ele.Draw("hist")
-canvas2.SaveAs("Wmass_ele_create_rootfile.pdf")
-
-canvas3 = TCanvas("canvas3","canvas3",200,106,600,600)
-ROOT.gStyle.SetOptStat(0)
-lep_pt_mu.Draw("hist")
-canvas3.SaveAs("lep_pt_mu_create_rootfile.pdf")
-
-canvas4 = TCanvas("canvas4","canvas4",200,106,600,600)
-ROOT.gStyle.SetOptStat(0)
-lep_pt_ele.Draw("hist")
-canvas4.SaveAs("lep_pt_ele_create_rootfile.pdf")
-
-# canvas5 = TCanvas("canvas5","canvas5",200,106,600,600)
-# ROOT.gStyle.SetOptStat(0)
-# Wmass_mu_WJets.SetAxisRange(0.,7000.,"Y")
-# Wmass_mu_WJets.Draw("hist")
-# print "mu integral: ", Wmass_mu_WJets.Integral()
-# canvas5.SaveAs("Wmass_mu_WJets_create_rootfile.pdf")
-
-# canvas6= TCanvas("canvas6","canvas6",200,106,600,600)
-# ROOT.gStyle.SetOptStat(0)
-# Wmass_ele_WJets.SetAxisRange(0.,5000.,"Y")
-# Wmass_ele_WJets.Draw("hist")
-# print "ele integral: ", Wmass_ele_WJets.Integral()
-# canvas6.SaveAs("Wmass_ele_WJets_create_rootfile.pdf")

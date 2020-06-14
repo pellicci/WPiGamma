@@ -204,18 +204,14 @@ class Simplified_Workflow_Handler:
         # Where the files are
         self.dir_bkg_input  = "rootfiles/latest_production/MC/backgrounds/"
         self.dir_sig_input  = "rootfiles/latest_production/MC/signals/"
-        #self.dir_sig_input  = "rootfiles/13_03_2020/MC/signals/"
         self.dir_data_input = "rootfiles/latest_production/dataprocess/"
 
         self.norm_filename_2016 = "rootfiles/latest_production/MC/normalizations/Normalizations_table_2016.txt"
-        #self.norm_filename_2016 = "rootfiles/13_03_2020/MC/normalizations/Normalizations_table_2016.txt"
         self.norm_filename_2017 = "rootfiles/latest_production/MC/normalizations/Normalizations_table_2017.txt"
-        #self.norm_filename_2017 = "rootfiles/13_03_2020/MC/normalizations/Normalizations_table_2017.txt"
         self.norm_filename_2018 = "rootfiles/latest_production/MC/normalizations/Normalizations_table_2018.txt"
-        #self.norm_filename_2018 = "rootfiles/13_03_2020/MC/normalizations/Normalizations_table_2018.txt"
 
         self.ttbar_sig_calib_file = ROOT.TFile.Open("ttbar_signal_ratio_" + year + ".root")
-        self.Pythia_sig_modeling_file = ROOT.TFile.Open("PythiaModeling_" + year + ".root")
+        self.Pythia_pT_modeling_file = ROOT.TFile.Open("Pythia_pT_modeling_" + year + ".root")
         self.Pythia_polarization_modeling_file = ROOT.TFile.Open("Pythia_polarization_modeling_Pi_W_" + year + ".root")
         
         ###################################################################################
@@ -294,10 +290,10 @@ class Simplified_Workflow_Handler:
 
     ###############################################################################################################################################
 
-    def get_Pythia_sig_modeling_reweight(self,up,W_pT):
+    def get_Pythia_pT_modeling_reweight(self,up,W_pT):
 
-        h_Pythia_sig_rescale_up   = self.Pythia_sig_modeling_file.Get("h_genW_pT_up")
-        h_Pythia_sig_rescale_down = self.Pythia_sig_modeling_file.Get("h_genW_pT_down")
+        h_Pythia_sig_rescale_up   = self.Pythia_pT_modeling_file.Get("h_genW_pT_up")
+        h_Pythia_sig_rescale_down = self.Pythia_pT_modeling_file.Get("h_genW_pT_down")
         Pythia_sig_rescale_up     = h_Pythia_sig_rescale_up.GetBinContent(h_Pythia_sig_rescale_up.FindBin(W_pT))
         Pythia_sig_rescale_down   = h_Pythia_sig_rescale_down.GetBinContent(h_Pythia_sig_rescale_down.FindBin(W_pT))
 
