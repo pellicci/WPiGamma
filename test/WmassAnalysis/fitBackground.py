@@ -113,9 +113,14 @@ xframe.SetMaximum(60)
 
 data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
 backPDF.plotOn(xframe)
+
+chi2 = xframe.chiSquare()
+cut_chi2 = "{:.2f}".format(chi2) #Crop the chi2 to 3 decimal digits
+label = ROOT.TPaveLabel(0.68,0.4,0.88,0.54,"#chi^{2} = " + cut_chi2,"brNDC")
     
 canvas = ROOT.TCanvas()
 xframe.Draw()
+label.Draw("SAME")
 
 # Save the plot
 canvas.SaveAs("plots/fitBackground.pdf")

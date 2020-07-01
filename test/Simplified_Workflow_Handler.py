@@ -187,6 +187,7 @@ met_array                = array('f', [0.])
 #deltaphi_lep_pi_array = array('f', [0.])
 #deltaphi_lep_gamma_array = array('f', [0.])
 isMuon_array             = array('i', [0])
+#mT_lep_met_array         = array('f', [0])
 
 reader = ROOT.TMVA.Reader("!Color")
 
@@ -231,6 +232,7 @@ class Simplified_Workflow_Handler:
         reader.AddVariable("lep_pT",lep_pT_array)
         reader.AddVariable("piRelIso_05_ch",piRelIso_05_array)
         reader.AddVariable("MET",met_array)
+        #reader.AddVariable("mT_lep_met",mT_lep_met_array)
         #reader.AddVariable("deltaphi_lep_pi",deltaphi_lep_pi_array)
         #reader.AddVariable("deltaphi_lep_gamma",deltaphi_lep_gamma_array)
 
@@ -253,6 +255,7 @@ class Simplified_Workflow_Handler:
         lep_pT_array[0]          = lep_pT
         piRelIso_05_array[0]     = piRelIso_05_ch
         met_array[0]             = met
+        #mT_lep_met_array[0]      = mT_lep_met
         #deltaphi_lep_pi_array[0] = deltaphi_lep_pi
         #deltaphi_lep_gamma_array[0] = deltaphi_lep_gamma
         isMuon_array[0]          = int(isMuon)

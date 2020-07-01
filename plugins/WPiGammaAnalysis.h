@@ -1,4 +1,3 @@
-
 //---------- class declaration----------
 
 class WPiGammaAnalysis : public edm::EDAnalyzer {
@@ -128,6 +127,7 @@ private:
   float sum_pT_03;
   float sum_pT_05;
   float sum_pT_05_ch;
+  int nTracks_in_piIso;
 
   float ph_eT;
   float ph_eta;

@@ -42,7 +42,7 @@ h_nBjet_ratio   = ROOT.TH1F("nBjets_ratio", "nBjets ratio", 6,0,6)
 h_met_mu_ratio  = ROOT.TH1F("met_mu_ratio", "met mu ratio",20,0.,200.)
 h_met_ele_ratio = ROOT.TH1F("met_ele_ratio", "met ele ratio",20,0.,200.)
 
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets","MCT_deltaR_lep_gamma","h_mu_met_mT","h_ele_met_mT","h_met"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets","MCT_deltaR_lep_gamma","h_mu_met_mT","h_ele_met_mT","h_met","h_pi_ph_met_InvMass"]
 
 for hname in list_histos:
     hstack[hname] = ROOT.THStack("hstack_" + hname,"")
@@ -51,7 +51,8 @@ for hname in list_histos:
 colors_mask = dict()
 colors_mask["QCD"]                 = 12
 colors_mask["QCDEM"]               = ROOT.kSpring-3
-colors_mask["ttbar"]               = ROOT.kAzure+7
+#colors_mask["ttbar"]               = ROOT.kAzure+7
+colors_mask["ttbar"]               = ROOT.kGreen-7
 colors_mask["ttbarlnu"]            = ROOT.kYellow-8
 colors_mask["ttbarWQQ"]            = ROOT.kOrange-3
 colors_mask["ttbarZlnu"]           = ROOT.kTeal-5
@@ -150,7 +151,7 @@ for histo_name in list_histos:
     if histo_name == "h_Wmass" or histo_name == "h_Wmass_flag_mu" or histo_name == "h_Wmass_flag_ele":
         hstack[histo_name].GetXaxis().SetTitle("m_{#pi#gamma} (GeV)")
         #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),5000))
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),200.))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),260.))
 
     if histo_name == "h_mupt":
         hstack[histo_name].GetXaxis().SetTitle("p_{T}^{#mu} (GeV)")
@@ -163,26 +164,26 @@ for histo_name in list_histos:
         hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),60.))
 
     if histo_name == "h_lepton_eta":
-        hstack[histo_name].GetXaxis().SetTitle("\eta^{l}")
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),40000.))
+        hstack[histo_name].GetXaxis().SetTitle("\eta^{#ell}")
+        #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),40000.))
         hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),200.))
 
     if histo_name == "h_lepton_pt":
-        hstack[histo_name].GetXaxis().SetTitle("p_{T}^{l} (GeV)")
+        hstack[histo_name].GetXaxis().SetTitle("p_{T}^{#ell} (GeV)")
         #hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),4000))
         hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),180.))
     
     if histo_name == "h_pipt":
         hstack[histo_name].GetXaxis().SetTitle("p_{T}^{#pi} (GeV)")
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),130000.))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),140.))
 
     if histo_name == "h_gammaet":
         hstack[histo_name].GetXaxis().SetTitle("E_{T}^{#gamma} (GeV)")
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),130000.))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),170.))
 
     if histo_name == "h_gammaeta":
         hstack[histo_name].GetXaxis().SetTitle("#eta^{#gamma}")
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),140.))
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),170.))
 
     if histo_name == "h_mueta":
         hstack[histo_name].GetXaxis().SetTitle("#eta^{#mu}")
@@ -250,17 +251,22 @@ for histo_name in list_histos:
         hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),45000.))    
 
     if histo_name == "h_mu_met_mT":
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),14000.))    
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),80.))    
 
     if histo_name == "h_ele_met_mT":
-        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),8000.))    
+        hstack[histo_name].SetMaximum(max(hstack[histo_name].GetHistogram().GetMaximum(),60.))    
 
     if signal_magnify != 1:
         hsignal[histo_name].Scale(signal_magnify)      
 
-    hstack[histo_name].Draw("histo")
+    hstack[histo_name].Draw("SAME,histo")
     hsignal[histo_name].Draw("SAME,hist")
-    hdata[histo_name].Draw("SAME,E1")
+    if histo_name == "h_Wmass":
+        fIn_Wmass_frame = ROOT.TFile("WmassAnalysis/Wmass_frame.root")
+        Wmass_frame = fIn_Wmass_frame.Get("Wmass_frame")
+        Wmass_frame.Draw("SAME")
+    else:
+        hdata[histo_name].Draw("SAME,E1")
 
     hMCErr = copy.deepcopy(hstack[histo_name].GetStack().Last())
     hMCErr.SetFillStyle(3005)
@@ -394,6 +400,14 @@ for histo_name in list_histos:
     ################################################
 
     canvas[histo_name].SaveAs(output_dir + histo_name + ".pdf")
+    # if histo_name == "h_Wmass":
+    #     file_Wmass = ROOT.TFile("Wmass_4Plotting.root","RECREATE")
+    #     file_Wmass.cd()
+    #     hstack[histo_name].Write()
+    #     hsignal[histo_name].Write()
+    #     hdata[histo_name].Write()
+    #     leg1.Write()
+    #     totalData.Write()
 
 # Wmass_nominal_cut_mu = copy.deepcopy(hstack["h_Wmass_flag_mu"].GetStack().Last())
 # Wmass_alternative_cut_mu = copy.deepcopy(hstack["h_Wmass_alternative_mu"].GetStack().Last())
@@ -426,12 +440,12 @@ for histo_name in list_histos:
 # Wmass_nominal_cut_ele.Draw("Pe")
 # canvas_Wmass_2.SaveAs(output_dir + "Wmass_ratio_ele_Wmass.pdf")
 
-h_nBjets_ratio = copy.deepcopy(hstack["h_nBjets_25"].GetStack().Last())
-h_nBjets_ratio.Divide(h_nBjets_ratio,copy.deepcopy(hstack["h_nBjets_scaled"].GetStack().Last()),1.,1.,"B")
-canvas_Bjets = ROOT.TCanvas()
-h_nBjets_ratio.GetXaxis().SetTitle("Number of b-jets (p_{T} > 25 GeV)")
-h_nBjets_ratio.Draw()
-canvas_Bjets.SaveAs("plots/latest_production/2018/h_nBjets_ratio.pdf")
+# h_nBjets_ratio = copy.deepcopy(hstack["h_nBjets_25"].GetStack().Last())
+# h_nBjets_ratio.Divide(h_nBjets_ratio,copy.deepcopy(hstack["h_nBjets_scaled"].GetStack().Last()),1.,1.,"B")
+# canvas_Bjets = ROOT.TCanvas()
+# h_nBjets_ratio.GetXaxis().SetTitle("Number of b-jets (p_{T} > 25 GeV)")
+# h_nBjets_ratio.Draw()
+# canvas_Bjets.SaveAs("plots/latest_production/2018/h_nBjets_ratio.pdf")
 
 # h_met_mu_ratio = copy.deepcopy(hstack["h_met_mu"].GetStack().Last())
 # h_met_mu_ratio.Divide(h_met_mu_ratio,copy.deepcopy(hstack["h_met_mu_scaled"].GetStack().Last()),1.,1.,"B")

@@ -13,7 +13,7 @@ Wmass = ROOT.RooRealVar("Wmass","m_{#pi#gamma}",50.,100.,"GeV")
 #Retrive the sample
 fInput_data = ROOT.TFile("Tree_input_massfit_Data_3.root")
 
-fInput_MC = ROOT.TFile("Tree_input_massfit_MC_3.root")
+fInput_MC = ROOT.TFile("Tree_input_massfit_MC_allWeights_3.root")
 
 #Define the mu/ele category
 Categorization = ROOT.RooCategory("Categorization","Categorization")
@@ -60,7 +60,7 @@ MC = data_initial_MC.reduce("(BDT_out > 0.216 && isMuon==isMuon::Muon) || (BDT_o
 #data = data_initial_data.reduce("BDT_out > -3")
 #MC = data_initial_MC.reduce("BDT_out > -3")
 
-xframe_data_comp_mu = Wmass.frame(55.,95.,10)
+xframe_data_comp_mu = Wmass.frame(50.,100.,10)
 #xframe_data_comp_mu = Wmass.frame(50.,100.,15)
 xframe_data_comp_mu.SetTitle(" ")
 
@@ -71,7 +71,7 @@ xframe_data_comp_mu.SetMaximum(150)
 # data.plotOn(xframe_data_comp_mu, ROOT.RooFit.Cut("isMuon==1"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson),ROOT.RooFit.MarkerColor(ROOT.kRed))
 # MC.plotOn(xframe_data_comp_mu, ROOT.RooFit.Cut("isMuon==1"), ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
 
-xframe_data_comp_ele = Wmass.frame(55.,95.,10)
+xframe_data_comp_ele = Wmass.frame(50.,100.,10)
 #xframe_data_comp_ele = Wmass.frame(50.,100.,15)
 xframe_data_comp_ele.SetTitle(" ")
 

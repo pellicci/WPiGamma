@@ -15,7 +15,7 @@ if args.isMuon_option == "electron":
 
 #Training options
 evaluate_BDT_systematic     = False  # Train on shifted variables, test on nominal case
-test_on_signal_shifted_up   = True
+test_on_signal_shifted_up   = False
 test_on_signal_shifted_down = False
 test_on_signal_sin2         = False
 test_on_signal_cos          = False
@@ -28,7 +28,7 @@ if isMuon and not evaluate_BDT_systematic and not test_on_signal_shifted_up and 
     fIn_sig  = ROOT.TFile("Tree_MC_Signal_mu.root")
     tree_sig = fIn_sig.Get("minitree_signal_mu")
     fOut     = ROOT.TFile("outputs/Nominal_training_mu.root","RECREATE")
-    #fOut = ROOT.TFile("outputs/Nominal_training_mu_withBjets.root","RECREATE")
+    #fOut = ROOT.TFile("outputs/Nominal_training_mu_with_mT.root","RECREATE")
     #fOut = ROOT.TFile("outputs/Nominal_training_mu_Wmass.root","RECREATE")
 
 if not isMuon and not evaluate_BDT_systematic and not test_on_signal_shifted_up and not test_on_signal_shifted_down and not test_on_signal_sin2 and not test_on_signal_cos:
@@ -37,7 +37,7 @@ if not isMuon and not evaluate_BDT_systematic and not test_on_signal_shifted_up 
     fIn_sig  = ROOT.TFile("Tree_MC_Signal_ele.root")
     tree_sig = fIn_sig.Get("minitree_signal_ele")
     fOut     = ROOT.TFile("outputs/Nominal_training_ele.root","RECREATE")
-    #fOut = ROOT.TFile("outputs/Nominal_training_ele_withBjets.root","RECREATE")
+    #fOut = ROOT.TFile("outputs/Nominal_training_ele_with_mT.root","RECREATE")
     #fOut = ROOT.TFile("outputs/Nominal_training_ele_Wmass.root","RECREATE")
 
 if isMuon and evaluate_BDT_systematic and not test_on_signal_shifted_up and not test_on_signal_shifted_down and not test_on_signal_sin2 and not test_on_signal_cos:
@@ -101,7 +101,7 @@ if not isMuon and test_on_signal_shifted_down:
 if isMuon and test_on_signal_sin2:
     fIn_bkg = ROOT.TFile("Tree_MC_Background_mu.root")
     tree_bkg = fIn_bkg.Get("minitree_background_mu")
-    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_mu_no_polarization.root")
+    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_mu_Pythia_nominal.root")
     tree_sig_training = fIn_sig_training.Get("minitree_signal_mu")
     fIn_sig_testing = ROOT.TFile("Tree_MC_Signal_mu_sin2.root")
     tree_sig_testing = fIn_sig_testing.Get("minitree_signal_mu")
@@ -110,7 +110,7 @@ if isMuon and test_on_signal_sin2:
 if not isMuon and test_on_signal_sin2:
     fIn_bkg = ROOT.TFile("Tree_MC_Background_ele.root")
     tree_bkg = fIn_bkg.Get("minitree_background_ele")
-    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_ele_no_polarization.root")
+    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_ele_Pythia_nominal.root")
     tree_sig_training = fIn_sig_training.Get("minitree_signal_ele")
     fIn_sig_testing = ROOT.TFile("Tree_MC_Signal_ele_sin2.root")
     tree_sig_testing = fIn_sig_testing.Get("minitree_signal_ele")
@@ -119,7 +119,7 @@ if not isMuon and test_on_signal_sin2:
 if isMuon and test_on_signal_cos:
     fIn_bkg = ROOT.TFile("Tree_MC_Background_mu.root")
     tree_bkg = fIn_bkg.Get("minitree_background_mu")
-    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_mu_no_polarization.root")
+    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_mu_Pythia_nominal.root")
     tree_sig_training = fIn_sig_training.Get("minitree_signal_mu")
     fIn_sig_testing = ROOT.TFile("Tree_MC_Signal_mu_cos.root")
     tree_sig_testing = fIn_sig_testing.Get("minitree_signal_mu")
@@ -128,7 +128,7 @@ if isMuon and test_on_signal_cos:
 if not isMuon and test_on_signal_cos:
     fIn_bkg = ROOT.TFile("Tree_MC_Background_ele.root")
     tree_bkg = fIn_bkg.Get("minitree_background_ele")
-    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_ele_no_polarization.root")
+    fIn_sig_training = ROOT.TFile("Tree_MC_Signal_ele_Pythia_nominal.root")
     tree_sig_training = fIn_sig_training.Get("minitree_signal_ele")
     fIn_sig_testing = ROOT.TFile("Tree_MC_Signal_ele_cos.root")
     tree_sig_testing = fIn_sig_testing.Get("minitree_signal_ele")
@@ -149,6 +149,7 @@ dataloader.AddVariable("nBjets_25","I")
 dataloader.AddVariable("lep_pT","F")
 dataloader.AddVariable("piRelIso_05_ch","F")
 dataloader.AddVariable("MET","F")
+#dataloader.AddVariable("mT_lep_met","F")
 
 sig_weight = 1.
 bkg_weight = 1.
@@ -229,7 +230,9 @@ else:
     weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu.xml"
     weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele.xml"
     #weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_Wmass.xml"
+    #weightfile_mu  = "default/weights/TMVAClassification_BDT.weights_mu_mT.xml"
     #weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_Wmass.xml"
+    #weightfile_ele = "default/weights/TMVAClassification_BDT.weights_ele_mT.xml"
 
 if isMuon:
     rename_weightfile = "mv " + weightfile_dir + " " + weightfile_mu

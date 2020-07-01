@@ -90,6 +90,7 @@ _weight             = np.zeros(1, dtype=float)
 _met                = np.zeros(1, dtype=float)
 _met_puppi          = np.zeros(1, dtype=float)
 _Wmass              = np.zeros(1, dtype=float)
+_mT_lep_met         = np.zeros(1, dtype=float)
 
 _Nrandom_for_BDT_systematic = ROOT.TRandom3(24593)
 
@@ -138,6 +139,7 @@ if not isData:
         tMVA_signal_mu.Branch('MET',_met,'MET/D')
         tMVA_signal_mu.Branch('MET_puppi',_met_puppi,'MET_puppi/D')
         tMVA_signal_mu.Branch('Wmass',_Wmass,'Wmass/D')
+        tMVA_signal_mu.Branch('mT_lep_met',_mT_lep_met,'mT_lep_met/D')
         
         fMVA_signal_ele = TFile('MVA/Tree_MC_Signal_ele_' + str(runningEra) + '.root','recreate')
         tMVA_signal_ele = TTree('minitree_signal_ele','tree with branches')
@@ -157,6 +159,7 @@ if not isData:
         tMVA_signal_ele.Branch('MET',_met,'MET/D')
         tMVA_signal_ele.Branch('MET_puppi',_met_puppi,'MET_puppi/D')
         tMVA_signal_ele.Branch('Wmass',_Wmass,'Wmass/D')
+        tMVA_signal_ele.Branch('mT_lep_met',_mT_lep_met,'mT_lep_met/D')
 
         fMVA_background_mu = TFile('MVA/Tree_MC_Background_mu_' + str(runningEra) + '.root','recreate')
         tMVA_background_mu = TTree('minitree_background_mu','tree with branches')
@@ -176,6 +179,7 @@ if not isData:
         tMVA_background_mu.Branch('MET',_met,'MET/D')
         tMVA_background_mu.Branch('MET_puppi',_met_puppi,'MET_puppi/D')
         tMVA_background_mu.Branch('Wmass',_Wmass,'Wmass/D')
+        tMVA_background_mu.Branch('mT_lep_met',_mT_lep_met,'mT_lep_met/D')
         
         fMVA_background_ele = TFile('MVA/Tree_MC_Background_ele_' + str(runningEra) + '.root','recreate')
         tMVA_background_ele = TTree('minitree_background_ele','tree with branches')
@@ -195,6 +199,7 @@ if not isData:
         tMVA_background_ele.Branch('MET',_met,'MET/D')
         tMVA_background_ele.Branch('MET_puppi',_met_puppi,'MET_puppi/D')
         tMVA_background_ele.Branch('Wmass',_Wmass,'Wmass/D')
+        tMVA_background_ele.Branch('mT_lep_met',_mT_lep_met,'mT_lep_met/D')
 
 
 if isData:
@@ -322,7 +327,7 @@ for full_sample_name in samplename_list:
 
         entry_index += 1.
         
-        #if entry_index > sample_entries/2.:
+        #if entry_index <= sample_entries/2.:
         #    continue
 
         # Print entry_index
@@ -401,6 +406,12 @@ for full_sample_name in samplename_list:
 
         deltaeta_lep_gamma = math.fabs(lep_eta - gamma_eta)
         deltaR_lep_gamma = math.sqrt(deltaphi_lep_gamma*deltaphi_lep_gamma + deltaeta_lep_gamma*deltaeta_lep_gamma)
+
+        deltaphi_lep_met = math.fabs(lep_phi - mytree.met_phi)
+        if deltaphi_lep_met > 3.14:
+            deltaphi_lep_met = 6.28 - deltaphi_lep_met
+
+        lep_met_TransverseMass = math.sqrt(2*lep_pT*met*(1. - math.cos(deltaphi_lep_met)))
 
         if "WJetsToLNu" in sample_name:
             
@@ -653,6 +664,7 @@ for full_sample_name in samplename_list:
                 _met[0]                = met
                 _met_puppi[0]          = met_puppi
                 _Wmass[0]              = Wmass
+                _mT_lep_met[0]         = lep_met_TransverseMass
                 if sample_name == "Signal" and scale_signal_up:
                     _weight[0]         = Event_Weight_up
                 elif sample_name == "Signal" and scale_signal_down:

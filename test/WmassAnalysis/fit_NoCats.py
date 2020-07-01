@@ -11,10 +11,10 @@ ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 #                                                              #
 ################################################################
 selectSigShift = 0 #Zero is the nominal case: signal parameters fixed to their central values from fit on MC signal. Numbers from 1 to 4 are plus/minus 1sigma
-suppressSigSystematic = True
+suppressSigSystematic = False
 
-selectBkgFunction = 0 # 0: use Chebychev for ALL the bkg PDFs. 1: use alternative PDF for muon channel. 2: use alternative PDF for electron channel
-suppressBkgSystematic = True # To be used when trying to fit with alternative bkg description, in order to estimate a systematic.If True, it will allow W_pigamma_BR to float negative. 
+selectBkgFunction = 0 # 0: use Chebychev for ALL the bkg PDFs. 1: use alternative PDF 
+suppressBkgSystematic = False # To be used when trying to fit with alternative bkg description, in order to estimate a systematic.If True, it will allow W_pigamma_BR to float negative. 
 #Moreover, it will use Signal+Background in the totPDF, so that the fit to the restricted CRs will contain also the POI BR, which will be used to calculate the pull and hence to estimate the systematic
 
 suppressAllSystematics = False
@@ -62,6 +62,8 @@ Categorization.defineType("ElectronSignal",3)
 #Import dataset
 data_initial = ROOT.RooDataSet("data","data", ROOT.RooArgSet(Wmass,Categorization), ROOT.RooFit.Import(mytree))
 data = data_initial.reduce("(Categorization==Categorization::MuonSignal) || (Categorization==Categorization::ElectronSignal)")
+#data = data_initial.reduce("(Categorization==Categorization::MuonSignal)")
+#data = data_initial.reduce("(Categorization==Categorization::ElectronSignal)")
 
 print "number of events mu - SR: ", data.sumEntries("Categorization==1")
 print "number of events ele - SR: ", data.sumEntries("Categorization==3")
@@ -150,7 +152,9 @@ elif selectBkgFunction == 1: #Use Exponential (estimate systematic on background
 #CMS ttbar measurement/W->lnu BR (it is measured with both W in lnu), in pb
 #http://cms-results.web.cern.ch/cms-results/public-results/publications/TOP-16-005/index.html
 W_xsec_nominal = (2.+0.3521)*2.*815.*0.1086 #The two factors 2 account for the possible charge signs of the Ws and for the two leptonic decay channels of the tag W. The +0.3521 accounts for the leptonic tau decays
+#W_xsec_nominal = (0.3521)*2.*815.*0.1086 #The two factors 2 account for the possible charge signs of the Ws and for the two leptonic decay channels of the tag W. The +0.3521 accounts for the leptonic tau decays
 W_xsec_syst    = (43.*2.*(2.+0.3521)*0.1086)/W_xsec_nominal
+#W_xsec_syst    = (43.*2.*(0.3521)*0.1086)/W_xsec_nominal
 
 ################################################################
 #                                                              #
@@ -174,41 +178,48 @@ lumi_syst    = (lumi_syst_2016*lumi_2016 + lumi_syst_2017*lumi_2017 + lumi_syst_
 #                                                              #
 ################################################################
 
-totsig_2016 = 80000. #total number of signal events in 2016
+totsig_2016 = 80000.*(2.3521/3.) #total number of signal events in 2016
 totmu_2016 = 3851.
 totel_2016 = 2193.
 tot_2016  = totmu_2016 + totel_2016
 
-totsig_2017 = 79985.  #total number of signal events in 2017
+totsig_2017 = 79985.*(2.3521/3.) #total number of signal events in 2017
 totmu_2017 = 3587.
 totel_2017 = 2234.
 tot_2017  = totmu_2017 + totel_2017
 
-totsig_2018 = 79905.  #total number of signal events in 2018
+totsig_2018 = 79905.*(2.3521/3.) #total number of signal events in 2018
 totmu_2018 = 3719.
 totel_2018 = 2170.
 tot_2018  = totmu_2018 + totel_2018
 
+#The uncertainties are squared because they will be summed in quadrature
 eff_nominal_2016 = tot_2016/totsig_2016
-binom_eff_2016 = ((1 - eff_nominal_2016)/totsig_2016)**2 #It will be summed in quadrature to the binomial uncertainty 
-BDT_syst_2016    = ((0.02*totmu_2016 + 0.03*totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
-Pythia_syst_pT_2016 = ((0.02*totmu_2016 + 0.02*totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
-Pythia_syst_angle_2016 = ((0.05*totmu_2016 + 0.05*totel_2016)/tot_2016)**2 #It will be summed in quadrature to the binomial uncertainty
-eff_syst_2016    = math.sqrt(binom_eff_2016+BDT_syst_2016+Pythia_syst_pT_2016+Pythia_syst_angle_2016)
+binom_eff_2016 = ((1 - eff_nominal_2016)/totsig_2016)**2 
+BDT_syst_2016    = ((0.01*totmu_2016 + 0.02*totel_2016)/tot_2016)**2 
+Pythia_syst_pT_2016 = ((0.02*totmu_2016 + 0.04*totel_2016)/tot_2016)**2 
+Pythia_syst_angle_2016 = ((0.03*totmu_2016 + 0.06*totel_2016)/tot_2016)**2 
+SF_syst_2016 = ((0.014*totmu_2016 + 0.014*totel_2016)/tot_2016)**2
+TRK_mischarge_ID_syst_2016 = ((0.01*totmu_2016 + 0.01*totel_2016)/tot_2016)**2
+eff_syst_2016    = math.sqrt(binom_eff_2016+BDT_syst_2016+Pythia_syst_pT_2016+Pythia_syst_angle_2016+SF_syst_2016+TRK_mischarge_ID_syst_2016)
 
 eff_nominal_2017 = tot_2017/totsig_2017
-binom_eff_2017 = ((1 - eff_nominal_2017)/totsig_2017)**2 #It will be summed in quadrature to the binomial uncertainty 
-BDT_syst_2017    = ((0.02*totmu_2017 + 0.03*totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
-Pythia_syst_pT_2017 = ((0.02*totmu_2017 + 0.02*totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
-Pythia_syst_angle_2017 = ((0.05*totmu_2017 + 0.05*totel_2017)/tot_2017)**2 #It will be summed in quadrature to the binomial uncertainty
-eff_syst_2017    = math.sqrt(binom_eff_2017+BDT_syst_2017+Pythia_syst_pT_2017+Pythia_syst_angle_2017)
+binom_eff_2017 = ((1 - eff_nominal_2017)/totsig_2017)**2 
+BDT_syst_2017    = ((0.01*totmu_2017 + 0.02*totel_2017)/tot_2017)**2 
+Pythia_syst_pT_2017 = ((0.02*totmu_2017 + 0.04*totel_2017)/tot_2017)**2 
+Pythia_syst_angle_2017 = ((0.03*totmu_2017 + 0.06*totel_2017)/tot_2017)**2
+SF_syst_2017 = ((0.014*totmu_2017 + 0.014*totel_2017)/tot_2017)**2 
+TRK_mischarge_ID_syst_2017 = ((0.01*totmu_2017 + 0.01*totel_2017)/tot_2017)**2
+eff_syst_2017    = math.sqrt(binom_eff_2017+BDT_syst_2017+Pythia_syst_pT_2017+Pythia_syst_angle_2017+SF_syst_2017+TRK_mischarge_ID_syst_2017)
 
 eff_nominal_2018 = tot_2018/totsig_2018
-binom_eff_2018 = ((1 - eff_nominal_2018)/totsig_2018)**2 #It will be summed in quadrature to the binomial uncertainty 
-BDT_syst_2018    = ((0.02*totmu_2018 + 0.03*totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
-Pythia_syst_pT_2018 = ((0.02*totmu_2018 + 0.02*totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
-Pythia_syst_angle_2018 = ((0.05*totmu_2018 + 0.05*totel_2018)/tot_2018)**2 #It will be summed in quadrature to the binomial uncertainty
-eff_syst_2018    = math.sqrt(binom_eff_2018+BDT_syst_2018+Pythia_syst_pT_2018+Pythia_syst_angle_2018)
+binom_eff_2018 = ((1 - eff_nominal_2018)/totsig_2018)**2
+BDT_syst_2018    = ((0.01*totmu_2018 + 0.02*totel_2018)/tot_2018)**2
+Pythia_syst_pT_2018 = ((0.02*totmu_2018 + 0.04*totel_2018)/tot_2018)**2 
+Pythia_syst_angle_2018 = ((0.03*totmu_2018 + 0.06*totel_2018)/tot_2018)**2 
+SF_syst_2018 = ((0.014*totmu_2018 + 0.014*totel_2018)/tot_2018)**2 
+TRK_mischarge_ID_syst_2018 = ((0.01*totmu_2018 + 0.01*totel_2018)/tot_2018)**2
+eff_syst_2018    = math.sqrt(binom_eff_2018+BDT_syst_2018+Pythia_syst_pT_2018+Pythia_syst_angle_2018+SF_syst_2018+TRK_mischarge_ID_syst_2018)
 
 efflumi_2016_nominal = eff_nominal_2016*lumi_2016
 efflumi_2017_nominal = eff_nominal_2017*lumi_2017
@@ -219,7 +230,7 @@ efflumi_2017_syst = (eff_syst_2017+lumi_syst_2017)*efflumi_2017_nominal
 efflumi_2018_syst = (eff_syst_2018+lumi_syst_2018)*efflumi_2018_nominal
 
 efflumi_nominal = efflumi_2016_nominal + efflumi_2017_nominal + efflumi_2018_nominal
-efflumi_syst = math.sqrt( efflumi_2016_syst**2. + efflumi_2017_syst**2. + efflumi_2018_syst**2. )/efflumi_nominal
+efflumi_syst = (efflumi_2016_syst + efflumi_2017_syst + efflumi_2018_syst)/efflumi_nominal
 
 ################################################################
 #                                                              #
@@ -228,12 +239,12 @@ efflumi_syst = math.sqrt( efflumi_2016_syst**2. + efflumi_2017_syst**2. + efflum
 ################################################################
 
 if not suppressSigSystematic:
-    sig_syst = 0.011
+    sig_syst = 0.069
 else:
     sig_syst = 0.0001
 
 if not suppressBkgSystematic:
-    bkg_syst = 0.198 
+    bkg_syst = 0.146
 else:
     bkg_syst = 0.0001
 
@@ -272,7 +283,7 @@ Nsig_multiplier   = ROOT.RooFormulaVar("Nsig_multiplier","@0 * pow(@1,@2)",ROOT.
 one               = ROOT.RooRealVar("one","one",1.)
 gauss_Multi_param = ROOT.RooGaussian("gauss_Multi_param","gauss_Multi_param",glb_Multi_param,Multi_param_beta,one)
 
-Nsig = ROOT.RooFormulaVar("Nsig_mu","@0*@1", ROOT.RooArgList(W_pigamma_BR_blind, Nsig_multiplier))
+Nsig = ROOT.RooFormulaVar("Nsig_mu","@0*@1", ROOT.RooArgList(W_pigamma_BR, Nsig_multiplier))
 
 Nbkg = ROOT.RooRealVar("Nbkg","Nbkg",900.,100.,5000.)
 
@@ -331,7 +342,7 @@ fOutput.Close()
 ################################################################
 
 #xframe = Wmass.frame(55.,95.,15)
-xframe = Wmass.frame(50.,100.,10)
+xframe = Wmass.frame(50.,100.,20)
 xframe.SetTitle(" ")
 xframe.SetTitleOffset(1.4,"y")
 
@@ -339,14 +350,29 @@ xframe.SetTitleOffset(1.4,"y")
 
 data_reduced = data.reduce("Wmass < 65. || Wmass > 90.")
 
-data_reduced.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-totPDF.plotOn(xframe, ROOT.RooFit.Range("LowSideband,HighSideband"))
+#data_reduced.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
+data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
+totPDF.plotOn(xframe)#, ROOT.RooFit.Range("LowSideband,HighSideband"))#, ROOT.RooFit.LineColor(ROOT.kTeal+10))
+
+chi2 = xframe.chiSquare()
+cut_chi2 = "{:.2f}".format(chi2) #Crop the chi2 to 3 decimal digits
+label = ROOT.TPaveLabel(0.68,0.4,0.88,0.54,"#chi^{2} = " + cut_chi2,"brNDC")
+
+#fIn_Wmass = ROOT.TFile("../Wmass_4Plotting.root")
+#h_Wmass_signal = fIn_Wmass.Get("h_Wmass;1")
 
 #DRAW ON CANVAS
 canvas = ROOT.TCanvas()
 canvas.cd()
+#label.Draw("SAME")
 xframe.Draw()
 
+fOut_frame = ROOT.TFile("Wmass_frame.root","RECREATE")
+fOut_frame.cd()
+xframe.Write("Wmass_frame")
+
+#h_stack.Draw("same,hist")
+#h_Wmass_signal.Draw("same,hist")
 # Save the plot
 canvas.SaveAs("plots/fitData_signalR.pdf")
 

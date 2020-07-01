@@ -100,7 +100,8 @@ poimin = poi.find("W_pigamma_BR").getMin()
 poimax = poi.find("W_pigamma_BR").getMax()
 
 min_scan = 0.0000001
-max_scan = 0.000035
+max_scan = 0.000055
+#max_scan = 0.0001
 
 print "Doing a fixed scan  in interval : ",min_scan, " , ", max_scan
 calc.SetFixedScan(npoints,min_scan,max_scan)
@@ -116,8 +117,8 @@ result = calc.GetInterval() #This is a HypoTestInveter class object
 upperLimit = result.UpperLimit()
 
 #Now print the result of the two methods
-#print "################"
-#print "The observed CLs upper limit is: ", upperLimit
+print "################"
+print "The observed CLs upper limit is: ", upperLimit
 
 ##################################################################
 
@@ -134,8 +135,8 @@ freq_plot = ROOT.RooStats.HypoTestInverterPlot("HTI_Result_Plot","Frequentist sc
 #xPlot in a new canvas with style
 canvas = ROOT.TCanvas()
 canvas.cd()
-#freq_plot.Draw("2CL")
-freq_plot.Draw("EXP")
+freq_plot.Draw()
+#freq_plot.Draw("EXP")
 canvas.SaveAs("UL_CLs.pdf")
 
 del fc

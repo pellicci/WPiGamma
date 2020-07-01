@@ -51,8 +51,8 @@ if runningEra == 2:
 #############---------------- BDT score cut values ----------------#############
 BDT_OUT_MU  = 0.281
 BDT_OUT_ELE = 0.269
-# BDT_OUT_MU  = 0.281 #Wmass
-# BDT_OUT_ELE = 0.269 #Wmass
+#BDT_OUT_MU  = 0.273 
+#BDT_OUT_ELE = 0.258 #Wmass
 
 ############################################################################
 #                                                                          #
@@ -107,7 +107,7 @@ pT_ele_binning = arr.array('f',[33.,40.,50.,100.,200.,500.])
 ##Get the handlers for all the histos and graphics
 h_base  = dict()
 
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets","MCT_deltaR_lep_gamma","h_BDT_out_mu","h_BDT_out_ele","h_mu_met_mT","h_ele_met_mT","h_met"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets","MCT_deltaR_lep_gamma","h_BDT_out_mu","h_BDT_out_ele","h_mu_met_mT","h_ele_met_mT","h_met","h_pi_ph_met_InvMass"]
 
 h_base[list_histos[0]]  = ROOT.TH1F(list_histos[0], "p_{T} of the muon", 15, 25, 100.)
 h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 15, 28, 100.)
@@ -165,6 +165,7 @@ h_base[list_histos[49]] = ROOT.TH1F(list_histos[49], "BDT out_ele", 40, -0.7, 0.
 h_base[list_histos[50]] = ROOT.TH1F(list_histos[50], "mu-met mT", 40, 0., 200.)
 h_base[list_histos[51]] = ROOT.TH1F(list_histos[51], "ele-met mT", 40, 0., 200.)
 h_base[list_histos[52]] = ROOT.TH1F(list_histos[52], "met", 45, 0., 300.)
+h_base[list_histos[53]] = ROOT.TH1F(list_histos[53], "Pion - photon - MET invariant mass", 45, 0., 300.)
 
 _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 
@@ -258,8 +259,10 @@ for jentry in xrange(mytree.GetEntriesFast()):
     lep_FourMomentum = ROOT.TLorentzVector()
     lep_FourMomentum.SetPtEtaPhiM(lep_pT,lep_eta,lep_phi,0.)
 
-    #met_FourMomentum = ROOT.TLorentzVector()
-    #met_FourMomentum.SetPtEtaPhiE(met_puppi,0.,mytree.metpuppi_phi,met_puppi)
+    met_FourMomentum = ROOT.TLorentzVector()
+    met_FourMomentum.SetPtEtaPhiE(met,0.,mytree.met_phi,met)
+
+    pi_ph_met_InvMass = (pi_FourMomentum + gamma_FourMomentum + met_FourMomentum).M()
 
     #lep_met_TransverseMass = (lep_FourMomentum + met_FourMomentum).Mt()
 
@@ -550,6 +553,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
     h_base["h_lepton_eta"].Fill(lep_eta,Event_Weight)
     h_base["h_lepton_pt"].Fill(lep_pT,Event_Weight)
     h_base["h_piRelIso_05_ch"].Fill(piRelIso_05_ch,Event_Weight)
+    h_base["h_pi_ph_met_InvMass"].Fill(pi_ph_met_InvMass,Event_Weight)
 
     if sample_name == "Data":
         h_PUdistrib.Fill(nPV,Event_Weight)      

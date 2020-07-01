@@ -778,6 +778,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   sum_pT_03    = 0.;
   sum_pT_05    = 0.;
   sum_pT_05_ch = 0.;
+  nTracks_in_piIso = 0;
 
   pTpiMax  = -1000.;
 
@@ -833,7 +834,7 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   }
 
   //Do NOT continue if you didn't find a pion, or if the pion found has same sign wrt the lepton
-  if(!cand_pion_found || !are_lep_pi_opposite_charge) return;
+  if(!cand_pion_found) return;// || !are_lep_pi_opposite_charge) return;
   _Nevents_isPion++;
 
   //*************************************************************//
@@ -850,7 +851,10 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
     if(deltaR <= 0.3 && deltaR >= 0.02) sum_pT_03 += cand_iso->pt();
     if(deltaR <= 0.5 && deltaR >= 0.02) sum_pT_05 += cand_iso->pt();
     if(cand_iso->charge() != 0 && (fabs(cand_iso->dxy()) >= 0.2 || fabs(cand_iso->dz()) >= 0.5) ) continue; // Requesting charged particles to come from PV
-    if(deltaR <= 0.5 && deltaR >= 0.02) sum_pT_05_ch += cand_iso->pt();
+    if(deltaR <= 0.5 && deltaR >= 0.02){
+      sum_pT_05_ch += cand_iso->pt();
+      nTracks_in_piIso += 1;
+    }
   }
 
   //*************************************************************//
@@ -1204,7 +1208,7 @@ void WPiGammaAnalysis::create_trees()
     mytree->Branch("run_number",&run_number);
   }
   
-  //mytree->Branch("LepPiOppositeCharge",&are_lep_pi_opposite_charge);
+  mytree->Branch("LepPiOppositeCharge",&are_lep_pi_opposite_charge);
   mytree->Branch("lepton_pT",&lepton_pT_tree);
   mytree->Branch("lepton_eta",&lepton_eta_tree);
   mytree->Branch("lepton_etaSC",&lepton_etaSC_tree);
@@ -1222,6 +1226,7 @@ void WPiGammaAnalysis::create_trees()
   mytree->Branch("sum_pT_03",&sum_pT_03);
   mytree->Branch("sum_pT_05",&sum_pT_05);
   mytree->Branch("sum_pT_05_ch",&sum_pT_05_ch);
+  mytree->Branch("nTracks_in_piIso",&nTracks_in_piIso);
   mytree->Branch("photon_eT",&ph_eT);
   mytree->Branch("photon_eta",&ph_eta);
   mytree->Branch("photon_etaSC",&ph_etaSC);
