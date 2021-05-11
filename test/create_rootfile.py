@@ -327,8 +327,8 @@ for full_sample_name in samplename_list:
 
         entry_index += 1.
         
-        #if entry_index <= sample_entries/2.:
-        #    continue
+        if entry_index > sample_entries/3.:
+            continue
 
         # Print entry_index
 
@@ -653,12 +653,8 @@ for full_sample_name in samplename_list:
                 _gamma_eT[0]           = gamma_eT
                 _pi_pT[0]              = pi_pT
                 _lep_pT[0]             = lep_pT
-                #_lep_iso[0]            = lep_iso
                 _nBjets_25[0]          = nBjets_25
-                #_deltaphi_lep_pi[0]    = deltaphi_lep_pi
-                #_deltaphi_lep_gamma[0] = deltaphi_lep_gamma
                 _isMuon[0]             = isMuon
-                #_piRelIso_05[0]        = piRelIso_05
                 _piRelIso_05_ch[0]     = piRelIso_05_ch
                 _pi_dxy[0]             = pi_dxy
                 _met[0]                = met
@@ -679,12 +675,12 @@ for full_sample_name in samplename_list:
                 # _gamma_eT[0]           = _Nrandom_for_BDT_systematic.Gaus(gamma_eT,gamma_eT*0.05)
                 # _pi_pT[0]              = _Nrandom_for_BDT_systematic.Gaus(pi_pT,pi_pT*0.05)
                 # _lep_pT[0]             = _Nrandom_for_BDT_systematic.Gaus(lep_pT,lep_pT*0.05)
-                # _piRelIso_05_ch[0]     = _Nrandom_for_BDT_systematic.Gaus(piRelIso_05_ch,piRelIso_05_ch*0.1)
+                # _piRelIso_05_ch[0]     = piRelIso_05_ch*1.1
                 # _met[0]                = _Nrandom_for_BDT_systematic.Gaus(met,met*0.05)
                 # _Nrandom_for_BDT_systematic_nBjets_25 = _Nrandom_for_BDT_systematic.Rndm()
-                # if _Nrandom_for_BDT_systematic_nBjets_25 <= 0.90:
+                # if _Nrandom_for_BDT_systematic_nBjets_25 <= 0.95:
                 #     _nBjets_25[0]          = nBjets_25
-                # elif (_Nrandom_for_BDT_systematic_nBjets_25 > 0.90 and _Nrandom_for_BDT_systematic_nBjets_25 <= 0.95):
+                # elif (_Nrandom_for_BDT_systematic_nBjets_25 > 0.95 and _Nrandom_for_BDT_systematic_nBjets_25 <= 0.975):
                 #     _nBjets_25[0]          = nBjets_25-1
                 # else:
                 #     _nBjets_25[0]          = nBjets_25+1

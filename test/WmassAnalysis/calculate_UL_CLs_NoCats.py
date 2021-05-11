@@ -101,7 +101,7 @@ poimax = poi.find("W_pigamma_BR").getMax()
 
 min_scan = 0.0000001
 max_scan = 0.000055
-#max_scan = 0.0001
+#max_scan = 0.00004
 
 print "Doing a fixed scan  in interval : ",min_scan, " , ", max_scan
 calc.SetFixedScan(npoints,min_scan,max_scan)

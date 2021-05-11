@@ -70,7 +70,7 @@ private:
 
   bool is_one_bJet_found;
   bool bJet_outside_eta_bounds;
-    std::shared_ptr<TH2> h_bTagEfficiency_;
+  std::shared_ptr<TH2> h_bTagEfficiency_;
   BTagCalibrationReader reader;
   double jetSF;
   float jet_pT_temp;
@@ -215,6 +215,10 @@ private:
   float gen_ph_phi_tree;
   float gen_ph_energy_tree;
   int gen_ph_mother_tree;
+
+  int pi_gen_ID_tree;
+  int pi_gen_mother_ID_tree;
+  int pi_gen_nDaughters_tree;
 
   bool is_ttbar_lnu;
 

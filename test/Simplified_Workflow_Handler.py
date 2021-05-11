@@ -213,7 +213,7 @@ class Simplified_Workflow_Handler:
 
         self.ttbar_sig_calib_file = ROOT.TFile.Open("ttbar_signal_ratio_" + year + ".root")
         self.Pythia_pT_modeling_file = ROOT.TFile.Open("Pythia_pT_modeling_" + year + ".root")
-        self.Pythia_polarization_modeling_file = ROOT.TFile.Open("Pythia_polarization_modeling_Pi_W_" + year + ".root")
+        self.Pythia_polarization_modeling_file = ROOT.TFile.Open("Pythia_polarization_modeling_Pi_W_" + year + "_with_flat_theta.root")
         
         ###################################################################################
         #                                                                                 #

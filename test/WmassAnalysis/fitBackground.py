@@ -109,14 +109,14 @@ print "2Delta_minNll = ", 2*(4106.73001635-result_dataFit.minNll()) # If 2*(NLL(
 xframe = Wmass.frame(50.,100.,10)
 xframe.SetTitle(" ")
 xframe.SetTitleOffset(1.4,"y")
-xframe.SetMaximum(60)
+xframe.SetMaximum(130)
 
 data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
 backPDF.plotOn(xframe)
 
-chi2 = xframe.chiSquare()
-cut_chi2 = "{:.2f}".format(chi2) #Crop the chi2 to 3 decimal digits
-label = ROOT.TPaveLabel(0.68,0.4,0.88,0.54,"#chi^{2} = " + cut_chi2,"brNDC")
+chi2 = xframe.chiSquare(result_dataFit.floatParsFinal().getSize())
+cut_chi2 = "{:.2f}".format(chi2) #Crop the chi2 to 2 decimal digits
+label = ROOT.TPaveLabel(0.68,0.4,0.88,0.54,"#chi^{2}/ndof = " + cut_chi2,"brNDC")
     
 canvas = ROOT.TCanvas()
 xframe.Draw()
@@ -141,7 +141,7 @@ getattr(workspace_bkg_out,'import')(backPDF_cheb)
 getattr(workspace_bkg_out,'import')(backPDF_exp)
 
 workspace_bkg_out.Write()
-
+#xframe.Write("massplot")
 fOutput.Close()
 
 raw_input()

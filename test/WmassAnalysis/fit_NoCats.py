@@ -2,6 +2,7 @@
 
 import ROOT
 import math
+import copy
 
 ROOT.gROOT.ProcessLineSync(".L dCB/RooDoubleCBFast.cc+")
 
@@ -103,22 +104,26 @@ if selectSigShift == 0: #The nominal case (dCB parameters fixed to their central
     workspace_sig.var("dCB_pole").setConstant(1)
     workspace_sig.var("dCB_width").setConstant(1)
 if selectSigShift == 1: #Both dCB_pole and dCB_width fixed to central value +1sigma
-    workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal+dCB_pole_err)
+    #workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal+dCB_pole_err)
+    workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal+(dCB_pole_nominal*0.01))
     workspace_sig.var("dCB_width").setVal(dCB_width_nominal+dCB_width_err)
     workspace_sig.var("dCB_pole").setConstant(1)
     workspace_sig.var("dCB_width").setConstant(1)
-if selectSigShift == 2: #Both dCB_pole -1sigma and dCB_width +1sigma
-    workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal-dCB_pole_err)
+if selectSigShift == 2: #dCB_pole -1sigma and dCB_width +1sigma
+    #workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal-dCB_pole_err)
+    workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal-(dCB_pole_nominal*0.01))
     workspace_sig.var("dCB_width").setVal(dCB_width_nominal+dCB_width_err)
     workspace_sig.var("dCB_pole").setConstant(1)
     workspace_sig.var("dCB_width").setConstant(1)
-if selectSigShift == 3: #Both dCB_pole +1sigma and dCB_width -1sigma
-    workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal+dCB_pole_err)
+if selectSigShift == 3: #dCB_pole +1sigma and dCB_width -1sigma
+    #workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal+dCB_pole_err)
+    workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal+(dCB_pole_nominal*0.01))
     workspace_sig.var("dCB_width").setVal(dCB_width_nominal-dCB_width_err)
     workspace_sig.var("dCB_pole").setConstant(1)
     workspace_sig.var("dCB_width").setConstant(1)
-if selectSigShift == 4: #Both dCB_pole and dCB_width fixed to central value -1sigma
-    workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal-dCB_pole_err)
+if selectSigShift == 4: #dCB_pole and dCB_width fixed to central value -1sigma
+    #workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal-dCB_pole_err)
+    workspace_sig.var("dCB_pole").setVal(dCB_pole_nominal-(dCB_pole_nominal*0.01))
     workspace_sig.var("dCB_width").setVal(dCB_width_nominal-dCB_width_err)
     workspace_sig.var("dCB_pole").setConstant(1)
     workspace_sig.var("dCB_width").setConstant(1)
@@ -152,7 +157,7 @@ elif selectBkgFunction == 1: #Use Exponential (estimate systematic on background
 #CMS ttbar measurement/W->lnu BR (it is measured with both W in lnu), in pb
 #http://cms-results.web.cern.ch/cms-results/public-results/publications/TOP-16-005/index.html
 W_xsec_nominal = (2.+0.3521)*2.*815.*0.1086 #The two factors 2 account for the possible charge signs of the Ws and for the two leptonic decay channels of the tag W. The +0.3521 accounts for the leptonic tau decays
-#W_xsec_nominal = (0.3521)*2.*815.*0.1086 #The two factors 2 account for the possible charge signs of the Ws and for the two leptonic decay channels of the tag W. The +0.3521 accounts for the leptonic tau decays
+#W_xsec_nominal = (0.3521)*2.*815.*0.1086 
 W_xsec_syst    = (43.*2.*(2.+0.3521)*0.1086)/W_xsec_nominal
 #W_xsec_syst    = (43.*2.*(0.3521)*0.1086)/W_xsec_nominal
 
@@ -163,14 +168,11 @@ W_xsec_syst    = (43.*2.*(2.+0.3521)*0.1086)/W_xsec_nominal
 ################################################################
 
 #Represent the luminosity with a modifier for systematics. For 2016 (35.86 fb-1): 2.5% systematic. For 2017 (41.529 fb-1): 2.3% systematic
-lumi_2016 = 35.86*1000.
-lumi_2017 = 41.53*1000.
-lumi_2018 = 59.69*1000.
-lumi_syst_2016 = 0.025
-lumi_syst_2017 = 0.023 
-lumi_syst_2018 = 0.025
+lumi_2016    = 35.86*1000.
+lumi_2017    = 41.53*1000.
+lumi_2018    = 59.69*1000.
 lumi_nominal = lumi_2016 + lumi_2017 + lumi_2018 #In pb
-lumi_syst    = (lumi_syst_2016*lumi_2016 + lumi_syst_2017*lumi_2017 + lumi_syst_2018*lumi_2018)/lumi_nominal
+lumi_syst    = 0.018
 
 ################################################################
 #                                                              #
@@ -196,38 +198,38 @@ tot_2018  = totmu_2018 + totel_2018
 #The uncertainties are squared because they will be summed in quadrature
 eff_nominal_2016 = tot_2016/totsig_2016
 binom_eff_2016 = ((1 - eff_nominal_2016)/totsig_2016)**2 
-BDT_syst_2016    = ((0.01*totmu_2016 + 0.02*totel_2016)/tot_2016)**2 
+BDT_syst_2016 = ((0.01*totmu_2016 + 0.02*totel_2016)/tot_2016)**2 
 Pythia_syst_pT_2016 = ((0.02*totmu_2016 + 0.04*totel_2016)/tot_2016)**2 
 Pythia_syst_angle_2016 = ((0.03*totmu_2016 + 0.06*totel_2016)/tot_2016)**2 
 SF_syst_2016 = ((0.014*totmu_2016 + 0.014*totel_2016)/tot_2016)**2
 TRK_mischarge_ID_syst_2016 = ((0.01*totmu_2016 + 0.01*totel_2016)/tot_2016)**2
-eff_syst_2016    = math.sqrt(binom_eff_2016+BDT_syst_2016+Pythia_syst_pT_2016+Pythia_syst_angle_2016+SF_syst_2016+TRK_mischarge_ID_syst_2016)
+eff_syst_2016 = math.sqrt(binom_eff_2016+BDT_syst_2016+Pythia_syst_pT_2016+Pythia_syst_angle_2016+SF_syst_2016+TRK_mischarge_ID_syst_2016)
 
 eff_nominal_2017 = tot_2017/totsig_2017
 binom_eff_2017 = ((1 - eff_nominal_2017)/totsig_2017)**2 
-BDT_syst_2017    = ((0.01*totmu_2017 + 0.02*totel_2017)/tot_2017)**2 
+BDT_syst_2017 = ((0.01*totmu_2017 + 0.02*totel_2017)/tot_2017)**2 
 Pythia_syst_pT_2017 = ((0.02*totmu_2017 + 0.04*totel_2017)/tot_2017)**2 
 Pythia_syst_angle_2017 = ((0.03*totmu_2017 + 0.06*totel_2017)/tot_2017)**2
 SF_syst_2017 = ((0.014*totmu_2017 + 0.014*totel_2017)/tot_2017)**2 
 TRK_mischarge_ID_syst_2017 = ((0.01*totmu_2017 + 0.01*totel_2017)/tot_2017)**2
-eff_syst_2017    = math.sqrt(binom_eff_2017+BDT_syst_2017+Pythia_syst_pT_2017+Pythia_syst_angle_2017+SF_syst_2017+TRK_mischarge_ID_syst_2017)
+eff_syst_2017 = math.sqrt(binom_eff_2017+BDT_syst_2017+Pythia_syst_pT_2017+Pythia_syst_angle_2017+SF_syst_2017+TRK_mischarge_ID_syst_2017)
 
 eff_nominal_2018 = tot_2018/totsig_2018
 binom_eff_2018 = ((1 - eff_nominal_2018)/totsig_2018)**2
-BDT_syst_2018    = ((0.01*totmu_2018 + 0.02*totel_2018)/tot_2018)**2
+BDT_syst_2018 = ((0.01*totmu_2018 + 0.02*totel_2018)/tot_2018)**2
 Pythia_syst_pT_2018 = ((0.02*totmu_2018 + 0.04*totel_2018)/tot_2018)**2 
 Pythia_syst_angle_2018 = ((0.03*totmu_2018 + 0.06*totel_2018)/tot_2018)**2 
 SF_syst_2018 = ((0.014*totmu_2018 + 0.014*totel_2018)/tot_2018)**2 
 TRK_mischarge_ID_syst_2018 = ((0.01*totmu_2018 + 0.01*totel_2018)/tot_2018)**2
-eff_syst_2018    = math.sqrt(binom_eff_2018+BDT_syst_2018+Pythia_syst_pT_2018+Pythia_syst_angle_2018+SF_syst_2018+TRK_mischarge_ID_syst_2018)
+eff_syst_2018 = math.sqrt(binom_eff_2018+BDT_syst_2018+Pythia_syst_pT_2018+Pythia_syst_angle_2018+SF_syst_2018+TRK_mischarge_ID_syst_2018)
 
 efflumi_2016_nominal = eff_nominal_2016*lumi_2016
 efflumi_2017_nominal = eff_nominal_2017*lumi_2017
 efflumi_2018_nominal = eff_nominal_2018*lumi_2018
 
-efflumi_2016_syst = (eff_syst_2016+lumi_syst_2016)*efflumi_2016_nominal
-efflumi_2017_syst = (eff_syst_2017+lumi_syst_2017)*efflumi_2017_nominal
-efflumi_2018_syst = (eff_syst_2018+lumi_syst_2018)*efflumi_2018_nominal
+efflumi_2016_syst = (eff_syst_2016+lumi_syst)*efflumi_2016_nominal
+efflumi_2017_syst = (eff_syst_2017+lumi_syst)*efflumi_2017_nominal
+efflumi_2018_syst = (eff_syst_2018+lumi_syst)*efflumi_2018_nominal
 
 efflumi_nominal = efflumi_2016_nominal + efflumi_2017_nominal + efflumi_2018_nominal
 efflumi_syst = (efflumi_2016_syst + efflumi_2017_syst + efflumi_2018_syst)/efflumi_nominal
@@ -239,12 +241,14 @@ efflumi_syst = (efflumi_2016_syst + efflumi_2017_syst + efflumi_2018_syst)/efflu
 ################################################################
 
 if not suppressSigSystematic:
-    sig_syst = 0.069
+    sig_syst = 0.106
+    #sig_syst = 0.0001
 else:
     sig_syst = 0.0001
 
 if not suppressBkgSystematic:
     bkg_syst = 0.146
+    #bkg_syst = 0.0001
 else:
     bkg_syst = 0.0001
 
@@ -262,6 +266,8 @@ if suppressBkgSystematic or suppressSigSystematic:
     W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.000005,-0.0001,0.01) # The parameter of interest can go negative when we try the alternative bkg description, to obtain the correct statistic coverage
 else:
     W_pigamma_BR = ROOT.RooRealVar("W_pigamma_BR","W_pigamma_BR",0.000001,0.,0.01) # The parameter of interest
+    #W_pigamma_BR.setVal(0.)
+    #W_pigamma_BR.setConstant(1)
 
 W_pigamma_BR_blind = ROOT.RooUnblindOffset("W_pigamma_BR_blind","W_pigamma_BR_blind","aSeedString",0.000001,W_pigamma_BR)
 
@@ -300,7 +306,6 @@ glb_Multi_param.setConstant(1)
 
 if suppressAllSystematics:
     Multi_param_beta.setConstant(1)
-
 ################################################################
 #                                                              #
 #---------------------------- Fit -----------------------------#
@@ -341,38 +346,42 @@ fOutput.Close()
 #                                                              #
 ################################################################
 
-#xframe = Wmass.frame(55.,95.,15)
 xframe = Wmass.frame(50.,100.,20)
 xframe.SetTitle(" ")
 xframe.SetTitleOffset(1.4,"y")
+xframe.SetMaximum(40.)
 
 #################################################
 
 data_reduced = data.reduce("Wmass < 65. || Wmass > 90.")
 
 #data_reduced.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))
-totPDF.plotOn(xframe)#, ROOT.RooFit.Range("LowSideband,HighSideband"))#, ROOT.RooFit.LineColor(ROOT.kTeal+10))
+data.plotOn(xframe, ROOT.RooFit.DataError(ROOT.RooAbsData.Poisson))#,ROOT.RooFit.MarkerColor(0),ROOT.RooFit.LineColor(0))#,ROOT.RooFit.XErrorSize(0))#,ROOT.RooFit.MarkerColor(ROOT.kRed)) #The option XErrorSize(0) needs to be removed to calculate a proper chi2
+totPDF.plotOn(xframe)#,ROOT.RooFit.LineColor(0))#, ROOT.RooFit.Range("LowSideband,HighSideband"))#, ROOT.RooFit.LineColor(ROOT.kTeal+10))
 
-chi2 = xframe.chiSquare()
-cut_chi2 = "{:.2f}".format(chi2) #Crop the chi2 to 3 decimal digits
-label = ROOT.TPaveLabel(0.68,0.4,0.88,0.54,"#chi^{2} = " + cut_chi2,"brNDC")
-
-#fIn_Wmass = ROOT.TFile("../Wmass_4Plotting.root")
-#h_Wmass_signal = fIn_Wmass.Get("h_Wmass;1")
+chi2 = xframe.chiSquare(result_dataFit.floatParsFinal().getSize())#Returns chi2/ndof. Remember to remove the option XErrorSize(0) from data.PlotOn
+cut_chi2 = "{:.2f}".format(chi2) #Crop the chi2 to 2 decimal digits
+label = ROOT.TPaveLabel(0.68,0.4,0.88,0.54,"#chi^{2}/ndof = " + cut_chi2,"brNDC")
 
 #DRAW ON CANVAS
 canvas = ROOT.TCanvas()
 canvas.cd()
-#label.Draw("SAME")
+#canvas.SetFillColorAlpha(0,0.)
+#canvas.SetFillStyle(0)
+#resid = xframe.residHist()
+#resid.SetFillColorAlpha(0,0.)
+#resid.SetMarkerColor(2)
+#resid.SetMarkerStyle(25)
+#resid.SetLineColor(1)
+#xframe.addPlotable(resid,"P")
 xframe.Draw()
+label.Draw("SAME")
 
-fOut_frame = ROOT.TFile("Wmass_frame.root","RECREATE")
-fOut_frame.cd()
-xframe.Write("Wmass_frame")
 
-#h_stack.Draw("same,hist")
-#h_Wmass_signal.Draw("same,hist")
+# fOut_frame = ROOT.TFile("Wmass_frame.root","RECREATE")
+# fOut_frame.cd()
+# xframe.Write("massplot")
+
 # Save the plot
 canvas.SaveAs("plots/fitData_signalR.pdf")
 

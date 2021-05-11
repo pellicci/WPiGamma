@@ -811,8 +811,13 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     float deltapTMax = 10000.;
     const float deltaRMax  = 0.3;
-    int   gen_mother = 0;
-    int   gen_ID = 0;
+    int pi_gen_ID = -999;
+    int pi_gen_mother_ID = -999;
+    int pi_gen_nDaughters = -999;
+
+    pi_gen_ID_tree = -999;
+    pi_gen_mother_ID_tree = -999;
+    pi_gen_nDaughters_tree = -999;
 
     if(!runningOnData_){
       for(auto gen = genParticles->begin(); gen != genParticles->end(); ++gen){ // Matching candidate for W reconstruction with MC truth
@@ -824,12 +829,16 @@ void WPiGammaAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
         if(deltaR > deltaRMax || deltapT > deltapTMax) continue;
 	       deltapTMax = deltapT;
-	       gen_ID = gen->pdgId();
-	       gen_mother = gen->mother()->pdgId();
+	       pi_gen_ID = gen->pdgId();
+	       pi_gen_mother_ID = gen->mother()->pdgId();
+	       pi_gen_nDaughters = gen->mother()->numberOfDaughters();
       }
 
-      if(fabs(gen_ID) == 211) is_pi_a_pi = true;
-      if(fabs(gen_mother) == 24) is_pi_matched = true;
+      if(fabs(pi_gen_ID) == 211) is_pi_a_pi = true;
+      if(fabs(pi_gen_mother_ID) == 24) is_pi_matched = true;
+      pi_gen_ID_tree = pi_gen_ID;
+      pi_gen_mother_ID_tree = pi_gen_mother_ID;
+      pi_gen_nDaughters_tree = pi_gen_nDaughters;
     }
   }
 
@@ -1300,6 +1309,9 @@ void WPiGammaAnalysis::create_trees()
     mytree->Branch("gen_ph_phi",&gen_ph_phi_tree);
     mytree->Branch("gen_ph_energy",&gen_ph_energy_tree);
     mytree->Branch("gen_ph_mother",&gen_ph_mother_tree);
+    mytree->Branch("pi_gen_ID",&pi_gen_ID_tree);
+    mytree->Branch("pi_gen_mother_ID",&pi_gen_mother_ID_tree);
+    mytree->Branch("pi_gen_nDaughters",&pi_gen_nDaughters_tree);
   }
 
 }

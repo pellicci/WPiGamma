@@ -16,7 +16,7 @@ process.maxEvents = cms.untracked.PSet(
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing()
 options.register('runningOnData',
-                 True, #default value
+                 False, #default value
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "PU config flag")
@@ -124,7 +124,8 @@ else:
         print "MC Sample (2018) will be taken as input for check up of the code working "
         inputFiles = {
            #"root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18MiniAOD/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v1/00000/38CB48DD-A494-4044-B9CD-64241707E25F.root"}
-           "root://cms-xrd-global.cern.ch//store/user/rselvati/WPlusPiGamma_102X_2018/WPlusPiGamma_MINIAODSIM_102X_2018_v1/191028_152254/0008/WPiGamma_pythia8_MINIAOD_2018_8000.root"}
+           #"root://cms-xrd-global.cern.ch//store/user/rselvati/WPlusPiGamma_102X_2018/WPlusPiGamma_MINIAODSIM_102X_2018_v1/191028_152254/0008/WPiGamma_pythia8_MINIAOD_2018_8000.root"}
+           "root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18MiniAOD/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v1/90000/17D5FDFE-C156-FE47-9202-F819E74881D3.root"}
 
 process.source = cms.Source ("PoolSource",
                              fileNames = cms.untracked.vstring (inputFiles)

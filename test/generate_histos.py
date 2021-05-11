@@ -62,6 +62,7 @@ BDT_OUT_ELE = 0.269
 
 # Get the files and the names of the samples
 sample_name = input_filename.split("_")[2]
+#sample_name = input_filename.split("_")[6]
 
 # Get the normalization
 Norm_Map = myWF.get_normalizations_map(runningEra)
@@ -107,13 +108,13 @@ pT_ele_binning = arr.array('f',[33.,40.,50.,100.,200.,500.])
 ##Get the handlers for all the histos and graphics
 h_base  = dict()
 
-list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets","MCT_deltaR_lep_gamma","h_BDT_out_mu","h_BDT_out_ele","h_mu_met_mT","h_ele_met_mT","h_met","h_pi_ph_met_InvMass"]
+list_histos = ["h_mupt", "h_elept", "h_pipt", "h_gammaet", "h_mueta", "h_eleeta","h_pieta","h_gammaeta", "h_nBjets_25","h_deltaphi_mu_pi","h_deltaphi_ele_pi","h_deltaphi_mu_W","h_deltaphi_ele_W","h_deltaeta_mu_pi","h_deltaeta_ele_pi","h_Wmass","h_Wmass_flag_mu","h_Wmass_flag_ele","h_mu_gamma_InvMass","h_ele_gamma_InvMass","h_piIso_05_mu","h_piRelIso_05_mu_ch","h_piRelIso_05_mu","h_piIso_05_ele","h_piRelIso_05_ele_ch","h_piRelIso_05_ele","h_met_mu","h_met_ele","h_met_puppi","h_Wmass_alternative_mu","h_Wmass_alternative_ele","h_nPV_mu","h_nPV_ele","h_deltaphi_mu_gamma","h_deltaphi_ele_gamma","h_deltaR_mu_gamma","h_deltaR_ele_gamma","h_lepton_eta","h_lepton_pt","h_piRelIso_05_ch","h_deltaR_mu_pi","h_deltaR_ele_pi","h_nBjets_scaled","h_met_mu_scaled","h_met_ele_scaled","h_njets","h_nBjets_vs_njets","MCT_deltaR_lep_gamma","h_BDT_out_mu","h_BDT_out_ele","h_mu_met_mT","h_ele_met_mT","h_met","h_pi_ph_met_InvMass","h_piRelIso_03"]
 
 h_base[list_histos[0]]  = ROOT.TH1F(list_histos[0], "p_{T} of the muon", 15, 25, 100.)
 h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 15, 28, 100.)
 #h_base[list_histos[1]]  = ROOT.TH1F(list_histos[1], "p_{T} of the electron", 5, pT_ele_binning)
-h_base[list_histos[2]]  = ROOT.TH1F(list_histos[2], "p_{T} of the pion", 15, 20, 100.)
-h_base[list_histos[3]]  = ROOT.TH1F(list_histos[3], "E_{T} of the gamma", 15, 20, 100.)
+h_base[list_histos[2]]  = ROOT.TH1F(list_histos[2], "p_{T} of the pion", 15, 20., 95.)
+h_base[list_histos[3]]  = ROOT.TH1F(list_histos[3], "E_{T} of the gamma", 15, 20., 95.)
 h_base[list_histos[4]]  = ROOT.TH1F(list_histos[4], "eta of the muon", 20, -3, 3)
 h_base[list_histos[5]]  = ROOT.TH1F(list_histos[5], "eta of the electron", 20, -3, 3)
 h_base[list_histos[6]]  = ROOT.TH1F(list_histos[6], "eta of the pion", 20, -3, 3)
@@ -125,9 +126,9 @@ h_base[list_histos[11]] = ROOT.TH1F(list_histos[11], "deltaphi mu-W", 10, 0, 3.1
 h_base[list_histos[12]] = ROOT.TH1F(list_histos[12], "deltaphi ele-W", 10, 0, 3.14)
 h_base[list_histos[13]] = ROOT.TH1F(list_histos[13], "deltaeta mu-pi", 20, -5, 5)
 h_base[list_histos[14]] = ROOT.TH1F(list_histos[14], "deltaeta ele-pi", 20, -5, 5)
-h_base[list_histos[15]] = ROOT.TH1F(list_histos[15], "W mass", 10, 50, 100)
-h_base[list_histos[16]] = ROOT.TH1F(list_histos[16], "W mass if flag mu", 10, 50, 100)
-h_base[list_histos[17]] = ROOT.TH1F(list_histos[17], "W mass if flag ele", 10, 50, 100)
+h_base[list_histos[15]] = ROOT.TH1F(list_histos[15], "W mass", 20, 50, 100)
+h_base[list_histos[16]] = ROOT.TH1F(list_histos[16], "W mass if flag mu", 20, 50, 100)
+h_base[list_histos[17]] = ROOT.TH1F(list_histos[17], "W mass if flag ele", 20, 50, 100)
 h_base[list_histos[18]] = ROOT.TH1F(list_histos[18], "mu-gamma InvMass", 20, 0, 300)
 h_base[list_histos[19]] = ROOT.TH1F(list_histos[19], "ele-gamma InvMass", 20, 0, 300)
 h_base[list_histos[20]] = ROOT.TH1F(list_histos[20], "Pion isolation 05 - mu", 75, 0, 150)
@@ -151,7 +152,8 @@ h_base[list_histos[35]] = ROOT.TH1F(list_histos[35], "deltaR mu-gamma", 60, 0., 
 h_base[list_histos[36]] = ROOT.TH1F(list_histos[36], "deltaR ele-gamma", 60, 0., 6.)
 h_base[list_histos[37]] = ROOT.TH1F(list_histos[37], "lepton eta", 20, -3., 3.)
 h_base[list_histos[38]] = ROOT.TH1F(list_histos[38], "p_{T} of the lepton", 15, 25., 100.)
-h_base[list_histos[39]] = ROOT.TH1F(list_histos[39], "Pion rel. isolation 05 - ch", 50, 0, 10)
+#h_base[list_histos[39]] = ROOT.TH1F(list_histos[39], "Pion rel. isolation 05 - ch", 30, 0, 6)
+h_base[list_histos[39]] = ROOT.TH1F(list_histos[39], "Pion rel. isolation 05 - ch", 16, 0, 0.8)
 h_base[list_histos[40]] = ROOT.TH1F(list_histos[40], "deltaR mu-pi", 60, 0., 6.)
 h_base[list_histos[41]] = ROOT.TH1F(list_histos[41], "deltaR ele-pi", 60, 0., 6.)
 h_base[list_histos[42]] = ROOT.TH1F(list_histos[42], "n Bjets scaled", 6, -0.5, 5.5)
@@ -164,8 +166,9 @@ h_base[list_histos[48]] = ROOT.TH1F(list_histos[48], "BDT out_mu", 40, -0.7, 0.7
 h_base[list_histos[49]] = ROOT.TH1F(list_histos[49], "BDT out_ele", 40, -0.7, 0.7)
 h_base[list_histos[50]] = ROOT.TH1F(list_histos[50], "mu-met mT", 40, 0., 200.)
 h_base[list_histos[51]] = ROOT.TH1F(list_histos[51], "ele-met mT", 40, 0., 200.)
-h_base[list_histos[52]] = ROOT.TH1F(list_histos[52], "met", 45, 0., 300.)
+h_base[list_histos[52]] = ROOT.TH1F(list_histos[52], "met", 20, 0., 200.)
 h_base[list_histos[53]] = ROOT.TH1F(list_histos[53], "Pion - photon - MET invariant mass", 45, 0., 300.)
+h_base[list_histos[54]] = ROOT.TH1F(list_histos[54], "Pion rel. isolation 03", 30, 0, 6)
 
 _Nrandom_for_Gaus_SF = ROOT.TRandom3(44329)
 
@@ -185,6 +188,10 @@ Nevts_selected_ele = 0. # Count the number of events survived per each sample pr
 Nevts_expected     = 0. # Number of expected events from weights
 Nevts_expected_mu  = 0. # Number of expected events from weights
 Nevts_expected_ele = 0. # Number of expected events from weights
+
+nPionsTrue = 0.
+nPionsTot = 0.
+nPileUp = 0.
 
 for jentry in xrange(mytree.GetEntriesFast()):
     ientry = mytree.LoadTree( jentry )
@@ -379,7 +386,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
         boosted_genW_FourMomentum = ROOT.TLorentzVector()
         boosted_genW_FourMomentum.SetPtEtaPhiE(genW_pT,genW_eta,genW_phi,genW_energy)
         boosted_genW_FourMomentum.Boost(-genW_FourMomentum.BoostVector()) #The sign - is required  
-
+        
         boosted_genTop_FourMomentum = ROOT.TLorentzVector()
         boosted_genTop_FourMomentum.SetPtEtaPhiE(genTop_pT,genTop_eta,genTop_phi,genTop_energy)
         boosted_genTop_FourMomentum.Boost(-genW_FourMomentum.BoostVector()) #The sign - is required
@@ -389,7 +396,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
         boosted_genPh_FourMomentum = ROOT.TLorentzVector()
         boosted_genPh_FourMomentum.SetPtEtaPhiE(genPh_pT,genPh_eta,genPh_phi,genPh_energy)
         boosted_genPh_FourMomentum.Boost(-genW_FourMomentum.BoostVector()) #The sign - is required 
-
+  
         #print boosted_genW_FourMomentum.Px(), boosted_genW_FourMomentum.Py(), boosted_genW_FourMomentum.Pz()
         angle_Top_Pi = boosted_genTop_FourMomentum.Angle(boosted_genPi_FourMomentum.Vect())
         angle_Pi_Ph  = boosted_genPi_FourMomentum.Angle(boosted_genPh_FourMomentum.Vect())
@@ -496,9 +503,9 @@ for jentry in xrange(mytree.GetEntriesFast()):
         BDT_out = myWF.get_BDT_output(pi_pT/Wmass,gamma_eT/Wmass,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)
     elif isBDT:
         BDT_out = myWF.get_BDT_output(pi_pT,gamma_eT,nBjets_25,lep_pT,piRelIso_05_ch,met,isMuon)
-        if isMuon and BDT_out <=0.2:
+        if isMuon:
             h_base["h_BDT_out_mu"].Fill(BDT_out)
-        if not isMuon and BDT_out <=0.2:
+        if not isMuon:
             h_base["h_BDT_out_ele"].Fill(BDT_out)
     ############################################################################
     #                                                                          #
@@ -521,6 +528,19 @@ for jentry in xrange(mytree.GetEntriesFast()):
 
     Nevts_expected += Event_Weight # Increment the number of events survived in the analyzed sample
 
+
+    #if piRelIso_05_ch < 0.2:
+    # nPionsTot += Event_Weight
+    # if mytree.isPionTrue:
+    #     nPionsTrue += Event_Weight
+    #     if math.fabs(mytree.pi_gen_mother_ID == 15) and mytree.pi_gen_nDaughters > 2: 
+    #         print "trackID", mytree.pi_gen_ID, "  track mother: ", mytree.pi_gen_mother_ID, "  nDaughters", mytree.pi_gen_nDaughters, "  pT: ", pi_pT
+    #         nPileUp += Event_Weight
+        #else:
+            #if math.fabs(mytree.pi_gen_ID == 1) or math.fabs(mytree.pi_gen_ID == 2) or math.fabs(mytree.pi_gen_ID == 3) or math.fabs(mytree.pi_gen_ID == 4):
+            #    nPileUp += Event_Weight
+            #print "trackID", mytree.pi_gen_ID, "  track mother: ", mytree.pi_gen_mother_ID, "  nDaughters", mytree.pi_gen_nDaughters, "  pT: ", pi_pT
+
     if isMuon:
         Nevts_selected_mu = Nevts_selected_mu + 1
         #if Wmass >= 65. and Wmass <= 90.:
@@ -531,15 +551,16 @@ for jentry in xrange(mytree.GetEntriesFast()):
         Nevts_expected_ele += Event_Weight
 
 
-    if isBDT and sample_name == "Data" and (Wmass < 65. or Wmass > 90.):
-        h_base["h_Wmass"].Fill(Wmass,Event_Weight)
-    if isBDT and not sample_name == "Data":
-        h_base["h_Wmass"].Fill(Wmass,Event_Weight)
-    if not isBDT:
-        h_base["h_Wmass"].Fill(Wmass,Event_Weight)
+    # if isBDT and sample_name == "Data" and (Wmass < 65. or Wmass > 90.): #Only for blind analysis
+    #     h_base["h_Wmass"].Fill(Wmass,Event_Weight)
+    # if isBDT and not sample_name == "Data":
+    #     h_base["h_Wmass"].Fill(Wmass,Event_Weight)
+    # if not isBDT:
+    #     h_base["h_Wmass"].Fill(Wmass,Event_Weight)
 
     #if "WJetsToLNu" in sample_name or "WGToLNuG" in sample_name:
     #    h_base["MCT_deltaR_lep_gamma"].Fill(MCT_deltaR_lep_gamma,Event_Weight)
+    h_base["h_Wmass"].Fill(Wmass,Event_Weight)
     h_base["h_nBjets_25"].Fill(nBjets_25,Event_Weight)
     h_base["h_njets"].Fill(mytree.njets,Event_Weight)
     h_base["h_nBjets_vs_njets"].Fill(mytree.njets,nBjets_25,Event_Weight)
@@ -553,18 +574,14 @@ for jentry in xrange(mytree.GetEntriesFast()):
     h_base["h_lepton_eta"].Fill(lep_eta,Event_Weight)
     h_base["h_lepton_pt"].Fill(lep_pT,Event_Weight)
     h_base["h_piRelIso_05_ch"].Fill(piRelIso_05_ch,Event_Weight)
+    h_base["h_piRelIso_03"].Fill(piRelIso_03,Event_Weight)
     h_base["h_pi_ph_met_InvMass"].Fill(pi_ph_met_InvMass,Event_Weight)
 
     if sample_name == "Data":
         h_PUdistrib.Fill(nPV,Event_Weight)      
 
     if isMuon:
-        if isBDT and sample_name == "Data" and (Wmass < 65. or Wmass > 90.):
-            h_base["h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
-        if isBDT and not sample_name == "Data":
-            h_base["h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
-        if not isBDT:
-            h_base["h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
+        h_base["h_Wmass_flag_mu"].Fill(Wmass,Event_Weight)
         h_base["h_mupt"].Fill(lep_pT,Event_Weight)
         h_base["h_mueta"].Fill(lep_eta,Event_Weight)
         h_base["h_nPV_mu"].Fill(nPV,Event_Weight)
@@ -581,17 +598,12 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_base["h_mu_met_mT"].Fill(lep_met_TransverseMass,Event_Weight)
         #if "WJetsToLNu" in sample_name:
         h_base["h_deltaR_mu_gamma"].Fill(deltaR_lep_gamma,Event_Weight)
-
+        h_base["h_piIso_05_mu"].Fill(mytree.sum_pT_05_ch,Event_Weight)
 
     else:
-        if isBDT and sample_name == "Data" and (Wmass < 65. or Wmass > 90.):
-            h_base["h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
-        if isBDT and not sample_name == "Data":
-            h_base["h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
-        if not isBDT:
-            h_base["h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
         if math.fabs(ele_etaSC) < 0.8:
             h_base["h_elept"].Fill(lep_pT,Event_Weight)
+        h_base["h_Wmass_flag_ele"].Fill(Wmass,Event_Weight)
         h_base["h_eleeta"].Fill(lep_eta,Event_Weight)
         h_base["h_nPV_ele"].Fill(nPV,Event_Weight)
         h_base["h_piRelIso_05_ele"].Fill(piRelIso_05,Event_Weight)
@@ -607,7 +619,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_base["h_ele_met_mT"].Fill(lep_met_TransverseMass,Event_Weight)
         #if "WJetsToLNu" in sample_name:
         h_base["h_deltaR_ele_gamma"].Fill(deltaR_lep_gamma,Event_Weight)
-
+        h_base["h_piIso_05_ele"].Fill(mytree.sum_pT_05_ch,Event_Weight)
     #########    #########    #########    #########    #########    #########    #########
     if sample_name == "Signal":
         h_genW_pT.Fill(genW_pT)
@@ -619,6 +631,8 @@ for jentry in xrange(mytree.GetEntriesFast()):
         h_genTop_eta.Fill(genTop_eta)
         h_genTop_phi.Fill(genTop_phi)
         h_angle_Top_Pi.Fill(angle_Top_Pi)
+        if angle_Pi_W > 3.14:
+            angle_Pi_W = 6.28 - angle_Pi_W
         h_angle_Pi_W.Fill(math.cos(angle_Pi_W))
         h_angle_Pi_Ph.Fill(angle_Pi_Ph)
 
@@ -671,7 +685,7 @@ for jentry in xrange(mytree.GetEntriesFast()):
     #                                                                          #                                                 
     ############################################################################  
 
-ROOT.gStyle.SetOptStat(0)
+# ROOT.gStyle.SetOptStat(0)
 # canvas_W_pT = ROOT.TCanvas()
 # h_genW_pT.GetXaxis().SetTitle("p_{T}^{W} (GeV)")
 # h_genW_pT.Draw("hist")
@@ -706,7 +720,7 @@ ROOT.gStyle.SetOptStat(0)
 # h_angle_Pi_W.GetXaxis().SetTitle("#theta^{*}")
 # h_angle_Pi_W.Draw("hist")
 # canvas_angle_Pi_W.SaveAs("plots/latest_production/2018/angle_Pi_W.pdf")
-# fOut_angle_Pi_W = ROOT.TFile("cosine_angle_Pi_W_2018.root","RECREATE")
+# fOut_angle_Pi_W = ROOT.TFile("angle_Pi_W_2018.root","RECREATE")
 # fOut_angle_Pi_W.cd()                                                                                                    
 # h_angle_Pi_W.Write()                                                                                                      
 # fOut_angle_Pi_W.Close()  
@@ -772,5 +786,9 @@ print "Number of events selected in electron channel = ", Nevts_selected_ele
 print "Number of events expected = ", Nevts_expected
 print "Number of events expected in muon channel = ", Nevts_expected_mu
 print "Number of events expected in electron channel = ", Nevts_expected_ele
+print "nPionsTot = ", nPionsTot
+print "nPionsTrue = ", nPionsTrue
+print "nPileUp = ", nPileUp
+
 print "###################"
 
