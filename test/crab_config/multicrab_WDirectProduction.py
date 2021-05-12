@@ -1,0 +1,58 @@
+from CRABAPI.RawCommand import crabCommand
+from WMCore.Configuration import Configuration
+from CRABClient.UserUtilities import config
+config = Configuration()
+
+config.section_('General')
+config.General.transferOutputs = True
+
+config.section_('JobType')
+config.JobType.psetName = 'cmssw_config/run_WDirectProduction.py'
+config.JobType.pluginName = 'Analysis'
+config.JobType.outputFiles = ['WDirectProduction_output.root']
+config.JobType.allowUndistributedCMSSW = True #Otherwise get an error for incompatibility of architecture(slc7)/release(9_4_10). It is safe according to https://hypernews.cern.ch/HyperNews/CMS/get/computing-tools/4935/2.html
+
+config.General.workArea = 'crab_projects/samples_WDirectProduction/'
+
+config.section_('Data')
+config.Data.inputDBS = 'phys03'
+config.Data.splitting = 'Automatic'
+config.Data.outLFNDirBase = '/store/user/rselvati/'
+config.Data.publication = False
+
+config.section_('Site')
+config.Site.storageSite = 'T2_IT_Legnaro'
+
+if __name__ == '__main__':
+
+    from CRABAPI.RawCommand import crabCommand
+    from CRABClient.ClientExceptions import ClientException
+    from httplib import HTTPException
+    from multiprocessing import Process
+
+    def submit(config):
+        try:
+            crabCommand('submit', config = config)
+        except HTTPException as hte:
+            print "Failed submitting task: %s" % (hte.headers)
+        except ClientException as cle:
+            print "Failed submitting task: %s" % (cle)
+
+    #############################################################################################
+    ## From now on that's what users should modify: this is the a-la-CRAB2 configuration part. ##
+    #############################################################################################
+
+
+    #config.JobType.pyCfgParams = ['runningOnData=False','runningEra=2'] # Configure 2018 MC signal jobs 
+
+    config.General.requestName = '2018_WDirectProduction_WPlus'
+    config.Data.inputDataset = '/WPlusPiGamma_DirectProduction_102X_2018_v1/rselvati-WPlusPiGamma_DirectProduction_GENSIM_102X_2018_v1-a1368e58c106dc7dc1a17d2892a53fa9/USER'
+    p = Process(target=submit, args=(config,))
+    p.start()
+    p.join()
+        
+    config.General.requestName = '2018_WDirectProduction_WMinus'
+    config.Data.inputDataset = '/WMinusPiGamma_DirectProduction_102X_2018_v1/rselvati-WMinusPiGamma_DirectProduction_GENSIM_102X_2018_v1-38dac652d083e7a934cc87ef6e569ede/USER'
+    p = Process(target=submit, args=(config,))
+    p.start()
+    p.join()
